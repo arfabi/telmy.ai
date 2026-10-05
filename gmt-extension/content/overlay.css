@@ -1,0 +1,1043 @@
+/* GMT Overlay Styles — injected into every page */
+
+/* ─── Page Push Layout (Pushes Web Page to Left, Panel Outside Web View) ─── */
+html.gmt-panel-open {
+  margin-right: 390px !important;
+  width: calc(100vw - 390px) !important;
+  box-sizing: border-box !important;
+  transition: margin-right 0.3s cubic-bezier(0.16, 1, 0.3, 1), width 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+body.gmt-panel-open {
+  max-width: 100% !important;
+}
+
+/* ─── Reset namespace ─── */
+#gmt-root * {
+  box-sizing: border-box;
+  font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Sleek Right-Edge Dock Tab (Replaces bottom-right floating bubble) ─── */
+#gmt-dock-tab {
+  position: fixed;
+  top: 42%;
+  right: 0;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 98px;
+  border-radius: 12px 0 0 12px;
+  background: linear-gradient(180deg, #6C3FFF 0%, #00D4FF 100%);
+  box-shadow: -4px 0 20px rgba(108, 63, 255, 0.45);
+  cursor: pointer;
+  z-index: 2147483647;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, opacity 0.2s ease;
+  user-select: none;
+}
+
+#gmt-dock-tab:hover {
+  transform: translateY(-50%) translateX(-4px);
+  box-shadow: -6px 0 26px rgba(0, 212, 255, 0.65);
+}
+
+#gmt-dock-tab.gmt-panel-open {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-50%) translateX(40px);
+}
+
+#gmt-dock-tab svg {
+  width: 18px;
+  height: 18px;
+  fill: white;
+}
+
+#gmt-dock-tab span.gmt-dock-label {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  color: white;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+}
+
+/* ─── Main Panel (Docked Right Sidebar — Outside Web View) ─── */
+#gmt-panel {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 390px;
+  max-width: 100vw;
+  height: 100vh;
+  background: rgba(13, 17, 23, 0.98);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-left: 1px solid rgba(108, 63, 255, 0.35);
+  box-shadow: -10px 0 40px rgba(0, 0, 0, 0.65);
+  z-index: 2147483646;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(0);
+  opacity: 1;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+}
+
+#gmt-panel.gmt-hidden {
+  transform: translateX(100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Panel Header */
+#gmt-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, rgba(108,63,255,0.2), rgba(0,212,255,0.1));
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  flex-shrink: 0;
+}
+
+#gmt-header-logo {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #6C3FFF, #00D4FF);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+#gmt-header-logo svg {
+  width: 16px;
+  height: 16px;
+  fill: white;
+}
+
+#gmt-header-title {
+  flex: 1;
+}
+
+#gmt-header-title h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: 0.3px;
+}
+
+#gmt-header-title p {
+  margin: 0;
+  font-size: 10px;
+  color: rgba(0,212,255,0.8);
+  font-weight: 500;
+}
+
+#gmt-close-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.07);
+  border: none;
+  color: rgba(255,255,255,0.6);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: background 0.2s, color 0.2s;
+  flex-shrink: 0;
+}
+
+#gmt-close-btn:hover {
+  background: rgba(255,80,80,0.2);
+  color: #ff5050;
+}
+
+/* Chat Area */
+#gmt-chat {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 14px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(108,63,255,0.3) transparent;
+}
+
+#gmt-chat::-webkit-scrollbar { width: 4px; }
+#gmt-chat::-webkit-scrollbar-track { background: transparent; }
+#gmt-chat::-webkit-scrollbar-thumb { background: rgba(108,63,255,0.4); border-radius: 2px; }
+
+.gmt-msg {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.gmt-msg.gmt-user {
+  flex-direction: row-reverse;
+}
+
+.gmt-msg-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6C3FFF, #00D4FF);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.gmt-msg.gmt-user .gmt-msg-avatar {
+  background: rgba(255,255,255,0.1);
+}
+
+.gmt-msg-bubble {
+  max-width: 220px;
+  padding: 8px 12px;
+  border-radius: 14px;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.gmt-msg.gmt-ai .gmt-msg-bubble {
+  background: rgba(108,63,255,0.15);
+  border: 1px solid rgba(108,63,255,0.2);
+  color: rgba(255,255,255,0.9);
+  border-top-left-radius: 4px;
+}
+
+.gmt-msg.gmt-user .gmt-msg-bubble {
+  background: linear-gradient(135deg, #6C3FFF, #00D4FF);
+  color: white;
+  border-top-right-radius: 4px;
+}
+
+/* Step Tracker */
+#gmt-steps {
+  padding: 10px 14px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.gmt-step-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  color: rgba(255,255,255,0.4);
+  transition: color 0.3s;
+}
+
+.gmt-step-item.gmt-step-done { color: rgba(0, 200, 83, 0.9); }
+.gmt-step-item.gmt-step-active { color: white; }
+
+.gmt-step-num {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+  transition: all 0.3s;
+}
+
+.gmt-step-item.gmt-step-done .gmt-step-num {
+  background: rgba(0, 200, 83, 0.2);
+  border-color: #00C853;
+}
+
+.gmt-step-item.gmt-step-active .gmt-step-num {
+  background: rgba(108,63,255,0.3);
+  border-color: #6C3FFF;
+  animation: gmt-spin-glow 2s linear infinite;
+}
+
+/* Input Area */
+#gmt-input-area {
+  padding: 12px 14px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+#gmt-text-input {
+  flex: 1;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 22px;
+  padding: 8px 14px;
+  color: white;
+  font-size: 12.5px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+#gmt-text-input:focus {
+  border-color: rgba(108,63,255,0.5);
+}
+
+#gmt-text-input::placeholder {
+  color: rgba(255,255,255,0.3);
+}
+
+#gmt-mic-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6C3FFF, #00D4FF);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+  flex-shrink: 0;
+}
+
+#gmt-mic-btn:hover { transform: scale(1.1); }
+#gmt-mic-btn.gmt-active { animation: gmt-pulse-listen 1.2s infinite; }
+#gmt-mic-btn svg { width: 16px; height: 16px; fill: white; }
+
+#gmt-send-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(108,63,255,0.2);
+  border: 1px solid rgba(108,63,255,0.4);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+#gmt-send-btn:hover { background: rgba(108,63,255,0.4); }
+#gmt-send-btn svg { width: 14px; height: 14px; fill: white; }
+
+/* Action Buttons */
+#gmt-actions {
+  padding: 0 14px 12px;
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.gmt-action-btn {
+  flex: 1;
+  padding: 7px 0;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.7);
+  background: rgba(255,255,255,0.05);
+  letter-spacing: 0.3px;
+}
+
+.gmt-action-btn:hover { background: rgba(255,255,255,0.1); color: white; }
+.gmt-action-btn.gmt-primary { background: rgba(108,63,255,0.2); border-color: rgba(108,63,255,0.4); color: #a78bff; }
+.gmt-action-btn.gmt-primary:hover { background: rgba(108,63,255,0.35); }
+
+/* ─── Spotlight Overlay ─── */
+#gmt-spotlight {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483640;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+#gmt-spotlight.gmt-hidden { opacity: 0; }
+
+.gmt-cutout {
+  position: absolute;
+  box-shadow: 0 0 0 9999px rgba(0,0,0,0.65);
+  border-radius: 8px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+/* ─── Pulse Ring ─── */
+.gmt-pulse-ring {
+  position: fixed;
+  border: 2px solid #00D4FF;
+  border-radius: 12px;
+  z-index: 2147483641;
+  pointer-events: none;
+  animation: gmt-ripple 1.5s ease-out infinite;
+}
+
+.gmt-pulse-ring:nth-child(2) { animation-delay: 0.4s; }
+.gmt-pulse-ring:nth-child(3) { animation-delay: 0.8s; }
+
+/* ─── Tooltip ─── */
+#gmt-tooltip {
+  position: fixed;
+  background: rgba(13,17,23,0.97);
+  border: 1px solid rgba(108,63,255,0.5);
+  border-radius: 12px;
+  padding: 10px 14px;
+  z-index: 2147483645;
+  max-width: 240px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+
+#gmt-tooltip.gmt-hidden { opacity: 0; transform: translateY(6px); }
+
+#gmt-tooltip-step {
+  font-size: 10px;
+  font-weight: 600;
+  color: #00D4FF;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+#gmt-tooltip-text {
+  font-size: 12.5px;
+  color: rgba(255,255,255,0.9);
+  line-height: 1.5;
+}
+
+#gmt-tooltip-arrow {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: rgba(13,17,23,0.97);
+  border: 1px solid rgba(108,63,255,0.5);
+  transform: rotate(45deg);
+}
+
+/* Settings panel (Docked Right Sidebar — Outside Web View) */
+#gmt-settings {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 390px;
+  max-width: 100vw;
+  height: 100vh;
+  background: rgba(13, 17, 23, 0.98);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-left: 1px solid rgba(108, 63, 255, 0.35);
+  padding: 24px;
+  z-index: 2147483646;
+  box-shadow: -10px 0 40px rgba(0, 0, 0, 0.65);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+  transform: translateX(0);
+  opacity: 1;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+}
+
+#gmt-settings.gmt-hidden {
+  transform: translateX(100%);
+  opacity: 0;
+  pointer-events: none;
+  display: none;
+}
+
+#gmt-settings h4 {
+  margin: 0;
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.gmt-settings-field label {
+  display: block;
+  color: rgba(255,255,255,0.5);
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.gmt-settings-field input {
+  width: 100%;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 8px 12px;
+  color: white;
+  font-size: 12px;
+  outline: none;
+}
+
+.gmt-settings-field input:focus {
+  border-color: rgba(108,63,255,0.5);
+}
+
+.gmt-save-btn {
+  width: 100%;
+  padding: 10px;
+  background: linear-gradient(135deg, #6C3FFF, #00D4FF);
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.gmt-save-btn:hover { opacity: 0.9; }
+
+/* ─── Animations ─── */
+@keyframes gmt-pulse-listen {
+  0%, 100% { box-shadow: 0 4px 24px rgba(108,63,255,0.5), 0 0 0 0 rgba(0,212,255,0.5); }
+  50% { box-shadow: 0 4px 24px rgba(108,63,255,0.8), 0 0 0 12px rgba(0,212,255,0); }
+}
+
+@keyframes gmt-ripple {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+
+@keyframes gmt-spin-glow {
+  0% { box-shadow: 0 0 6px #6C3FFF; }
+  50% { box-shadow: 0 0 12px #00D4FF; }
+  100% { box-shadow: 0 0 6px #6C3FFF; }
+}
+
+@keyframes gmt-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.gmt-fade-in { animation: gmt-fade-in 0.3s ease forwards; }
+
+/* Quick Option Buttons */
+.gmt-quick-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.gmt-quick-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(108, 63, 255, 0.12);
+  border: 1px solid rgba(108, 63, 255, 0.3);
+  border-radius: 12px;
+  padding: 10px 12px;
+  color: white;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+.gmt-quick-btn:hover {
+  background: rgba(108, 63, 255, 0.25) !important;
+  border-color: rgba(0, 212, 255, 0.6) !important;
+  transform: translateX(4px);
+  box-shadow: 0 4px 16px rgba(108, 63, 255, 0.3);
+}
+
+.gmt-quick-btn:active {
+  transform: scale(0.98);
+}
+
+/* ─── Checklist Prosedur Styles (Section 2.4) ─── */
+.gmt-checklist-header {
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 8px;
+}
+
+.gmt-progress-track {
+  width: 100%;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.gmt-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6C3FFF, #00D4FF);
+  border-radius: 4px;
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.gmt-steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 180px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.gmt-step-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.gmt-step-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(108, 63, 255, 0.4);
+}
+
+.gmt-step-item.gmt-step-active {
+  background: rgba(108, 63, 255, 0.18);
+  border-color: rgba(0, 212, 255, 0.5);
+  box-shadow: 0 0 12px rgba(108, 63, 255, 0.25);
+}
+
+.gmt-step-item.gmt-step-done {
+  opacity: 0.75;
+}
+
+.gmt-step-label {
+  font-size: 11.5px;
+  color: white;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gmt-step-item.gmt-step-done .gmt-step-label {
+  text-decoration: line-through;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.gmt-step-badge {
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.gmt-badge-done {
+  background: rgba(0, 200, 83, 0.15);
+  color: #00E676;
+  border: 1px solid rgba(0, 200, 83, 0.3);
+}
+
+.gmt-badge-active {
+  background: rgba(0, 212, 255, 0.15);
+  color: #00D4FF;
+  border: 1px solid rgba(0, 212, 255, 0.4);
+}
+
+.gmt-badge-pending {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* ─── Control Center (User-Friendly Toggles & Mode Switcher) ─── */
+#gmt-controls-container {
+  background: rgba(18, 22, 34, 0.95);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* Mode Switcher */
+.gmt-mode-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.gmt-mode-switch {
+  display: flex;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 22px;
+  padding: 3px;
+  gap: 4px;
+}
+
+.gmt-mode-pill {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 18px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.gmt-mode-pill:hover {
+  color: white;
+}
+
+.gmt-mode-pill.active {
+  background: linear-gradient(135deg, #6C3FFF 0%, #00D4FF 100%);
+  color: white;
+  font-weight: 700;
+  box-shadow: 0 2px 12px rgba(108, 63, 255, 0.4);
+}
+
+#gmt-mode-desc {
+  font-size: 10px;
+  color: rgba(0, 212, 255, 0.85);
+  text-align: center;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+/* Feature Toggles Grid (2x2) */
+.gmt-toggle-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
+
+.gmt-toggle-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 7px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.gmt-toggle-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.gmt-toggle-card.active {
+  background: rgba(108, 63, 255, 0.15);
+  border-color: rgba(0, 212, 255, 0.45);
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.15);
+}
+
+.gmt-toggle-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.gmt-toggle-icon {
+  font-size: 13px;
+}
+
+.gmt-toggle-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Sleek Switch Pill */
+.gmt-switch {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2px 5px 2px 7px;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.gmt-switch-status {
+  font-size: 9px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 0.5px;
+}
+
+.gmt-switch-knob {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.gmt-switch.active {
+  background: rgba(0, 212, 255, 0.25);
+  box-shadow: 0 0 8px rgba(0, 212, 255, 0.3);
+}
+
+.gmt-switch.active .gmt-switch-status {
+  color: #00D4FF;
+}
+
+.gmt-switch.active .gmt-switch-knob {
+  background: #00D4FF;
+  box-shadow: 0 0 6px #00D4FF;
+  transform: scale(1.1);
+}
+
+/* Working Memory Strip */
+#gmt-memory-strip {
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 8px;
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  padding: 5px 8px;
+}
+
+.gmt-memory-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10.5px;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.gmt-memory-title:hover {
+  color: #00D4FF;
+}
+
+#gmt-memory-drawer {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.gmt-memory-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  max-height: 80px;
+  overflow-y: auto;
+}
+
+.gmt-memory-pill {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 2px 7px;
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.gmt-memory-pill span.key {
+  color: #00D4FF;
+  font-weight: 600;
+}
+
+.gmt-mini-btn {
+  align-self: flex-end;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.5);
+  border-radius: 6px;
+  font-size: 9.5px;
+  padding: 2px 7px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.gmt-mini-btn:hover {
+  color: #ff5050;
+  border-color: rgba(255, 80, 80, 0.4);
+}
+
+/* ─── Visual Bounding Box Fallback Reticle (Jayu Vision Grounding) ─── */
+.gmt-vision-reticle {
+  position: fixed;
+  border: 2px solid #00D4FF;
+  border-radius: 8px;
+  box-shadow: 0 0 0 4px rgba(0, 212, 255, 0.25), 0 0 20px rgba(0, 212, 255, 0.5);
+  pointer-events: none;
+  z-index: 2147483640;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: gmt-reticle-scan 2s ease-in-out infinite;
+}
+
+.gmt-vision-reticle::before {
+  content: "🎯 Gemini Vision";
+  position: absolute;
+  top: -20px;
+  left: 0;
+  background: linear-gradient(135deg, #6C3FFF, #00D4FF);
+  color: white;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.3px;
+}
+
+@keyframes gmt-reticle-scan {
+  0%, 100% { border-color: #00D4FF; box-shadow: 0 0 0 4px rgba(0, 212, 255, 0.2), 0 0 15px rgba(0, 212, 255, 0.4); }
+  50% { border-color: #6C3FFF; box-shadow: 0 0 0 6px rgba(108, 63, 255, 0.3), 0 0 25px rgba(108, 63, 255, 0.6); }
+}
+
+/* ─── Autopilot Cursor & Visual Ripple ─── */
+#gmt-robot-cursor {
+  position: fixed;
+  width: 32px;
+  height: 32px;
+  pointer-events: none;
+  z-index: 2147483647;
+  transition: top 0.6s cubic-bezier(0.25, 1, 0.5, 1), left 0.6s cubic-bezier(0.25, 1, 0.5, 1), transform 0.2s ease;
+  filter: drop-shadow(0 4px 12px rgba(108, 63, 255, 0.8));
+}
+
+#gmt-robot-cursor.clicking {
+  transform: scale(0.85);
+}
+
+.gmt-click-ripple {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(0, 212, 255, 0.8) 0%, rgba(108, 63, 255, 0) 70%);
+  transform: translate(-50%, -50%) scale(0);
+  animation: gmt-ripple-burst 0.7s ease-out forwards;
+  z-index: 2147483645;
+}
+
+@keyframes gmt-ripple-burst {
+  0% { transform: translate(-50%, -50%) scale(0.2); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(2.5); opacity: 0; }
+}
+
+/* ─── Safety Confirmation Modal ─── */
+#gmt-safety-modal {
+  position: absolute;
+  top: 60px;
+  left: 12px;
+  right: 12px;
+  background: rgba(30, 20, 15, 0.98);
+  border: 1.5px solid #FF9800;
+  box-shadow: 0 10px 30px rgba(255, 152, 0, 0.35);
+  border-radius: 12px;
+  padding: 14px;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: gmt-safety-slide 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes gmt-safety-slide {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.gmt-safety-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #FFA726;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.gmt-safety-desc {
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.4;
+}
+
+.gmt-safety-btns {
+  display: flex;
+  gap: 8px;
+}
+
+.gmt-safety-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.gmt-safety-btn.confirm {
+  background: linear-gradient(135deg, #FF9800, #F57C00);
+  color: white;
+}
+
+.gmt-safety-btn.cancel {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* ─── Hands-free Gesture Float Indicator ─── */
+#gmt-gesture-indicator {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  background: rgba(13, 17, 23, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 212, 255, 0.4);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  border-radius: 20px;
+  padding: 6px 12px;
+  color: #00D4FF;
+  font-size: 11px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 2147483640;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
