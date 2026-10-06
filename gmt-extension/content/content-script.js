@@ -338,6 +338,7 @@
           <div class="gmt-gesture-header-title">
             <span class="gmt-gesture-live-dot"></span>
             <span style="font-weight:700;font-size:12px;color:#fff;">Kamera Gestur</span>
+            <span id="gmt-gesture-ai-badge" style="font-size:9px;background:rgba(0,229,255,0.18);color:#00E5FF;padding:1px 5px;border-radius:4px;border:1px solid rgba(0,229,255,0.4);font-weight:700;">⚡ MediaPipe AI</span>
             <span id="gmt-gesture-night-badge" class="gmt-hidden" style="font-size:9px;background:rgba(255,152,0,0.25);color:#FFA726;padding:1px 5px;border-radius:4px;border:1px solid rgba(255,152,0,0.4);">🌙 Malam</span>
           </div>
           <div class="gmt-gesture-header-actions">
@@ -349,7 +350,7 @@
         <div class="gmt-gesture-canvas-wrap">
           <canvas id="gmt-gesture-preview" width="240" height="180" title="Kamera Gestur"></canvas>
           <div id="gmt-gesture-feed-hud" class="gmt-gesture-feed-hud">
-            <span id="gmt-gesture-hud-badge">🖐️ 5 Jari</span>
+            <span id="gmt-gesture-hud-badge">🖐️ Buka Tangan (Scroll)</span>
           </div>
         </div>
 
@@ -358,7 +359,7 @@
             <span id="gmt-gesture-icon" style="font-size:15px;">🖐️</span>
             <span id="gmt-gesture-text" style="font-weight:700;font-size:11.5px;color:#fff;">Gestur Aktif</span>
           </div>
-          <span id="gmt-gesture-subtext" style="font-size:9.5px;color:rgba(255,255,255,0.7);line-height:1.3;">🖐️ Scroll • ☝️ Kursor • ✊ Stop</span>
+          <span id="gmt-gesture-subtext" style="font-size:9.5px;color:rgba(255,255,255,0.7);line-height:1.3;">🖐️ Naik/Turun = Scroll • ✊ Kepal = Stop</span>
         </div>
       </div>
 
@@ -1614,6 +1615,21 @@
   let lastRightClickTime = 0;
   let steadyCount = 0;
 
+  // ─── Google MediaPipe Hands Neural Engine State ───
+  let mpHandsInstance = null;
+  let isMediaPipeActive = false;
+  let mediaPipeInitFailed = false;
+  let prevMpCentroidY = null;
+  let isSendingMpFrame = false;
+
+  const MP_CONNECTIONS = [
+    [0, 1], [1, 2], [2, 3], [3, 4],        // Thumb
+    [0, 5], [5, 6], [6, 7], [7, 8],        // Index
+    [5, 9], [9, 10], [10, 11], [11, 12],   // Middle
+    [9, 13], [13, 14], [14, 15], [15, 16], // Ring
+    [13, 17], [0, 17], [17, 18], [18, 19], [19, 20] // Pinky & Palm base
+  ];
+
   async function toggleGestureControl(forceState = null) {
     if (typeof forceState === 'boolean') {
       state.gestureActive = forceState;
@@ -1639,7 +1655,7 @@
         }
         startGestureTracking();
         if (forceState === null) {
-          addMessage('ai', '🖐️ **Kamera Gestur Aktif di Kiri Atas!**\n\n• 🖐️ **5 Jari:** Gerakkan tangan ke atas / bawah untuk scroll halaman\n• ✊ **Menggenggam:** Hentikan (stop) scroll seketika\n• ☝️ **1 Jari:** Gerakkan kursor mouse (tap / tahan untuk klik kiri)\n• ✌️ **2 Jari:** Klik kanan');
+          addMessage('ai', '🖐️ **Kontrol Gestur Scroll Aktif!**\n\n• 🖐️ **Buka Tangan:** Gerakkan tangan ke atas / bawah untuk scroll halaman\n• ✊ **Kepalkan Tangan (Genggam):** Hentikan scroll seketika');
         }
       } catch (err) {
         console.warn('[GMT] Gesture getUserMedia permission notice:', err);
@@ -1671,13 +1687,202 @@
     saveSession();
   }
 
-  function startGestureTracking() {
+  function handleMediaPipeResults(results, video) {
+    const previewCanvas = document.getElementById('gmt-gesture-preview');
+    if (!previewCanvas) return;
+    const previewCtx = previewCanvas.getContext('2d');
+    const CW = previewCanvas.width;
+    const CH = previewCanvas.height;
+    const hudBadge = document.getElementById('gmt-gesture-hud-badge');
+
+    // 1. Render mirrored live camera feed
+    previewCtx.save();
+    previewCtx.translate(CW, 0);
+    previewCtx.scale(-1, 1);
+    previewCtx.drawImage(video, 0, 0, CW, CH);
+    previewCtx.restore();
+
+    // 2. Check detected hands
+    if (!results.multiHandLandmarks || results.multiHandLandmarks.length === 0) {
+      prevMpCentroidY = null;
+      updateGestureStatus('🖐️', 'Arahkan tangan ke kamera...');
+      if (hudBadge) {
+        hudBadge.textContent = '🔍 Arahkan Tangan...';
+        hudBadge.style.color = '#FFA726';
+        hudBadge.style.borderColor = 'rgba(255, 167, 38, 0.4)';
+      }
+      return;
+    }
+
+    const lm = results.multiHandLandmarks[0];
+
+    // 3. Render 21-point MediaPipe futuristic cyber skeleton
+    // Bones connections
+    previewCtx.strokeStyle = 'rgba(0, 229, 255, 0.75)';
+    previewCtx.lineWidth = 2.2;
+    for (let i = 0; i < MP_CONNECTIONS.length; i++) {
+      const [i1, i2] = MP_CONNECTIONS[i];
+      const p1 = lm[i1];
+      const p2 = lm[i2];
+      previewCtx.beginPath();
+      previewCtx.moveTo((1 - p1.x) * CW, p1.y * CH);
+      previewCtx.lineTo((1 - p2.x) * CW, p2.y * CH);
+      previewCtx.stroke();
+    }
+
+    // Joints
+    for (let i = 0; i < lm.length; i++) {
+      const px = (1 - lm[i].x) * CW;
+      const py = lm[i].y * CH;
+      const isTip = (i === 4 || i === 8 || i === 12 || i === 16 || i === 20);
+
+      previewCtx.beginPath();
+      previewCtx.arc(px, py, isTip ? 5 : 3, 0, Math.PI * 2);
+      previewCtx.fillStyle = isTip ? '#00FF66' : '#00E5FF';
+      previewCtx.fill();
+      previewCtx.strokeStyle = '#052A12';
+      previewCtx.lineWidth = 1;
+      previewCtx.stroke();
+    }
+
+    // 4. Analyze hand pose (Finger extension & curl)
+    const isIndexExtended = lm[8].y < lm[6].y;
+    const isMiddleExtended = lm[12].y < lm[10].y;
+    const isRingExtended = lm[16].y < lm[14].y;
+    const isPinkyExtended = lm[20].y < lm[18].y;
+
+    // Thumb extension check
+    const thumbDist = Math.hypot(lm[4].x - lm[17].x, lm[4].y - lm[17].y);
+    const thumbMcpDist = Math.hypot(lm[2].x - lm[17].x, lm[2].y - lm[17].y);
+    const isThumbExtended = thumbDist > thumbMcpDist * 1.15;
+
+    let openFingers = 0;
+    if (isIndexExtended) openFingers++;
+    if (isMiddleExtended) openFingers++;
+    if (isRingExtended) openFingers++;
+    if (isPinkyExtended) openFingers++;
+    if (isThumbExtended) openFingers++;
+
+    // 5. Fist detection (All 4 main fingers curled) -> Immediate Stop Scroll
+    const isFist = (!isIndexExtended && !isMiddleExtended && !isRingExtended && !isPinkyExtended);
+
+    if (isFist) {
+      window.scrollTo({ top: window.scrollY, behavior: 'auto' });
+      prevMpCentroidY = null;
+      updateGestureStatus('✊', 'Genggam: Scroll Berhenti ⏹️');
+      if (hudBadge) {
+        hudBadge.textContent = '✊ Genggam (Stop Scroll)';
+        hudBadge.style.color = '#FF453A';
+        hudBadge.style.borderColor = 'rgba(255, 69, 58, 0.5)';
+      }
+      logGestureChat('stop_scroll', '✊ <b>Menggenggam:</b> Menghentikan (stop) scroll halaman ⏹️', 2000);
+      return;
+    }
+
+    // 6. Open hand detection -> Direction-based smooth scroll
+    if (openFingers >= 3) {
+      const palmY = (lm[0].y + lm[9].y) / 2;
+
+      if (prevMpCentroidY !== null) {
+        const deltaY = palmY - prevMpCentroidY;
+
+        if (deltaY < -0.012 || palmY < 0.35) {
+          window.scrollBy({ top: -160, behavior: 'smooth' });
+          updateGestureStatus('🖐️', 'Buka Tangan: Scroll Ke Atas ⬆️');
+          if (hudBadge) {
+            hudBadge.textContent = '⬆️ Scroll Ke Atas';
+            hudBadge.style.color = '#00FF66';
+            hudBadge.style.borderColor = 'rgba(0, 255, 102, 0.5)';
+          }
+          logGestureChat('scroll_up', '🖐️ <b>Buka Tangan:</b> Scroll halaman ke atas ⬆️', 2000);
+        } else if (deltaY > 0.012 || palmY > 0.65) {
+          window.scrollBy({ top: 160, behavior: 'smooth' });
+          updateGestureStatus('🖐️', 'Buka Tangan: Scroll Ke Bawah ⬇️');
+          if (hudBadge) {
+            hudBadge.textContent = '⬇️ Scroll Ke Bawah';
+            hudBadge.style.color = '#00FF66';
+            hudBadge.style.borderColor = 'rgba(0, 255, 102, 0.5)';
+          }
+          logGestureChat('scroll_down', '🖐️ <b>Buka Tangan:</b> Scroll halaman ke bawah ⬇️', 2000);
+        } else {
+          updateGestureStatus('🖐️', 'Buka Tangan: Siap Scroll (Gerak Naik/Turun)');
+          if (hudBadge) {
+            hudBadge.textContent = '🖐️ Buka Tangan (Siap Scroll)';
+            hudBadge.style.color = '#00E5FF';
+            hudBadge.style.borderColor = 'rgba(0, 229, 255, 0.5)';
+          }
+        }
+      }
+      prevMpCentroidY = palmY;
+      return;
+    }
+
+    updateGestureStatus('🖐️', 'Buka Tangan untuk Scroll / Genggam untuk Stop');
+  }
+
+  async function startGestureTracking() {
     const video = document.createElement('video');
     video.srcObject = gestureStream;
     video.setAttribute('playsinline', 'true');
     video.muted = true;
     video.play().catch(() => {});
 
+    // 1. Try Google MediaPipe Hands Neural Engine
+    if (typeof window.Hands !== 'undefined' && !mediaPipeInitFailed) {
+      try {
+        if (!mpHandsInstance) {
+          mpHandsInstance = new window.Hands({
+            locateFile: (file) => chrome.runtime.getURL(`lib/mediapipe/${file}`)
+          });
+          mpHandsInstance.setOptions({
+            maxNumHands: 1,
+            modelComplexity: 0,
+            minDetectionConfidence: 0.5,
+            minTrackingConfidence: 0.5
+          });
+          mpHandsInstance.onResults((results) => handleMediaPipeResults(results, video));
+          await mpHandsInstance.initialize();
+        }
+
+        isMediaPipeActive = true;
+        const aiBadge = document.getElementById('gmt-gesture-ai-badge');
+        if (aiBadge) {
+          aiBadge.textContent = '⚡ MediaPipe AI';
+          aiBadge.style.display = 'inline-block';
+        }
+
+        if (gestureInterval) clearInterval(gestureInterval);
+        gestureInterval = setInterval(async () => {
+          if (!gestureStream || !video.videoWidth || !mpHandsInstance) return;
+          if (isSendingMpFrame) return;
+          isSendingMpFrame = true;
+          try {
+            await mpHandsInstance.send({ image: video });
+          } catch (err) {
+            console.warn('[GMT] MediaPipe frame send notice:', err);
+          } finally {
+            isSendingMpFrame = false;
+          }
+        }, 40);
+        return;
+      } catch (err) {
+        console.warn('[GMT] MediaPipe initialization notice, switching to fallback engine:', err);
+        mediaPipeInitFailed = true;
+        isMediaPipeActive = false;
+        const aiBadge = document.getElementById('gmt-gesture-ai-badge');
+        if (aiBadge) {
+          aiBadge.textContent = '📐 Canvas Engine';
+          aiBadge.style.color = '#FFA726';
+          aiBadge.style.borderColor = 'rgba(255, 167, 38, 0.4)';
+        }
+      }
+    }
+
+    // 2. Fallback to Canvas Engine
+    startCanvasFallbackTracking(video);
+  }
+
+  function startCanvasFallbackTracking(video) {
     const VW = 160;
     const VH = 120;
     const canvas = document.createElement('canvas');
@@ -1696,6 +1901,60 @@
     let prevRawData = null;
     const gestureBuffer = [];
 
+    function testIfFaceCluster(cl, frameData, mask, width, height) {
+      const w = cl.maxX - cl.minX;
+      const h = cl.maxY - cl.minY;
+      if (w < 20 || h < 24) return false;
+
+      const midX = Math.round((cl.minX + cl.maxX) / 2);
+      const midY = Math.round((cl.minY + cl.maxY) / 2);
+
+      // 1. Check for dark hair above the top edge (forehead boundary)
+      let darkHairCount = 0;
+      let hairSamples = 0;
+      for (let dy = 2; dy <= 14; dy += 2) {
+        const hy = cl.minY - dy;
+        if (hy < 0) break;
+        for (let dx = -14; dx <= 14; dx += 4) {
+          const hx = midX + dx;
+          if (hx < 0 || hx >= width) continue;
+          const idx = (hy * width + hx) * 4;
+          const luma = 0.299 * frameData[idx] + 0.587 * frameData[idx + 1] + 0.114 * frameData[idx + 2];
+          hairSamples++;
+          if (luma < 75 && mask[hy * width + hx] === 0) {
+            darkHairCount++;
+          }
+        }
+      }
+      const hasDarkHairAbove = hairSamples > 0 && (darkHairCount / hairSamples) > 0.35;
+
+      // 2. Eye region contrast check
+      const eyeY = Math.round(cl.minY + h * 0.38);
+      const noseX = midX;
+      const leftEyeX = Math.round(midX - w * 0.26);
+      const rightEyeX = Math.round(midX + w * 0.26);
+
+      const getLuma = (px, py) => {
+        if (px < 0 || px >= width || py < 0 || py >= height) return 128;
+        const idx = (py * width + px) * 4;
+        return 0.299 * frameData[idx] + 0.587 * frameData[idx + 1] + 0.114 * frameData[idx + 2];
+      };
+
+      const noseLuma = getLuma(noseX, eyeY);
+      const leftEyeLuma = getLuma(leftEyeX, eyeY);
+      const rightEyeLuma = getLuma(rightEyeX, eyeY);
+
+      const hasEyeContrast = (noseLuma - leftEyeLuma > 12) || (noseLuma - rightEyeLuma > 12) ||
+                             (mask[eyeY * width + leftEyeX] === 0 && mask[eyeY * width + rightEyeX] === 0);
+
+      // 3. Central position check
+      const isCentered = (midX > width * 0.2 && midX < width * 0.8 && midY < height * 0.72);
+
+      if (hasDarkHairAbove && (hasEyeContrast || isCentered)) return true;
+      if (hasEyeContrast && isCentered && w > 26 && h > 30) return true;
+      return false;
+    }
+
     gestureInterval = setInterval(() => {
       if (!gestureStream || !video.videoWidth) return;
 
@@ -1713,14 +1972,14 @@
         sampleCount++;
       }
       const avgBrightness = sampleLuma / (sampleCount || 1);
-      const isNightMode = avgBrightness < 80;
+      const isNightMode = avgBrightness < 45;
 
-      // 3. Auto-Gain Night Boost
+      // 3. Auto-Gain Night Boost (Only in truly dark environments)
       let data = rawData;
       if (isNightMode) {
         if (nightBadge) nightBadge.classList.remove('gmt-hidden');
-        const gain = Math.min(2.6, Math.max(1.4, 95 / (avgBrightness || 1)));
-        ctx.filter = `brightness(${gain.toFixed(1)}) contrast(1.35) saturate(1.2)`;
+        const gain = Math.min(2.0, Math.max(1.2, 75 / (avgBrightness || 1)));
+        ctx.filter = `brightness(${gain.toFixed(1)}) contrast(1.25)`;
         ctx.drawImage(video, 0, 0, VW, VH);
         ctx.filter = 'none';
         data = ctx.getImageData(0, 0, VW, VH).data;
@@ -1728,20 +1987,11 @@
         if (nightBadge) nightBadge.classList.add('gmt-hidden');
       }
 
-      // 4. Multi-Condition Skin & Motion Segmentation
+      // 4. Strict Human Skin Chromaticity Segmentation
+      // Human skin has strong hemoglobin red dominance (R > G > B), which eliminates aluminum frames and white/beige walls
       const skinMask = new Uint8Array(VW * VH);
       let totalSkin = 0;
-      let lowerSkinCount = 0;
-      let sumLowerX = 0, sumLowerY = 0;
       let minX = VW, maxX = 0, minY = VH, maxY = 0;
-
-      const minR = isNightMode ? 24 : 48;
-      const minG = isNightMode ? 14 : 28;
-      const minB = isNightMode ? 10 : 18;
-      const crMin = isNightMode ? 122 : 132;
-      const crMax = isNightMode ? 186 : 178;
-      const cbMin = isNightMode ? 70 : 77;
-      const cbMax = isNightMode ? 138 : 132;
 
       for (let y = 0; y < VH; y += 2) {
         for (let x = 0; x < VW; x += 2) {
@@ -1750,26 +2000,17 @@
           const g = data[idx + 1];
           const b = data[idx + 2];
 
-          if (r < minR || g < minG || b < minB) continue;
+          // Strict skin RGB bounds
+          if (r < 55 || g < 28 || b < 18) continue;
+          if ((r - g) < 11 || (r - b) < 18) continue;
 
           // YCrCb color space
           const Y  =  0.299 * r + 0.587 * g + 0.114 * b;
           const Cr = (r - Y) * 0.713 + 128;
           const Cb = (b - Y) * 0.564 + 128;
 
-          let isMatch = (Cr >= crMin && Cr <= crMax && Cb >= cbMin && Cb <= cbMax);
-
-          if (isMatch && !isNightMode) {
-            isMatch = (r > g && (r - b) >= 8);
-          }
-
-          // Motion fallback in dark environments
-          if (!isMatch && isNightMode && prevRawData) {
-            const motionDiff = Math.abs(rawData[idx] - prevRawData[idx]) + Math.abs(rawData[idx + 1] - prevRawData[idx + 1]);
-            if (motionDiff > 22 && r > minR && r >= b) {
-              isMatch = true;
-            }
-          }
+          // Strict human skin chromaticity: Cr must be well above Cb
+          const isMatch = (Cr >= 133 && Cr <= 175 && Cb >= 78 && Cb <= 126 && (Cr - Cb) >= 8);
 
           if (isMatch) {
             skinMask[y * VW + x] = 1;
@@ -1777,13 +2018,6 @@
             skinMask[y * VW + (x + 1)] = 1;
             skinMask[(y + 1) * VW + (x + 1)] = 1;
             totalSkin += 4;
-
-            // Hand region check (focus on user's raised hand, filtering top face area if hand is present)
-            if (y >= Math.round(VH * 0.22)) {
-              lowerSkinCount += 4;
-              sumLowerX += x * 4;
-              sumLowerY += y * 4;
-            }
             if (x < minX) minX = x;
             if (x > maxX) maxX = x;
             if (y < minY) minY = y;
@@ -1813,10 +2047,9 @@
         }
       }
 
-      // Check if hand is sufficiently in frame
-      const minPixels = isNightMode ? 140 : 220;
-      const activeSkin = lowerSkinCount >= minPixels ? lowerSkinCount : totalSkin;
-      if (activeSkin < minPixels) {
+      // Check if any skin pixels exist in frame
+      const minPixels = isNightMode ? 120 : 180;
+      if (totalSkin < minPixels) {
         cursorEl?.classList.add('gmt-hidden');
         prevCentroidY = null;
         prevTipY = null;
@@ -1829,16 +2062,133 @@
         return;
       }
 
-      // 6. Find True Palm Center via Maximum Inscribed Circle (Distance Transform)
-      // Determines exact center of the palm and true palm radius
-      const searchMinY = lowerSkinCount >= minPixels ? Math.max(minY, Math.round(VH * 0.22)) : minY;
+      // 6. Cluster Skin Pixels to Differentiate Face from Hand
+      const GW = 16, GH = 12;
+      const cellGrid = new Uint8Array(GW * GH);
+      for (let y = 0; y < VH; y++) {
+        const gy = Math.floor(y / 10);
+        for (let x = 0; x < VW; x++) {
+          if (skinMask[y * VW + x] === 1) {
+            cellGrid[gy * GW + Math.floor(x / 10)]++;
+          }
+        }
+      }
+
+      const visited = new Uint8Array(GW * GH);
+      const clusters = [];
+      for (let gy = 0; gy < GH; gy++) {
+        for (let gx = 0; gx < GW; gx++) {
+          const gidx = gy * GW + gx;
+          if (cellGrid[gidx] < 15 || visited[gidx]) continue;
+
+          const queue = [[gx, gy]];
+          visited[gidx] = 1;
+          let blobMinX = gx * 10, blobMaxX = (gx + 1) * 10;
+          let blobMinY = gy * 10, blobMaxY = (gy + 1) * 10;
+          let blobSkinCount = 0;
+
+          while (queue.length > 0) {
+            const [cx_c, cy_c] = queue.shift();
+            blobSkinCount += cellGrid[cy_c * GW + cx_c];
+            blobMinX = Math.min(blobMinX, cx_c * 10);
+            blobMaxX = Math.max(blobMaxX, (cx_c + 1) * 10);
+            blobMinY = Math.min(blobMinY, cy_c * 10);
+            blobMaxY = Math.max(blobMaxY, (cy_c + 1) * 10);
+
+            const neighbors = [
+              [cx_c + 1, cy_c], [cx_c - 1, cy_c],
+              [cx_c, cy_c + 1], [cx_c, cy_c - 1]
+            ];
+            for (const [nx, ny] of neighbors) {
+              if (nx >= 0 && nx < GW && ny >= 0 && ny < GH) {
+                const nidx = ny * GW + nx;
+                if (!visited[nidx] && cellGrid[nidx] >= 15) {
+                  visited[nidx] = 1;
+                  queue.push([nx, ny]);
+                }
+              }
+            }
+          }
+
+          if (blobSkinCount >= 100) {
+            clusters.push({
+              minX: blobMinX,
+              maxX: Math.min(VW - 1, blobMaxX),
+              minY: blobMinY,
+              maxY: Math.min(VH - 1, blobMaxY),
+              skinCount: blobSkinCount
+            });
+          }
+        }
+      }
+
+      // Classify clusters into Face vs Hand
+      const handClusters = [];
+      let detectedFace = null;
+      for (const cl of clusters) {
+        if (testIfFaceCluster(cl, data, skinMask, VW, VH)) {
+          detectedFace = cl;
+        } else {
+          // A hand must extend into the active lower/middle workspace (cannot float near ceiling)
+          if (cl.maxY >= Math.round(VH * 0.40) && cl.skinCount >= 140) {
+            handClusters.push(cl);
+          }
+        }
+      }
+
+      let activeHand = null;
+      if (handClusters.length > 0) {
+        // Pick the most prominent hand cluster
+        handClusters.sort((a, b) => b.skinCount - a.skinCount);
+        activeHand = handClusters[0];
+      }
+
+      // If NO hand cluster is found (only face is in view, or face alone):
+      if (!activeHand) {
+        cursorEl?.classList.add('gmt-hidden');
+        prevCentroidY = null;
+        prevTipY = null;
+
+        if (detectedFace) {
+          updateGestureStatus('👤', 'Wajah Terdeteksi — Angkat Tangan untuk Gestur');
+          if (hudBadge) {
+            hudBadge.textContent = '👤 Wajah Terdeteksi (Angkat Tangan)';
+            hudBadge.style.color = '#FFA726';
+            hudBadge.style.borderColor = 'rgba(255, 167, 38, 0.5)';
+          }
+
+          // Draw subtle dashed face frame
+          if (previewCtx) {
+            const fLeft = CW - (detectedFace.maxX * sx);
+            const fTop = detectedFace.minY * sy;
+            const fWidth = (detectedFace.maxX - detectedFace.minX) * sx;
+            const fHeight = (detectedFace.maxY - detectedFace.minY) * sy;
+
+            previewCtx.strokeStyle = 'rgba(255, 167, 38, 0.45)';
+            previewCtx.lineWidth = 1.5;
+            previewCtx.setLineDash([4, 3]);
+            previewCtx.strokeRect(fLeft, fTop, fWidth, fHeight);
+            previewCtx.setLineDash([]);
+          }
+        } else {
+          updateGestureStatus('🖐️', isNightMode ? 'Malam: Dekatkan tangan ke kamera...' : 'Arahkan tangan ke kamera...');
+          if (hudBadge) {
+            hudBadge.textContent = '🔍 Arahkan Tangan...';
+            hudBadge.style.color = '#FFA726';
+            hudBadge.style.borderColor = 'rgba(255, 167, 38, 0.4)';
+          }
+        }
+        return;
+      }
+
+      // 7. Find True Palm Center inside activeHand cluster (Distance Transform)
       let bestDist = 0;
-      let cx = Math.round((lowerSkinCount >= minPixels ? sumLowerX : (minX + maxX) * 2) / activeSkin);
-      let cy = Math.round((lowerSkinCount >= minPixels ? sumLowerY : (searchMinY + maxY) * 2) / activeSkin);
+      let cx = Math.round((activeHand.minX + activeHand.maxX) / 2);
+      let cy = Math.round((activeHand.minY + activeHand.maxY) / 2);
 
       const stepGrid = 3;
-      for (let y = searchMinY + 4; y <= maxY - 4; y += stepGrid) {
-        for (let x = minX + 4; x <= maxX - 4; x += stepGrid) {
+      for (let y = activeHand.minY + 4; y <= activeHand.maxY - 4; y += stepGrid) {
+        for (let x = activeHand.minX + 4; x <= activeHand.maxX - 4; x += stepGrid) {
           if (skinMask[y * VW + x] !== 1) continue;
 
           let d = 2;
@@ -1869,7 +2219,7 @@
       }
       const palmRadius = Math.max(10, Math.min(26, bestDist));
 
-      // 7. High-Resolution Multi-Ray Scanning (64 Rays across 210° Arc)
+      // 8. High-Resolution Multi-Ray Scanning (64 Rays across 210° Arc)
       const numRays = 64;
       const rayDists = new Float32Array(numRays);
       const rayTipsX = new Float32Array(numRays);
@@ -1901,7 +2251,7 @@
             exitGap = 0;
           } else {
             exitGap++;
-            if (exitGap > 3) break; // Exited finger boundary into space
+            if (exitGap > 2) break; // Exited finger boundary into space
           }
         }
         rayDists[i] = maxD;
@@ -1926,7 +2276,7 @@
         if (smoothed[i] > maxDistFound) maxDistFound = smoothed[i];
       }
 
-      // Detect finger peaks (local maxima)
+      // Detect finger peaks (local maxima) with skin fingertip verification
       const peaks = [];
       const peakThresh = palmRadius * 1.20;
       for (let i = 1; i < numRays - 1; i++) {
@@ -1937,57 +2287,39 @@
           const prominence = d - Math.max(leftVal, rightVal);
 
           if (prominence >= 1.2 || (d > palmRadius * 1.32)) {
-            if (peaks.length === 0 || (i - peaks[peaks.length - 1].idx) >= 4) {
-              peaks.push({ idx: i, dist: d, x: rayTipsX[i], y: rayTipsY[i] });
-            } else if (d > peaks[peaks.length - 1].dist) {
-              peaks[peaks.length - 1] = { idx: i, dist: d, x: rayTipsX[i], y: rayTipsY[i] };
+            // Verify fingertip is real skin, not hair or dark background
+            const tipIdx = (rayTipsY[i] * VW + rayTipsX[i]) * 4;
+            const tipLuma = 0.299 * data[tipIdx] + 0.587 * data[tipIdx + 1] + 0.114 * data[tipIdx + 2];
+            const isSkinTip = (skinMask[rayTipsY[i] * VW + rayTipsX[i]] === 1) && (tipLuma > 35);
+
+            if (isSkinTip) {
+              if (peaks.length === 0 || (i - peaks[peaks.length - 1].idx) >= 4) {
+                peaks.push({ idx: i, dist: d, x: rayTipsX[i], y: rayTipsY[i] });
+              } else if (d > peaks[peaks.length - 1].dist) {
+                peaks[peaks.length - 1] = { idx: i, dist: d, x: rayTipsX[i], y: rayTipsY[i] };
+              }
             }
           }
         }
       }
 
-      // 8. Robust Gesture Classification (Resolves 5 Jari vs 1 Jari vs Genggam vs 2 Jari)
-      let rawGesture = 'none';
-      const numPeaks = peaks.length;
-
-      if (numPeaks === 0 || maxDistFound < palmRadius * 1.18 || protrusionRayCount <= 2) {
-        // Genggam: No extended protrusions beyond palm circle
+      // 8. Hands-Free Gesture Classification (100% Reliable: Buka Tangan = Scroll, Genggam = Stop)
+      let rawGesture = 'buka';
+      if (maxDistFound < palmRadius * 1.18 || protrusionRayCount <= 2 || peaks.length === 0) {
         rawGesture = 'genggam';
-      } else if (numPeaks >= 3 || protrusionRayCount >= 18) {
-        // 5 Jari: Multiple distinct fingertips OR wide open palm (>50° angular spread)
-        rawGesture = '5jari';
-      } else if (numPeaks === 2) {
-        // 2 Jari: Two distinct extended fingers (V shape)
-        if (protrusionRayCount >= 20) {
-          rawGesture = '5jari';
-        } else {
-          rawGesture = '2jari';
-        }
-      } else if (numPeaks === 1) {
-        // 1 Jari vs Flat Open Palm:
-        // If protrusion spans broadly (>= 16 rays), it is 5 Jari (flat open hand)!
-        // Only if protrusion is narrow (< 16 rays) is it truly a 1 Jari pointing gesture!
-        if (protrusionRayCount >= 16) {
-          rawGesture = '5jari';
-        } else {
-          rawGesture = '1jari';
-        }
+      } else {
+        rawGesture = 'buka';
       }
 
-      // Temporal smoothing (Majority vote across 4 frames for zero flickering)
+      // Temporal smoothing (Majority vote across 4 frames)
       gestureBuffer.push(rawGesture);
       if (gestureBuffer.length > 4) gestureBuffer.shift();
 
-      const voteCounts = {};
-      let maxVotes = 0;
-      let gesture = rawGesture;
+      let genggamVotes = 0;
       for (const g of gestureBuffer) {
-        voteCounts[g] = (voteCounts[g] || 0) + 1;
-        if (voteCounts[g] > maxVotes) {
-          maxVotes = voteCounts[g];
-          gesture = g;
-        }
+        if (g === 'genggam') genggamVotes++;
       }
+      const gesture = (genggamVotes >= 2) ? 'genggam' : 'buka';
 
       // 9. Render HUD Visual Overlays on Large Preview Canvas
       if (previewCtx) {
@@ -2031,161 +2363,56 @@
         });
       }
 
-      // Update HUD Status Badge
-      if (hudBadge) {
-        if (gesture === '5jari') {
-          hudBadge.textContent = '🖐️ 5 Jari (Scroll)';
-          hudBadge.style.color = '#00FF66';
-          hudBadge.style.borderColor = 'rgba(0, 255, 102, 0.5)';
-        } else if (gesture === '1jari') {
-          hudBadge.textContent = '☝️ 1 Jari (Kursor)';
-          hudBadge.style.color = '#00D4FF';
-          hudBadge.style.borderColor = 'rgba(0, 212, 255, 0.5)';
-        } else if (gesture === '2jari') {
-          hudBadge.textContent = '✌️ 2 Jari (Klik Kanan)';
-          hudBadge.style.color = '#FFA726';
-          hudBadge.style.borderColor = 'rgba(255, 167, 38, 0.5)';
-        } else if (gesture === 'genggam') {
-          hudBadge.textContent = '✊ Genggam (Stop)';
-          hudBadge.style.color = '#FF453A';
-          hudBadge.style.borderColor = 'rgba(255, 69, 58, 0.5)';
-        }
-      }
+      // Ensure virtual mouse cursor stays hidden to prevent false clicks
+      cursorEl?.classList.add('gmt-hidden');
 
       // ─── 1. MENGGENGGAM (Stop Scroll) ───
       if (gesture === 'genggam') {
         window.scrollTo({ top: window.scrollY, behavior: 'auto' });
         prevCentroidY = null;
-        prevTipY = null;
-        cursorEl?.classList.add('gmt-hidden');
         updateGestureStatus('✊', 'Genggam: Scroll Berhenti ⏹️');
+        if (hudBadge) {
+          hudBadge.textContent = '✊ Genggam (Stop Scroll)';
+          hudBadge.style.color = '#FF453A';
+          hudBadge.style.borderColor = 'rgba(255, 69, 58, 0.5)';
+        }
         logGestureChat('stop_scroll', '✊ <b>Menggenggam:</b> Menghentikan (stop) scroll halaman ⏹️', 2000);
         return;
       }
 
-      // ─── 2. 5 JARI (Scroll Ke Bawah / Ke Atas) ───
-      if (gesture === '5jari') {
-        cursorEl?.classList.add('gmt-hidden');
-        prevTipY = null;
+      // ─── 2. BUKA TANGAN (Scroll Ke Atas / Ke Bawah) ───
+      if (gesture === 'buka') {
         if (prevCentroidY !== null) {
           const deltaY = cy - prevCentroidY;
-          if (deltaY < -1.6) {
-            window.scrollBy({ top: -140, behavior: 'smooth' });
-            updateGestureStatus('🖐️', '5 Jari: Scroll Ke Atas ⬆️');
-            logGestureChat('scroll_up', '🖐️ <b>5 Jari:</b> Scroll halaman ke atas ⬆️', 2500);
-          } else if (deltaY > 1.6) {
-            window.scrollBy({ top: 140, behavior: 'smooth' });
-            updateGestureStatus('🖐️', '5 Jari: Scroll Ke Bawah ⬇️');
-            logGestureChat('scroll_down', '🖐️ <b>5 Jari:</b> Scroll halaman ke bawah ⬇️', 2500);
+          if (deltaY < -1.4) {
+            window.scrollBy({ top: -160, behavior: 'smooth' });
+            updateGestureStatus('🖐️', 'Buka Tangan: Scroll Ke Atas ⬆️');
+            if (hudBadge) {
+              hudBadge.textContent = '⬆️ Scroll Ke Atas';
+              hudBadge.style.color = '#00FF66';
+              hudBadge.style.borderColor = 'rgba(0, 255, 102, 0.5)';
+            }
+            logGestureChat('scroll_up', '🖐️ <b>Buka Tangan:</b> Scroll halaman ke atas ⬆️', 2000);
+          } else if (deltaY > 1.4) {
+            window.scrollBy({ top: 160, behavior: 'smooth' });
+            updateGestureStatus('🖐️', 'Buka Tangan: Scroll Ke Bawah ⬇️');
+            if (hudBadge) {
+              hudBadge.textContent = '⬇️ Scroll Ke Bawah';
+              hudBadge.style.color = '#00FF66';
+              hudBadge.style.borderColor = 'rgba(0, 255, 102, 0.5)';
+            }
+            logGestureChat('scroll_down', '🖐️ <b>Buka Tangan:</b> Scroll halaman ke bawah ⬇️', 2000);
           } else {
-            updateGestureStatus('🖐️', '5 Jari: Siap Scroll (Gerakkan Ke Atas/Bawah)');
+            updateGestureStatus('🖐️', 'Buka Tangan: Siap Scroll (Gerak Naik/Turun)');
+            if (hudBadge) {
+              hudBadge.textContent = '🖐️ Buka Tangan (Siap Scroll)';
+              hudBadge.style.color = '#00E5FF';
+              hudBadge.style.borderColor = 'rgba(0, 229, 255, 0.5)';
+            }
           }
         }
         prevCentroidY = cy;
         return;
-      }
-
-      // ─── 3. 1 JARI (Geser Kursor seperti Mouse & 1 Jari Klik) ───
-      if (gesture === '1jari') {
-        prevCentroidY = null;
-        const tip = peaks[0] || { x: cx, y: cy };
-
-        const normX = 1 - (tip.x / VW);
-        const normY = tip.y / VH;
-        const pad = 0.12;
-        const clampedX = Math.max(0, Math.min(1, (normX - pad) / (1 - 2 * pad)));
-        const clampedY = Math.max(0, Math.min(1, (normY - pad) / (1 - 2 * pad)));
-        const targetX = clampedX * window.innerWidth;
-        const targetY = clampedY * window.innerHeight;
-
-        if (virtualCursorX === null) {
-          virtualCursorX = targetX;
-          virtualCursorY = targetY;
-        } else {
-          virtualCursorX += (targetX - virtualCursorX) * 0.42;
-          virtualCursorY += (targetY - virtualCursorY) * 0.42;
-        }
-
-        if (cursorEl) {
-          cursorEl.style.left = `${virtualCursorX}px`;
-          cursorEl.style.top = `${virtualCursorY}px`;
-          cursorEl.classList.remove('gmt-hidden');
-          if (cursorBadge) cursorBadge.textContent = '1 Jari (Mouse)';
-          if (cursorRing) cursorRing.className = 'gmt-cursor-ring';
-        }
-
-        let isClick = false;
-        const now = Date.now();
-
-        if (prevTipY !== null) {
-          const tipDip = tip.y - prevTipY;
-          if (tipDip > 3.8 && (now - lastClickTime > 650)) {
-            isClick = true;
-          }
-        }
-        prevTipY = tip.y;
-
-        if (Math.hypot(targetX - virtualCursorX, targetY - virtualCursorY) < 12) {
-          steadyCount++;
-          if (steadyCount > 26 && (now - lastClickTime > 800)) {
-            isClick = true;
-            steadyCount = 0;
-          }
-        } else {
-          steadyCount = 0;
-        }
-
-        if (isClick && (now - lastClickTime > 650)) {
-          lastClickTime = now;
-          steadyCount = 0;
-          performLeftClick(virtualCursorX, virtualCursorY);
-        } else {
-          updateGestureStatus('☝️', '1 Jari: Geser Kursor 🖱️ (Klik: Tap Jari)');
-          logGestureChat('cursor_move', '☝️ <b>1 Jari:</b> Menggerakkan kursor mouse 🖱️', 3500);
-        }
-        return;
-      }
-
-      // ─── 4. 2 JARI KLIK (Klik Kanan) ───
-      if (gesture === '2jari') {
-        prevCentroidY = null;
-        prevTipY = null;
-
-        const p1 = peaks[0] || { x: cx, y: cy };
-        const p2 = peaks[1] || p1;
-        const avgX = (p1.x + p2.x) / 2;
-        const avgY = (p1.y + p2.y) / 2;
-        const normX = 1 - (avgX / VW);
-        const normY = avgY / VH;
-        const pad = 0.12;
-        const clampedX = Math.max(0, Math.min(1, (normX - pad) / (1 - 2 * pad)));
-        const clampedY = Math.max(0, Math.min(1, (normY - pad) / (1 - 2 * pad)));
-        const targetX = clampedX * window.innerWidth;
-        const targetY = clampedY * window.innerHeight;
-
-        if (virtualCursorX === null) {
-          virtualCursorX = targetX;
-          virtualCursorY = targetY;
-        } else {
-          virtualCursorX += (targetX - virtualCursorX) * 0.42;
-          virtualCursorY += (targetY - virtualCursorY) * 0.42;
-        }
-
-        if (cursorEl) {
-          cursorEl.style.left = `${virtualCursorX}px`;
-          cursorEl.style.top = `${virtualCursorY}px`;
-          cursorEl.classList.remove('gmt-hidden');
-          if (cursorBadge) cursorBadge.textContent = '2 Jari (Klik Kanan)';
-          if (cursorRing) cursorRing.className = 'gmt-cursor-ring right-click';
-        }
-
-        const now = Date.now();
-        if (now - lastRightClickTime > 800) {
-          lastRightClickTime = now;
-          performRightClick(virtualCursorX, virtualCursorY);
-        } else {
-          updateGestureStatus('✌️', '2 Jari: Klik Kanan 📑');
-        }
       }
     }, 40);
   }
@@ -2264,6 +2491,9 @@
     virtualCursorY = null;
     prevCentroidY = null;
     prevTipY = null;
+    prevMpCentroidY = null;
+    isSendingMpFrame = false;
+    isMediaPipeActive = false;
     steadyCount = 0;
     document.getElementById('gmt-gesture-cursor')?.classList.add('gmt-hidden');
   }
