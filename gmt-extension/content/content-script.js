@@ -332,18 +332,34 @@
         </div>
       </div>
 
-      <!-- Gesture Floating Indicator -->
+      <!-- Gesture Floating Indicator (Kiri Atas, Ukuran Besar) -->
       <div id="gmt-gesture-indicator" class="gmt-hidden">
-        <canvas id="gmt-gesture-preview" width="56" height="42" title="Kamera Gestur"></canvas>
-        <div style="display:flex;flex-direction:column;gap:1px;min-width:110px;">
-          <div style="display:flex;align-items:center;gap:5px;">
-            <span id="gmt-gesture-icon" style="font-size:13px;">🖐️</span>
-            <span id="gmt-gesture-text" style="font-weight:700;font-size:11px;">Gestur Aktif</span>
-            <span id="gmt-gesture-night-badge" class="gmt-hidden" style="font-size:9px;background:rgba(255,152,0,0.25);color:#FFA726;padding:1px 4px;border-radius:4px;border:1px solid rgba(255,152,0,0.4);">🌙 Malam</span>
+        <div class="gmt-gesture-header">
+          <div class="gmt-gesture-header-title">
+            <span class="gmt-gesture-live-dot"></span>
+            <span style="font-weight:700;font-size:12px;color:#fff;">Kamera Gestur</span>
+            <span id="gmt-gesture-night-badge" class="gmt-hidden" style="font-size:9px;background:rgba(255,152,0,0.25);color:#FFA726;padding:1px 5px;border-radius:4px;border:1px solid rgba(255,152,0,0.4);">🌙 Malam</span>
           </div>
-          <span id="gmt-gesture-subtext" style="font-size:9.5px;color:rgba(255,255,255,0.6);">5 Jari / 1 Jari / Genggam</span>
+          <div class="gmt-gesture-header-actions">
+            <button class="gmt-gesture-btn-icon" id="gmt-gesture-toggle-size" title="Perkecil / Perbesar Ukuran Kamera">🗖</button>
+            <button class="gmt-gesture-btn-icon" id="gmt-gesture-off" title="Matikan Gestur">✕</button>
+          </div>
         </div>
-        <button class="gmt-gesture-guide-btn" id="gmt-gesture-off" title="Matikan Gestur">✕</button>
+
+        <div class="gmt-gesture-canvas-wrap">
+          <canvas id="gmt-gesture-preview" width="240" height="180" title="Kamera Gestur"></canvas>
+          <div id="gmt-gesture-feed-hud" class="gmt-gesture-feed-hud">
+            <span id="gmt-gesture-hud-badge">🖐️ 5 Jari</span>
+          </div>
+        </div>
+
+        <div class="gmt-gesture-footer">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span id="gmt-gesture-icon" style="font-size:15px;">🖐️</span>
+            <span id="gmt-gesture-text" style="font-weight:700;font-size:11.5px;color:#fff;">Gestur Aktif</span>
+          </div>
+          <span id="gmt-gesture-subtext" style="font-size:9.5px;color:rgba(255,255,255,0.7);line-height:1.3;">🖐️ Scroll • ☝️ Kursor • ✊ Stop</span>
+        </div>
       </div>
 
       <!-- Virtual Gesture Mouse Cursor -->
@@ -719,6 +735,10 @@
     document.getElementById('gmt-gesture-off')?.addEventListener('click', (e) => {
       e.stopPropagation();
       toggleGestureControl();
+    });
+    document.getElementById('gmt-gesture-toggle-size')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.getElementById('gmt-gesture-indicator')?.classList.toggle('gmt-compact');
     });
 
     // Load saved settings & brain items into UI
@@ -1610,7 +1630,7 @@
     if (state.gestureActive) {
       try {
         gestureStream = await navigator.mediaDevices.getUserMedia({
-          video: { width: 160, height: 120, frameRate: 24 }
+          video: { width: 320, height: 240, frameRate: 24 }
         });
         indicator?.classList.remove('gmt-hidden');
         if (indicator) {
@@ -1619,11 +1639,10 @@
         }
         startGestureTracking();
         if (forceState === null) {
-          addMessage('ai', '🖐️ **Gestur Kamera Aktif!**\n\n• 🖐️ **5 Jari:** Gerakkan ke atas/bawah untuk scroll\n• ✊ **Menggenggam:** Menghentikan (stop) scroll\n• ☝️ **1 Jari:** Menggeser kursor seperti mouse\n• 👆 **1 Jari Klik:** Klik kiri (tap / tahan sejenak)\n• ✌️ **2 Jari Klik:** Klik kanan');
+          addMessage('ai', '🖐️ **Kamera Gestur Aktif di Kiri Atas!**\n\n• 🖐️ **5 Jari:** Gerakkan tangan ke atas / bawah untuk scroll halaman\n• ✊ **Menggenggam:** Hentikan (stop) scroll seketika\n• ☝️ **1 Jari:** Gerakkan kursor mouse (tap / tahan untuk klik kiri)\n• ✌️ **2 Jari:** Klik kanan');
         }
       } catch (err) {
         console.warn('[GMT] Gesture getUserMedia permission notice:', err);
-        // If restoring across URL navigation to a new domain requiring user gesture or permission
         if (forceState === true) {
           indicator?.classList.remove('gmt-hidden');
           updateGestureStatus('🖐️', 'Klik untuk izinkan kamera di halaman ini');
@@ -1672,13 +1691,15 @@
     const previewCanvas = document.getElementById('gmt-gesture-preview');
     const previewCtx = previewCanvas ? previewCanvas.getContext('2d') : null;
     const nightBadge = document.getElementById('gmt-gesture-night-badge');
+    const hudBadge = document.getElementById('gmt-gesture-hud-badge');
 
     let prevRawData = null;
+    const gestureBuffer = [];
 
     gestureInterval = setInterval(() => {
       if (!gestureStream || !video.videoWidth) return;
 
-      // 1. Draw raw video frame
+      // 1. Draw raw video frame to processing canvas
       ctx.filter = 'none';
       ctx.drawImage(video, 0, 0, VW, VH);
       const rawFrame = ctx.getImageData(0, 0, VW, VH);
@@ -1709,16 +1730,18 @@
 
       // 4. Multi-Condition Skin & Motion Segmentation
       const skinMask = new Uint8Array(VW * VH);
-      let sumX = 0, sumY = 0, skinCount = 0;
+      let totalSkin = 0;
+      let lowerSkinCount = 0;
+      let sumLowerX = 0, sumLowerY = 0;
       let minX = VW, maxX = 0, minY = VH, maxY = 0;
 
-      const minR = isNightMode ? 24 : 50;
-      const minG = isNightMode ? 14 : 30;
-      const minB = isNightMode ? 10 : 20;
-      const crMin = isNightMode ? 122 : 133;
+      const minR = isNightMode ? 24 : 48;
+      const minG = isNightMode ? 14 : 28;
+      const minB = isNightMode ? 10 : 18;
+      const crMin = isNightMode ? 122 : 132;
       const crMax = isNightMode ? 186 : 178;
       const cbMin = isNightMode ? 70 : 77;
-      const cbMax = isNightMode ? 138 : 130;
+      const cbMax = isNightMode ? 138 : 132;
 
       for (let y = 0; y < VH; y += 2) {
         for (let x = 0; x < VW; x += 2) {
@@ -1729,17 +1752,21 @@
 
           if (r < minR || g < minG || b < minB) continue;
 
-          // YCrCb color space skin detection
+          // YCrCb color space
           const Y  =  0.299 * r + 0.587 * g + 0.114 * b;
           const Cr = (r - Y) * 0.713 + 128;
           const Cb = (b - Y) * 0.564 + 128;
 
           let isMatch = (Cr >= crMin && Cr <= crMax && Cb >= cbMin && Cb <= cbMax);
 
+          if (isMatch && !isNightMode) {
+            isMatch = (r > g && (r - b) >= 8);
+          }
+
           // Motion fallback in dark environments
           if (!isMatch && isNightMode && prevRawData) {
             const motionDiff = Math.abs(rawData[idx] - prevRawData[idx]) + Math.abs(rawData[idx + 1] - prevRawData[idx + 1]);
-            if (motionDiff > 24 && r > minR && r >= b) {
+            if (motionDiff > 22 && r > minR && r >= b) {
               isMatch = true;
             }
           }
@@ -1748,9 +1775,15 @@
             skinMask[y * VW + x] = 1;
             skinMask[(y + 1) * VW + x] = 1;
             skinMask[y * VW + (x + 1)] = 1;
-            skinCount += 3;
-            sumX += x * 3;
-            sumY += y * 3;
+            skinMask[(y + 1) * VW + (x + 1)] = 1;
+            totalSkin += 4;
+
+            // Hand region check (focus on user's raised hand, filtering top face area if hand is present)
+            if (y >= Math.round(VH * 0.22)) {
+              lowerSkinCount += 4;
+              sumLowerX += x * 4;
+              sumLowerY += y * 4;
+            }
             if (x < minX) minX = x;
             if (x > maxX) maxX = x;
             if (y < minY) minY = y;
@@ -1760,56 +1793,115 @@
       }
       prevRawData = rawData;
 
-      // 5. Render Mini Preview on HUD
+      // 5. Render Large Mirrored Camera Preview
+      const CW = previewCanvas ? previewCanvas.width : 240;
+      const CH = previewCanvas ? previewCanvas.height : 180;
+      const sx = CW / VW;
+      const sy = CH / VH;
+
       if (previewCtx) {
-        previewCtx.drawImage(video, 0, 0, 56, 42);
+        previewCtx.save();
+        previewCtx.translate(CW, 0);
+        previewCtx.scale(-1, 1); // Mirror horizontally
+        previewCtx.drawImage(video, 0, 0, CW, CH);
+        previewCtx.restore();
+
         if (isNightMode) {
-          previewCtx.fillStyle = 'rgba(255, 152, 0, 0.9)';
-          previewCtx.font = '8px sans-serif';
-          previewCtx.fillText('🌙', 3, 10);
+          previewCtx.fillStyle = 'rgba(255, 167, 38, 0.9)';
+          previewCtx.font = 'bold 10px sans-serif';
+          previewCtx.fillText('🌙 Malam', 8, 16);
         }
       }
 
-      // If hand is not clearly in frame
-      const minPixels = isNightMode ? 160 : 280;
-      if (skinCount < minPixels) {
+      // Check if hand is sufficiently in frame
+      const minPixels = isNightMode ? 140 : 220;
+      const activeSkin = lowerSkinCount >= minPixels ? lowerSkinCount : totalSkin;
+      if (activeSkin < minPixels) {
         cursorEl?.classList.add('gmt-hidden');
         prevCentroidY = null;
         prevTipY = null;
         updateGestureStatus('🖐️', isNightMode ? 'Malam: Dekatkan tangan ke kamera...' : 'Arahkan tangan ke kamera...');
+        if (hudBadge) {
+          hudBadge.textContent = '🔍 Arahkan Tangan...';
+          hudBadge.style.color = '#FFA726';
+          hudBadge.style.borderColor = 'rgba(255, 167, 38, 0.4)';
+        }
         return;
       }
 
-      const cx = Math.round(sumX / skinCount);
-      const cy = Math.round(sumY / skinCount);
-      const bw = Math.max(10, maxX - minX);
-      const bh = Math.max(10, maxY - minY);
-      const palmRadius = Math.max(12, Math.min(bw, bh) * 0.35);
+      // 6. Find True Palm Center via Maximum Inscribed Circle (Distance Transform)
+      // Determines exact center of the palm and true palm radius
+      const searchMinY = lowerSkinCount >= minPixels ? Math.max(minY, Math.round(VH * 0.22)) : minY;
+      let bestDist = 0;
+      let cx = Math.round((lowerSkinCount >= minPixels ? sumLowerX : (minX + maxX) * 2) / activeSkin);
+      let cy = Math.round((lowerSkinCount >= minPixels ? sumLowerY : (searchMinY + maxY) * 2) / activeSkin);
 
-      // Radial ray casting to detect extended fingers
-      const numRays = 24;
+      const stepGrid = 3;
+      for (let y = searchMinY + 4; y <= maxY - 4; y += stepGrid) {
+        for (let x = minX + 4; x <= maxX - 4; x += stepGrid) {
+          if (skinMask[y * VW + x] !== 1) continue;
+
+          let d = 2;
+          const maxCheck = 28;
+          let hitEdge = false;
+          while (d < maxCheck && !hitEdge) {
+            d += 2;
+            const dDiag = Math.round(d * 0.707);
+            const offsets = [
+              [d, 0], [-d, 0], [0, d], [0, -d],
+              [dDiag, dDiag], [-dDiag, dDiag], [dDiag, -dDiag], [-dDiag, -dDiag]
+            ];
+            for (let k = 0; k < 8; k++) {
+              const nx = x + offsets[k][0];
+              const ny = y + offsets[k][1];
+              if (nx < 0 || nx >= VW || ny < 0 || ny >= VH || skinMask[ny * VW + nx] === 0) {
+                hitEdge = true;
+                break;
+              }
+            }
+          }
+          if (d > bestDist) {
+            bestDist = d;
+            cx = x;
+            cy = y;
+          }
+        }
+      }
+      const palmRadius = Math.max(10, Math.min(26, bestDist));
+
+      // 7. High-Resolution Multi-Ray Scanning (64 Rays across 210° Arc)
+      const numRays = 64;
       const rayDists = new Float32Array(numRays);
       const rayTipsX = new Float32Array(numRays);
       const rayTipsY = new Float32Array(numRays);
-      const startAngle = -Math.PI * 0.95; // ~ -171°
-      const endAngle = Math.PI * 0.15;    // ~ +27°
+
+      const startAngle = -Math.PI * 0.98; // ~ -176°
+      const endAngle = Math.PI * 0.18;    // ~ +32°
       const stepAngle = (endAngle - startAngle) / (numRays - 1);
+      const maxRayReach = Math.min(75, palmRadius * 3.8);
 
       for (let i = 0; i < numRays; i++) {
         const angle = startAngle + i * stepAngle;
         const cosA = Math.cos(angle);
         const sinA = Math.sin(angle);
         let maxD = palmRadius;
-        let tipX = cx, tipY = cy;
+        let tipX = cx + Math.round(cosA * palmRadius);
+        let tipY = cy + Math.round(sinA * palmRadius);
+        let exitGap = 0;
 
-        for (let d = palmRadius; d < 65; d += 2) {
+        for (let d = palmRadius; d < maxRayReach; d += 2) {
           const px = Math.round(cx + cosA * d);
           const py = Math.round(cy + sinA * d);
           if (px < 0 || px >= VW || py < 0 || py >= VH) break;
+
           if (skinMask[py * VW + px] === 1) {
             maxD = d;
             tipX = px;
             tipY = py;
+            exitGap = 0;
+          } else {
+            exitGap++;
+            if (exitGap > 3) break; // Exited finger boundary into space
           }
         }
         rayDists[i] = maxD;
@@ -1817,61 +1909,147 @@
         rayTipsY[i] = tipY;
       }
 
-      // Smooth ray distances
-      const smoothedDists = new Float32Array(numRays);
+      // Smooth ray distances to eliminate minor pixel aliasing without merging fingers
+      const smoothed = new Float32Array(numRays);
       for (let i = 0; i < numRays; i++) {
         const prev = i > 0 ? rayDists[i - 1] : rayDists[i];
         const next = i < numRays - 1 ? rayDists[i + 1] : rayDists[i];
-        smoothedDists[i] = prev * 0.25 + rayDists[i] * 0.5 + next * 0.25;
+        smoothed[i] = prev * 0.2 + rayDists[i] * 0.6 + next * 0.2;
       }
 
-      // Find finger peaks
-      const peaks = [];
-      const fingerThresh = palmRadius * (isNightMode ? 1.25 : 1.32);
+      // Measure protrusion metrics
+      const fingerMinThresh = palmRadius * 1.18;
+      let protrusionRayCount = 0;
+      let maxDistFound = palmRadius;
+      for (let i = 0; i < numRays; i++) {
+        if (smoothed[i] > fingerMinThresh) protrusionRayCount++;
+        if (smoothed[i] > maxDistFound) maxDistFound = smoothed[i];
+      }
 
+      // Detect finger peaks (local maxima)
+      const peaks = [];
+      const peakThresh = palmRadius * 1.20;
       for (let i = 1; i < numRays - 1; i++) {
-        const d = smoothedDists[i];
-        if (d > fingerThresh && d >= smoothedDists[i - 1] && d >= smoothedDists[i + 1]) {
-          if (peaks.length === 0 || (i - peaks[peaks.length - 1].idx) >= 2) {
-            peaks.push({
-              idx: i,
-              dist: d,
-              x: rayTipsX[i],
-              y: rayTipsY[i]
-            });
+        const d = smoothed[i];
+        if (d > peakThresh && d >= smoothed[i - 1] && d >= smoothed[i + 1]) {
+          const leftVal = Math.min(smoothed[Math.max(0, i - 2)], smoothed[i - 1]);
+          const rightVal = Math.min(smoothed[Math.min(numRays - 1, i + 2)], smoothed[i + 1]);
+          const prominence = d - Math.max(leftVal, rightVal);
+
+          if (prominence >= 1.2 || (d > palmRadius * 1.32)) {
+            if (peaks.length === 0 || (i - peaks[peaks.length - 1].idx) >= 4) {
+              peaks.push({ idx: i, dist: d, x: rayTipsX[i], y: rayTipsY[i] });
+            } else if (d > peaks[peaks.length - 1].dist) {
+              peaks[peaks.length - 1] = { idx: i, dist: d, x: rayTipsX[i], y: rayTipsY[i] };
+            }
           }
         }
       }
 
-      // Draw tracked hand and fingertips on Mini Preview
+      // 8. Robust Gesture Classification (Resolves 5 Jari vs 1 Jari vs Genggam vs 2 Jari)
+      let rawGesture = 'none';
+      const numPeaks = peaks.length;
+
+      if (numPeaks === 0 || maxDistFound < palmRadius * 1.18 || protrusionRayCount <= 2) {
+        // Genggam: No extended protrusions beyond palm circle
+        rawGesture = 'genggam';
+      } else if (numPeaks >= 3 || protrusionRayCount >= 18) {
+        // 5 Jari: Multiple distinct fingertips OR wide open palm (>50° angular spread)
+        rawGesture = '5jari';
+      } else if (numPeaks === 2) {
+        // 2 Jari: Two distinct extended fingers (V shape)
+        if (protrusionRayCount >= 20) {
+          rawGesture = '5jari';
+        } else {
+          rawGesture = '2jari';
+        }
+      } else if (numPeaks === 1) {
+        // 1 Jari vs Flat Open Palm:
+        // If protrusion spans broadly (>= 16 rays), it is 5 Jari (flat open hand)!
+        // Only if protrusion is narrow (< 16 rays) is it truly a 1 Jari pointing gesture!
+        if (protrusionRayCount >= 16) {
+          rawGesture = '5jari';
+        } else {
+          rawGesture = '1jari';
+        }
+      }
+
+      // Temporal smoothing (Majority vote across 4 frames for zero flickering)
+      gestureBuffer.push(rawGesture);
+      if (gestureBuffer.length > 4) gestureBuffer.shift();
+
+      const voteCounts = {};
+      let maxVotes = 0;
+      let gesture = rawGesture;
+      for (const g of gestureBuffer) {
+        voteCounts[g] = (voteCounts[g] || 0) + 1;
+        if (voteCounts[g] > maxVotes) {
+          maxVotes = voteCounts[g];
+          gesture = g;
+        }
+      }
+
+      // 9. Render HUD Visual Overlays on Large Preview Canvas
       if (previewCtx) {
-        // Centroid dot
+        const mirrCx = CW - (cx * sx);
+        const mirrCy = cy * sy;
+
+        // Palm circle
+        previewCtx.beginPath();
+        previewCtx.arc(mirrCx, mirrCy, palmRadius * sx, 0, Math.PI * 2);
+        previewCtx.strokeStyle = 'rgba(0, 229, 255, 0.75)';
+        previewCtx.lineWidth = 2;
+        previewCtx.stroke();
+
+        // Palm centroid dot
         previewCtx.fillStyle = '#00E5FF';
         previewCtx.beginPath();
-        previewCtx.arc(cx * (56 / VW), cy * (42 / VH), 2.5, 0, Math.PI * 2);
+        previewCtx.arc(mirrCx, mirrCy, 3.5, 0, Math.PI * 2);
         previewCtx.fill();
 
-        // Fingertip dots
+        // Rays and Fingertip tracking dots
         peaks.forEach(p => {
-          previewCtx.fillStyle = '#FFEB3B';
+          const mirrTipX = CW - (p.x * sx);
+          const mirrTipY = p.y * sy;
+
+          previewCtx.strokeStyle = 'rgba(0, 229, 255, 0.45)';
+          previewCtx.lineWidth = 1.5;
+          previewCtx.setLineDash([3, 2]);
           previewCtx.beginPath();
-          previewCtx.arc(p.x * (56 / VW), p.y * (42 / VH), 3, 0, Math.PI * 2);
+          previewCtx.moveTo(mirrCx, mirrCy);
+          previewCtx.lineTo(mirrTipX, mirrTipY);
+          previewCtx.stroke();
+          previewCtx.setLineDash([]);
+
+          previewCtx.fillStyle = '#00FF66';
+          previewCtx.beginPath();
+          previewCtx.arc(mirrTipX, mirrTipY, 4.5, 0, Math.PI * 2);
           previewCtx.fill();
+          previewCtx.strokeStyle = '#052A12';
+          previewCtx.lineWidth = 1;
+          previewCtx.stroke();
         });
       }
 
-      // Determine Gesture Classification
-      let gesture = 'none';
-      const numPeaks = peaks.length;
-
-      if (numPeaks === 0) {
-        gesture = 'genggam';
-      } else if (numPeaks === 1) {
-        gesture = '1jari';
-      } else if (numPeaks === 2) {
-        gesture = '2jari';
-      } else if (numPeaks >= 3) {
-        gesture = '5jari';
+      // Update HUD Status Badge
+      if (hudBadge) {
+        if (gesture === '5jari') {
+          hudBadge.textContent = '🖐️ 5 Jari (Scroll)';
+          hudBadge.style.color = '#00FF66';
+          hudBadge.style.borderColor = 'rgba(0, 255, 102, 0.5)';
+        } else if (gesture === '1jari') {
+          hudBadge.textContent = '☝️ 1 Jari (Kursor)';
+          hudBadge.style.color = '#00D4FF';
+          hudBadge.style.borderColor = 'rgba(0, 212, 255, 0.5)';
+        } else if (gesture === '2jari') {
+          hudBadge.textContent = '✌️ 2 Jari (Klik Kanan)';
+          hudBadge.style.color = '#FFA726';
+          hudBadge.style.borderColor = 'rgba(255, 167, 38, 0.5)';
+        } else if (gesture === 'genggam') {
+          hudBadge.textContent = '✊ Genggam (Stop)';
+          hudBadge.style.color = '#FF453A';
+          hudBadge.style.borderColor = 'rgba(255, 69, 58, 0.5)';
+        }
       }
 
       // ─── 1. MENGGENGGAM (Stop Scroll) ───
@@ -1891,11 +2069,11 @@
         prevTipY = null;
         if (prevCentroidY !== null) {
           const deltaY = cy - prevCentroidY;
-          if (deltaY < -1.8) {
+          if (deltaY < -1.6) {
             window.scrollBy({ top: -140, behavior: 'smooth' });
             updateGestureStatus('🖐️', '5 Jari: Scroll Ke Atas ⬆️');
             logGestureChat('scroll_up', '🖐️ <b>5 Jari:</b> Scroll halaman ke atas ⬆️', 2500);
-          } else if (deltaY > 1.8) {
+          } else if (deltaY > 1.6) {
             window.scrollBy({ top: 140, behavior: 'smooth' });
             updateGestureStatus('🖐️', '5 Jari: Scroll Ke Bawah ⬇️');
             logGestureChat('scroll_down', '🖐️ <b>5 Jari:</b> Scroll halaman ke bawah ⬇️', 2500);
@@ -1910,9 +2088,8 @@
       // ─── 3. 1 JARI (Geser Kursor seperti Mouse & 1 Jari Klik) ───
       if (gesture === '1jari') {
         prevCentroidY = null;
-        const tip = peaks[0];
+        const tip = peaks[0] || { x: cx, y: cy };
 
-        // Mirrored coordinate with sensitivity padding
         const normX = 1 - (tip.x / VW);
         const normY = tip.y / VH;
         const pad = 0.12;
@@ -1937,7 +2114,6 @@
           if (cursorRing) cursorRing.className = 'gmt-cursor-ring';
         }
 
-        // Check 1 Jari Klik: rapid downward dip or dwell click
         let isClick = false;
         const now = Date.now();
 
@@ -1949,7 +2125,6 @@
         }
         prevTipY = tip.y;
 
-        // Dwell steady click fallback
         if (Math.hypot(targetX - virtualCursorX, targetY - virtualCursorY) < 12) {
           steadyCount++;
           if (steadyCount > 26 && (now - lastClickTime > 800)) {
@@ -1976,8 +2151,10 @@
         prevCentroidY = null;
         prevTipY = null;
 
-        const avgX = (peaks[0].x + peaks[1].x) / 2;
-        const avgY = (peaks[0].y + peaks[1].y) / 2;
+        const p1 = peaks[0] || { x: cx, y: cy };
+        const p2 = peaks[1] || p1;
+        const avgX = (p1.x + p2.x) / 2;
+        const avgY = (p1.y + p2.y) / 2;
         const normX = 1 - (avgX / VW);
         const normY = avgY / VH;
         const pad = 0.12;
