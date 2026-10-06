@@ -24,6 +24,10 @@
     gestureActive: false,
     audioEnabled: true,
     memory: {},
+    isExecutingStep: false,
+    isFinishingGuiding: false,
+    isAdvancingStep: false,
+    pageLoadExecTimeout: null,
   };
 
   let currentHighlightedEl = null;
@@ -57,6 +61,8 @@
             <h3>Guide Me To</h3>
             <p id="gmt-status-text">Siap membantu · Ready to guide</p>
           </div>
+          <button id="gmt-brain-btn" title="Otak & Glosarium Pintar (Simpanan Link/Info)" style="background:rgba(0,113,227,0.1);border:1px solid rgba(0,113,227,0.25);border-radius:8px;cursor:pointer;padding:5px 8px;color:#0071E3;font-size:13px;line-height:1;transition:background 0.2s;">🧠<span id="gmt-brain-badge" style="font-size:10px;font-weight:700;display:none;">0</span></button>
+          <button id="gmt-hub-btn" title="Buka GMT Launchpad / Hub" style="background:rgba(0,212,255,0.15);border:1px solid rgba(0,212,255,0.35);border-radius:8px;cursor:pointer;padding:5px 8px;color:#00D4FF;font-size:13px;line-height:1;transition:background 0.2s;">🚀</button>
           <button id="gmt-clear-btn" title="Chat Baru / Clear Chat" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:8px;cursor:pointer;padding:5px 8px;color:rgba(255,255,255,0.7);font-size:13px;line-height:1;transition:background 0.2s;">🧹</button>
           <button id="gmt-settings-btn" title="Settings" style="background:rgba(108,63,255,0.2);border:1px solid rgba(108,63,255,0.4);border-radius:8px;cursor:pointer;padding:5px 8px;color:white;font-size:15px;line-height:1;transition:background 0.2s;">⚙️</button>
           <button id="gmt-close-btn" title="Tutup">✕</button>
@@ -205,9 +211,54 @@
         </div>
 
         <div id="gmt-input-area">
-          <input type="text" id="gmt-text-input" placeholder="Minta saya panduan... / Ask me to guide..." />
-          <button id="gmt-mic-btn" title="Voice input">${ICONS.mic}</button>
-          <button id="gmt-send-btn" title="Send">${ICONS.send}</button>
+          <textarea id="gmt-text-input" rows="3" placeholder="Minta saya panduan... / Ask me to guide..."></textarea>
+          <div id="gmt-input-toolbar">
+            <span class="gmt-input-hint">↵ Kirim · Shift+↵ Baris baru</span>
+            <div class="gmt-input-buttons">
+              <button id="gmt-mic-btn" title="Voice input">${ICONS.mic}</button>
+              <button id="gmt-send-btn" title="Send">${ICONS.send}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Brain & Personal Glossary Panel (Apple Light Style) -->
+      <div id="gmt-brain-panel" class="gmt-hidden">
+        <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(0,0,0,0.08);padding-bottom:12px;margin-bottom:14px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:20px;">🧠</span>
+            <div>
+              <h4 style="margin:0;color:#1D1D1F;font-size:16px;font-weight:700;">Otak & Glosarium Pintar</h4>
+              <p style="margin:0;color:#86868B;font-size:11.5px;">Kamus personal link & catatan Anda</p>
+            </div>
+          </div>
+          <button id="gmt-brain-close-x" style="width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,0.05);border:none;color:#86868B;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;">✕</button>
+        </div>
+
+        <!-- Quick Add Section -->
+        <div class="gmt-brain-add-box">
+          <div style="font-size:12.5px;font-weight:700;color:#1D1D1F;margin-bottom:6px;">➕ Tambah Simpanan Baru</div>
+          <input type="text" id="gmt-brain-input-key" placeholder="Nama / Panggilan (cth: profil facebook kanwil)" style="margin-bottom:8px;" />
+          <input type="text" id="gmt-brain-input-val" placeholder="Link URL atau Catatan (cth: https://facebook.com/...)" style="margin-bottom:10px;" />
+          <div style="display:flex;gap:6px;">
+            <button id="gmt-brain-save-btn" class="gmt-save-btn" style="padding:8px 12px;font-size:12.5px;margin-top:0;">Simpan ke Otak</button>
+            <button id="gmt-brain-use-cur-btn" class="gmt-mini-btn" style="font-size:11px;padding:8px;" title="Gunakan link tab saat ini">Pakai Link Tab Ini</button>
+          </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div style="margin:4px 0 10px 0;position:relative;">
+          <input type="text" id="gmt-brain-search" placeholder="🔍 Cari di kamus otak..." />
+        </div>
+
+        <!-- Stored Items List -->
+        <div id="gmt-brain-list" style="overflow-y:auto;max-height:calc(100vh - 350px);display:flex;flex-direction:column;gap:8px;padding-right:2px;flex:1;">
+          <!-- Rendered via JS -->
+        </div>
+
+        <!-- Tip Box -->
+        <div style="margin-top:14px;padding:10px 12px;background:#F5F5F7;border-radius:10px;border:1px solid rgba(0,0,0,0.06);font-size:11.5px;color:#86868B;line-height:1.4;">
+          💡 <strong>Tips:</strong> Anda juga bisa suruh AI lewat chat: <em>"Tolong simpan link facebook kanwil https://..."</em> dan panggil <em>"Tolong cek facebook kanwil"</em>.
         </div>
       </div>
 
@@ -267,8 +318,8 @@
         </svg>
       </div>
 
-      <!-- Safety Confirmation Modal for Autopilot -->
-      <div id="gmt-safety-modal" class="gmt-hidden">
+      <!-- Safety Confirmation Modal for Autopilot (Disembunyikan dulu) -->
+      <div id="gmt-safety-modal" class="gmt-hidden" style="display: none !important;">
         <div class="gmt-safety-title">
           <span>⚠️ Konfirmasi Aksi Penting</span>
         </div>
@@ -283,13 +334,34 @@
 
       <!-- Gesture Floating Indicator -->
       <div id="gmt-gesture-indicator" class="gmt-hidden">
-        <span>🖐️</span> <span id="gmt-gesture-text">Gestur Tangan Aktif</span>
+        <canvas id="gmt-gesture-preview" width="56" height="42" title="Kamera Gestur"></canvas>
+        <div style="display:flex;flex-direction:column;gap:1px;min-width:110px;">
+          <div style="display:flex;align-items:center;gap:5px;">
+            <span id="gmt-gesture-icon" style="font-size:13px;">🖐️</span>
+            <span id="gmt-gesture-text" style="font-weight:700;font-size:11px;">Gestur Aktif</span>
+            <span id="gmt-gesture-night-badge" class="gmt-hidden" style="font-size:9px;background:rgba(255,152,0,0.25);color:#FFA726;padding:1px 4px;border-radius:4px;border:1px solid rgba(255,152,0,0.4);">🌙 Malam</span>
+          </div>
+          <span id="gmt-gesture-subtext" style="font-size:9.5px;color:rgba(255,255,255,0.6);">5 Jari / 1 Jari / Genggam</span>
+        </div>
+        <button class="gmt-gesture-guide-btn" id="gmt-gesture-off" title="Matikan Gestur">✕</button>
+      </div>
+
+      <!-- Virtual Gesture Mouse Cursor -->
+      <div id="gmt-gesture-cursor" class="gmt-hidden">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 2L11 20L14 13L21 10L4 2Z" fill="#00D4FF" stroke="#001827" stroke-width="1.8" stroke-linejoin="round"/>
+        </svg>
+        <div class="gmt-cursor-ring" id="gmt-cursor-ring"></div>
+        <div class="gmt-cursor-badge" id="gmt-cursor-badge">1 Jari</div>
       </div>
 
       <!-- Tooltip -->
       <div id="gmt-tooltip" class="gmt-hidden">
         <div id="gmt-tooltip-step"></div>
         <div id="gmt-tooltip-text"></div>
+        <div id="gmt-tooltip-actions">
+          <button id="gmt-tooltip-next-btn">Lanjut ➔</button>
+        </div>
       </div>
     `;
     document.body.appendChild(root);
@@ -298,7 +370,16 @@
   // Draggable bubble replaced by right-edge dock tab #gmt-dock-tab
 
   // ─── Session Persistence ───
+  function isExtensionValid() {
+    try {
+      return typeof chrome !== 'undefined' && !!chrome.runtime && !!chrome.runtime.id;
+    } catch (e) {
+      return false;
+    }
+  }
+
   function saveSession() {
+    if (!isExtensionValid()) return;
     try {
       chrome.storage.local.set({
         gmt_session: {
@@ -318,12 +399,16 @@
         }
       });
     } catch (e) {
-      console.warn('[GMT] saveSession error:', e);
+      // Quietly ignore if context was invalidated during reload
+      if (!e.message?.includes('Extension context invalidated')) {
+        console.warn('[GMT] saveSession error:', e);
+      }
     }
   }
 
   function saveSessionAsync() {
     return new Promise(resolve => {
+      if (!isExtensionValid()) return resolve();
       try {
         chrome.storage.local.set({
           gmt_session: {
@@ -349,12 +434,14 @@
   }
 
   function clearSession() {
+    if (!isExtensionValid()) return;
     try {
       chrome.storage.local.remove(['gmt_session']);
     } catch (e) {}
   }
 
   async function restoreSession() {
+    if (!isExtensionValid()) return;
     try {
       const data = await new Promise(r => chrome.storage.local.get(['gmt_session'], r));
       const session = data?.gmt_session;
@@ -389,10 +476,10 @@
         initWatchMode();
       }
       if (state.wakeWordActive) {
-        startWakeWordListener();
+        toggleWakeWord(true);
       }
       if (state.gestureActive) {
-        toggleGestureControl();
+        toggleGestureControl(true);
       }
       updateMemoryUI();
 
@@ -428,8 +515,9 @@
         setStatus(state.lang === 'id' ? 'Melanjutkan panduan...' : 'Resuming guidance...');
         setBubbleState('guiding');
 
-        // Allow page/SPA elements (e.g. Gmail) to render
-        setTimeout(() => {
+        // Allow page/SPA elements (e.g. YouTube, Gmail) to render without double execution
+        clearTimeout(state.pageLoadExecTimeout);
+        state.pageLoadExecTimeout = setTimeout(() => {
           executeCurrentStep();
         }, 1500);
       }
@@ -516,15 +604,27 @@
     // Clear chat
     document.getElementById('gmt-clear-btn')?.addEventListener('click', clearChat);
 
+    // Open Hub Launchpad
+    document.getElementById('gmt-hub-btn')?.addEventListener('click', () => {
+      chrome.runtime.sendMessage({ type: 'GMT_OPEN_HUB' }).catch(() => {});
+    });
+
     // Send button
     document.getElementById('gmt-send-btn')?.addEventListener('click', sendCommand);
 
-    // Enter key in input
-    document.getElementById('gmt-text-input')?.addEventListener('keydown', (e) => {
+    // Enter key in textarea (Enter to send, Shift+Enter for new line)
+    const textInput = document.getElementById('gmt-text-input');
+    textInput?.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
         sendCommand();
       }
+    });
+
+    // Auto-expand textarea on typing
+    textInput?.addEventListener('input', () => {
+      textInput.style.height = 'auto';
+      textInput.style.height = Math.min(textInput.scrollHeight, 160) + 'px';
     });
 
     // Mic button (in chat input area)
@@ -535,6 +635,12 @@
     document.getElementById('gmt-stop-btn')?.addEventListener('click', stopGuiding);
     document.getElementById('gmt-repeat-btn')?.addEventListener('click', repeatStep);
 
+    // Tooltip next button
+    document.getElementById('gmt-tooltip-next-btn')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      onUserClickedTarget();
+    });
+
     // Settings
     document.getElementById('gmt-settings-btn')?.addEventListener('click', openSettings);
     document.getElementById('gmt-close-settings')?.addEventListener('click', closeSettings);
@@ -542,11 +648,40 @@
     if (closeX) closeX.addEventListener('click', closeSettings);
     document.getElementById('gmt-save-settings')?.addEventListener('click', saveSettings);
 
+    // Brain & Glossary
+    document.getElementById('gmt-brain-btn')?.addEventListener('click', openBrain);
+    document.getElementById('gmt-brain-close-x')?.addEventListener('click', closeBrain);
+    document.getElementById('gmt-brain-save-btn')?.addEventListener('click', handleAddBrainManual);
+    document.getElementById('gmt-brain-use-cur-btn')?.addEventListener('click', () => {
+      const valInput = document.getElementById('gmt-brain-input-val');
+      if (valInput) valInput.value = window.location.href;
+    });
+    document.getElementById('gmt-brain-search')?.addEventListener('input', (e) => {
+      renderBrainList(e.target.value);
+    });
+    document.getElementById('gmt-brain-list')?.addEventListener('click', (e) => {
+      const openBtn = e.target.closest('.gmt-brain-action-open');
+      if (openBtn) {
+        const key = openBtn.getAttribute('data-key');
+        const val = openBtn.getAttribute('data-val');
+        const isUrl = openBtn.getAttribute('data-is-url') === 'true';
+        handleUseBrainItem(key, val, isUrl);
+        return;
+      }
+      const delBtn = e.target.closest('.gmt-brain-action-delete');
+      if (delBtn) {
+        const key = delBtn.getAttribute('data-key');
+        handleDeleteBrainItem(key);
+        return;
+      }
+    });
+
     // Escape key to close panel
     window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && (state.panelOpen || state.settingsOpen)) {
+      if (e.key === 'Escape' && (state.panelOpen || state.settingsOpen || state.brainOpen)) {
         closePanel();
         closeSettings();
+        closeBrain();
       }
     });
 
@@ -581,9 +716,14 @@
 
     // Gesture control checkbox in settings (syncs with toggle card)
     document.getElementById('gmt-gesture-check')?.addEventListener('change', toggleGestureControl);
+    document.getElementById('gmt-gesture-off')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleGestureControl();
+    });
 
-    // Load saved settings into fields
+    // Load saved settings & brain items into UI
     loadSettingsIntoForm();
+    loadBrainItems();
   }
 
   function togglePanel() {
@@ -591,15 +731,23 @@
     const panel = document.getElementById('gmt-panel');
     const dockTab = document.getElementById('gmt-dock-tab');
     const settings = document.getElementById('gmt-settings');
+    const brain = document.getElementById('gmt-brain-panel');
     if (state.panelOpen) {
       panel?.classList.remove('gmt-hidden');
       settings?.classList.add('gmt-hidden');
+      brain?.classList.add('gmt-hidden');
+      state.settingsOpen = false;
+      state.brainOpen = false;
       dockTab?.classList.add('gmt-panel-open');
       document.documentElement.classList.add('gmt-panel-open');
       document.body.classList.add('gmt-panel-open');
       setTimeout(() => document.getElementById('gmt-text-input')?.focus(), 150);
     } else {
       panel?.classList.add('gmt-hidden');
+      settings?.classList.add('gmt-hidden');
+      brain?.classList.add('gmt-hidden');
+      state.settingsOpen = false;
+      state.brainOpen = false;
       dockTab?.classList.remove('gmt-panel-open');
       document.documentElement.classList.remove('gmt-panel-open');
       document.body.classList.remove('gmt-panel-open');
@@ -623,6 +771,7 @@
     if (!command || state.isProcessing) return;
 
     input.value = '';
+    input.style.height = '';
     addMessage('user', command);
     setStatus('Memproses... / Processing...');
     state.isProcessing = true;
@@ -634,6 +783,7 @@
         command: command,
         currentUrl: window.location.href,
         language: detectLanguage(command),
+        mode: state.mode || 'guide',
       });
 
       if (response.error) {
@@ -657,6 +807,11 @@
       if (plan.memory_update && typeof plan.memory_update === 'object') {
         Object.assign(state.memory, plan.memory_update);
         updateMemoryUI();
+      }
+
+      // Brain update (Personal Glossary)
+      if (plan.brain_update) {
+        loadBrainItems();
       }
 
       addMessage('ai', plan.greeting || (state.lang === 'id' ? 'Baik! Saya akan panduan kamu...' : 'Sure! Let me guide you...'));
@@ -701,57 +856,74 @@
 
   // ─── Step Execution ───
   async function executeCurrentStep() {
+    if (!state.steps || state.steps.length === 0) return;
+
     if (state.currentStep >= state.steps.length) {
       finishGuiding();
       return;
     }
 
-    const step = state.steps[state.currentStep];
-    renderSteps();
-    setBubbleState('guiding');
-    saveSession();
-
-    // Speak the instruction
-    await speak(step.voice || step.instruction);
-
-    let el = null;
-    let visionBox = null;
-
-    // 1. Try finding by selector with timeout
-    if (step.selector) {
-      setStatus(state.lang === 'id' ? `Mencari elemen (${step.label})...` : `Locating (${step.label})...`);
-      el = await waitForElement(step.selector, 4000);
+    if (state.isExecutingStep) {
+      console.log('[GMT] Step already in progress, ignoring duplicate call.');
+      return;
     }
+    state.isExecutingStep = true;
 
-    // 2. Jayu Visual Bounding Box Grounding Fallback
-    if (!el && (step.label || step.instruction)) {
-      setStatus(state.lang === 'id' ? `Selektor belum ketemu. Memeriksa visual (Gemini Vision)...` : `Selector missed. Scanning visually (Gemini Vision)...`);
-      try {
-        const vRes = await chrome.runtime.sendMessage({
-          type: 'GMT_FIND_ELEMENT_VISION',
-          label: step.label,
-          description: step.instruction
-        });
-        if (vRes?.ok && vRes.box) {
-          visionBox = vRes.box;
+    try {
+      const step = state.steps[state.currentStep];
+      if (!step) {
+        finishGuiding();
+        return;
+      }
+
+      renderSteps();
+      setBubbleState('guiding');
+      saveSession();
+
+      // Speak the instruction
+      await speak(step.voice || step.instruction);
+
+      let el = null;
+      let visionBox = null;
+
+      // 1. Try finding by selector with timeout
+      if (step.selector) {
+        setStatus(state.lang === 'id' ? `Mencari elemen (${step.label})...` : `Locating (${step.label})...`);
+        el = await waitForElement(step.selector, 7000);
+      }
+
+      // 2. Jayu Visual Bounding Box Grounding Fallback
+      if (!el && (step.label || step.instruction)) {
+        setStatus(state.lang === 'id' ? `Selektor belum ketemu. Memeriksa visual (Gemini Vision)...` : `Selector missed. Scanning visually (Gemini Vision)...`);
+        try {
+          const vRes = await chrome.runtime.sendMessage({
+            type: 'GMT_FIND_ELEMENT_VISION',
+            label: step.label,
+            description: step.instruction
+          });
+          if (vRes?.ok && vRes.box) {
+            visionBox = vRes.box;
+          }
+        } catch (e) {
+          console.warn('[GMT] Vision grounding error:', e);
         }
-      } catch (e) {
-        console.warn('[GMT] Vision grounding error:', e);
       }
-    }
 
-    // 3. Action / Highlighting based on Mode (Guide Me vs Help Me)
-    if (state.mode === 'autopilot') {
-      await executeAutopilotStep(el, visionBox, step);
-    } else {
-      if (el) {
-        highlightTargetElement(el, step.id, state.steps.length, step.instruction);
-      } else if (visionBox) {
-        highlightVisionBox(visionBox, step.id, state.steps.length, step.instruction);
+      // 3. Action / Highlighting based on Mode (Guide Me vs Help Me)
+      if (state.mode === 'autopilot') {
+        await executeAutopilotStep(el, visionBox, step);
       } else {
-        console.warn('[GMT] Element not found after wait & vision:', step.selector);
-        setStatus(state.lang === 'id' ? `Elemen tidak ditemukan. Klik manual atau Skip.` : `Element not found. Click manually or Skip.`);
+        if (el) {
+          highlightTargetElement(el, step.id, state.steps.length, step.instruction);
+        } else if (visionBox) {
+          highlightVisionBox(visionBox, step.id, state.steps.length, step.instruction);
+        } else {
+          console.warn('[GMT] Element not found after wait & vision:', step.selector);
+          setStatus(state.lang === 'id' ? `Elemen tidak ditemukan. Klik manual atau Skip.` : `Element not found. Click manually or Skip.`);
+        }
       }
+    } finally {
+      state.isExecutingStep = false;
     }
   }
 
@@ -781,6 +953,10 @@
   }
 
   function finishGuiding() {
+    if (state.isFinishingGuiding) return;
+    if (!state.steps || state.steps.length === 0) return;
+
+    state.isFinishingGuiding = true;
     clearHighlight();
     setBubbleState('idle');
     const msg = state.lang === 'id' ? '✅ Selesai! Semua langkah sudah dilakukan. Ada yang lain?' : '✅ Done! All steps completed. Anything else?';
@@ -792,6 +968,10 @@
     document.getElementById('gmt-steps').style.display = 'none';
     document.getElementById('gmt-actions').style.display = 'none';
     saveSession();
+
+    setTimeout(() => {
+      state.isFinishingGuiding = false;
+    }, 1500);
   }
 
   function findElementByText(text) {
@@ -834,7 +1014,17 @@
         const match = selector.match(/:has-text\(['"]([^'"]+)['"]\)/);
         if (match && match[1]) {
           const found = findElementByText(match[1]);
-          if (found) return found;
+          if (found) {
+            // If found element is a container or label, check if it contains a form control
+            const directInput = found.querySelector?.('input, textarea, select, [role="radio"], [role="checkbox"]');
+            if (directInput && isElementVisible(directInput)) return directInput;
+            const container = found.closest?.('div[role="listitem"], .Qr7Oae, .geS5n, .form-group, label');
+            if (container) {
+              const cInput = container.querySelector('input, textarea, select, [role="radio"], [role="checkbox"]');
+              if (cInput && isElementVisible(cInput)) return cInput;
+            }
+            return found;
+          }
         }
       }
 
@@ -893,8 +1083,31 @@
       clearHighlight();
       currentHighlightedEl = el;
 
-      // Auto-detect click to advance
-      el.addEventListener('click', onUserClickedTarget, { once: true });
+      // Auto-detect click or typing to advance ONLY in Guide Mode (NOT in Autopilot)
+      if (state.mode !== 'autopilot') {
+        if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+          try { el.focus(); } catch (e) {}
+          const onInputDone = (e) => {
+            if (e.type === 'keydown' && e.key !== 'Enter') return;
+            cleanup();
+            onUserClickedTarget();
+          };
+          const cleanup = () => {
+            el.removeEventListener('change', onInputDone);
+            el.removeEventListener('keydown', onInputDone);
+          };
+          currentTargetCleanup = cleanup;
+          el.addEventListener('change', onInputDone);
+          el.addEventListener('keydown', onInputDone);
+        } else {
+          const onClickDone = () => {
+            currentTargetCleanup = null;
+            onUserClickedTarget();
+          };
+          currentTargetCleanup = () => el.removeEventListener('click', onClickDone);
+          el.addEventListener('click', onClickDone, { once: true });
+        }
+      }
 
       // Scroll element into view smoothly
       el.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -967,10 +1180,15 @@
   }
 
   function onUserClickedTarget() {
+    if (state.isAdvancingStep || state.mode === 'autopilot') return;
+    state.isAdvancingStep = true;
     clearHighlight();
     state.currentStep++;
     saveSession();
-    setTimeout(() => executeCurrentStep(), 800);
+    setTimeout(() => {
+      state.isAdvancingStep = false;
+      executeCurrentStep();
+    }, 800);
   }
 
   function showTooltip(rect, stepNum, totalSteps, text) {
@@ -987,7 +1205,12 @@
     tooltip.classList.remove('gmt-hidden');
   }
 
+  let currentTargetCleanup = null;
   function clearHighlight() {
+    if (currentTargetCleanup) {
+      try { currentTargetCleanup(); } catch (e) {}
+      currentTargetCleanup = null;
+    }
     currentHighlightedEl = null;
     const spotlight = document.getElementById('gmt-spotlight');
     if (spotlight) {
@@ -1051,7 +1274,8 @@
   async function executeAutopilotStep(el, visionBox, step) {
     clearHighlight();
 
-    // Check sensitive action safety confirmation
+    // Check sensitive action safety confirmation (Disembunyikan dulu)
+    /*
     if (step.is_sensitive) {
       const confirmed = await promptSafetyConfirmation(step);
       if (!confirmed) {
@@ -1059,6 +1283,7 @@
         return;
       }
     }
+    */
 
     let targetX = 0, targetY = 0;
     if (el) {
@@ -1090,9 +1315,25 @@
       const inputVal = step.input_value || "GMT Input";
       if (el) {
         el.focus();
-        el.value = inputVal;
+        try {
+          const nativeInputSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set;
+          const nativeTextareaSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value')?.set;
+          if (el.tagName === 'INPUT' && nativeInputSetter) {
+            nativeInputSetter.call(el, inputVal);
+          } else if (el.tagName === 'TEXTAREA' && nativeTextareaSetter) {
+            nativeTextareaSetter.call(el, inputVal);
+          } else {
+            el.value = inputVal;
+          }
+        } catch (e) {
+          el.value = inputVal;
+        }
         el.dispatchEvent(new Event('input', { bubbles: true }));
         el.dispatchEvent(new Event('change', { bubbles: true }));
+        // If it's a search field, also dispatch Enter key
+        if (el.matches?.('input[type="search"], input[name="q"], input#search, input[name="search_query"]')) {
+          el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true }));
+        }
       }
     } else {
       // Click action
@@ -1100,10 +1341,32 @@
       spawnClickRipple(targetX, targetY);
 
       if (el) {
+        try { el.focus(); } catch (e) {}
+        const opts = { bubbles: true, cancelable: true, view: window };
+        el.dispatchEvent(new PointerEvent('pointerdown', opts));
+        el.dispatchEvent(new MouseEvent('mousedown', opts));
+        el.dispatchEvent(new PointerEvent('pointerup', opts));
+        el.dispatchEvent(new MouseEvent('mouseup', opts));
         el.click();
+
+        // If it's an anchor tag or inside one (e.g. YouTube video title/thumbnail)
+        const anchor = el.tagName === 'A' ? el : el.closest('a');
+        if (anchor && anchor.href && !anchor.href.startsWith('javascript:')) {
+          const currentUrlNow = window.location.href;
+          setTimeout(() => {
+            if (window.location.href === currentUrlNow && anchor.href) {
+              anchor.click();
+            }
+          }, 350);
+        }
       } else {
         const pointEl = document.elementFromPoint(targetX, targetY);
-        if (pointEl) pointEl.click();
+        if (pointEl) {
+          const opts = { bubbles: true, cancelable: true, view: window };
+          pointEl.dispatchEvent(new MouseEvent('mousedown', opts));
+          pointEl.dispatchEvent(new MouseEvent('mouseup', opts));
+          pointEl.click();
+        }
       }
 
       await sleep(200);
@@ -1120,6 +1383,9 @@
   }
 
   function promptSafetyConfirmation(step) {
+    // Disembunyikan dulu: otomatis lolos / resolve true tanpa memunculkan modal
+    return Promise.resolve(true);
+    /*
     return new Promise((resolve) => {
       const modal = document.getElementById('gmt-safety-modal');
       const msg = document.getElementById('gmt-safety-msg');
@@ -1145,15 +1411,19 @@
       confirmBtn.addEventListener('click', onConfirm);
       cancelBtn.addEventListener('click', onCancel);
     });
+    */
   }
 
-  function spawnClickRipple(x, y) {
+  function spawnClickRipple(x, y, color = '#00D4FF') {
     const ripple = document.createElement('div');
     ripple.className = 'gmt-click-ripple';
     ripple.style.left = `${x}px`;
     ripple.style.top = `${y}px`;
     ripple.style.width = '60px';
     ripple.style.height = '60px';
+    if (color && color !== '#00D4FF') {
+      ripple.style.background = `radial-gradient(circle, ${color} 0%, rgba(255, 152, 0, 0.4) 50%, transparent 75%)`;
+    }
     document.body.appendChild(ripple);
     setTimeout(() => ripple.remove(), 700);
   }
@@ -1277,99 +1547,107 @@
   }
 
   // ─── Hands-free Wake Word ("Halo GMT" / "Hey GMT") ───
-  let wakeRecognition = null;
-
-  function toggleWakeWord() {
-    state.wakeWordActive = !state.wakeWordActive;
+  function toggleWakeWord(forceState = null) {
+    if (typeof forceState === 'boolean') {
+      state.wakeWordActive = forceState;
+    } else {
+      state.wakeWordActive = !state.wakeWordActive;
+    }
     updateToggleCard('wake', state.wakeWordActive);
 
     if (state.wakeWordActive) {
-      startWakeWordListener();
-      addMessage('ai', state.lang === 'id'
-        ? '🎙️ Mikrofon Wake Word aktif! Ucapkan "Halo GMT" atau "Hey GMT" diikuti permintaan Anda.'
-        : '🎙️ Microphone Wake Word active! Say "Hey GMT" followed by your request.');
+      chrome.runtime.sendMessage({ type: 'GMT_ENABLE_WAKE_WORD', lang: state.lang }, (res) => {
+        if (res?.needPermission) {
+          addMessage('ai', '🎙️ Silakan izinkan akses mikrofon pada tab baru yang terbuka agar wake word dapat aktif di semua website tanpa terputus.');
+        } else {
+          if (forceState === null) {
+            addMessage('ai', state.lang === 'id'
+              ? '🎙️ **Mikrofon Wake Word Aktif!**\nUcapkan *"Halo GMT"* atau *"Hey GMT"* kapan saja, bahkan saat berpindah ke website lain (seperti kompas.com).'
+              : '🎙️ **Microphone Wake Word Active!**\nSay *"Hey GMT"* anytime across all websites.');
+          }
+        }
+      });
     } else {
-      stopWakeWordListener();
-      addMessage('ai', state.lang === 'id' ? '🎙️ Mikrofon Wake Word dimatikan.' : '🎙️ Microphone Wake Word disabled.');
+      chrome.runtime.sendMessage({ type: 'GMT_DISABLE_WAKE_WORD' }).catch(() => {});
+      if (forceState === null) {
+        addMessage('ai', state.lang === 'id' ? '🎙️ Mikrofon Wake Word dimatikan.' : '🎙️ Microphone Wake Word disabled.');
+      }
     }
     saveSession();
   }
 
-  function startWakeWordListener() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) return;
-    try {
-      wakeRecognition = new SpeechRecognition();
-      wakeRecognition.continuous = true;
-      wakeRecognition.interimResults = true;
-      wakeRecognition.lang = state.lang === 'id' ? 'id-ID' : 'en-US';
+  // ─── Hands-free Hand Gesture Vision Engine ───
+  // Fitur:
+  // 1. 🖐️ 5 Jari: Scroll ke atas / bawah
+  // 2. ✊ Menggenggam: Stop scroll
+  // 3. ☝️ 1 Jari: Geser kursor (seperti mouse)
+  // 4. 👆 1 Jari Klik: Klik kiri
+  // 5. ✌️ 2 Jari Klik: Klik kanan
 
-      wakeRecognition.onresult = (e) => {
-        for (let i = e.resultIndex; i < e.results.length; i++) {
-          const transcript = e.results[i][0].transcript.toLowerCase();
-          if (transcript.includes('halo gmt') || transcript.includes('hey gmt') || transcript.includes('hai gmt')) {
-            const matchIndex = transcript.indexOf('gmt');
-            const userPrompt = transcript.slice(matchIndex + 3).trim();
-            if (userPrompt.length > 2) {
-              sendCommand(userPrompt);
-            } else {
-              speak(state.lang === 'id' ? 'Iya, saya mendengarkan...' : 'Yes, I am listening...');
-              toggleListening();
-            }
-          }
-        }
-      };
-
-      wakeRecognition.onerror = () => {
-        if (state.wakeWordActive) setTimeout(startWakeWordListener, 2000);
-      };
-      wakeRecognition.onend = () => {
-        if (state.wakeWordActive) startWakeWordListener();
-      };
-      wakeRecognition.start();
-    } catch (e) {
-      console.warn('[GMT Wake] Error:', e);
-    }
-  }
-
-  function stopWakeWordListener() {
-    if (wakeRecognition) {
-      wakeRecognition.onend = null;
-      wakeRecognition.stop();
-      wakeRecognition = null;
-    }
-  }
-
-  // ─── Hands-free Hand Gesture Scroll (Local Optical Flow) ───
   let gestureStream = null;
   let gestureInterval = null;
-  let prevFrameData = null;
+  let prevCentroidY = null;
+  let prevTipY = null;
+  let virtualCursorX = null;
+  let virtualCursorY = null;
+  let lastClickTime = 0;
+  let lastRightClickTime = 0;
+  let steadyCount = 0;
 
-  async function toggleGestureControl() {
-    state.gestureActive = !state.gestureActive;
+  async function toggleGestureControl(forceState = null) {
+    if (typeof forceState === 'boolean') {
+      state.gestureActive = forceState;
+    } else {
+      state.gestureActive = !state.gestureActive;
+    }
+
     const indicator = document.getElementById('gmt-gesture-indicator');
     const check = document.getElementById('gmt-gesture-check');
+    const cursor = document.getElementById('gmt-gesture-cursor');
     if (check) check.checked = state.gestureActive;
     updateToggleCard('gesture', state.gestureActive);
 
     if (state.gestureActive) {
       try {
         gestureStream = await navigator.mediaDevices.getUserMedia({
-          video: { width: 160, height: 120, frameRate: 10 }
+          video: { width: 160, height: 120, frameRate: 24 }
         });
         indicator?.classList.remove('gmt-hidden');
+        if (indicator) {
+          indicator.style.cursor = 'default';
+          indicator.onclick = null;
+        }
         startGestureTracking();
-        addMessage('ai', '🖐️ Gestur Kamera aktif! Gerakkan tangan ke atas/bawah untuk scroll halaman secara hands-free.');
+        if (forceState === null) {
+          addMessage('ai', '🖐️ **Gestur Kamera Aktif!**\n\n• 🖐️ **5 Jari:** Gerakkan ke atas/bawah untuk scroll\n• ✊ **Menggenggam:** Menghentikan (stop) scroll\n• ☝️ **1 Jari:** Menggeser kursor seperti mouse\n• 👆 **1 Jari Klik:** Klik kiri (tap / tahan sejenak)\n• ✌️ **2 Jari Klik:** Klik kanan');
+        }
       } catch (err) {
-        state.gestureActive = false;
-        indicator?.classList.add('gmt-hidden');
-        if (check) check.checked = false;
-        updateToggleCard('gesture', false);
-        addMessage('ai', '⚠️ Izin kamera diperlukan untuk fitur gestur tangan.');
+        console.warn('[GMT] Gesture getUserMedia permission notice:', err);
+        // If restoring across URL navigation to a new domain requiring user gesture or permission
+        if (forceState === true) {
+          indicator?.classList.remove('gmt-hidden');
+          updateGestureStatus('🖐️', 'Klik untuk izinkan kamera di halaman ini');
+          if (indicator) {
+            indicator.style.cursor = 'pointer';
+            indicator.title = 'Klik di sini untuk mengaktifkan izin kamera di halaman ini';
+            indicator.onclick = (e) => {
+              e.stopPropagation();
+              toggleGestureControl(true);
+            };
+          }
+        } else {
+          state.gestureActive = false;
+          indicator?.classList.add('gmt-hidden');
+          cursor?.classList.add('gmt-hidden');
+          if (check) check.checked = false;
+          updateToggleCard('gesture', false);
+          addMessage('ai', '⚠️ Izin kamera diperlukan untuk fitur kontrol gestur tangan.');
+        }
       }
     } else {
       stopGestureTracking();
       indicator?.classList.add('gmt-hidden');
+      cursor?.classList.add('gmt-hidden');
     }
     saveSession();
   }
@@ -1377,62 +1655,440 @@
   function startGestureTracking() {
     const video = document.createElement('video');
     video.srcObject = gestureStream;
-    video.play();
+    video.setAttribute('playsinline', 'true');
+    video.muted = true;
+    video.play().catch(() => {});
 
+    const VW = 160;
+    const VH = 120;
     const canvas = document.createElement('canvas');
-    canvas.width = 80;
-    canvas.height = 60;
-    const ctx = canvas.getContext('2d');
+    canvas.width = VW;
+    canvas.height = VH;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+    const cursorEl = document.getElementById('gmt-gesture-cursor');
+    const cursorRing = document.getElementById('gmt-cursor-ring');
+    const cursorBadge = document.getElementById('gmt-cursor-badge');
+    const previewCanvas = document.getElementById('gmt-gesture-preview');
+    const previewCtx = previewCanvas ? previewCanvas.getContext('2d') : null;
+    const nightBadge = document.getElementById('gmt-gesture-night-badge');
+
+    let prevRawData = null;
 
     gestureInterval = setInterval(() => {
       if (!gestureStream || !video.videoWidth) return;
-      ctx.drawImage(video, 0, 0, 80, 60);
-      const frame = ctx.getImageData(0, 0, 80, 60);
-      const currentData = frame.data;
 
-      if (prevFrameData) {
-        let diffY = 0;
-        let changeCount = 0;
-        for (let y = 0; y < 60; y += 2) {
-          for (let x = 0; x < 80; x += 2) {
-            const idx = (y * 80 + x) * 4;
-            const diff = Math.abs(currentData[idx] - prevFrameData[idx]);
-            if (diff > 35) {
-              diffY += (y - 30);
-              changeCount++;
+      // 1. Draw raw video frame
+      ctx.filter = 'none';
+      ctx.drawImage(video, 0, 0, VW, VH);
+      const rawFrame = ctx.getImageData(0, 0, VW, VH);
+      const rawData = rawFrame.data;
+
+      // 2. Measure ambient luminance (check if nighttime / low-light)
+      let sampleLuma = 0;
+      let sampleCount = 0;
+      for (let i = 0; i < rawData.length; i += 32) {
+        sampleLuma += 0.299 * rawData[i] + 0.587 * rawData[i + 1] + 0.114 * rawData[i + 2];
+        sampleCount++;
+      }
+      const avgBrightness = sampleLuma / (sampleCount || 1);
+      const isNightMode = avgBrightness < 80;
+
+      // 3. Auto-Gain Night Boost
+      let data = rawData;
+      if (isNightMode) {
+        if (nightBadge) nightBadge.classList.remove('gmt-hidden');
+        const gain = Math.min(2.6, Math.max(1.4, 95 / (avgBrightness || 1)));
+        ctx.filter = `brightness(${gain.toFixed(1)}) contrast(1.35) saturate(1.2)`;
+        ctx.drawImage(video, 0, 0, VW, VH);
+        ctx.filter = 'none';
+        data = ctx.getImageData(0, 0, VW, VH).data;
+      } else {
+        if (nightBadge) nightBadge.classList.add('gmt-hidden');
+      }
+
+      // 4. Multi-Condition Skin & Motion Segmentation
+      const skinMask = new Uint8Array(VW * VH);
+      let sumX = 0, sumY = 0, skinCount = 0;
+      let minX = VW, maxX = 0, minY = VH, maxY = 0;
+
+      const minR = isNightMode ? 24 : 50;
+      const minG = isNightMode ? 14 : 30;
+      const minB = isNightMode ? 10 : 20;
+      const crMin = isNightMode ? 122 : 133;
+      const crMax = isNightMode ? 186 : 178;
+      const cbMin = isNightMode ? 70 : 77;
+      const cbMax = isNightMode ? 138 : 130;
+
+      for (let y = 0; y < VH; y += 2) {
+        for (let x = 0; x < VW; x += 2) {
+          const idx = (y * VW + x) * 4;
+          const r = data[idx];
+          const g = data[idx + 1];
+          const b = data[idx + 2];
+
+          if (r < minR || g < minG || b < minB) continue;
+
+          // YCrCb color space skin detection
+          const Y  =  0.299 * r + 0.587 * g + 0.114 * b;
+          const Cr = (r - Y) * 0.713 + 128;
+          const Cb = (b - Y) * 0.564 + 128;
+
+          let isMatch = (Cr >= crMin && Cr <= crMax && Cb >= cbMin && Cb <= cbMax);
+
+          // Motion fallback in dark environments
+          if (!isMatch && isNightMode && prevRawData) {
+            const motionDiff = Math.abs(rawData[idx] - prevRawData[idx]) + Math.abs(rawData[idx + 1] - prevRawData[idx + 1]);
+            if (motionDiff > 24 && r > minR && r >= b) {
+              isMatch = true;
             }
           }
-        }
 
-        if (changeCount > 50) {
-          if (diffY < -300) {
-            window.scrollBy({ top: -140, behavior: 'smooth' });
-            updateGestureText('Scroll Ke Atas ⬆️');
-          } else if (diffY > 300) {
-            window.scrollBy({ top: 140, behavior: 'smooth' });
-            updateGestureText('Scroll Ke Bawah ⬇️');
+          if (isMatch) {
+            skinMask[y * VW + x] = 1;
+            skinMask[(y + 1) * VW + x] = 1;
+            skinMask[y * VW + (x + 1)] = 1;
+            skinCount += 3;
+            sumX += x * 3;
+            sumY += y * 3;
+            if (x < minX) minX = x;
+            if (x > maxX) maxX = x;
+            if (y < minY) minY = y;
+            if (y > maxY) maxY = y;
           }
         }
       }
-      prevFrameData = currentData;
-    }, 150);
+      prevRawData = rawData;
+
+      // 5. Render Mini Preview on HUD
+      if (previewCtx) {
+        previewCtx.drawImage(video, 0, 0, 56, 42);
+        if (isNightMode) {
+          previewCtx.fillStyle = 'rgba(255, 152, 0, 0.9)';
+          previewCtx.font = '8px sans-serif';
+          previewCtx.fillText('🌙', 3, 10);
+        }
+      }
+
+      // If hand is not clearly in frame
+      const minPixels = isNightMode ? 160 : 280;
+      if (skinCount < minPixels) {
+        cursorEl?.classList.add('gmt-hidden');
+        prevCentroidY = null;
+        prevTipY = null;
+        updateGestureStatus('🖐️', isNightMode ? 'Malam: Dekatkan tangan ke kamera...' : 'Arahkan tangan ke kamera...');
+        return;
+      }
+
+      const cx = Math.round(sumX / skinCount);
+      const cy = Math.round(sumY / skinCount);
+      const bw = Math.max(10, maxX - minX);
+      const bh = Math.max(10, maxY - minY);
+      const palmRadius = Math.max(12, Math.min(bw, bh) * 0.35);
+
+      // Radial ray casting to detect extended fingers
+      const numRays = 24;
+      const rayDists = new Float32Array(numRays);
+      const rayTipsX = new Float32Array(numRays);
+      const rayTipsY = new Float32Array(numRays);
+      const startAngle = -Math.PI * 0.95; // ~ -171°
+      const endAngle = Math.PI * 0.15;    // ~ +27°
+      const stepAngle = (endAngle - startAngle) / (numRays - 1);
+
+      for (let i = 0; i < numRays; i++) {
+        const angle = startAngle + i * stepAngle;
+        const cosA = Math.cos(angle);
+        const sinA = Math.sin(angle);
+        let maxD = palmRadius;
+        let tipX = cx, tipY = cy;
+
+        for (let d = palmRadius; d < 65; d += 2) {
+          const px = Math.round(cx + cosA * d);
+          const py = Math.round(cy + sinA * d);
+          if (px < 0 || px >= VW || py < 0 || py >= VH) break;
+          if (skinMask[py * VW + px] === 1) {
+            maxD = d;
+            tipX = px;
+            tipY = py;
+          }
+        }
+        rayDists[i] = maxD;
+        rayTipsX[i] = tipX;
+        rayTipsY[i] = tipY;
+      }
+
+      // Smooth ray distances
+      const smoothedDists = new Float32Array(numRays);
+      for (let i = 0; i < numRays; i++) {
+        const prev = i > 0 ? rayDists[i - 1] : rayDists[i];
+        const next = i < numRays - 1 ? rayDists[i + 1] : rayDists[i];
+        smoothedDists[i] = prev * 0.25 + rayDists[i] * 0.5 + next * 0.25;
+      }
+
+      // Find finger peaks
+      const peaks = [];
+      const fingerThresh = palmRadius * (isNightMode ? 1.25 : 1.32);
+
+      for (let i = 1; i < numRays - 1; i++) {
+        const d = smoothedDists[i];
+        if (d > fingerThresh && d >= smoothedDists[i - 1] && d >= smoothedDists[i + 1]) {
+          if (peaks.length === 0 || (i - peaks[peaks.length - 1].idx) >= 2) {
+            peaks.push({
+              idx: i,
+              dist: d,
+              x: rayTipsX[i],
+              y: rayTipsY[i]
+            });
+          }
+        }
+      }
+
+      // Draw tracked hand and fingertips on Mini Preview
+      if (previewCtx) {
+        // Centroid dot
+        previewCtx.fillStyle = '#00E5FF';
+        previewCtx.beginPath();
+        previewCtx.arc(cx * (56 / VW), cy * (42 / VH), 2.5, 0, Math.PI * 2);
+        previewCtx.fill();
+
+        // Fingertip dots
+        peaks.forEach(p => {
+          previewCtx.fillStyle = '#FFEB3B';
+          previewCtx.beginPath();
+          previewCtx.arc(p.x * (56 / VW), p.y * (42 / VH), 3, 0, Math.PI * 2);
+          previewCtx.fill();
+        });
+      }
+
+      // Determine Gesture Classification
+      let gesture = 'none';
+      const numPeaks = peaks.length;
+
+      if (numPeaks === 0) {
+        gesture = 'genggam';
+      } else if (numPeaks === 1) {
+        gesture = '1jari';
+      } else if (numPeaks === 2) {
+        gesture = '2jari';
+      } else if (numPeaks >= 3) {
+        gesture = '5jari';
+      }
+
+      // ─── 1. MENGGENGGAM (Stop Scroll) ───
+      if (gesture === 'genggam') {
+        window.scrollTo({ top: window.scrollY, behavior: 'auto' });
+        prevCentroidY = null;
+        prevTipY = null;
+        cursorEl?.classList.add('gmt-hidden');
+        updateGestureStatus('✊', 'Genggam: Scroll Berhenti ⏹️');
+        logGestureChat('stop_scroll', '✊ <b>Menggenggam:</b> Menghentikan (stop) scroll halaman ⏹️', 2000);
+        return;
+      }
+
+      // ─── 2. 5 JARI (Scroll Ke Bawah / Ke Atas) ───
+      if (gesture === '5jari') {
+        cursorEl?.classList.add('gmt-hidden');
+        prevTipY = null;
+        if (prevCentroidY !== null) {
+          const deltaY = cy - prevCentroidY;
+          if (deltaY < -1.8) {
+            window.scrollBy({ top: -140, behavior: 'smooth' });
+            updateGestureStatus('🖐️', '5 Jari: Scroll Ke Atas ⬆️');
+            logGestureChat('scroll_up', '🖐️ <b>5 Jari:</b> Scroll halaman ke atas ⬆️', 2500);
+          } else if (deltaY > 1.8) {
+            window.scrollBy({ top: 140, behavior: 'smooth' });
+            updateGestureStatus('🖐️', '5 Jari: Scroll Ke Bawah ⬇️');
+            logGestureChat('scroll_down', '🖐️ <b>5 Jari:</b> Scroll halaman ke bawah ⬇️', 2500);
+          } else {
+            updateGestureStatus('🖐️', '5 Jari: Siap Scroll (Gerakkan Ke Atas/Bawah)');
+          }
+        }
+        prevCentroidY = cy;
+        return;
+      }
+
+      // ─── 3. 1 JARI (Geser Kursor seperti Mouse & 1 Jari Klik) ───
+      if (gesture === '1jari') {
+        prevCentroidY = null;
+        const tip = peaks[0];
+
+        // Mirrored coordinate with sensitivity padding
+        const normX = 1 - (tip.x / VW);
+        const normY = tip.y / VH;
+        const pad = 0.12;
+        const clampedX = Math.max(0, Math.min(1, (normX - pad) / (1 - 2 * pad)));
+        const clampedY = Math.max(0, Math.min(1, (normY - pad) / (1 - 2 * pad)));
+        const targetX = clampedX * window.innerWidth;
+        const targetY = clampedY * window.innerHeight;
+
+        if (virtualCursorX === null) {
+          virtualCursorX = targetX;
+          virtualCursorY = targetY;
+        } else {
+          virtualCursorX += (targetX - virtualCursorX) * 0.42;
+          virtualCursorY += (targetY - virtualCursorY) * 0.42;
+        }
+
+        if (cursorEl) {
+          cursorEl.style.left = `${virtualCursorX}px`;
+          cursorEl.style.top = `${virtualCursorY}px`;
+          cursorEl.classList.remove('gmt-hidden');
+          if (cursorBadge) cursorBadge.textContent = '1 Jari (Mouse)';
+          if (cursorRing) cursorRing.className = 'gmt-cursor-ring';
+        }
+
+        // Check 1 Jari Klik: rapid downward dip or dwell click
+        let isClick = false;
+        const now = Date.now();
+
+        if (prevTipY !== null) {
+          const tipDip = tip.y - prevTipY;
+          if (tipDip > 3.8 && (now - lastClickTime > 650)) {
+            isClick = true;
+          }
+        }
+        prevTipY = tip.y;
+
+        // Dwell steady click fallback
+        if (Math.hypot(targetX - virtualCursorX, targetY - virtualCursorY) < 12) {
+          steadyCount++;
+          if (steadyCount > 26 && (now - lastClickTime > 800)) {
+            isClick = true;
+            steadyCount = 0;
+          }
+        } else {
+          steadyCount = 0;
+        }
+
+        if (isClick && (now - lastClickTime > 650)) {
+          lastClickTime = now;
+          steadyCount = 0;
+          performLeftClick(virtualCursorX, virtualCursorY);
+        } else {
+          updateGestureStatus('☝️', '1 Jari: Geser Kursor 🖱️ (Klik: Tap Jari)');
+          logGestureChat('cursor_move', '☝️ <b>1 Jari:</b> Menggerakkan kursor mouse 🖱️', 3500);
+        }
+        return;
+      }
+
+      // ─── 4. 2 JARI KLIK (Klik Kanan) ───
+      if (gesture === '2jari') {
+        prevCentroidY = null;
+        prevTipY = null;
+
+        const avgX = (peaks[0].x + peaks[1].x) / 2;
+        const avgY = (peaks[0].y + peaks[1].y) / 2;
+        const normX = 1 - (avgX / VW);
+        const normY = avgY / VH;
+        const pad = 0.12;
+        const clampedX = Math.max(0, Math.min(1, (normX - pad) / (1 - 2 * pad)));
+        const clampedY = Math.max(0, Math.min(1, (normY - pad) / (1 - 2 * pad)));
+        const targetX = clampedX * window.innerWidth;
+        const targetY = clampedY * window.innerHeight;
+
+        if (virtualCursorX === null) {
+          virtualCursorX = targetX;
+          virtualCursorY = targetY;
+        } else {
+          virtualCursorX += (targetX - virtualCursorX) * 0.42;
+          virtualCursorY += (targetY - virtualCursorY) * 0.42;
+        }
+
+        if (cursorEl) {
+          cursorEl.style.left = `${virtualCursorX}px`;
+          cursorEl.style.top = `${virtualCursorY}px`;
+          cursorEl.classList.remove('gmt-hidden');
+          if (cursorBadge) cursorBadge.textContent = '2 Jari (Klik Kanan)';
+          if (cursorRing) cursorRing.className = 'gmt-cursor-ring right-click';
+        }
+
+        const now = Date.now();
+        if (now - lastRightClickTime > 800) {
+          lastRightClickTime = now;
+          performRightClick(virtualCursorX, virtualCursorY);
+        } else {
+          updateGestureStatus('✌️', '2 Jari: Klik Kanan 📑');
+        }
+      }
+    }, 40);
   }
 
-  function updateGestureText(txt) {
-    const t = document.getElementById('gmt-gesture-text');
-    if (t) {
-      t.textContent = txt;
-      setTimeout(() => { if (t) t.textContent = 'Gestur Tangan Aktif'; }, 800);
+  const lastGestureLogTime = {};
+  function logGestureChat(key, text, minIntervalMs = 2500) {
+    const now = Date.now();
+    if (lastGestureLogTime[key] && (now - lastGestureLogTime[key] < minIntervalMs)) {
+      return;
     }
+    lastGestureLogTime[key] = now;
+    addMessage('gesture', text);
+  }
+
+  function getElementDescription(el) {
+    if (!el || el === document.body || el === document.documentElement) return 'halaman';
+    const text = (el.innerText || el.textContent || el.getAttribute('aria-label') || el.title || el.placeholder || '').trim();
+    if (text) return text.length > 25 ? text.slice(0, 22) + '...' : text;
+    const tag = el.tagName.toLowerCase();
+    if (el.id) return `#${el.id}`;
+    if (el.className && typeof el.className === 'string') return `.${el.className.split(' ')[0]}`;
+    return `<${tag}>`;
+  }
+
+  function performLeftClick(x, y) {
+    const cursor = document.getElementById('gmt-gesture-cursor');
+    if (cursor) {
+      cursor.classList.add('clicking');
+      setTimeout(() => cursor.classList.remove('clicking'), 250);
+    }
+    const target = document.elementFromPoint(x, y);
+    if (target) {
+      target.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, clientX: x, clientY: y, view: window }));
+      target.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, clientX: x, clientY: y, view: window }));
+      target.click();
+    }
+    spawnClickRipple(x, y, '#00D4FF');
+    updateGestureStatus('👆', '1 Jari: Klik Kiri! 🎯');
+    const targetLabel = getElementDescription(target);
+    addMessage('gesture', `👆 <b>1 Jari (Klik Kiri):</b> Mengklik <b>"${targetLabel}"</b> 🎯`);
+  }
+
+  function performRightClick(x, y) {
+    const cursor = document.getElementById('gmt-gesture-cursor');
+    if (cursor) {
+      cursor.classList.add('clicking');
+      setTimeout(() => cursor.classList.remove('clicking'), 250);
+    }
+    const target = document.elementFromPoint(x, y);
+    if (target) {
+      target.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: x, clientY: y, button: 2, view: window }));
+    }
+    spawnClickRipple(x, y, '#FF9800');
+    updateGestureStatus('✌️', '2 Jari: Klik Kanan! 📑');
+    const targetLabel = getElementDescription(target);
+    addMessage('gesture', `✌️ <b>2 Jari (Klik Kanan):</b> Menu konteks pada <b>"${targetLabel}"</b> 📑`);
+  }
+
+  function updateGestureStatus(icon, text) {
+    const iconEl = document.getElementById('gmt-gesture-icon');
+    const textEl = document.getElementById('gmt-gesture-text');
+    if (iconEl && icon) iconEl.textContent = icon;
+    if (textEl && text) textEl.textContent = text;
   }
 
   function stopGestureTracking() {
-    if (gestureInterval) clearInterval(gestureInterval);
+    if (gestureInterval) {
+      clearInterval(gestureInterval);
+      gestureInterval = null;
+    }
     if (gestureStream) {
       gestureStream.getTracks().forEach(t => t.stop());
       gestureStream = null;
     }
-    prevFrameData = null;
+    virtualCursorX = null;
+    virtualCursorY = null;
+    prevCentroidY = null;
+    prevTipY = null;
+    steadyCount = 0;
+    document.getElementById('gmt-gesture-cursor')?.classList.add('gmt-hidden');
   }
 
   // ─── Step Checklist Renderer (Section 2.4 show_checklist) ───
@@ -1615,7 +2271,19 @@
       }
     };
 
-    recognition.onerror = () => stopListening();
+    recognition.onerror = (e) => {
+      console.warn('[GMT] Mic error:', e);
+      stopListening();
+      if (e?.error === 'not-allowed') {
+        addMessage('ai', '⚠️ Izin mikrofon browser belum aktif. <a href="#" id="gmt-req-mic" style="color:#00D4FF;text-decoration:underline;font-weight:600;">Klik di sini untuk mengaktifkan izin mikrofon global GMT</a>.');
+        setTimeout(() => {
+          document.getElementById('gmt-req-mic')?.addEventListener('click', (ev) => {
+            ev.preventDefault();
+            chrome.runtime.sendMessage({ type: 'GMT_REQUEST_MIC_PERMISSION' });
+          });
+        }, 150);
+      }
+    };
     recognition.onend = () => { state.isListening = false; updateMicBtn(); };
 
     recognition.start();
@@ -1688,13 +2356,180 @@
     if (result.gmt_provider)       document.getElementById('gmt-provider-select').value      = result.gmt_provider;
   }
 
+  // ─── Personal Brain & Smart Glossary ───
+  let userBrainCache = [];
+
+  function openBrain() {
+    document.getElementById('gmt-brain-panel')?.classList.remove('gmt-hidden');
+    document.getElementById('gmt-panel')?.classList.add('gmt-hidden');
+    document.getElementById('gmt-settings')?.classList.add('gmt-hidden');
+    document.getElementById('gmt-dock-tab')?.classList.add('gmt-panel-open');
+    state.brainOpen = true;
+    loadBrainItems();
+  }
+
+  function closeBrain() {
+    document.getElementById('gmt-brain-panel')?.classList.add('gmt-hidden');
+    if (state.panelOpen) {
+      document.getElementById('gmt-panel')?.classList.remove('gmt-hidden');
+    } else {
+      document.getElementById('gmt-dock-tab')?.classList.remove('gmt-panel-open');
+    }
+    state.brainOpen = false;
+  }
+
+  async function loadBrainItems() {
+    if (!isExtensionValid()) return;
+    try {
+      const res = await chrome.runtime.sendMessage({ type: 'GMT_GET_BRAIN' });
+      userBrainCache = res?.brain || [];
+      updateBrainBadge();
+      const searchVal = document.getElementById('gmt-brain-search')?.value || '';
+      renderBrainList(searchVal);
+    } catch (e) {
+      // Quietly ignore if runtime context reloaded
+    }
+  }
+
+  function updateBrainBadge() {
+    const badge = document.getElementById('gmt-brain-badge');
+    if (badge) {
+      if (userBrainCache.length > 0) {
+        badge.textContent = userBrainCache.length;
+        badge.style.display = 'inline-block';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function renderBrainList(query = '') {
+    const listEl = document.getElementById('gmt-brain-list');
+    if (!listEl) return;
+
+    const q = (query || '').trim().toLowerCase();
+    const items = q 
+      ? userBrainCache.filter(item => (item.key || '').toLowerCase().includes(q) || (item.value || '').toLowerCase().includes(q))
+      : userBrainCache;
+
+    if (items.length === 0) {
+      if (q) {
+        listEl.innerHTML = `<div style="text-align:center;padding:24px 10px;color:#86868B;font-size:12.5px;">Tidak ditemukan item untuk "<strong>${escapeHtml(q)}</strong>"</div>`;
+      } else {
+        listEl.innerHTML = `
+          <div style="text-align:center;padding:28px 12px;background:#FBFBFD;border:1px dashed #D2D2D7;border-radius:12px;margin:6px 0;">
+            <div style="font-size:26px;margin-bottom:6px;">🧠</div>
+            <div style="font-weight:600;color:#1D1D1F;font-size:13.5px;margin-bottom:4px;">Otak & Glosarium Masih Kosong</div>
+            <div style="color:#86868B;font-size:11.5px;line-height:1.4;">Simpan link atau info penting di atas, atau minta lewat chat AI:<br><em>"Tolong simpan link facebook kanwil https://..."</em></div>
+          </div>
+        `;
+      }
+      return;
+    }
+
+    listEl.innerHTML = items.map((item) => {
+      const isUrl = item.type === 'url' || String(item.value).startsWith('http://') || String(item.value).startsWith('https://');
+      const safeKey = escapeHtml(item.key);
+      const safeVal = escapeHtml(item.value);
+      return `
+        <div class="gmt-brain-card">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+            <div style="flex:1;min-width:0;">
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
+                <span style="font-size:13px;">${isUrl ? '🌐' : '📝'}</span>
+                <span class="gmt-brain-card-key" title="${safeKey}">${safeKey}</span>
+              </div>
+              <div class="gmt-brain-card-val" title="${safeVal}">${safeVal}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
+              <button class="gmt-brain-action-open" title="${isUrl ? 'Buka Link / Pandu ke sini' : 'Gunakan Info'}" data-key="${safeKey}" data-val="${safeVal}" data-is-url="${isUrl}">
+                ${isUrl ? 'Buka ↗' : 'Gunakan'}
+              </button>
+              <button class="gmt-brain-action-delete" title="Hapus dari Otak" data-key="${safeKey}">
+                🗑️
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  async function handleAddBrainManual() {
+    const keyInput = document.getElementById('gmt-brain-input-key');
+    const valInput = document.getElementById('gmt-brain-input-val');
+    const key = keyInput?.value.trim();
+    const val = valInput?.value.trim();
+
+    if (!key || !val) {
+      alert('Mohon isi nama/panggilan dan link URL atau catatannya.');
+      return;
+    }
+
+    try {
+      const res = await chrome.runtime.sendMessage({
+        type: 'GMT_SAVE_BRAIN_ITEM',
+        key: key,
+        value: val
+      });
+      userBrainCache = res?.brain || [];
+      if (keyInput) keyInput.value = '';
+      if (valInput) valInput.value = '';
+      updateBrainBadge();
+      renderBrainList();
+      addMessage('ai', `🧠 Tersimpan di otak: <strong>${escapeHtml(key)}</strong> ➔ <em>${escapeHtml(val)}</em>`);
+    } catch (e) {
+      console.warn('[GMT] handleAddBrainManual error:', e);
+    }
+  }
+
+  async function handleDeleteBrainItem(key) {
+    if (!confirm(`Hapus "${key}" dari ingatan otak GMT?`)) return;
+    try {
+      const res = await chrome.runtime.sendMessage({
+        type: 'GMT_DELETE_BRAIN_ITEM',
+        key: key
+      });
+      userBrainCache = res?.brain || [];
+      updateBrainBadge();
+      renderBrainList();
+    } catch (e) {
+      console.warn('[GMT] handleDeleteBrainItem error:', e);
+    }
+  }
+
+  function handleUseBrainItem(key, val, isUrl) {
+    closeBrain();
+    state.panelOpen = true;
+    document.getElementById('gmt-panel')?.classList.remove('gmt-hidden');
+    document.getElementById('gmt-dock-tab')?.classList.add('gmt-panel-open');
+    if (isUrl) {
+      sendCommand(`Tolong buka ${key}`);
+    } else {
+      sendCommand(`Info tentang ${key}`);
+    }
+  }
+
   // ─── Helpers ───
   function addMessage(role, text) {
     const chat = document.getElementById('gmt-chat');
     const div = document.createElement('div');
-    div.className = `gmt-msg gmt-${role === 'user' ? 'user' : 'ai'} gmt-fade-in`;
+    const isUser = role === 'user';
+    const isGesture = role === 'gesture';
+    div.className = `gmt-msg gmt-${isUser ? 'user' : (isGesture ? 'gesture' : 'ai')} gmt-fade-in`;
+    const avatar = isUser ? '👤' : (isGesture ? '🖐️' : '🧭');
     div.innerHTML = `
-      <div class="gmt-msg-avatar">${role === 'user' ? '👤' : '🧭'}</div>
+      <div class="gmt-msg-avatar">${avatar}</div>
       <div class="gmt-msg-bubble">${text}</div>
     `;
     chat.appendChild(div);
@@ -1734,7 +2569,7 @@
     summary.push(`Page Language: ${document.documentElement.lang || 'auto'}`);
 
     // Main headings to understand page purpose
-    const headings = Array.from(document.querySelectorAll('h1, h2, h3'))
+    const headings = Array.from(document.querySelectorAll('h1, h2, h3, div[role="heading"]'))
       .map(h => h.innerText?.trim())
       .filter(Boolean)
       .slice(0, 8);
@@ -1742,21 +2577,140 @@
       summary.push(`Main Headings: ${headings.join(' | ')}`);
     }
 
-    summary.push('Interactive Elements (Buttons, Inputs, Links):');
-    const elements = document.querySelectorAll('button, a, input, select, textarea, [role="button"], [role="link"], [role="tab"], [role="menuitem"]');
+    // ─── 1. Specialized Detection for Google Forms & Structured Forms ───
+    const formItems = document.querySelectorAll('div[role="listitem"], .Qr7Oae, .geS5n');
+    let qIndex = 0;
 
-    elements.forEach((el, index) => {
-      if (index > 100) return;
+    if (formItems.length > 0) {
+      summary.push('\n=== DETECTED FORM QUESTIONS (Field by Field) ===');
+      formItems.forEach((item) => {
+        if (!isElementVisible(item)) return;
+
+        // Extract Question Title / Label
+        const titleEl = item.querySelector('.M7eMe, [role="heading"], .exportItemTitle, .HoXoMd, .c2gzEf, span.Hvn9Fb');
+        let questionTitle = (titleEl?.innerText || '').trim();
+        if (!questionTitle) {
+          const firstSpan = item.querySelector('span, label');
+          questionTitle = (firstSpan?.innerText || '').trim();
+        }
+        if (!questionTitle) return;
+
+        const isRequired = !!item.querySelector('.vnumgf, [aria-label*="wajib" i], [aria-label*="required" i], [aria-required="true"]');
+        const reqStr = isRequired ? ' [Wajib/Required]' : '';
+
+        // Locate the input control inside this question item
+        const textInput = item.querySelector('input.whsOnd, input[type="text"], input[type="email"], input[type="tel"], input[type="number"], input[type="url"], input[type="date"], input:not([type])');
+        const textarea = item.querySelector('textarea.KHxj8b, textarea');
+        const radiogroup = item.querySelector('[role="radiogroup"]');
+        const checkboxes = item.querySelectorAll('[role="checkbox"]');
+        const listbox = item.querySelector('[role="listbox"]');
+
+        qIndex++;
+        const fieldKey = `q-${qIndex}`;
+
+        if (textInput) {
+          textInput.setAttribute('data-gmt-field', fieldKey);
+          summary.push(`- Question ${qIndex}: "${questionTitle}"${reqStr} -> Type: Short Text Input -> Selector: [data-gmt-field="${fieldKey}"]`);
+        } else if (textarea) {
+          textarea.setAttribute('data-gmt-field', fieldKey);
+          summary.push(`- Question ${qIndex}: "${questionTitle}"${reqStr} -> Type: Long Textarea -> Selector: [data-gmt-field="${fieldKey}"]`);
+        } else if (radiogroup) {
+          radiogroup.setAttribute('data-gmt-field', fieldKey);
+          const options = Array.from(item.querySelectorAll('[role="radio"]'))
+            .map(r => (r.getAttribute('aria-label') || r.innerText || '').trim())
+            .filter(Boolean);
+          const optStr = options.length > 0 ? ` (Pilihan: ${options.slice(0, 6).join(', ')})` : '';
+          summary.push(`- Question ${qIndex}: "${questionTitle}"${reqStr} -> Type: Radio Group${optStr} -> Selector: [data-gmt-field="${fieldKey}"]`);
+        } else if (checkboxes.length > 0) {
+          item.setAttribute('data-gmt-field', fieldKey);
+          const options = Array.from(checkboxes)
+            .map(c => (c.getAttribute('aria-label') || c.innerText || '').trim())
+            .filter(Boolean);
+          const optStr = options.length > 0 ? ` (Pilihan: ${options.slice(0, 6).join(', ')})` : '';
+          summary.push(`- Question ${qIndex}: "${questionTitle}"${reqStr} -> Type: Checkboxes${optStr} -> Selector: [data-gmt-field="${fieldKey}"]`);
+        } else if (listbox) {
+          listbox.setAttribute('data-gmt-field', fieldKey);
+          summary.push(`- Question ${qIndex}: "${questionTitle}"${reqStr} -> Type: Dropdown / Listbox -> Selector: [data-gmt-field="${fieldKey}"]`);
+        } else {
+          item.setAttribute('data-gmt-field', fieldKey);
+          summary.push(`- Question ${qIndex}: "${questionTitle}"${reqStr} -> Type: Form Item -> Selector: [data-gmt-field="${fieldKey}"]`);
+        }
+      });
+
+      // Submit Button Detection for Google Forms
+      const submitCandidates = document.querySelectorAll('div[role="button"], button[type="submit"], button, .uArJ5e');
+      for (const btn of submitCandidates) {
+        if (!isElementVisible(btn)) continue;
+        const btnText = (btn.innerText || btn.getAttribute('aria-label') || '').trim();
+        if (/^(kirim|submit|next|berikutnya|selesai)$/i.test(btnText) || btnText.toLowerCase().includes('kirim') || btnText.toLowerCase().includes('submit')) {
+          btn.setAttribute('data-gmt-field', 'submit-btn');
+          summary.push(`- Submit Action: "${btnText}" -> Selector: [data-gmt-field="submit-btn"]`);
+          break;
+        }
+      }
+      summary.push('=== END OF FORM QUESTIONS ===\n');
+    }
+
+    // ─── 2. Generic Web Forms (non-Google or additional inputs) ───
+    const genericInputs = document.querySelectorAll('input:not([type="hidden"]):not([type="submit"]):not([type="button"]), textarea, select');
+    let genericCount = 0;
+    genericInputs.forEach((inp) => {
+      if (inp.hasAttribute('data-gmt-field')) return;
+      if (!isElementVisible(inp)) return;
+      if (genericCount >= 25) return;
+
+      let labelText = inp.getAttribute('aria-label') || inp.getAttribute('placeholder') || '';
+      if (!labelText && inp.getAttribute('aria-labelledby')) {
+        const ids = inp.getAttribute('aria-labelledby').split(' ');
+        labelText = ids.map(id => document.getElementById(id)?.innerText?.trim()).filter(Boolean).join(' ');
+      }
+      if (!labelText && inp.id) {
+        const l = document.querySelector(`label[for="${inp.id}"]`);
+        if (l) labelText = l.innerText.trim();
+      }
+      if (!labelText) {
+        const parentLabel = inp.closest('label');
+        if (parentLabel) labelText = parentLabel.innerText.trim();
+      }
+      if (!labelText) {
+        const group = inp.closest('.form-group, .field, .form-row, td, tr');
+        if (group) {
+          const groupLabel = group.querySelector('label, .control-label, span');
+          if (groupLabel && groupLabel !== inp) labelText = groupLabel.innerText.trim();
+        }
+      }
+      if (!labelText) {
+        labelText = inp.name || inp.type || 'Input Field';
+      }
+
+      genericCount++;
+      const fieldKey = `field-${genericCount}`;
+      inp.setAttribute('data-gmt-field', fieldKey);
+      summary.push(`- Form Input ${genericCount}: "${labelText.slice(0, 50)}" (${inp.tagName.toLowerCase()}) -> Selector: [data-gmt-field="${fieldKey}"]`);
+    });
+
+    // ─── 3. Other Interactive Elements (Buttons, Links, Nav) ───
+    summary.push('\nOther Interactive Elements (Buttons, Navigation):');
+    const elements = document.querySelectorAll('button, a, [role="button"], [role="link"], [role="tab"], [role="menuitem"]');
+
+    let otherCount = 0;
+    elements.forEach((el) => {
+      if (el.hasAttribute('data-gmt-field')) return;
+      if (otherCount > 60) return;
       if (!isElementVisible(el)) return;
 
       const tag = el.tagName.toLowerCase();
-      const text = (el.innerText || el.value || el.getAttribute('aria-label') || el.getAttribute('title') || el.getAttribute('placeholder') || '').trim().slice(0, 60);
+      let text = (el.innerText || el.getAttribute('aria-label') || el.getAttribute('title') || '').trim().replace(/\s+/g, ' ').slice(0, 50);
+      if (!text && el.querySelector('img')) {
+        text = el.querySelector('img').getAttribute('alt') || 'Icon';
+      }
       const id = el.id ? `#${el.id}` : '';
       const classes = Array.from(el.classList).slice(0, 2).map(c => `.${c}`).join('');
       const role = el.getAttribute('role') ? `[role="${el.getAttribute('role')}"]` : '';
 
       const selector = id || `${tag}${classes}${role}` || tag;
       if (text || id) {
+        otherCount++;
         summary.push(`- <${tag}> text: "${text}" selector: ${selector}`);
       }
     });
@@ -1778,7 +2732,29 @@
     if (msg.type === 'GMT_PAGE_LOADED') {
       // Page finished loading, execute step if guiding is active
       if (state.steps.length > 0 && state.currentStep >= 0 && state.currentStep < state.steps.length) {
-        setTimeout(() => executeCurrentStep(), 1000);
+        clearTimeout(state.pageLoadExecTimeout);
+        state.pageLoadExecTimeout = setTimeout(() => executeCurrentStep(), 1000);
+      }
+      return true;
+    }
+    if (msg.type === 'GMT_WAKE_WORD_TRIGGERED') {
+      console.log('[GMT] Wake word triggered via persistent background bridge:', msg);
+      if (msg.userPrompt && msg.userPrompt.length > 2) {
+        sendCommand(msg.userPrompt);
+      } else {
+        speak(state.lang === 'id' ? 'Iya, saya mendengarkan...' : 'Yes, I am listening...');
+        toggleListening();
+      }
+      return true;
+    }
+    if (msg.type === 'GMT_SPEECH_INTERIM') {
+      const input = document.getElementById('gmt-text-input');
+      if (input && state.isListening) {
+        input.value = msg.transcript;
+        if (msg.isFinal) {
+          stopListening();
+          sendCommand();
+        }
       }
       return true;
     }

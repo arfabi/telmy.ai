@@ -1,4 +1,4 @@
-﻿{
+{
   "manifest_version": 3,
   "name": "GMT — Guide Me To",
   "version": "1.0.0",
@@ -14,7 +14,8 @@
     "tabs",
     "storage",
     "scripting",
-    "tts"
+    "tts",
+    "offscreen"
   ],
   "host_permissions": [
     "<all_urls>"
@@ -32,7 +33,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["assets/icons/*", "content/*"],
+      "resources": ["assets/icons/*", "content/*", "voice/*", "hub/*"],
       "matches": ["<all_urls>"]
     }
   ],

@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GMT — Launchpad & AI Co-Pilot Hub</title>
+  <link rel="icon" type="image/png" href="../assets/icons/icon32.png">
+  <link rel="stylesheet" href="hub.css">
+</head>
+<body>
+  <!-- Ambient background glow elements -->
+  <div class="ambient-glow glow-top-left"></div>
+  <div class="ambient-glow glow-bottom-right"></div>
+  <div class="grid-overlay"></div>
+
+  <!-- Top Navigation Bar -->
+  <header class="hub-header">
+    <div class="header-brand">
+      <div class="brand-compass">
+        <svg viewBox="0 0 24 24" width="22" height="22">
+          <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-5.5-3.5l3.5-7.5 7.5-3.5-3.5 7.5-7.5 3.5zm4.75-4.75a1 1 0 101.5 1.5 1 1 0 00-1.5-1.5z"/>
+        </svg>
+        <span class="compass-pulse"></span>
+      </div>
+      <div class="brand-info">
+        <span class="brand-title">GMT</span>
+        <span class="brand-tagline">Guide Me To</span>
+      </div>
+      <span class="badge-status" id="hub-ai-badge">🟢 Ready</span>
+    </div>
+
+    <div class="header-actions">
+      <div class="provider-pill" id="btn-toggle-provider" title="Ganti AI Provider (Sumopod / Gemini)">
+        <span class="provider-icon">⚡</span>
+        <span class="provider-name" id="provider-name-display">Sumopod (DeepSeek)</span>
+      </div>
+
+      <button class="btn-icon" id="btn-open-memory" title="Otak & Kamus Pintar (Glosarium Tersimpan)">
+        <span class="icon">🧠</span>
+        <span class="memory-count-badge" id="hub-memory-count" style="display:none;">0</span>
+      </button>
+
+      <button class="btn-icon" id="btn-open-settings" title="Pengaturan API Key & Suara">
+        <span class="icon">⚙️</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="hub-container">
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <div class="hero-orb-wrap">
+        <div class="hero-orb">
+          <svg viewBox="0 0 24 24" width="46" height="46">
+            <path fill="#0071E3" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-5.5-3.5l3.5-7.5 7.5-3.5-3.5 7.5-7.5 3.5zm4.75-4.75a1 1 0 101.5 1.5 1 1 0 00-1.5-1.5z"/>
+          </svg>
+        </div>
+        <div class="hero-ring ring-1"></div>
+        <div class="hero-ring ring-2"></div>
+      </div>
+
+      <h1 class="hero-greeting" id="hero-greeting-text">Selamat Datang di GMT</h1>
+      <p class="hero-subtext">Mau dipandu ke mana hari ini? Ketik perintah, pilih tujuan, atau gunakan suara Anda.</p>
+
+      <!-- Mode Selector -->
+      <div class="mode-selector-wrap">
+        <div class="mode-switch">
+          <button class="mode-btn active" id="hub-mode-guide" data-mode="guide">
+            <span class="mode-icon">🧭</span>
+            <span class="mode-label">Guide Me</span>
+            <span class="mode-desc-tag">Panduan Visual</span>
+          </button>
+          <button class="mode-btn" id="hub-mode-autopilot" data-mode="autopilot">
+            <span class="mode-icon">⚡</span>
+            <span class="mode-label">Help Me</span>
+            <span class="mode-desc-tag">Autopilot Otomatis</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Super Omnibox Input Area -->
+      <div class="omnibox-card">
+        <div class="omnibox-input-wrapper" id="omnibox-wrapper">
+          <span class="omnibox-lead-icon">✨</span>
+          <input
+            type="text"
+            id="hub-command-input"
+            placeholder="Ketik tugas (contoh: 'Tulis email di Gmail', 'Cari tiket kereta di Google', 'buka wikipedia.org')..."
+            autocomplete="off"
+            autofocus
+          />
+          <button class="omnibox-clear" id="btn-clear-input" title="Bersihkan" style="display:none;">✕</button>
+          
+          <button class="omnibox-voice-btn" id="btn-hub-mic" title="Bicara / Voice Command">
+            <svg viewBox="0 0 24 24" width="18" height="18">
+              <path fill="currentColor" d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+              <path fill="currentColor" d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+            </svg>
+            <span class="mic-pulse"></span>
+          </button>
+
+          <button class="omnibox-submit-btn" id="btn-hub-submit">
+            <span>Pandu Saya</span>
+            <svg viewBox="0 0 24 24" width="16" height="16">
+              <path fill="currentColor" d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Listening transcription status -->
+        <div class="voice-transcription-bar" id="hub-voice-bar" style="display:none;">
+          <div class="voice-wave-anim">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <span class="voice-text" id="hub-voice-text">Mendengarkan suara Anda...</span>
+          <button class="btn-voice-cancel" id="btn-cancel-voice">Batal</button>
+        </div>
+
+        <!-- Quick prompt chips -->
+        <div class="prompt-chips-wrap">
+          <span class="chips-label">Saran Cepat:</span>
+          <button class="prompt-chip" data-cmd="Tulis email baru di Gmail">✉️ Tulis email di Gmail</button>
+          <button class="prompt-chip" data-cmd="Cari informasi di Google">🔍 Cari di Google</button>
+          <button class="prompt-chip" data-cmd="Cari tutorial di YouTube">🎥 Tonton video di YouTube</button>
+          <button class="prompt-chip" data-cmd="Bantu panduan isi formulir Google Form">📝 Isi Google Form</button>
+          <button class="prompt-chip" data-cmd="Buka website asing dan jelaskan isinya">🌐 Jelaskan Website Asing</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Plan Processing / Execution Banner (Appears when AI is thinking or navigating) -->
+    <section class="plan-preview-section" id="plan-preview-section" style="display:none;">
+      <div class="plan-card">
+        <div class="plan-header">
+          <div class="plan-status-pill" id="plan-status-pill">
+            <span class="spinner" id="plan-spinner"></span>
+            <span id="plan-status-text">Menyusun panduan langkah demi langkah...</span>
+          </div>
+          <button class="btn-close-plan" id="btn-cancel-plan">✕</button>
+        </div>
+
+        <div class="plan-body" id="plan-body-content">
+          <h3 class="plan-greeting" id="plan-greeting-text">Mempersiapkan instruksi...</h3>
+          <p class="plan-dest-url" id="plan-dest-text" style="display:none;">
+            Tujuan: <span class="url-badge" id="plan-dest-url-badge">https://...</span>
+          </p>
+
+          <div class="plan-steps-preview" id="plan-steps-list"></div>
+
+          <div class="plan-countdown-bar" id="plan-countdown-bar" style="display:none;">
+            <div class="countdown-fill" id="countdown-progress-fill"></div>
+          </div>
+        </div>
+
+        <div class="plan-actions" id="plan-actions-footer">
+          <button class="btn-secondary" id="btn-edit-plan">Ubah Perintah</button>
+          <button class="btn-primary" id="btn-exec-plan">
+            <span>Buka Halaman & Mulai Panduan ➔</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Launchpad Quick Cards Grid -->
+    <section class="launchpad-grid-section">
+      <div class="section-title-wrap">
+        <h2 class="section-title">Destinasi Populer</h2>
+        <span class="section-sub">Pilih salah satu layanan untuk langsung dipandu dengan AI</span>
+      </div>
+
+      <div class="launchpad-grid">
+        <!-- 1. Gmail Card -->
+        <div class="quick-card" data-cmd="Tulis email baru di Gmail" data-url="https://mail.google.com">
+          <div class="card-icon-wrap icon-gmail">
+            <span class="card-icon">✉️</span>
+          </div>
+          <div class="card-content">
+            <h3 class="card-title">Gmail</h3>
+            <p class="card-desc">Panduan menulis, mengisi penerima, subjek, dan mengirim email baru.</p>
+          </div>
+          <div class="card-footer">
+            <span class="card-badge">Paling Populer</span>
+            <span class="card-arrow">➔</span>
+          </div>
+        </div>
+
+        <!-- 2. Google Search Card -->
+        <div class="quick-card" data-cmd="Cari informasi di Google" data-url="https://www.google.com">
+          <div class="card-icon-wrap icon-google">
+            <span class="card-icon">🔍</span>
+          </div>
+          <div class="card-content">
+            <h3 class="card-title">Google Search</h3>
+            <p class="card-desc">Panduan mencari artikel, riset kata kunci, dan filter hasil penelusuran.</p>
+          </div>
+          <div class="card-footer">
+            <span class="card-badge">Riset Cepat</span>
+            <span class="card-arrow">➔</span>
+          </div>
+        </div>
+
+        <!-- 3. YouTube Card -->
+        <div class="quick-card" data-cmd="Cari dan tonton video di YouTube" data-url="https://www.youtube.com">
+          <div class="card-icon-wrap icon-youtube">
+            <span class="card-icon">🎥</span>
+          </div>
+          <div class="card-content">
+            <h3 class="card-title">YouTube</h3>
+            <p class="card-desc">Cari tutorial, video pembelajaran, podcast, atau musik favorit.</p>
+          </div>
+          <div class="card-footer">
+            <span class="card-badge">Media</span>
+            <span class="card-arrow">➔</span>
+          </div>
+        </div>
+
+        <!-- 4. Google Form Card -->
+        <div class="quick-card" data-cmd="Panduan mengisi formulir online field by field" data-url="https://docs.google.com/forms">
+          <div class="card-icon-wrap icon-form">
+            <span class="card-icon">📝</span>
+          </div>
+          <div class="card-content">
+            <h3 class="card-title">Formulir & Google Form</h3>
+            <p class="card-desc">Panduan mengisi formulir survei, pendaftaran, atau kuis pertanyaan demi pertanyaan.</p>
+          </div>
+          <div class="card-footer">
+            <span class="card-badge">Field-by-Field</span>
+            <span class="card-arrow">➔</span>
+          </div>
+        </div>
+
+        <!-- 5. Foreign Language Web -->
+        <div class="quick-card" data-cmd="Buka website asing dan jelaskan arti tombol serta isinya">
+          <div class="card-icon-wrap icon-translate">
+            <span class="card-icon">🌐</span>
+          </div>
+          <div class="card-content">
+            <h3 class="card-title">Situs Bahasa Asing</h3>
+            <p class="card-desc">Jelaskan website China, Jepang, Jerman, dll. dengan instruksi dwibahasa ramah.</p>
+          </div>
+          <div class="card-footer">
+            <span class="card-badge">Bilingual AI</span>
+            <span class="card-arrow">➔</span>
+          </div>
+        </div>
+
+        <!-- 6. Custom Direct URL -->
+        <div class="quick-card card-custom-url" id="card-open-custom-url">
+          <div class="card-icon-wrap icon-url">
+            <span class="card-icon">🚀</span>
+          </div>
+          <div class="card-content">
+            <h3 class="card-title">Website Pilihan Anda</h3>
+            <p class="card-desc">Buka website apa saja (Wikipedia, Tokopedia, GitHub) dan dampingi dengan GMT.</p>
+          </div>
+          <div class="card-footer">
+            <span class="card-badge">Kustom URL</span>
+            <span class="card-arrow">➔</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features Overview Banner -->
+    <section class="features-banner">
+      <div class="feature-item">
+        <span class="feature-icon">👁️</span>
+        <div>
+          <h4>Jayu Vision Grounding</h4>
+          <p>Jika selector gagal, AI vision membaca koordinat visual tombol secara otomatis.</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <span class="feature-icon">🎙️</span>
+        <div>
+          <h4>Hands-Free Wake Word</h4>
+          <p>Cukup ucapkan "Halo GMT" atau "Hey GMT" untuk memanggil asisten kapan saja.</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <span class="feature-icon">🖐️</span>
+        <div>
+          <h4>Webcam Hand Gestures</h4>
+          <p>Scroll dan klik tautan web hanya dengan lambaian tangan di depan webcam.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="hub-footer">
+    <span>GMT — Guide Me To · AI Browser Co-Pilot</span>
+    <span class="footer-dot">·</span>
+    <button class="footer-link-btn" id="btn-footer-settings">⚙️ Atur API Key</button>
+    <span class="footer-dot">·</span>
+    <button class="footer-link-btn" id="btn-footer-mic">🎙️ Izin Mikrofon Global</button>
+  </footer>
+
+  <!-- Otak & Kamus Pintar Modal -->
+  <div class="modal-backdrop" id="modal-memory" style="display:none;">
+    <div class="modal-card" style="max-width: 540px;">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <span class="modal-icon">🧠</span>
+          <div>
+            <h3 style="margin:0;font-size:16px;font-weight:700;">Otak & Kamus Pintar GMT</h3>
+            <p style="margin:2px 0 0 0;font-size:11.5px;color:rgba(255,255,255,0.6);">Glosarium personal link & catatan Anda</p>
+          </div>
+        </div>
+        <button class="btn-close-modal" id="btn-close-memory">✕</button>
+      </div>
+      <div class="modal-body">
+        <!-- Quick Add in Hub -->
+        <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px;margin-bottom:12px;">
+          <div style="font-size:12px;font-weight:600;color:#00D4FF;margin-bottom:6px;">➕ Tambah Simpanan Baru</div>
+          <input type="text" id="hub-brain-key-input" placeholder="Nama / Panggilan (cth: profil facebook kanwil)" style="width:100%;background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:8px 11px;color:white;font-size:12.5px;outline:none;box-sizing:border-box;margin-bottom:6px;" />
+          <div style="display:flex;gap:6px;">
+            <input type="text" id="hub-brain-val-input" placeholder="Link URL atau Catatan (cth: https://facebook.com/kemenkumjogja)" style="flex:1;background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:8px 11px;color:white;font-size:12.5px;outline:none;box-sizing:border-box;" />
+            <button id="btn-hub-add-brain" style="background:#0071E3;color:white;border:none;border-radius:8px;padding:8px 14px;font-weight:600;font-size:12.5px;cursor:pointer;white-space:nowrap;">Simpan</button>
+          </div>
+        </div>
+
+        <div style="margin-bottom:10px;">
+          <input type="text" id="hub-brain-search-input" placeholder="🔍 Cari simpanan / glosarium..." style="width:100%;background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:7px 11px;color:white;font-size:12px;outline:none;box-sizing:border-box;" />
+        </div>
+
+        <div class="memory-items-list" id="memory-items-list" style="max-height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;">
+          <div class="empty-state">Belum ada item tersimpan di otak.</div>
+        </div>
+
+        <div style="margin-top:12px;padding:8px 12px;background:rgba(0,113,227,0.1);border-radius:8px;border:1px solid rgba(0,113,227,0.25);font-size:11.5px;color:rgba(255,255,255,0.7);line-height:1.4;">
+          💡 <strong>Tips:</strong> Anda bisa langsung katakan: <em>"Tolong simpan link facebook kanwil [url]"</em> dan nanti panggil: <em>"Tolong cek facebook kanwil"</em>.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="btn-clear-memory">🧹 Bersihkan Semua</button>
+        <button class="btn-primary" id="btn-done-memory">Selesai</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="modal-backdrop" id="modal-settings" style="display:none;">
+    <div class="modal-card modal-settings-card">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <span class="modal-icon">⚙️</span>
+          <h3>Pengaturan GMT AI & Suara</h3>
+        </div>
+        <button class="btn-close-modal" id="btn-close-settings">✕</button>
+      </div>
+      <div class="modal-body">
+        <!-- AI Provider Picker -->
+        <div class="settings-group">
+          <label class="settings-label">AI Provider Utama</label>
+          <div class="provider-radio-group">
+            <label class="provider-radio-label">
+              <input type="radio" name="ai_provider" value="sumopod" id="radio-sumopod" checked>
+              <div class="radio-card">
+                <span class="radio-title">⚡ Sumopod (DeepSeek Flash)</span>
+                <span class="radio-sub">Rekomendasi — Respon instan, pemahaman akurat, hemat biaya</span>
+              </div>
+            </label>
+            <label class="provider-radio-label">
+              <input type="radio" name="ai_provider" value="gemini" id="radio-gemini">
+              <div class="radio-card">
+                <span class="radio-title">✨ Google Gemini Flash</span>
+                <span class="radio-sub">Gemini 2.5 / 1.5 Flash dengan Vision Multimodal</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Sumopod Key Input -->
+        <div class="settings-group">
+          <label class="settings-label" for="setting-sumopod-key">
+            Sumopod API Key
+            <a href="https://sumopod.com" target="_blank" class="label-link">Dapatkan Key ↗</a>
+          </label>
+          <div class="input-password-wrap">
+            <input type="password" id="setting-sumopod-key" placeholder="sp-..." autocomplete="off">
+            <button class="btn-toggle-eye" type="button" data-for="setting-sumopod-key">👁️</button>
+          </div>
+        </div>
+
+        <!-- Gemini Key Input -->
+        <div class="settings-group">
+          <label class="settings-label" for="setting-gemini-key">
+            Google Gemini API Key
+            <a href="https://aistudio.google.com/app/apikey" target="_blank" class="label-link">Dapatkan Key Gratis ↗</a>
+          </label>
+          <div class="input-password-wrap">
+            <input type="password" id="setting-gemini-key" placeholder="AIzaSy..." autocomplete="off">
+            <button class="btn-toggle-eye" type="button" data-for="setting-gemini-key">👁️</button>
+          </div>
+        </div>
+
+        <!-- ElevenLabs Key (Optional) -->
+        <div class="settings-group">
+          <label class="settings-label" for="setting-elevenlabs-key">
+            ElevenLabs API Key (Opsional - Suara Natural)
+            <a href="https://elevenlabs.io" target="_blank" class="label-link">ElevenLabs ↗</a>
+          </label>
+          <div class="input-password-wrap">
+            <input type="password" id="setting-elevenlabs-key" placeholder="Kosongkan jika menggunakan suara browser bawaan">
+            <button class="btn-toggle-eye" type="button" data-for="setting-elevenlabs-key">👁️</button>
+          </div>
+        </div>
+
+        <!-- Quick Toggles -->
+        <div class="settings-group">
+          <label class="settings-label">Fitur Suara & Kontrol</label>
+          <div class="settings-checkboxes">
+            <label class="checkbox-row">
+              <input type="checkbox" id="setting-wake-word">
+              <span>🎙️ Hands-Free Wake Word ("Halo GMT" / "Hey GMT")</span>
+            </label>
+            <label class="checkbox-row">
+              <input type="checkbox" id="setting-audio-enabled" checked>
+              <span>🔊 Suara Pemandu Teks Otomatis (TTS)</span>
+            </label>
+          </div>
+        </div>
+
+        <div id="settings-status-msg" class="settings-status-msg" style="display:none;"></div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-secondary" id="btn-test-connection">🧪 Tes Koneksi AI</button>
+        <button class="btn-primary" id="btn-save-settings">💾 Simpan Pengaturan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast notification -->
+  <div class="toast-notification" id="hub-toast" style="display:none;"></div>
+
+  <script src="hub.js"></script>
+</body>
+</html>

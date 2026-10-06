@@ -37,9 +37,17 @@ Mulai dari mengisi formulir panjang, menavigasi website berbahasa asing (China, 
 
 ---
 
-### 4. 🧠 External Working Memory (Jayu Scratchpad)
-- Memori konteks sesi persisten (`chrome.storage.local`) untuk mencatat dan mengingat informasi penting antar perpindahan halaman (misal: nomor registrasi, kode booking, topik pencarian, nama pemohon).
-- Dilengkapi **Memory Drawer** terintegrasi di panel atas (bisa dibuka-tutup) dengan chip badge dan tombol *Bersihkan Memori*.
+### 4. 🧠 Otak & Kamus Pintar GMT (Personal Brain & Glossary)
+- **Penyimpanan Permanen Personalisasi:** Setiap pengguna memiliki kamus glosarium personal sendiri yang tersimpan permanen di `chrome.storage.local`.
+- **Perintah Suara / Teks Natural:**
+  - *"Tolong simpan link facebook kanwil https://facebook.com/kemenkumjogja"* ➔ GMT otomatis menyimpannya ke memori otak.
+  - *"Tolong cek facebook kanwil"* ➔ GMT langsung mengenali URL yang tersimpan di kamus dan membuka/memandu ke halaman tersebut!
+- **Manajemen Visual Apple-Style:**
+  - Tombol **🧠** di header panel membuka drawer kamus personal dengan indikator jumlah item.
+  - Form tambah cepat (*Quick Add*) dengan tombol *Pakai Link Tab Ini*.
+  - Kotak pencarian (*Search Filter*) untuk mencari item simpanan dengan cepat.
+  - Tombol aksi: **Buka ↗** (langsung pandu ke link) dan **🗑️ Hapus**.
+- **Sinkronisasi Hub & In-Page:** Glosarium otak yang disimpan dapat diakses dari in-page sidebar maupun dari Launchpad Hub (`hub/index.html`).
 
 ---
 
@@ -51,17 +59,29 @@ Mulai dari mengisi formulir panjang, menavigasi website berbahasa asing (China, 
 
 ---
 
-### 6. 🖐️ Hands-Free Hand Gesture Scrolling (Webcam Lokal)
-- Scroll halaman web hanya dengan melambaikan tangan di depan webcam kamera laptop/PC Anda!
-- Algoritma **Local Optical Flow Difference**:
-  - Lambaian tangan ke atas ➔ Halaman scroll ke atas ⬆️.
-  - Lambaian tangan ke bawah ➔ Halaman scroll ke bawah ⬇️.
-- **100% Aman & Privasi:** Video hanya dianalisis di memori lokal peramban (resolusi rendah 80×60 hemat CPU) dan **tidak pernah dikirim ke internet ataupun server**.
-- Dilengkapi *Floating Gesture Indicator* di pojok layar saat fitur aktif.
+### 6. 🖐️ Hands-Free Hand Gesture Control (Webcam Lokal)
+- Kendalikan navigasi peramban dan kursor mouse secara *hands-free* di depan webcam Anda:
+  1. 🖐️ **5 Jari (Telapak Terbuka):** Gerakkan tangan ke atas / ke bawah untuk melakukan scroll halaman.
+  2. ✊ **Menggenggam (Fist):** Menghentikan (*stop*) laju scroll seketika.
+  3. ☝️ **1 Jari (Pointing):** Menggeser kursor virtual di layar seperti *mouse* dengan pelacakan halus.
+  4. 👆 **1 Jari Klik (Tap Jari):** Melakukan aksi **Klik Kiri** pada tombol/elemen yang ditunjuk kursor.
+  5. ✌️ **2 Jari Klik (Dua Jari):** Melakukan aksi **Klik Kanan** (Context Menu) pada posisi kursor.
+- **100% Aman & Privasi:** Video dianalisis secara lokal menggunakan pemrosesan pengenalan jari (*radial peak contour & skin segmentation*) tanpa mengirim gambar ke server atau internet.
+- Dilengkapi *Floating Gesture Indicator* dengan status gestur terkini, kursor pointer interaktif, dan tombol matikan cepat (✕).
 
 ---
 
-### 7. 📱 Modern UI & Page-Push Layout
+### 7. 🚀 GMT Launchpad & Hub (Dukungan New Tab & Halaman Kosong)
+- **Bisa Dibuka dari New Tab:** Ketika pengguna berada di *New Tab* (`chrome://newtab`), tab kosong (`about:blank`), atau belum membuka website apapun, mengeklik ikon ekstensi di toolbar browser akan **langsung membuka GMT Launchpad & Co-Pilot Hub** di tab tersebut.
+- **Dynamic Script Injection:** Jika pengguna mengeklik ikon pada tab website yang sudah terbuka sebelum ekstensi dimuat/diperbarui, GMT otomatis menginjeksi stylesheet & skrip tanpa mewajibkan pengguna me-refresh halaman web secara manual.
+- **Pusat Komando Terintegrasi di Hub:**
+  - Input suara & teks super responsif untuk langsung menuju tugas (*Gmail, Google, YouTube, Google Form, Situs Asing, atau URL Bebas*).
+  - Countdown auto-launch & persistensi sesi: Saat pengguna memilih tugas di Hub, AI merencanakan langkah-langkahnya, menyimpan sesi panduan, lalu otomatis mengalihkan tab ke website tujuan dengan panel panduan GMT langsung aktif dan membacakan instruksi!
+  - Tombol cepat **🚀 Launchpad** di header panel samping untuk membuka Hub kapan saja dari website manapun.
+
+---
+
+### 8. 📱 Modern UI & Page-Push Layout
 - **Sleek Right-Edge Dock Tab:** Menggantikan tombol bubble mengambang lama dengan tab ramping vertikal di tepi kanan layar (`#gmt-dock-tab`) dengan indikator status denyut (*Idle*, *Listening*, *Guiding*).
 - **Page-Push (Web View Shrink):** Ketika panel samping GMT dibuka, margin website otomatis digeser dan disusutkan 390px ke kiri. Panel GMT berada di samping tampilan web sehingga **tidak pernah menutupi konten, formulir, atau tombol penting di website**.
 - **Checklist Tahapan Interaktif:**
@@ -72,7 +92,7 @@ Mulai dari mengisi formulir panjang, menavigasi website berbahasa asing (China, 
 
 ---
 
-### 8. 🌐 Panduan Halaman Bahasa Asing & Fitur Jelaskan Halaman
+### 9. 🌐 Panduan Halaman Bahasa Asing & Fitur Jelaskan Halaman
 - **Tombol Cepat "Jelaskan Halaman Ini (Explain Page)":**
   - Menganalisis situs berbahasa asing (China, Jepang, Korea, Jerman, dsb.) dan menjelaskannya dalam Bahasa Indonesia yang ramah (fungsi website, menu penting, dan apa saja yang bisa dilakukan).
 - **Instruksi Dwibahasa (Bilingual Guidance):**
@@ -84,7 +104,7 @@ Mulai dari mengisi formulir panjang, menavigasi website berbahasa asing (China, 
 
 ---
 
-### 9. ⚡ Multi-AI Provider & Uninterrupted Voice
+### 10. ⚡ Multi-AI Provider & Uninterrupted Voice
 - **AI Provider:**
   - **Sumopod (DeepSeek Flash)** *(Rekomendasi)*: Sangat responsif, pemahaman instruksi tajam, dan hemat biaya via OpenAI-compatible endpoint.
   - **Google Gemini (2.5-Flash / 1.5-Flash)**: Mendukung multimodal vision dan fallback otomatis jika koneksi provider utama terganggu.
@@ -94,7 +114,7 @@ Mulai dari mengisi formulir panjang, menavigasi website berbahasa asing (China, 
 
 ---
 
-### 10. 💾 Sesi Persisten (Multi-Page Persistence)
+### 11. 💾 Sesi Persisten (Multi-Page Persistence)
 - Status panel, riwayat chat, daftar tahapan, checklist progres, dan variabel memori tersimpan aman di `chrome.storage.local`.
 - Ketika halaman berpindah alamat URL atau di-*refresh*, sesi panduan otomatis dipulihkan tanpa kehilangan jejak.
 - Sesi otomatis dibersihkan secara aman jika tidak aktif lebih dari 2 jam.
