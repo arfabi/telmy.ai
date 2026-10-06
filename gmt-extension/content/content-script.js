@@ -1597,23 +1597,16 @@
     saveSession();
   }
 
-  // ─── Hands-free Hand Gesture Vision Engine ───
-  // Fitur:
-  // 1. 🖐️ 5 Jari: Scroll ke atas / bawah
-  // 2. ✊ Menggenggam: Stop scroll
-  // 3. ☝️ 1 Jari: Geser kursor (seperti mouse)
-  // 4. 👆 1 Jari Klik: Klik kiri
-  // 5. ✌️ 2 Jari Klik: Klik kanan
+  // ─── Hands-free Hand Gesture Vision Engine (Dedicated to Scroll Only) ───
+  // Mode Gestur: Murni Hanya Untuk Scroll Halaman Bebas Tangan (Hands-Free Scroll)
+  // • 🖐️ Buka Tangan (Naik / Turun): Scroll halaman ke atas / bawah ⬆️⬇️
+  // • ✊ Kepalkan Tangan (Genggam): Hentikan scroll seketika ⏹️
+  // (Semua gestur klik mouse & pergeseran kursor telah dinonaktifkan demi akurasi scroll)
 
   let gestureStream = null;
   let gestureInterval = null;
   let prevCentroidY = null;
   let prevTipY = null;
-  let virtualCursorX = null;
-  let virtualCursorY = null;
-  let lastClickTime = 0;
-  let lastRightClickTime = 0;
-  let steadyCount = 0;
 
   // ─── Google MediaPipe Hands Neural Engine State ───
   let mpHandsInstance = null;
@@ -1649,13 +1642,14 @@
           video: { width: 320, height: 240, frameRate: 24 }
         });
         indicator?.classList.remove('gmt-hidden');
+        cursor?.classList.add('gmt-hidden');
         if (indicator) {
           indicator.style.cursor = 'default';
           indicator.onclick = null;
         }
         startGestureTracking();
         if (forceState === null) {
-          addMessage('ai', '🖐️ **Kontrol Gestur Scroll Aktif!**\n\n• 🖐️ **Buka Tangan:** Gerakkan tangan ke atas / bawah untuk scroll halaman\n• ✊ **Kepalkan Tangan (Genggam):** Hentikan scroll seketika');
+          addMessage('ai', '🖐️ **Mode Hands-Free Scroll Aktif!**\n\n• 🖐️ **Buka Tangan:** Gerakkan tangan ke atas / bawah untuk scroll halaman ⬆️⬇️\n• ✊ **Kepalkan Tangan (Genggam):** Hentikan scroll seketika ⏹️\n\n*(Semua gestur lain dinonaktifkan — 100% didedikasikan untuk kenyamanan scrolling)*');
         }
       } catch (err) {
         console.warn('[GMT] Gesture getUserMedia permission notice:', err);
@@ -1685,6 +1679,115 @@
       cursor?.classList.add('gmt-hidden');
     }
     saveSession();
+  }
+
+  // ─── Universal Smart Page Scroll Engine (Bekerja di YouTube, SPA, Virtual DOM) ───
+  let lastScrollTriggerTime = 0;
+
+  function performSmartPageScroll(distance) {
+    const now = Date.now();
+    // Beri jeda minimal 110ms agar animasi scroll di Chromium tidak dibatalkan oleh frame berikutnya
+    if (now - lastScrollTriggerTime < 110) {
+      return;
+    }
+    lastScrollTriggerTime = now;
+
+    // 1. Standar window scroll
+    try {
+      window.scrollBy({ top: distance, behavior: 'smooth' });
+    } catch (e) {}
+
+    // 2. document.scrollingElement / documentElement / body
+    const scrollEl = document.scrollingElement || document.documentElement || document.body;
+    if (scrollEl) {
+      try {
+        scrollEl.scrollBy({ top: distance, behavior: 'smooth' });
+      } catch (e) {}
+    }
+
+    // 3. Kontainer spesifik YouTube (#content, ytd-app, #page-manager, ytd-watch-flexy, #primary)
+    const ytSelectors = [
+      'ytd-app',
+      '#content',
+      '#page-manager',
+      'ytd-watch-flexy',
+      '#primary',
+      '#columns',
+      '#secondary',
+      '#contents',
+      'ytd-playlist-video-list-renderer',
+      'main',
+      '[role="main"]',
+      '#root',
+      '#app'
+    ];
+
+    for (const sel of ytSelectors) {
+      try {
+        const el = document.querySelector(sel);
+        if (el && el.scrollHeight > el.clientHeight) {
+          el.scrollBy({ top: distance, behavior: 'smooth' });
+        }
+      } catch (e) {}
+    }
+
+    // 4. Cari kontainer scrollable aktif di tengah viewport
+    try {
+      const midX = Math.round(window.innerWidth / 2);
+      const midY = Math.round(window.innerHeight / 2);
+      let curr = document.elementFromPoint(midX, midY);
+      while (curr && curr !== document.body && curr !== document.documentElement) {
+        const style = window.getComputedStyle(curr);
+        if ((style.overflowY === 'auto' || style.overflowY === 'scroll') && curr.scrollHeight > curr.clientHeight) {
+          curr.scrollBy({ top: distance, behavior: 'smooth' });
+          break;
+        }
+        curr = curr.parentElement;
+      }
+    } catch (e) {}
+
+    // 5. Dispatch synthetic WheelEvent ke elemen di tengah layar
+    // Ini adalah kunci agar halaman YouTube (Polymer SPA / Virtual List) merespons gerakan scroll!
+    try {
+      const midX = Math.round(window.innerWidth / 2);
+      const midY = Math.round(window.innerHeight / 2);
+      const targetEl = document.elementFromPoint(midX, midY) || document.body;
+      if (targetEl) {
+        const wheelEv = new WheelEvent('wheel', {
+          bubbles: true,
+          cancelable: true,
+          view: window,
+          clientX: midX,
+          clientY: midY,
+          deltaY: distance,
+          deltaMode: 0 // DOM_DELTA_PIXEL
+        });
+        targetEl.dispatchEvent(wheelEv);
+      }
+    } catch (e) {}
+  }
+
+  function performInstantStopScroll() {
+    try {
+      window.scrollTo({ top: window.scrollY, behavior: 'auto' });
+    } catch (e) {}
+
+    const scrollEl = document.scrollingElement || document.documentElement || document.body;
+    if (scrollEl) {
+      try {
+        scrollEl.scrollTo({ top: scrollEl.scrollTop, behavior: 'auto' });
+      } catch (e) {}
+    }
+
+    const ytSelectors = ['ytd-app', '#content', '#page-manager', 'ytd-watch-flexy', '#primary', 'main'];
+    for (const sel of ytSelectors) {
+      try {
+        const el = document.querySelector(sel);
+        if (el) {
+          el.scrollTo({ top: el.scrollTop, behavior: 'auto' });
+        }
+      } catch (e) {}
+    }
   }
 
   function handleMediaPipeResults(results, video) {
@@ -1767,7 +1870,7 @@
     const isFist = (!isIndexExtended && !isMiddleExtended && !isRingExtended && !isPinkyExtended);
 
     if (isFist) {
-      window.scrollTo({ top: window.scrollY, behavior: 'auto' });
+      performInstantStopScroll();
       prevMpCentroidY = null;
       updateGestureStatus('✊', 'Genggam: Scroll Berhenti ⏹️');
       if (hudBadge) {
@@ -1787,7 +1890,7 @@
         const deltaY = palmY - prevMpCentroidY;
 
         if (deltaY < -0.012 || palmY < 0.35) {
-          window.scrollBy({ top: -160, behavior: 'smooth' });
+          performSmartPageScroll(-200);
           updateGestureStatus('🖐️', 'Buka Tangan: Scroll Ke Atas ⬆️');
           if (hudBadge) {
             hudBadge.textContent = '⬆️ Scroll Ke Atas';
@@ -1796,7 +1899,7 @@
           }
           logGestureChat('scroll_up', '🖐️ <b>Buka Tangan:</b> Scroll halaman ke atas ⬆️', 2000);
         } else if (deltaY > 0.012 || palmY > 0.65) {
-          window.scrollBy({ top: 160, behavior: 'smooth' });
+          performSmartPageScroll(200);
           updateGestureStatus('🖐️', 'Buka Tangan: Scroll Ke Bawah ⬇️');
           if (hudBadge) {
             hudBadge.textContent = '⬇️ Scroll Ke Bawah';
@@ -2368,7 +2471,7 @@
 
       // ─── 1. MENGGENGGAM (Stop Scroll) ───
       if (gesture === 'genggam') {
-        window.scrollTo({ top: window.scrollY, behavior: 'auto' });
+        performInstantStopScroll();
         prevCentroidY = null;
         updateGestureStatus('✊', 'Genggam: Scroll Berhenti ⏹️');
         if (hudBadge) {
@@ -2385,7 +2488,7 @@
         if (prevCentroidY !== null) {
           const deltaY = cy - prevCentroidY;
           if (deltaY < -1.4) {
-            window.scrollBy({ top: -160, behavior: 'smooth' });
+            performSmartPageScroll(-200);
             updateGestureStatus('🖐️', 'Buka Tangan: Scroll Ke Atas ⬆️');
             if (hudBadge) {
               hudBadge.textContent = '⬆️ Scroll Ke Atas';
@@ -2394,7 +2497,7 @@
             }
             logGestureChat('scroll_up', '🖐️ <b>Buka Tangan:</b> Scroll halaman ke atas ⬆️', 2000);
           } else if (deltaY > 1.4) {
-            window.scrollBy({ top: 160, behavior: 'smooth' });
+            performSmartPageScroll(200);
             updateGestureStatus('🖐️', 'Buka Tangan: Scroll Ke Bawah ⬇️');
             if (hudBadge) {
               hudBadge.textContent = '⬇️ Scroll Ke Bawah';
@@ -2437,39 +2540,7 @@
     return `<${tag}>`;
   }
 
-  function performLeftClick(x, y) {
-    const cursor = document.getElementById('gmt-gesture-cursor');
-    if (cursor) {
-      cursor.classList.add('clicking');
-      setTimeout(() => cursor.classList.remove('clicking'), 250);
-    }
-    const target = document.elementFromPoint(x, y);
-    if (target) {
-      target.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, clientX: x, clientY: y, view: window }));
-      target.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, clientX: x, clientY: y, view: window }));
-      target.click();
-    }
-    spawnClickRipple(x, y, '#00D4FF');
-    updateGestureStatus('👆', '1 Jari: Klik Kiri! 🎯');
-    const targetLabel = getElementDescription(target);
-    addMessage('gesture', `👆 <b>1 Jari (Klik Kiri):</b> Mengklik <b>"${targetLabel}"</b> 🎯`);
-  }
-
-  function performRightClick(x, y) {
-    const cursor = document.getElementById('gmt-gesture-cursor');
-    if (cursor) {
-      cursor.classList.add('clicking');
-      setTimeout(() => cursor.classList.remove('clicking'), 250);
-    }
-    const target = document.elementFromPoint(x, y);
-    if (target) {
-      target.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: x, clientY: y, button: 2, view: window }));
-    }
-    spawnClickRipple(x, y, '#FF9800');
-    updateGestureStatus('✌️', '2 Jari: Klik Kanan! 📑');
-    const targetLabel = getElementDescription(target);
-    addMessage('gesture', `✌️ <b>2 Jari (Klik Kanan):</b> Menu konteks pada <b>"${targetLabel}"</b> 📑`);
-  }
+  // Gestur klik kiri / kanan telah dinonaktifkan total: sistem kamera kini murni 100% untuk scroll & stop.
 
   function updateGestureStatus(icon, text) {
     const iconEl = document.getElementById('gmt-gesture-icon');

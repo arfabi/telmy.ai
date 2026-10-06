@@ -59,15 +59,13 @@ Mulai dari mengisi formulir panjang, menavigasi website berbahasa asing (China, 
 
 ---
 
-### 6. 🖐️ Hands-Free Hand Gesture Control (Webcam Lokal)
-- Kendalikan navigasi peramban dan kursor mouse secara *hands-free* di depan webcam Anda:
-  1. 🖐️ **5 Jari (Telapak Terbuka):** Gerakkan tangan ke atas / ke bawah untuk melakukan scroll halaman.
-  2. ✊ **Menggenggam (Fist):** Menghentikan (*stop*) laju scroll seketika.
-  3. ☝️ **1 Jari (Pointing):** Menggeser kursor virtual di layar seperti *mouse* dengan pelacakan halus.
-  4. 👆 **1 Jari Klik (Tap Jari):** Melakukan aksi **Klik Kiri** pada tombol/elemen yang ditunjuk kursor.
-  5. ✌️ **2 Jari Klik (Dua Jari):** Melakukan aksi **Klik Kanan** (Context Menu) pada posisi kursor.
-- **100% Aman & Privasi:** Video dianalisis secara lokal menggunakan pemrosesan pengenalan jari (*radial peak contour & skin segmentation*) tanpa mengirim gambar ke server atau internet.
-- Dilengkapi *Floating Gesture Indicator* dengan status gestur terkini, kursor pointer interaktif, dan tombol matikan cepat (✕).
+### 6. 🖐️ Hands-Free Hand Gesture Scroll (Google MediaPipe AI Webcam Lokal)
+- Kendalikan scroll halaman peramban secara *hands-free* di depan webcam Anda menggunakan model resmi **Google MediaPipe Hands AI (21 Landmark 3D)**:
+  1. 🖐️ **Buka Tangan (Telapak Terbuka):** Gerakkan tangan ke atas / ke bawah untuk melakukan scroll halaman dengan halus (⬆️ / ⬇️).
+  2. ✊ **Kepalkan Tangan (Genggam):** Menghentikan (*stop*) laju scroll seketika (⏹️).
+- **Murni Didedikasikan untuk Scroll:** Semua gestur klik mouse dinonaktifkan secara total sehingga navigasi membaca artikel/dokumen 100% stabil tanpa risiko salah klik link atau tombol.
+- **100% Aman & Privasi:** Video dianalisis secara lokal di browser Anda dengan model neural network Google MediaPipe Web tanpa mengirim gambar ke server atau internet.
+- Dilengkapi *Floating Camera HUD* di pojok kiri atas dengan visualisasi kerangka tangan 21-titik real-time, badge status live, dan tombol pengubah ukuran.
 
 ---
 
