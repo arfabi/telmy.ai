@@ -1,226 +1,162 @@
-# PRD & Technical Plan: Telmy.ai (AI Form Explainer & Conversational Co-Pilot)
+# PRD & Technical Plan: Telmy.ai (AI Form Guide & Conversational Co-Pilot)
 
-**Status:** PRD v2.0 (Evolusi dari MVP ke Multimodal Conversational Co-Pilot)  
-**Platform:** Chrome Extension Manifest V3 + Node.js/Cloud Run + Firebase Firestore + Gemini / GLM-5.3 AI + ElevenLabs Voice Engine  
-**Proyek Referensi & Inspirasi:** `telmy` core + modul otomasi & voice dari `gmt-extension-old` (GMT)
+**Status:** PRD v2.1 (Google AI Hackathon & Chrome Web Store Fast-Track Edition)  
+**Platform:** Chrome Extension Manifest V3 (`chrome.sidePanel`) + Firebase (Hosting, Firestore, Functions/Cloud Run) + 100% Google Gemini AI + Gemini 3.8 Flash-Lite TTS  
+**Domain Resmi:** `telmy.id` (primer) / `telmyai.com`  
+**Target Submission:** Google AI Hackathon (Kepatuhan 100% Ekosistem Google) & Chrome Web Store (< 10 Hari)  
 
 ---
 
 ## 1. Ringkasan Eksekutif & Visi Produk
 
-**Telmy.ai** adalah asisten cerdas (*multimodal AI form-filling & browser co-pilot*) yang memandu masyarakat umum maupun warga negara asing (WNA) dalam memahami, menavigasi, dan menyelesaikan pengisian formulir digital publik, portal perizinan (seperti OSS-RBA, Coretax, Imigrasi), hingga Google Forms.
+**Telmy.ai** adalah asisten formulir cerdas (*multimodal AI form guide & browser co-pilot*) yang memandu masyarakat umum maupun warga negara asing (WNA) dalam memahami, menavigasi, dan menyelesaikan pengisian formulir digital pelayanan publik, portal perizinan (seperti Apostille, OSS-RBA, Coretax, Imigrasi), hingga Google Forms secara mudah, aman, ramah privasi, dan multibahasa.
 
-Pada versi v2.0, Telmy bertransformasi dari sekadar pembaca dan penjelas form statis menjadi **Asisten Berbicara & Berinteraksi (Multimodal Conversational Co-Pilot)** dengan 4 pilar fitur revolusioner:
-1. **Fitur Suara Interaktif (Voice Guidance & 2-Way Conversational Mode via ElevenLabs):** Suara panduan alami manusiawi dan percakapan suara dua arah (*talk to assistant*).
-2. **Sinkronisasi Percakapan Chatbot di Side Panel:** Seluruh dialog suara ditranskripsikan dua arah ke dalam antarmuka obrolan (*live conversation stream*) di panel kanan dengan riwayat tersimpan persisten.
-3. **Avatar Animasi Interaktif (3 Dynamic States):** Maskot/avatar visual yang responsif terhadap audio dan konteks panduan (State *Diam/Idle*, *Berbicara/Speaking*, dan *Bicara Sambil Menunjuk/Pointing*).
-4. **Kontrol Kursor Robot & Otomasi Visual (Mouse Control, Highlight, Click, & URL Navigation):** Kursor virtual yang bergerak halus mengarahkan perhatian pengguna, menyorot elemen, mengeksekusi klik tombol, mengisi input, serta membuka/mengakses URL dengan prinsip *Human-in-the-Loop*.
+Pada versi v2.1, arsitektur Telmy diselaraskan 100% dengan standar **Google AI Ecosystem & Firebase** guna memenuhi kriteria penilaian Google AI Hackathon (*Technical Merit*, *Problem Alignment & Impact*), serta menerapkan strategi **Dual-Build** untuk percepatan rilis di Chrome Web Store:
+1. **100% Google AI Native:** Seluruh penalaran form, kamus konteks, dan obrolan ditangani oleh **Google Gemini (Gemini 1.5/2.0 Flash)**.
+2. **Audio Voice Engine Resmi Google:** Migrasi suara penuh dari pihak ketiga ke **Gemini 3.8 Flash-Lite TTS (Preview)** dan Google Cloud TTS dengan fallback browser Web Speech API.
+3. **Privasi Ketat & Push-to-Talk:** Menghapus wake-word atau mikrofon *always-listening*. Mikrofon hanya aktif saat pengguna secara sadar mengklik ikon mikrofon di panel samping (*Push-to-Talk*).
+4. **Chrome Native Side Panel (`chrome.sidePanel`):** Panel samping native browser yang responsif, tidak merusak CSS website target, dan menjalankan mikrofon/audio di origin ekstensi yang aman.
+5. **Platform Web Terpadu (Firebase):** Landing page, live demo playground, autentikasi Google 1-klik, dan dashboard pengguna di `telmy.id` / `telmyai.com`.
 
 ---
 
-## 2. Analisis & Pembelajaran dari `gmt-extension-old` (Brainstorming Retrospective)
+## 2. Kepatuhan Aturan Hackathon & Strategi Dual-Build
 
-Eksplorasi terhadap codebase legacy `old/gmt-extension-old` memberikan fondasi arsitektur dan pelajaran penting yang diadopsi dan disempurnakan ke dalam Telmy:
+### A. Kepatuhan Aturan Google Hackathon
+* **Anti-Diskualifikasi:** Menghapus seluruh dependensi ke LLM non-Google (GLM-5.3) dan voice engine pihak ketiga (ElevenLabs). Telmy 100% ditenagai oleh Google Gemini & Google Cloud TTS.
+* **Pengukuran Dampak Sosial (25% Kriteria):** Menyajikan metrik terukur sebelum vs sesudah (pengurangan waktu pengisian formulir dari 25 menit menjadi 5 menit dan pengurangan tingkat kesalahan data).
 
-| Aspek / Fitur | Implementasi di `gmt-extension-old` | Peningkatan & Standardisasi di Telmy v2.0 |
+### B. Strategi Dual-Build (Chrome Web Store vs Hackathon Demo)
+| Aspek | Build Lite (Chrome Web Store v1) | Build Full (Hackathon Demo & Juri) |
 | :--- | :--- | :--- |
-| **Voice TTS** | Menggunakan ElevenLabs API stream (`eleven_multilingual_v2`) dan fallback ke `window.speechSynthesis` / `chrome.tts`. | **Audio-Reactive Pipeline:** Stream audio ElevenLabs dianalisis secara real-time melalui Web Audio API (`AnalyserNode`) untuk menggerakkan animasi bibir avatar (*lip-sync*), dengan fallback suara lokal yang stabil. |
-| **Voice Input & Wake Word** | Menggunakan `webkitSpeechRecognition` dengan mode wake word *"Halo GMT"*. | **Conversational Voice Mode:** Pengenalan suara kontinu dwibahasa (ID/EN/ZH/JA/KO) dengan auto-silence detection, push-to-talk, atau hands-free conversation. |
-| **Robot Cursor (Kursor Virtual)** | Elemen `#gmt-robot-cursor` dengan CSS absolute/fixed positioning, jeda manusiawi 1000ms, animasi `clicking`, dan *ripple effect*. | **Smart Smooth Path & Form Pointer:** Kursor neon Telmy terintegrasi dengan gestur avatar dan scroll halus (`scrollIntoView`), mendukung penyorotan bertahap tanpa membuat pengguna bingung. |
-| **Interaksi DOM & Eksekusi** | Native setter injection (`HTMLInputElement.prototype.value`), dispatch `Event('input')`, `KeyboardEvent`, dan mouse events. | **Resilient Form Automation:** Standardisasi untuk berbagai jenis form (Google Forms `.M7eMe`, input dinamis, Shadow DOM, select/radio group) dengan validasi sebelum eksekusi. |
-| **Navigasi Halaman** | Background worker memproses navigasi URL langsung (misal query YouTube/Google). | **Multi-step Wizard Form Navigator:** Telmy dapat memandu perpindahan tahapan URL formulir multipart (Step 1 -> Step 2) sambil mempertahankan sesi percakapan & suara tanpa putus. |
-| **Side Panel & Layout** | CSS page-push (`margin-right: 390px` / shrink body) agar panel tidak menutupi form. | **Dipertahankan & Disempurnakan:** Desain Side Panel modern 380px Telmy yang responsif, dilengkapi chat history, progress tracker, dan avatar view. |
+| **Distribusi** | Chrome Web Store (Visibilitas: *Unlisted*) | File ZIP *Load Unpacked* di `telmy.id/download` |
+| **Izin Manifest** | Minimal: `activeTab`, `scripting`, `sidePanel`, `storage` | Izin yang sama + flag demo lokal |
+| **Host Permissions** | Sempit: `https://api.telmy.id/*`, `https://telmyai.com/*` | Sempit + izin localhost |
+| **Injeksi Skrip** | *On-demand* (saat klik ikon / shortcut `Alt+G`) | *On-demand* & auto-load di halaman demo |
+| **Otomasi Klik** | **Ditahan** (murni panduan visual: spotlight, badge, scroll) | Diaktifkan dengan tombol konfirmasi di halaman simulasi |
+| **Waktu Rilis** | Diajukan pada Hari ke-4 untuk lolos tepat waktu | Disertakan di submission form & video demo 3 menit |
 
 ---
 
-## 3. Spesifikasi 4 Fitur Baru Utama
+## 3. Spesifikasi Fitur Utama
 
-### 3.1. Fitur Voice: Voice Guidance & Percakapan 2 Arah (ElevenLabs)
+### 3.1. Mesin AI Penalaran & Suara (Gemini & Gemini TTS)
 
 #### A. Deskripsi Fungsional
-- **Voice Guidance:** Setiap instruksi atau penjelasan kolom dibacakan dengan suara alami berkualitas tinggi menggunakan **ElevenLabs API** (`eleven_multilingual_v2` / `eleven_turbo_v2_5`).
-- **Mode Percakapan Aktif (Conversational Mode):** Pengguna dapat mengaktifkan toggle mikrofon/Voice Mode di header panel atau menekan shortcut mikrofon.
-- **Interaksi Bebas Suara (Ngobrol):** Pengguna dapat bertanya bebas:
-  - *"Telmy, tolong jelaskan apa maksud kolom NIB ini?"*
-  - *"Apakah saya harus mengunggah paspor atau KTP?"*
-  - *"Tolong klik tombol lanjut ke halaman berikutnya."*
-  - *"Bantu saya isi bagian alamat domisili."*
-- **Multilingual Voice Switch:** ElevenLabs otomatis menyesuaikan aksen dan bahasa berdasarkan bahasa aktif yang dipilih (Indonesia, English, Mandarin, Japanese, Korean).
-- **Background Persistence (Uninterrupted Voice):** Menggunakan koordinasi audio service worker agar suara panduan tidak terputus saat halaman melakukan reload ringan atau AJAX navigation.
+* **Form Intelligence (Gemini 1.5 / 2.0 Flash):** Mengekstrak metadata struktur kolom formulir tanpa membaca data pribadi pengguna. Menghasilkan arti kolom, instruksi pengisian resmi, contoh isian fiktif yang realistis, dan catatan khusus paspor bagi WNA.
+* **Voice Guidance (Gemini 3.8 Flash-Lite TTS Preview):** Menghasilkan streaming suara alami berbahasa Indonesia dan multibahasa dengan efisiensi biaya dan latensi ultra-rendah.
+  * *SKU Input Teks:* `6D6B-51EE-87C4` ($0,50 per 1M token)
+  * *SKU Output Audio:* `676E-5101-0A30` ($6,00 per 1M token audio)
+* **Kamus Istilah Resmi (Firestore):** Memprioritaskan data definisi baku untuk portal birokrasi utama (Apostille, Paspor, OSS, NPWP).
 
-#### B. Pipeline Teknis
-1. **User Audio Input:** Ditangkap menggunakan `webkitSpeechRecognition` (Web Speech API) atau audio stream buffer.
-2. **LLM Orchestration:** Teks pengguna dikirim ke backend Telmy (GLM-5.3-Flash / Gemini) bersama konteks form saat ini (metadata form, field aktif, posisi halaman).
-3. **Audio Synthesis (ElevenLabs):** Respons AI dikirim ke endpoint ElevenLabs TTS stream (`/v1/text-to-speech/{voice_id}/stream`).
-4. **Playback & Frequency Analysis:** Audio diputar menggunakan `HTMLAudioElement` atau `AudioContext`, sekaligus mengirimkan data amplitudo/frekuensi ke modul Avatar untuk lip-sync.
+#### B. Interaksi Suara Push-to-Talk (Ramah Privasi)
+* **Murni Push-to-Talk:** Pengguna menekan ikon mikrofon di Side Panel untuk mulai berbicara. Tidak ada perekaman latar belakang atau *always-listening*.
+* **Live Transcript Streaming:** Ucapan pengguna ditranskripsikan langsung ke dalam bubble obrolan Side Panel.
+* **Fallback Cerdas:** Jika koneksi API suara backend terkendala, otomatis menggunakan Web Speech API browser (`SpeechSynthesis`).
 
 ---
 
-### 3.2. Sinkronisasi Chatbot di Side Panel (Live Conversation Stream)
+### 3.2. Chrome Native Side Panel (`chrome.sidePanel`) & Antarmuka Obrolan
 
 #### A. Deskripsi Fungsional
-- Ketika Voice Mode aktif, interaksi suara **selalu dicerminkan ke dalam panel percakapan (chat stream) di sisi kanan**:
-  - **Bubble Pengguna (User):** Menampilkan transkrip suara pengguna secara real-time (tampilan teks interim saat pengguna berbicara, lalu finalisasi).
-  - **Bubble Asisten (Telmy):** Menampilkan balasan AI berupa teks rapi berformat (poin-poin, penjelasan, peringatan kesalahan).
-  - **Action Pills / Execution Chips:** Jika AI menjalankan suatu aksi di halaman web, badge aksi interaktif disematkan di dalam bubble chat (contoh: `[🎯 Menyorot Kolom NIK]`, `[🖱️ Mengklik Simpan]`, `[🌐 Mengakses Halaman Formulir Data Diri]`).
-- **Persistensi Sesi Percakapan:** Riwayat chat disimpan di `chrome.storage.local`. Jika tab ditutup atau berpindah halaman dalam domain yang sama, riwayat obrolan tidak terhapus.
-- **Dukungan Input Hybrid:** Pengguna dapat beralih fleksibel antara berbicara lewat suara atau mengetik teks di kolom input chat bawah panel.
+* **Tab Navigasi Terintegrasi:**
+  * `💬 Obrolan (Chat):` Aliran percakapan dua arah antara pengguna dan Telmy Co-Pilot dengan kartu aksi interaktif (*action chips*).
+  * `📋 Kolom (Fields):` Daftar seluruh kolom formulir terdeteksi, lengkap dengan status terisi dan penunjuk navigasi stepper (*Sebelumnya / Berikutnya*).
+  * `📌 Ringkasan (Overview):` Ringkasan formulir, estimasi durasi pengisian, dan daftar berkas/dokumen yang wajib disiapkan.
+* **Dukungan 5 Bahasa Instan:** Pengalihan bahasa instan langsung dari header panel tanpa reload (🇮🇩 ID, 🇬🇧 EN, 🇨🇳 ZH, 🇯🇵 JA, 🇰🇷 KO).
+* **Shortcut Cepat:** Dapat dibuka dan ditutup kapan saja dengan kombinasi tombol **`Alt + G`**.
 
 ---
 
-### 3.3. Fitur Avatar Interaktif (3 Dynamic Animated States)
-
-#### A. Deskripsi Visual & Karakter
-Avatar Telmy berwujud karakter robot pemandu ramah modern (*friendly tech companion*) yang disematkan di bagian atas Side Panel atau floating widget.
-
-#### B. Tiga Status Animasi (Avatar States)
-
-1. **State 1: Mode Diam (Idle / Listening)**
-   - **Visual:** Bernapas perlahan (*subtle breathing animation*), mata berkedip secara natural setiap 3-5 detik.
-   - **Indikator Audio:** Saat mikrofon mendengarkan suara pengguna, terdapat *listening pulse ring* (gelombang cahaya neon) di sekeliling avatar.
-   - **Kondisi:** Aktif ketika asisten sedang menunggu input atau pengguna sedang membaca form.
-
-2. **State 2: Mode Berbicara (Speaking / Talking)**
-   - **Visual:** Mulut membuka-tutup secara dinamis mengikuti ritme intonasi suara, kepala sedikit mengangguk (*bobbing*).
-   - **Audio-Reactive Lip-Sync:** Amplitudo audio dari ElevenLabs dibaca secara real-time melalui Web Audio API `AnalyserNode`. Nilai rata-rata RMS (0.0 - 1.0) memetakan tingkat keterbukaan mulut (morph target atau SVG path height).
-   - **Kondisi:** Aktif saat audio ElevenLabs sedang diputar membacakan penjelasan umum atau menjawab pertanyaan pengguna.
-
-3. **State 3: Mode Bicara Sambil Menunjukkan (Speaking + Pointing/Gesturing)**
-   - **Visual:** Tangan/lengan avatar bergerak menunjuk ke arah kiri layar (menunjuk form/elemen target), tubuh sedikit condong ke kiri, ekspresi mata fokus mengarahkan pandangan ke formulir, sambil mulut tetap berbicara.
-   - **Sinkronisasi:** Dipicu bersamaan dengan bergeraknya kursor robot virtual dan aktifnya spotlight pada field formulir tertentu.
-   - **Kondisi:** Aktif saat asisten menjelaskan kolom spesifik (misal: *"Perhatikan kolom nomor 2 di sebelah kiri ini..."*) atau saat memandu langkah pengisian.
-
-#### C. Arsitektur Teknis Avatar
-- Menggunakan komponen **SVG / CSS Sprite & Canvas Animation** yang super ringan (< 50 KB), tidak membebani memori browser atau performa rendering halaman target.
-
----
-
-### 3.4. Kontrol Kursor Robot & Otomasi Visual (Mouse Control & Form Actions)
+### 3.3. Deteksi Formulir & Penandaan Visual (Highlighting)
 
 #### A. Deskripsi Fungsional
-Mengadopsi dan menyempurnakan arsitektur *Autopilot Robot Cursor* dari `gmt-extension-old`:
-- **Virtual Robot Cursor (`#telmy-robot-cursor`):**
-  - Kursor grafis khusus (ikon panah robotik neon dengan efek trail/glow) yang bergerak secara visual di atas lapisan viewport browser.
-  - Pergerakan kursor menggunakan animasi lengkung halus (*ease-in-out cubic-bezier*) dengan jeda manusiawi (*human-like pacing ~800-1000ms*) sehingga pengguna memahami dengan jelas apa yang sedang ditunjuk.
-- **Navigasi & Sorotan Elemen (Highlight Focus):**
-  - Kursor meluncur ke elemen target formulir -> halaman otomatis melakukan scroll halus (`scrollIntoView({ behavior: 'smooth', block: 'center' })`).
-  - Elemen target menyala dengan **Spotlight Ring & Focus Badge**, dan avatar masuk ke state *Pointing*.
-- **Eksekusi Klik (Click Action):**
-  - Kursor menyusut (animasi *pressing down*) -> memunculkan efek riak gelombang (*click ripple*) -> men-trigger event klik DOM (`pointerdown`, `mousedown`, `pointerup`, `mouseup`, `click`).
-  - Mendukung klik tombol navigasi (*Berikutnya*, *Simpan Draft*), radio button pilihan, dan checkbox.
-- **Navigasi URL (Access URL):**
-  - Asisten dapat memandu pengguna membuka URL halaman formulir baru atau sub-halaman layanan perizinan secara otomatis via background service worker (`chrome.tabs.update`).
-- **Human-in-the-Loop & Safety Confirmation:**
-  - Aksi berisiko tinggi (misal: tombol *Kirim / Submit Akhir*, pembayaran/retribusi, penghapusan berkas) **wajib meminta konfirmasi pengguna** melalui dialog suara atau tombol konfirmasi (*"Apakah Anda yakin ingin mengirim formulir ini?"*).
+* **Scanner Universal:** Mendeteksi elemen input standar HTML5 (`input`, `select`, `textarea`) serta komponen modern Google Forms dan widget ARIA (`[role="radiogroup"]`, `[role="textbox"]`, `[role="combobox"]`).
+* **Lencana Nomor Neon:** Menempelkan nomor urut pemandu di samping setiap judul pertanyaan.
+* **Visual Spotlight:** Menyorot kolom yang sedang aktif dengan efek cincin fokus neon (`gmt-highlighted-field`) dan auto-scroll ke posisi elemen tersebut.
+* **MutationObserver:** Memindai ulang secara otomatis jika ada formulir baru yang dimuat secara dinamis oleh JavaScript framework (React, Vue, SPA, form wizard).
 
 ---
 
-## 4. Matriks Kebutuhan Fungsional (Updated Functional Requirements)
+### 3.4. Platform Web Firebase (`telmy.id` / `telmyai.com`)
 
-| ID | Kebutuhan Fungsional | Prioritas | Status / Sumber |
-| :--- | :--- | :--- | :--- |
-| **FR-1 s/d FR-15** | Pemindaian DOM form, kamus terverifikasi Firestore, fallback AI, badge nomor, rating & saran perbaikan, 5 bahasa (ID/EN/ZH/JA/KO), privasi metadata only. | Wajib | Dipertahankan dari MVP Telmy |
-| **FR-16** | **ElevenLabs Voice Guidance:** Pembacaan instruksi form dan jawaban bantuan dengan suara natural ElevenLabs multilingual. | Wajib | Fitur Baru v2.0 |
-| **FR-17** | **Two-Way Voice Conversation (Voice Mode):** Pengguna dapat mengaktifkan mikrofon dan berbincang dua arah secara interaktif dengan asisten Telmy. | Wajib | Fitur Baru v2.0 |
-| **FR-18** | **Synchronized Chat Stream di Side Panel:** Seluruh percakapan suara ditranskripkan secara real-time ke panel obrolan di samping kanan dengan kartu ringkasan tindakan (*action chips*). | Wajib | Fitur Baru v2.0 |
-| **FR-19** | **Interactive 3-State Animated Avatar:** Komponen avatar visual dengan state: (1) Idle/Listening, (2) Speaking (lip-sync audio reactive), dan (3) Speaking + Pointing ke arah elemen web. | Wajib | Fitur Baru v2.0 |
-| **FR-20** | **Virtual Robot Cursor & Element Highlight:** Kursor virtual bergerak visual di layar, melakukan auto-scroll, menyorot kolom input, dan menampilkan animasi radar fokus. | Wajib | Fitur Baru (Adopsi GMT) |
-| **FR-21** | **Automated Click & URL Navigation:** Kemampuan mengeklik elemen (tombol, radio, tab) dan menavigasi tab browser ke URL tujuan formulir. | Wajib | Fitur Baru (Adopsi GMT) |
-| **FR-22** | **Safety Guardrails (Human-in-the-Loop):** Konfirmasi eksplisit sebelum melakukan klik aksi sensitif (*final submit*, hapus, transaksi pembayaran). | Wajib | Fitur Baru v2.0 |
+#### A. Komponen Halaman Web
+1. **Landing Page (`/`):** Hero section, nilai manfaat, video demo 3 menit, perbandingan dampak sebelum vs sesudah, dan 4 pilar fitur.
+2. **Live Demo Playground (`/demo`):** Formulir simulasi terintegrasi (contoh: Simulasi Apostille Kemenkumham) agar juri dapat menguji ekstensi dalam 1 klik tanpa mencari form eksternal.
+3. **Panduan Unduh (`/download`):** Tautan resmi Chrome Web Store + link download ZIP *Load Unpacked* untuk tim penguji/juri hackathon.
+4. **Kebijakan Privasi (`/privacy`):** Menegaskan prinsip *Privacy-First* (hanya memproses metadata form, tidak menyimpan data sensitif pengguna).
+5. **Dashboard Pengguna (`/dashboard`):** Firebase Authentication (Google 1-Click Login), statistik pemakaian, dan tombol koneksi ke ekstensi via `externally_connectable`.
 
 ---
 
-## 5. Arsitektur Sistem Telmy v2.0
+## 4. Arsitektur Teknis Sistem
 
 ```mermaid
-flowchart TB
-    subgraph Browser ["Chrome Browser Extension (Frontend)"]
-        subgraph InPage ["Content Scripts (Injected to Page)"]
-            Scanner["DOM & Form Scanner"]
-            Highlighter["Highlight & Spotlight Engine"]
-            RobotCursor["Virtual Robot Cursor Controller"]
-        end
+graph TD
+    User([Pengguna / Juri]) -->|Klik Ekstensi / Alt+G| SidePanel[Chrome Native Side Panel<br/>sidepanel/sidepanel.html]
+    User -->|Kunjungi Web| WebApp[Firebase Web App<br/>telmy.id / telmyai.com]
 
-        subgraph SidePanel ["Side Panel Co-Pilot (Right Edge)"]
-            ChatStream["Live Chatbot & Action Log"]
-            Avatar["Animated Avatar (Idle/Speak/Point)"]
-            AudioAnalyzer["Web Audio Analyser (Lip-sync)"]
-            SpeechRecog["Web Speech API (STT Input)"]
-        end
-
-        subgraph Background ["Background Service Worker"]
-            NavManager["Tab & URL Navigator"]
-            StateSync["Session & Storage Sync"]
-            AudioRelay["Audio Streaming Coordinator"]
-        end
+    subgraph ChromeExtension ["Ekstensi Chrome (MV3 Lite)"]
+        SidePanel -->|Injeksi On-Demand| ContentScripts[Content Scripts: scanner.js & highlighter.js]
+        SidePanel -->|Push-to-Talk Mic| SpeechRecog[Web Speech STT]
+        ContentScripts -->|Sorot Kolom & Badge| TargetForm[Halaman Formulir Web / Google Forms]
     end
 
-    subgraph Backend ["Telmy Cloud Backend (Node.js Express / Cloud Run)"]
-        Router["API Gateway / Orchestrator"]
-        AIService["AI Reasoning Service (GLM-5.3 / Gemini)"]
-        VoiceService["ElevenLabs Voice Streaming Gateway"]
-        FirestoreDB[("Firestore: Dictionary, Cache & Suggestions")]
+    subgraph FirebaseCloud ["Backend & Cloud Infrastructure"]
+        WebApp --> Auth[Firebase Authentication<br/>Google Sign-In]
+        WebApp --> WebDemo[Live Demo Playground /demo]
+        
+        APIGateway[Cloud Run / Express Gateway<br/>api.telmy.id]
+        SidePanel -->|Chat & Explain Request| APIGateway
+        
+        APIGateway --> GeminiLLM[Google Gemini 1.5/2.0 Flash<br/>Reasoning & Explainer]
+        APIGateway --> GeminiTTS[Gemini 3.8 Flash-Lite TTS<br/>Audio Voice Engine]
+        APIGateway --> Firestore[(Firestore DB<br/>Kamus Resmi & Feedback)]
     end
 
-    %% Interactions
-    SpeechRecog -->|Transcript User| ChatStream
-    ChatStream -->|User Prompt + Form Context| Router
-    Router --> AIService
-    AIService -->|Check / Save| FirestoreDB
-    AIService -->|Stream Response Text + Action JSON| Router
-    Router -->|Text & Actions| ChatStream
-    Router --> VoiceService
-    VoiceService -->|ElevenLabs Audio Stream| AudioRelay
-    AudioRelay --> AudioAnalyzer
-    AudioAnalyzer -->|Amplitudo / RMS| Avatar
-    ChatStream -->|Trigger Action: Highlight/Move/Click| RobotCursor
-    RobotCursor --> Highlighter
-    RobotCursor --> NavManager
+    GeminiTTS -->|Streaming Audio Data| SidePanel
+    GeminiLLM -->|Teks Panduan & Action Chips| SidePanel
 ```
 
 ---
 
-## 6. Desain Alur Interaksi Pengguna (User Journey)
+## 5. Rencana Pelaksanaan & Prioritas Kerja (10 Hari)
 
-### Skenario: Pengguna Mengisi Formulir Izin Usaha / Google Form dengan Voice Mode
-1. **Aktivasi:** Pengguna membuka halaman formulir dan mengeklik ikon Telmy / menekan shortcut `Alt + G`. Panel samping terbuka (lebar 380px) dan halaman web menyusut (*push-page*).
-2. **Avatar Menyapa:** Avatar berada di pojok atas panel dalam state **Idle**. Pengguna menekan tombol mikrofon (Voice Mode aktif). Avatar menampilkan aura denyut cahaya (*Listening*).
-3. **Pengguna Berbicara:**  
-   *User:* *"Halo Telmy, ini form apa ya? Saya harus mulai dari mana?"*  
-   -> Teks suara pengguna langsung muncul sebagai bubble chat di Side Panel.
-4. **Telmy Menjawab & Bergerak:**
-   - LLM merumuskan jawaban + perintah aksi: `{"action": "HIGHLIGHT_FIELD", "index": 0, "say": "Ini adalah formulir pendaftaran izin usaha. Langkah pertama, isi nama lengkap sesuai KTP pada kolom pertama ini."}`.
-   - Suara ElevenLabs streaming mulai berbunyi.
-   - **Avatar beralih ke state Pointing + Speaking:** Mulut avatar bergerak sinkron dengan audio, dan tangannya menunjuk ke arah kolom pertama di sebelah kiri.
-   - **Kursor Robot Meluncur:** `#telmy-robot-cursor` meluncur dengan animasi mulus ke kolom pertama, halaman otomatis ter-scroll, dan kolom pertama menyala terang dengan cincin spotlight neon.
-   - **Chat Log Terisi:** Penjelasan Telmy tertulis lengkap di panel chat beserta tombol *Contoh Isian* dan *Salin Teks*.
-5. **Perintah Otomasi / Klik:**  
-   *User:* *"Bisa tolong klik tombol Lanjut ke halaman berikutnya?"*  
-   - Telmy: *"Baik, mengarahkan ke tombol Lanjut..."*
-   - Kursor robot bergerak ke tombol *Next/Lanjut*, jeda 1 detik, kursor menekan tombol, muncul efek riak klik (*ripple*), dan halaman berpindah.
-   - Jika tombol adalah tombol *Submit Akhir*, Telmy memunculkan modal konfirmasi: *"Ini adalah tombol pengiriman akhir. Apakah data Anda sudah benar dan siap dikirim?"*.
+### 🥇 Prioritas 1: Web MVP Live di Firebase (Hari 1 - 3)
+- Setup project Firebase Hosting, Firestore, dan integrasi domain `telmy.id` / `telmyai.com`.
+- Bangun Landing Page modern, Halaman Live Demo Playground (`/demo`), Halaman Privasi (`/privacy`), dan Halaman Unduh (`/download`).
+
+### 🥈 Prioritas 2: Dashboard & Google Auth Connect (Hari 3 - 4)
+- Integrasi Firebase Google Sign-In 1-klik di dashboard.
+- Hubungkan ekstensi ke dashboard web via `externally_connectable` tanpa izin `identity`.
+
+### 🥉 Prioritas 3: Ekstensi Lite & Submit Chrome Web Store (Hari 4 - 5)
+- Migrasi voice gateway ke Gemini Flash-Lite TTS.
+- Migrasi panel ke Chrome Native Side Panel (`chrome.sidePanel`) dengan Push-to-Talk mic.
+- Bersihkan Manifest V3 (hapus `<all_urls>`, gunakan `activeTab` + `scripting`).
+- Submit ke Chrome Web Store dengan mode **Unlisted**.
+
+### 🏅 Prioritas 4: Materi Submission Hackathon (Hari 6 - 10)
+- Rekam dan edit video demonstrasi 3 menit (fokus pada dampak sosial dan teknologi Google Gemini).
+- Siapkan Pitch Deck PDF (arsitektur teknis, target pengguna, dan skalabilitas).
+- Siapkan paket ZIP *Load Unpacked* untuk juri hackathon di `telmy.id/download`.
+- Finalisasi formulir submission Google AI Hackathon.
 
 ---
 
-## 7. Rencana Kerja Implementasi (Sprint & Roadmap)
+## 6. Parameter Model & Konfigurasi Lingkungan
 
-### Tahap 1: Integrasi Voice Engine & Side Panel Chat (Hari 1 - 3)
-- [x] Pemindaian formulir & kamus Firestore (Fondasi MVP Telmy selesai).
-- [ ] Implementasi modul `voiceService.js` (ElevenLabs API integration + Web Speech STT).
-- [ ] Redesain antarmuka Side Panel untuk mendukung komponen chat dua arah (*user bubble*, *assistant bubble*, dan *action chip*).
-- [ ] Sinkronisasi riwayat obrolan ke `chrome.storage.local`.
+```env
+# Backend Environment (.env)
+PORT=8080
+GEMINI_API_KEY=your-gemini-api-key
+GEMINI_MODEL=gemini-1.5-flash
+GEMINI_TTS_MODEL=gemini-3.8-flash-lite-tts
+EXPLAIN_STRATEGY=AI_FIRST
 
-### Tahap 2: Animasi Avatar & Audio-Reactive Lip Sync (Hari 4 - 6)
-- [ ] Pembuatan aset vektor SVG/Canvas avatar dengan 3 layer: base body, eyes, mouth, and arm/pointer.
-- [ ] Integrasi Web Audio API `AudioContext` + `AnalyserNode` untuk mendeteksi intensitas volume stream ElevenLabs secara real-time.
-- [ ] State machine controller avatar: transisi halus antar state `idle` ⇄ `speaking` ⇄ `pointing`.
-
-### Tahap 3: Virtual Robot Cursor & Browser Automation Engine (Hari 7 - 9)
-- [ ] Porting dan modularisasi `#gmt-robot-cursor` dari `gmt-extension-old` ke dalam `telmy/extension/content/robot-cursor.js`.
-- [ ] Pemetaan aksi terstruktur dari respons AI: `highlight(fieldId)`, `move_cursor(x, y)`, `click(selector)`, `navigate(url)`.
-- [ ] Penambahan modul Safety Guardrails (Human-in-the-Loop) untuk aksi sensitif.
-
-### Tahap 4: Pengujian Terpadu, Validasi, & Demo Polishing (Hari 10 - 12)
-- [ ] Uji coba skenario lengkap pada halaman simulasi (`demo_apostille.html`) dan Google Form nyata.
-- [ ] Optimasi latensi (ElevenLabs turbo stream + caching frasa umum).
-- [ ] Penyusunan dokumentasi dan materi demo pitch hackathon.
+# Firebase Configuration
+FIREBASE_PROJECT_ID=telmy-ai
+FIREBASE_REGION=asia-southeast2
+DOMAIN_PRIMARY=https://telmy.id
+DOMAIN_SECONDARY=https://telmyai.com
+```

@@ -1,123 +1,159 @@
-# 🌐 Telmy.ai: Your AI form-filling assistant
+<p align="center">
+  <img src="logo.png" alt="Telmy.ai Logo" width="220" />
+</p>
 
-> **Telmy.ai** adalah asisten cerdas (*your AI form-filling assistant*) berbasis Chrome Extension (Manifest V3) dan Backend AI yang memandu masyarakat umum maupun warga negara asing (WNA) dalam memahami dan mengisi formulir pelayanan publik, portal administrasi pemerintah, perizinan, hingga Google Forms secara mudah, aman, dan multibahasa.
+# 🌐 Telmy.ai: Your AI Form Guide & Co-Pilot
+
+> **Telmy.ai** adalah asisten formulir cerdas berbasis **100% Google AI (Gemini)**, **Firebase**, dan **Chrome Extension (Manifest V3)** yang memandu masyarakat umum maupun warga negara asing (WNA) dalam memahami dan mengisi formulir digital pelayanan publik, administrasi pemerintahan, visa/imigrasi, hingga Google Forms secara mudah, aman, ramah privasi, dan multibahasa.
+> 
+> *Dibangun secara khusus untuk **Google AI Hackathon** dengan arsitektur berstandar Google Cloud, siap rilis di Chrome Web Store dan live di [telmy.id](https://telmy.id) / [telmyai.com](https://telmyai.com).*
 
 ---
 
 ## 🌟 Fitur Unggulan
 
-### 1. 🧭 Side Panel Assistant (Tampilan Panel Samping 380px)
-- Tersemat rapi di sisi kanan layar browser tanpa menutupi kolom isian formulir.
-- **Ringkasan Formulir:** Menampilkan nama layanan/formulir, tujuan, serta daftar dokumen persyaratan yang perlu disiapkan sebelum mengisi.
+### 1. 🧭 Chrome Native Side Panel Assistant (`chrome.sidePanel`)
+- Tersemat rapi di panel samping native browser Chrome tanpa merusak struktur CSS website target.
+- **Ringkasan Formulir:** Menampilkan tujuan formulir, estimasi durasi, dan daftar dokumen persiapan yang wajib disiapkan.
 - **Pelacak Kemajuan (Progress Tracker):** Menghitung persentase kolom yang telah terisi secara real-time.
-- **Stepper Navigasi:** Tombol *Sebelumnya* dan *Berikutnya* untuk memandu pengisian formulir langkah demi langkah.
-- **Mode Ringkas:** Dapat diminimalkan ke pill *Telmy.ai* di pojok kanan bawah atau dibuka/tutup menggunakan shortcut **`Alt + G`**.
+- **Stepper Navigasi:** Memandu pengisian formulir langkah demi langkah secara terstruktur.
+- **Shortcut Cepat:** Dapat dibuka seketika dengan shortcut **`Alt + G`** atau klik ikon toolbar.
 
-### 2. ⚡ Dukungan Penuh Google Forms & Layout Modern
-- **Deteksi Label di Atas Input:** Menganalisis judul pertanyaan yang terletak di atas bidang isian (Google Forms `.M7eMe`, `[role="heading"]`, `aria-labelledby`, dan kontainer card).
-- **Mendukung Pilihan Ganda (Radio Group) & Kotak Centang:** Mampu memindai `div[role="radiogroup"]` (seperti *Jenjang Pendidikan: D3, S1, S2*) serta mengekstrak daftar opsi untuk dijelaskan oleh AI.
-- **Badge Nomor Interaktif:** Menempelkan nomor urut yang rapi di samping judul pertanyaan dan langsung mengarahkan instruksi saat diklik.
+### 2. 🤖 100% Google AI Engine (Gemini Flash & Flash-Lite TTS)
+- **Gemini 1.5 / 2.0 Flash:** Menganalisis konteks kolom, label tersembunyi, contoh isian fiktif yang realistis, peringatan kesalahan umum (*common mistakes*), dan catatan khusus pemegang paspor asing (*notes for foreigners*).
+- **Gemini 3.8 Flash-Lite TTS (Preview):** Membacakan panduan secara interaktif dalam suara natural berbahasa Indonesia dan multibahasa dengan latensi ultra-rendah.
+- **Kamus Resmi Firestore:** Terintegrasi dengan database istilah terverifikasi di Firebase Firestore untuk istilah birokrasi baku (Apostille, NIK, NIB, Paspor, NPWP/Coretax).
 
-### 3. 🌐 Dukungan Penuh 5 Bahasa (Multilingual)
-Tersedia pengalihan bahasa instan langsung dari header panel tanpa mencampuradukkan bahasa:
+### 3. 🎙️ Push-to-Talk & Interaksi Suara Ramah Privasi
+- **Murni Push-to-Talk:** Mikrofon hanya aktif saat pengguna secara sadar mengklik ikon mikrofon di panel samping. Tidak menggunakan wake-word atau mikrofon *always-listening*, menjamin kepatuhan privasi 100% bagi pengguna dan reviewer Chrome Web Store.
+- **Transkrip Obrolan Real-Time:** Suara pengguna langsung ditranskripsikan ke dalam chat stream dengan tombol aksi interaktif (*action chips*).
+- **Audio Fallback:** Didukung fallback cerdas ke browser Web Speech API.
+
+### 4. ⚡ Deteksi Formulir Universal & Sorotan Visual
+- **Dukungan Google Forms & Web Form Modern:** Memindai input teks, select, textarea, radio group, checkbox, hingga komponen ARIA (`[role="radiogroup"]`, `[role="textbox"]`, `[role="combobox"]`).
+- **Badge Nomor Neon:** Menempelkan nomor urut pemandu di samping setiap pertanyaan.
+- **Highlight Ring & Smooth Scroll:** Menyorot kolom aktif dengan spotlight neon dan auto-scroll ke posisi kolom tersebut.
+
+### 5. 🌐 Dukungan Penuh 5 Bahasa (Multilingual)
+Pengalihan bahasa instan tanpa reload halaman:
 - 🇮🇩 **Bahasa Indonesia (ID)**
 - 🇬🇧 **English (EN)**
 - 🇨🇳 **中文 (ZH - Mandarin)**
 - 🇯🇵 **日本語 (JA - Japanese)**
 - 🇰🇷 **한국어 (KO - Korean)**
 
-### 4. 🤖 Mesin AI Ganda (GLM-5.3-Flash & Google Gemini)
-- **OpenAI-Compatible Endpoint:** Terhubung ke model penalaran mutakhir **GLM-5.3-Flash** (via endpoint Sumopod) untuk memberikan penjelasan kontekstual, contoh isian fiktif yang realistis, peringatan kesalahan umum (*common mistakes*), dan tips khusus bagi pemegang paspor internasional (*tips for foreigners*).
-- **Google Gemini Fallback:** Cadangan otomatis menggunakan Gemini 1.5/2.5 Flash apabila koneksi utama terkendala.
-- **Mode `AI_FIRST` & `DB_FIRST`:** Konfigurasi strategi fleksibel via `.env`:
-  - `AI_FIRST`: 100% penjelasan dihasilkan segar oleh AI penalaran.
-  - `DB_FIRST`: Memprioritaskan kamus resmi terverifikasi dari database Firebase Firestore terlebih dahulu.
+### 6. 🔒 Privasi Mutlak (Privacy-First Architecture)
+- Telmy **hanya membaca metadata kolom** (label pertanyaan, tipe input, placeholder, opsi pilihan).
+- Telmy **tidak pernah membaca, menyimpan, atau mengirim data isian sensitif** (NIK, paspor, password, nomor rekening) ke server.
+- Otomatis mengecualikan captcha, token CSRF, dan bidang verifikasi keamanan.
 
-### 5. 🔒 Privasi Terjamin (Privacy-First)
-- Telmy **hanya membaca metadata kolom** (label pertanyaan, tipe input, placeholder, dan opsi pilihan).
-- Telmy **tidak pernah membaca atau mengirim teks sensitif/pribadi** yang sedang diketik pengguna ke server.
-- Otomatis mengabaikan kolom keamanan, captcha, token CSRF, dan bot verifier.
+---
+
+## 🏗️ Arsitektur Sistem
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                       PENGGUNA                             │
+└──────────────────────────────┬──────────────────────────────┘
+                               │
+                ┌──────────────┴──────────────┐
+                ▼                             ▼
+┌──────────────────────────────┐   ┌──────────────────────────┐
+│  Chrome Extension (MV3 Lite) │   │ Web Platform (Firebase)  │
+│  - sidepanel/sidepanel.html  │   │ - Landing Page telmy.id  │
+│  - content/scanner.js        │   │ - Google Auth Login      │
+│  - content/highlighter.js    │   │ - User Dashboard         │
+│  - Push-to-Talk Mic          │   │ - Live Demo Playground   │
+└──────────────┬───────────────┘   └──────────┬───────────────┘
+               │                              │
+               └──────────────┬───────────────┘
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                 BACKEND GATEWAY (Cloud Run)                 │
+│  - Express.js / Firebase Functions                          │
+│  - Google Gemini 1.5/2.0 Flash (Reasoning & Copilot)        │
+│  - Gemini 3.8 Flash-Lite TTS (Audio Voice Engine)           │
+│  - Firebase Firestore (Kamus Resmi Terverifikasi)           │
+└─────────────────────────────────────────────────────────────┘
+```
 
 ---
 
 ## 📁 Struktur Direktori
 
 ```text
-guidemeto/ (Telmy)
+telmy/
+├── logo.png                    # Logo resmi Telmy.ai
 ├── extension/                  # Ekstensi Chrome Manifest V3
-│   ├── manifest.json           # Konfigurasi ekstensi Telmy
+│   ├── manifest.json           # Konfigurasi ekstensi MV3 (Lite & Minimal Permission)
 │   ├── background/
-│   │   └── service-worker.js   # Background service worker & sinkronisasi API
+│   │   └── service-worker.js   # Background service worker & Side Panel handler
 │   ├── content/
-│   │   ├── content-main.js     # Orkestrator pemindaian halaman
-│   │   ├── scanner.js          # DOM scanner (Google Forms, ARIA, & input fields)
-│   │   ├── highlighter.js      # Injector badge nomor & event fokus/klik
-│   │   ├── panel.js            # Komponen Side Panel Co-Pilot & multibahasa
-│   │   └── overlay.css         # Styling modern, animasi, & spinner
-│   ├── popup/                  # Menu popup toolbar browser
+│   │   ├── content-main.js     # Orkestrator pemindaian halaman & MutationObserver
+│   │   ├── scanner.js          # DOM scanner universal (Google Forms, ARIA, dsb)
+│   │   ├── highlighter.js      # Lencana nomor, visual highlight, & scroll
+│   │   ├── panel.js            # Komponen Co-Pilot panel (chat, multilingual)
+│   │   ├── voice-manager.js    # Pengelola STT (Push-to-Talk) & Audio Playback
+│   │   └── overlay.css         # Desain overlay, lencana neon, & styling panel
+│   ├── popup/                  # Popup ringkas toolbar browser
 │   │   ├── popup.html
 │   │   ├── popup.js
 │   │   └── popup.css
-│   └── mock/                   # Mock dictionary data lokal
-├── backend/                    # Node.js Express Backend Service
+│   └── assets/                 # Ikon resmi ekstensi (16, 32, 48, 128px)
+├── backend/                    # Node.js Backend Service (Google AI Native)
 │   ├── src/
-│   │   ├── index.js            # Entry point Express server
-│   │   ├── config/             # Konfigurasi Firebase Firestore
-│   │   ├── routes/             # Endpoint /api/explain, /api/feedback
-│   │   └── services/           # aiService.js (GLM & Gemini), dictionaryService.js
-│   ├── scripts/                # Script seeder dictionary Firestore
+│   │   ├── index.js            # Entry point server Express
+│   │   ├── config/             # Konfigurasi Firebase Firestore & Gemini SDK
+│   │   ├── routes/             # Endpoint /api/explain, /api/chat, /api/voice/tts
+│   │   └── services/           # geminiService.js, voiceService.js, dictionaryService.js
 │   └── .env                    # Variabel konfigurasi lingkungan
 ├── test-page/                  # Halaman web simulasi pengujian formulir
 │   └── demo_apostille.html
-└── README.md                   # Dokumentasi resmi Telmy
+├── plan.md                     # Roadmap eksekusi & prioritas Google Hackathon
+├── PRD_ AI Form Explainer.md   # Product Requirement Document (PRD v2.1)
+└── README.md                   # Dokumentasi resmi repositori
 ```
 
 ---
 
-## 🚀 Panduan Instalasi & Menjalankan
+## 🚀 Panduan Instalasi & Menjalankan Lokal
 
-### Langkah 1: Jalankan Backend Server
-1. Buka terminal dan masuk ke direktori `backend`:
+### 1. Jalankan Backend Server (Gemini Engine)
+1. Masuk ke direktori `backend`:
    ```bash
    cd backend
    npm install
    ```
-2. Pastikan file `.env` telah terkonfigurasi:
+2. Pastikan file `.env` telah memuat kredensial Google AI:
    ```env
    PORT=8080
-   EXPLAIN_STRATEGY=AI_FIRST
-   AI_PROVIDER=openai
-   OPENAI_BASE_URL=https://ai.sumopod.com
-   OPENAI_KEY=your-openai-or-sumopod-api-key
-   OPENAI_MODEL=glm-5.3-flash
    GEMINI_API_KEY=your-gemini-api-key
+   EXPLAIN_STRATEGY=AI_FIRST
    ```
-3. Jalankan server:
+3. Jalankan server lokal:
    ```bash
    npm run dev
-   # Atau: node src/index.js
    ```
-   *Server akan berjalan di `http://localhost:8080` dan siap menerima permintaan analisis kolom.*
+   *Server akan aktif di `http://localhost:8080`.*
 
 ---
 
-### Langkah 2: Pasang Ekstensi di Google Chrome
-1. Buka browser Chrome dan akses URL: `chrome://extensions/`.
+### 2. Pasang Ekstensi di Google Chrome
+1. Buka browser Chrome dan akses: `chrome://extensions/`.
 2. Aktifkan **Developer mode** di pojok kanan atas.
 3. Klik tombol **Load unpacked** di pojok kiri atas.
-4. Pilih folder **`extension`** dari repositori ini (`d:\webdev\laragon\www\guidemeto\extension`).
-5. Ekstensi **Telmy.ai: Your AI form-filling assistant** kini aktif!
+4. Pilih folder **`extension`** dari repositori ini.
+5. Ekstensi **Telmy.ai** kini terpasang dan siap digunakan!
 
 ---
 
-### Langkah 3: Menggunakan Telmy.ai
-1. Buka formulir online mana saja (misalnya formulir pendaftaran Google Forms, portal layanan publik, atau buka file simulasi [`test-page/demo_apostille.html`](file:///d:/webdev/laragon/www/guidemeto/test-page/demo_apostille.html)).
-2. Telmy.ai akan otomatis memindai formulir dan memunculkan panel panduan di sisi kanan layar beserta badge nomor di samping setiap pertanyaan.
-3. Klik salah satu badge nomor atau klik kolom isian di sebelah kiri untuk melihat arti kolom, petunjuk cara mengisi, contoh isian realistis, dan catatan khusus.
-4. Gunakan dropdown di bagian atas panel untuk beralih bahasa seketika (🇮🇩 ID, 🇬🇧 EN, 🇨🇳 中文, 🇯🇵 日本語, 🇰🇷 한국어).
-5. Tekan tombol **`Alt + G`** kapan saja untuk menyembunyikan atau menampilkan kembali panel panduan.
+### 3. Menggunakan Telmy.ai
+1. Buka formulir online apa saja (misalnya Google Forms atau simulasi [`test-page/demo_apostille.html`](file:///d:/webdev/laragon/www/telmy/test-page/demo_apostille.html)).
+2. Telmy akan otomatis memindai struktur pertanyaan dan memasang lencana nomor panduan.
+3. Klik tombol mikrofon di panel samping untuk berbicara (*Push-to-Talk*) atau ketik pertanyaan langsung di kolom obrolan.
+4. Gunakan shortcut **`Alt + G`** untuk membuka atau menutup panel samping kapan saja.
 
 ---
 
-## 📄 Lisensi
-Hak Cipta © 2026 **Telmy Team**. Seluruh hak cipta dilindungi undang-undang.
+## 📄 Lisensi & Hak Cipta
+Hak Cipta © 2026 **Telmy.ai Team**. Dikembangkan untuk Google AI Hackathon.
