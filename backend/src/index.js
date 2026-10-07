@@ -58,6 +58,16 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Serve Static Web Platform (Landing Page, Privacy, Demo, Download)
+const publicDir = path.resolve(__dirname, '../public');
+app.use(express.static(publicDir));
+
+// Clean URLs
+app.get('/', (req, res) => res.sendFile(path.join(publicDir, 'index.html')));
+app.get('/privacy', (req, res) => res.sendFile(path.join(publicDir, 'privacy.html')));
+app.get('/demo', (req, res) => res.sendFile(path.join(publicDir, 'demo.html')));
+app.get('/download', (req, res) => res.sendFile(path.join(publicDir, 'download.html')));
+
 // API Routes
 app.use('/api', explainRoutes);
 app.use('/api', feedbackRoutes);

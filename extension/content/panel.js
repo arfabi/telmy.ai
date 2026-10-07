@@ -5,7 +5,7 @@ window.GMTPanel = (function () {
   let currentFieldItem = null;
   let currentIndex = -1;
   let allFieldsList = [];
-  let currentLanguage = 'id';
+  let currentLanguage = 'en';
   let isPanelMinimized = false;
   let onNavigateCallback = null;
   let onLanguageChangeCallback = null;
@@ -89,39 +89,19 @@ window.GMTPanel = (function () {
   function t(key) {
     const entry = I18N[key];
     if (!entry) return '';
-    return entry[currentLanguage] || entry['id'] || '';
+    return entry[currentLanguage] || entry['en'] || entry['id'] || '';
   }
 
-  function initPanel(lang = 'id', onNavigate, onLangChange) {
-    currentLanguage = lang || 'id';
-    onNavigateCallback = onNavigate;
-    onLanguageChangeCallback = onLangChange;
-
+  function initPanel(lang = 'en', onNavigate, onLangChange) {
+    currentLanguage = lang || 'en';
     if (panelEl) panelEl.remove();
     if (launcherEl) launcherEl.remove();
-
-    // 1. Create Side Panel Container
-    panelEl = document.createElement('div');
-    panelEl.className = 'gmt-ui-container gmt-side-panel';
-    panelEl.id = 'gmt-side-panel-container';
-
-    // 2. Create Minimized Launcher Pill
-    launcherEl = document.createElement('div');
-    launcherEl.className = 'gmt-ui-container gmt-launcher-pill';
-    launcherEl.id = 'gmt-launcher-pill';
-    launcherEl.style.display = 'none';
-    launcherEl.innerHTML = `
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-      <span>Telmy.ai</span>
-      <span class="gmt-pill-badge" id="gmt-pill-count">0</span>
-    `;
-    launcherEl.addEventListener('click', expand);
-
-    document.body.appendChild(panelEl);
-    document.body.appendChild(launcherEl);
-
-    // Subscribe to voice engine events once
-    setupVoiceSubscriptions();
+    const oldPanel = document.getElementById('gmt-side-panel-container');
+    if (oldPanel) oldPanel.remove();
+    const oldPill = document.getElementById('gmt-launcher-pill');
+    if (oldPill) oldPill.remove();
+    return; // Native chrome.sidePanel is now active; suppress in-page floating panel
+  }
 
     // Load persisted chat history
     loadChatHistory();
@@ -219,12 +199,18 @@ window.GMTPanel = (function () {
           </span>
         </div>
         <div class="gmt-header-controls">
-          <select class="gmt-lang-select" id="gmt-panel-lang-select" title="Pilih Bahasa">
-            <option value="id" ${currentLanguage === 'id' ? 'selected' : ''}>🇮🇩 ID</option>
+          <select class="gmt-lang-select" id="gmt-panel-lang-select" title="Select Language">
             <option value="en" ${currentLanguage === 'en' ? 'selected' : ''}>🇬🇧 EN</option>
-            <option value="zh" ${currentLanguage === 'zh' ? 'selected' : ''}>🇨🇳 中文</option>
-            <option value="ja" ${currentLanguage === 'ja' ? 'selected' : ''}>🇯🇵 日本語</option>
-            <option value="ko" ${currentLanguage === 'ko' ? 'selected' : ''}>🇰🇷 한국어</option>
+            <option value="id" ${currentLanguage === 'id' ? 'selected' : ''}>🇮🇩 ID</option>
+            <option value="ja" ${currentLanguage === 'ja' ? 'selected' : ''}>🇯🇵 JA</option>
+            <option value="ko" ${currentLanguage === 'ko' ? 'selected' : ''}>🇰🇷 KO</option>
+            <option value="zh" ${currentLanguage === 'zh' ? 'selected' : ''}>🇨🇳 ZH</option>
+            <option value="zh-TW" ${currentLanguage === 'zh-TW' ? 'selected' : ''}>🇹🇼 TW</option>
+            <option value="vi" ${currentLanguage === 'vi' ? 'selected' : ''}>🇻🇳 VI</option>
+            <option value="th" ${currentLanguage === 'th' ? 'selected' : ''}>🇹🇭 TH</option>
+            <option value="hi" ${currentLanguage === 'hi' ? 'selected' : ''}>🇮🇳 HI</option>
+            <option value="fil" ${currentLanguage === 'fil' ? 'selected' : ''}>🇵🇭 FIL</option>
+            <option value="ms" ${currentLanguage === 'ms' ? 'selected' : ''}>🇲🇾 MS</option>
           </select>
           <button type="button" class="gmt-icon-btn" id="gmt-btn-minimize" title="Sembunyikan ke sisi kanan">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>

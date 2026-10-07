@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (settings) {
       toggle.checked = settings.isActive !== false;
       updateUIStatus(toggle.checked);
-      setActiveLangBtn(settings.language || 'id');
+      setActiveLangBtn(settings.language || 'en');
     }
   });
 
@@ -30,10 +30,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Helper to display detection outcome
   function displayDetectionResult(res) {
     if (res && res.detectedFieldsCount > 0) {
-      detectedCount.textContent = `${res.detectedFieldsCount} field terdeteksi di form ini`;
+      detectedCount.textContent = `${res.detectedFieldsCount} form field(s) detected`;
       if (statFields) statFields.textContent = res.detectedFieldsCount;
     } else {
-      detectedCount.textContent = 'Belum mendeteksi form di halaman ini';
+      detectedCount.textContent = 'No form fields detected on this page';
       if (statFields) statFields.textContent = '0';
     }
   }
@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       url.startsWith('about:') ||
       url.includes('chromewebstore.google.com')
     ) {
-      detectedCount.textContent = 'Halaman sistem browser (tidak dapat dipindai)';
+      detectedCount.textContent = 'Browser system page (cannot be scanned)';
       if (statFields) statFields.textContent = '0';
       return;
     }
@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
       });
       if (!isAllowedFile) {
-        detectedCount.textContent = 'Aktifkan "Izinkan akses ke URL file" di chrome://extensions';
+        detectedCount.textContent = 'Enable "Allow access to file URLs" in chrome://extensions';
         if (statFields) statFields.textContent = '0';
         return;
       }
@@ -78,7 +78,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       const err = chrome.runtime.lastError;
       if (err || !res) {
         // Content script not yet present in tab (e.g. tab opened before extension loaded)
-        // Attempt programmatic auto-injection
         try {
           if (chrome.scripting) {
             await chrome.scripting.insertCSS({
@@ -91,20 +90,17 @@ document.addEventListener('DOMContentLoaded', async () => {
               files: [
                 'content/scanner.js',
                 'content/highlighter.js',
-                'content/voice-manager.js',
-                'content/panel.js',
                 'content/content-main.js'
               ]
             });
 
-            // Wait a moment for scanner to initialize and re-query
             setTimeout(() => {
               chrome.tabs.sendMessage(tab.id, { type: 'QUERY_PAGE_STATUS' }, (res2) => {
                 const err2 = chrome.runtime.lastError;
                 if (!err2 && res2) {
                   displayDetectionResult(res2);
                 } else {
-                  detectedCount.textContent = 'Muat ulang tab (F5) untuk memindai';
+                  detectedCount.textContent = 'Reload tab (F5) to scan';
                   if (statFields) statFields.textContent = '0';
                 }
               });
@@ -114,7 +110,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (injectErr) {
           // Injection failed
         }
-        detectedCount.textContent = 'Muat ulang tab (F5) untuk memindai';
+        detectedCount.textContent = 'Reload tab (F5) to scan';
         if (statFields) statFields.textContent = '0';
       } else {
         displayDetectionResult(res);
@@ -163,7 +159,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       chrome.tabs.sendMessage(tab.id, { type: 'TRIGGER_RESCAN' }, async (res) => {
         const err = chrome.runtime.lastError;
         if (err || !res) {
-          // Attempt recovery and auto-injection
           await checkPageStatus(tab);
           setTimeout(() => {
             rescanBtn.disabled = false;
@@ -175,9 +170,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             rescanBtn.style.opacity = '1';
             if (res && res.count !== undefined) {
               if (res.count > 0) {
-                detectedCount.textContent = `${res.count} field terdeteksi`;
+                detectedCount.textContent = `${res.count} field(s) detected`;
               } else {
-                detectedCount.textContent = 'Belum mendeteksi form di halaman ini';
+                detectedCount.textContent = 'No form fields detected on this page';
               }
               if (statFields) statFields.textContent = res.count;
             }
@@ -193,11 +188,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   function updateUIStatus(isActive) {
     if (isActive) {
       statusCard.classList.remove('inactive');
-      statusLabel.textContent = 'Telmy Aktif & Siap Memandu';
+      statusLabel.textContent = 'Telmy Active & Ready';
     } else {
       statusCard.classList.add('inactive');
-      statusLabel.textContent = 'Telmy Dinonaktifkan';
-      detectedCount.textContent = 'Telmy sedang dinonaktifkan';
+      statusLabel.textContent = 'Telmy Disabled';
+      detectedCount.textContent = 'Telmy is currently disabled';
     }
   }
 

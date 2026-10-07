@@ -216,6 +216,9 @@ input:checked + .slider:before {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 6px;
+  max-height: 142px;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
 .gmt-lang-btn {

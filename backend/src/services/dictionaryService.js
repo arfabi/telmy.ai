@@ -20,7 +20,7 @@ export function normalizeFieldKey(domain = '', fieldName = '', label = '') {
 /**
  * Get field explanation by checking Firestore first, then Gemini AI
  */
-export async function explainField({ metadata, language = 'id', pageContext = '' }) {
+export async function explainField({ metadata, language = 'en', pageContext = '' }) {
   const { db, isFirebaseConnected } = getFirestore();
   const fieldKey = normalizeFieldKey(metadata.domain, metadata.name, metadata.label);
   const cacheKey = `${fieldKey}:${language}`;

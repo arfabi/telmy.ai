@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Telmy.ai — AI Form Guide</title>
+  <link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+  <div class="sidepanel-root">
+    <!-- Brand Header -->
+    <header class="sp-header">
+      <div class="sp-brand">
+        <img src="../assets/logo.png" alt="Telmy.ai" class="sp-logo">
+        <div class="sp-brand-text">
+          <span class="sp-brand-title">Telmy.ai</span>
+          <span class="sp-brand-tag" id="lbl-brand-tag">AI Form Assistant</span>
+        </div>
+      </div>
+      <div class="sp-controls">
+        <select id="sp-lang-select" class="sp-select" title="Select Language">
+          <option value="en" selected>🇬🇧 EN (English)</option>
+          <option value="id">🇮🇩 ID (Indonesia)</option>
+          <option value="ja">🇯🇵 JA (日本語)</option>
+          <option value="ko">🇰🇷 KO (한국어)</option>
+          <option value="zh">🇨🇳 ZH (简体中文)</option>
+          <option value="zh-TW">🇹🇼 TW (繁體中文)</option>
+          <option value="vi">🇻🇳 VI (Tiếng Việt)</option>
+          <option value="th">🇹🇭 TH (ไทย)</option>
+          <option value="hi">🇮🇳 HI (हिन्दी)</option>
+          <option value="fil">🇵🇭 FIL (Filipino)</option>
+          <option value="ms">🇲🇾 MS (Melayu)</option>
+        </select>
+        <button id="sp-btn-rescan" class="sp-icon-btn" title="Rescan Form Fields">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="sp-nav-tabs">
+      <button class="sp-tab-btn active" data-tab="chat" id="tab-btn-chat">
+        <span class="tab-icon">💬</span>
+        <span class="tab-label" id="lbl-tab-chat">Chat</span>
+      </button>
+      <button class="sp-tab-btn" data-tab="fields" id="tab-btn-fields">
+        <span class="tab-icon">📋</span>
+        <span class="tab-label" id="lbl-tab-fields">Fields</span>
+        <span class="sp-badge" id="badge-fields-count">0</span>
+      </button>
+      <button class="sp-tab-btn" data-tab="summary" id="tab-btn-summary">
+        <span class="tab-icon">📌</span>
+        <span class="tab-label" id="lbl-tab-summary">Overview</span>
+      </button>
+    </nav>
+
+    <!-- Speaking / Audio Live Indicator -->
+    <div id="sp-audio-bar" class="sp-audio-bar" style="display: none;">
+      <div class="sp-audio-waves">
+        <span></span><span></span><span></span><span></span>
+      </div>
+      <span id="sp-audio-status-text">Telmy is speaking...</span>
+      <button id="sp-btn-stop-audio" class="sp-audio-stop-btn" title="Stop Audio">✕</button>
+    </div>
+
+    <!-- TAB 1: Live Copilot Chat -->
+    <section id="pane-chat" class="sp-pane active">
+      <div class="sp-chat-stream" id="chat-stream">
+        <!-- Messages rendered dynamically -->
+      </div>
+      <div class="sp-chat-footer">
+        <!-- Live Speech Recognition Transcript Status -->
+        <div id="mic-status-banner" class="mic-status-banner" style="display: none;">
+          <span class="pulse-dot"></span>
+          <span id="mic-status-text">Listening to your voice...</span>
+        </div>
+
+        <div class="sp-input-bar">
+          <!-- Push-to-Talk Button -->
+          <button id="btn-mic" class="btn-mic" title="Click to Speak (Push-to-Talk)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+          </button>
+          
+          <div class="sp-input-wrapper">
+            <input type="text" id="chat-input" class="sp-input" placeholder="Ask Telmy about this form..." autocomplete="off">
+            <button id="btn-mute" class="btn-audio-toggle" title="Mute / Unmute Assistant Voice">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+            </button>
+          </div>
+
+          <button id="btn-send" class="btn-send" title="Send Message">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: Fields List & Inspection -->
+    <section id="pane-fields" class="sp-pane">
+      <div class="sp-fields-container">
+        <!-- Active Field Card -->
+        <div id="active-field-card" class="sp-active-card">
+          <div class="sp-card-empty" id="fields-empty-state">
+            <div class="sp-empty-icon">📋</div>
+            <h3 id="lbl-empty-fields-title">Select a Form Field</h3>
+            <p id="lbl-empty-fields-desc">Hover or click any field badge on the page to view detailed guidelines, requirements, and examples.</p>
+          </div>
+          <div id="field-detail-content" style="display: none;"></div>
+        </div>
+
+        <!-- Detected Fields Accordion / Quick List -->
+        <div class="sp-fields-list-box">
+          <div class="sp-section-heading">
+            <span id="lbl-detected-fields-header">Detected Form Fields</span>
+            <span id="fields-count-pill" class="sp-pill">0 Fields</span>
+          </div>
+          <div id="fields-quick-list" class="sp-quick-list"></div>
+        </div>
+      </div>
+
+      <!-- Footer Stepper -->
+      <footer class="sp-stepper-footer">
+        <button id="btn-stepper-prev" class="sp-stepper-btn" disabled>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
+          <span id="lbl-stepper-prev">Previous</span>
+        </button>
+        <span id="stepper-indicator" class="sp-stepper-indicator">0 / 0</span>
+        <button id="btn-stepper-next" class="sp-stepper-btn" disabled>
+          <span id="lbl-stepper-next">Next</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+      </footer>
+    </section>
+
+    <!-- TAB 3: Summary Overview -->
+    <section id="pane-summary" class="sp-pane">
+      <div class="sp-summary-container">
+        <!-- Progress Box -->
+        <div class="sp-progress-card">
+          <div class="sp-progress-header">
+            <span id="lbl-progress-title">Form Completion Progress</span>
+            <span id="progress-percent" class="sp-progress-num">0%</span>
+          </div>
+          <div class="sp-progress-bar-bg">
+            <div id="progress-bar-fill" class="sp-progress-bar-fill" style="width: 0%;"></div>
+          </div>
+          <div class="sp-progress-sub" id="progress-sub-text">0 of 0 fields filled</div>
+        </div>
+
+        <!-- Form Overview Card -->
+        <div class="sp-summary-card">
+          <div class="sp-summary-item">
+            <h4 id="lbl-summary-title">📌 Form Overview</h4>
+            <p id="summary-desc-text">Scanning page to analyze form context...</p>
+          </div>
+          <div class="sp-summary-item" id="box-prerequisites" style="display: none;">
+            <h4 id="lbl-prereq-title">📑 Prerequisites & Documents</h4>
+            <ul id="summary-prereq-list" class="sp-prereq-list"></ul>
+          </div>
+          <div class="sp-summary-item">
+            <h4 id="lbl-tips-title">💡 Helpful Tips</h4>
+            <p id="summary-tips-text">Ensure all information matches your official physical documents. Avoid fictitious or estimated values.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="sidepanel.js"></script>
+</body>
+</html>

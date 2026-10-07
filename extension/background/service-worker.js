@@ -1,6 +1,6 @@
 // Service Worker for Telmy
 const DEFAULT_SETTINGS = {
-  language: 'id', // 'id', 'en', 'zh', 'ja', 'ko'
+  language: 'en', // 'en', 'id', 'ja', 'ko', 'zh', 'zh-TW', 'vi', 'th', 'hi', 'fil', 'ms'
   isActive: true,
   theme: 'light',
   highlightColor: '#2563eb',
@@ -18,7 +18,17 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   if (!stored.suggestions_history) {
     await chrome.storage.local.set({ suggestions_history: [] });
   }
+
+  // Open side panel automatically on action toolbar click
+  if (chrome.sidePanel && chrome.sidePanel.setPanelBehavior) {
+    chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch(() => {});
+  }
 });
+
+// Configure side panel behavior on startup as well
+if (chrome.sidePanel && chrome.sidePanel.setPanelBehavior) {
+  chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch(() => {});
+}
 
 // Helper: fetch with timeout
 async function fetchWithTimeout(url, options = {}, timeoutMs = 30000) {

@@ -1,0 +1,825 @@
+// Telmy.ai — Chrome Native Side Panel Controller
+document.addEventListener('DOMContentLoaded', async () => {
+  // UI Elements
+  const langSelect = document.getElementById('sp-lang-select');
+  const btnRescan = document.getElementById('sp-btn-rescan');
+  const tabBtns = document.querySelectorAll('.sp-tab-btn');
+  const panes = document.querySelectorAll('.sp-pane');
+  const badgeFieldsCount = document.getElementById('badge-fields-count');
+
+  // Audio Bar Elements
+  const audioBar = document.getElementById('sp-audio-bar');
+  const btnStopAudio = document.getElementById('sp-btn-stop-audio');
+  const audioStatusText = document.getElementById('sp-audio-status-text');
+
+  // Chat Elements
+  const chatStream = document.getElementById('chat-stream');
+  const chatInput = document.getElementById('chat-input');
+  const btnSend = document.getElementById('btn-send');
+  const btnMic = document.getElementById('btn-mic');
+  const btnMute = document.getElementById('btn-mute');
+  const micBanner = document.getElementById('mic-status-banner');
+  const micText = document.getElementById('mic-status-text');
+
+  // Fields Elements
+  const fieldsEmptyState = document.getElementById('fields-empty-state');
+  const fieldDetailContent = document.getElementById('field-detail-content');
+  const fieldsQuickList = document.getElementById('fields-quick-list');
+  const fieldsCountPill = document.getElementById('fields-count-pill');
+  const btnStepperPrev = document.getElementById('btn-stepper-prev');
+  const btnStepperNext = document.getElementById('btn-stepper-next');
+  const stepperIndicator = document.getElementById('stepper-indicator');
+
+  // Summary Elements
+  const progressPercent = document.getElementById('progress-percent');
+  const progressBarFill = document.getElementById('progress-bar-fill');
+  const progressSubText = document.getElementById('progress-sub-text');
+  const summaryDescText = document.getElementById('summary-desc-text');
+  const boxPrerequisites = document.getElementById('box-prerequisites');
+  const summaryPrereqList = document.getElementById('summary-prereq-list');
+
+  // State
+  let currentLanguage = 'en';
+  let isMuted = false;
+  let isListening = false;
+  let isSpeaking = false;
+  let currentAudio = null;
+  let speechRecognizer = null;
+  let chatHistory = [];
+  let detectedFields = [];
+  let activeFieldIndex = -1;
+  let currentTabId = null;
+  let cachedPageSummary = null;
+
+  // Complete JAPAC Multi-Language Matrix (English default)
+  const I18N = {
+    brand_tag: {
+      en: 'AI Form Assistant', id: 'Asisten Formulir AI', ja: 'AI フォームアシスタント', ko: 'AI 양식 도우미',
+      zh: 'AI 表单助手', 'zh-TW': 'AI 表單助手', vi: 'Trợ lý Biểu mẫu AI', th: 'ผู้ช่วยฟอร์ม AI',
+      hi: 'AI फ़ॉर्म सहायक', fil: 'AI Form Assistant', ms: 'Pembantu Borang AI'
+    },
+    tab_chat: {
+      en: 'Chat', id: 'Obrolan', ja: 'チャット', ko: '대화',
+      zh: '对话', 'zh-TW': '對話', vi: 'Trò chuyện', th: 'แชท',
+      hi: 'बातचीत', fil: 'Kausapin', ms: 'Sembang'
+    },
+    tab_fields: {
+      en: 'Fields', id: 'Kolom', ja: '入力欄', ko: '입력란',
+      zh: '表单项', 'zh-TW': '欄位', vi: 'Trường', th: 'ช่องข้อมูล',
+      hi: 'फ़ील्ड्स', fil: 'Mga Kolum', ms: 'Ruangan'
+    },
+    tab_summary: {
+      en: 'Overview', id: 'Ringkasan', ja: '概要', ko: '개요',
+      zh: '概览', 'zh-TW': '總覽', vi: 'Tổng quan', th: 'ภาพรวม',
+      hi: 'सारांश', fil: 'Pangkalahatan', ms: 'Ringkasan'
+    },
+    chat_placeholder: {
+      en: 'Ask Telmy about this form...', id: 'Tanya Telmy tentang form ini...', ja: 'このフォームについて質問...', ko: '이 양식에 대해 질문하기...',
+      zh: '向 Telmy 询问此表单...', 'zh-TW': '向 Telmy 詢問此表單...', vi: 'Hỏi Telmy về biểu mẫu này...', th: 'ถาม Telmy เกี่ยวกับฟอร์มนี้...',
+      hi: 'इस फ़ॉर्म के बारे में Telmy से पूछें...', fil: 'Magtanong kay Telmy tungkol dito...', ms: 'Tanya Telmy tentang borang ini...'
+    },
+    welcome_msg: {
+      en: 'Hello! I am **Telmy**, your AI form-filling assistant. Ask me anything about this form using text or click the microphone button below to speak.',
+      id: 'Halo! Saya **Telmy**, asisten pengisian formulir Anda. Tanyakan apa saja tentang formulir ini atau klik tombol mikrofon di bawah untuk berbicara.',
+      ja: 'こんにちは！フォーム入力アシスタントの **Telmy** です。フォームについて何でも質問するか、下のマイクボタンを押してお話しください。',
+      ko: '안녕하세요! 양식 작성 도우미 **Telmy** 입니다. 양식에 대해 궁금한 점을 질문하거나 아래 마이크 버튼을 눌러 말씀해 주세요.',
+      zh: '您好！我是您的表单填写助手 **Telmy**。您可以随时询问有关此表单的任何问题，或点击下方的麦克风直接说话。',
+      'zh-TW': '您好！我是您的表單填寫助理 **Telmy**。您可以隨時詢問有關此表單的任何問題，或點擊下方的麥克風直接說話。',
+      vi: 'Xin chào! Tôi là **Telmy**, trợ lý điền biểu mẫu của bạn. Hãy hỏi tôi bất cứ điều gì về biểu mẫu này, hoặc nhấn nút micrô bên dưới để nói.',
+      th: 'สวัสดีครับ! ผมคือ **Telmy** ผู้ช่วยกรอกแบบฟอร์มของคุณ สามารถถามเกี่ยวกับฟอร์มนี้ หรือกดปุ่มไมโครโฟนด้านล่างเพื่อพูดคุยได้เลยครับ',
+      hi: 'नमस्ते! मैं **Telmy** हूँ, आपका फ़ॉर्म भरने का सहायक। इस फ़ॉर्म के बारे में कुछ भी पूछें, या बोलने के लिए नीचे दिए गए माइक्रोफ़ोन पर क्लिक करें।',
+      fil: 'Kamusta! Ako si **Telmy**, ang iyong assistant sa pagsagot ng form. Magtanong tungkol sa form na ito o pindutin ang mikropono sa ibaba para magsalita.',
+      ms: 'Hai! Saya **Telmy**, pembantu pengisian borang anda. Tanya apa sahaja tentang borang ini atau klik butang mikrofon di bawah untuk bercakap.'
+    },
+    stepper_prev: {
+      en: 'Previous', id: 'Sebelumnya', ja: '前へ', ko: '이전',
+      zh: '上一项', 'zh-TW': '上一項', vi: 'Trước', th: 'ก่อนหน้า',
+      hi: 'पिछला', fil: 'Nakaraan', ms: 'Sebelumnya'
+    },
+    stepper_next: {
+      en: 'Next', id: 'Berikutnya', ja: '次へ', ko: '다음',
+      zh: '下一项', 'zh-TW': '下一項', vi: 'Tiếp theo', th: 'ถัดไป',
+      hi: 'अगला', fil: 'Susunod', ms: 'Seterusnya'
+    },
+    mic_listening: {
+      en: 'Listening to your voice...', id: 'Mendengarkan ucapan Anda...', ja: '音声を認識中...', ko: '듣고 있습니다...',
+      zh: '正在聆听您的声音...', 'zh-TW': '正在聆聽您的聲音...', vi: 'Đang lắng nghe giọng nói của bạn...', th: 'กำลังฟังเสียงของคุณ...',
+      hi: 'आपकी आवाज़ सुन रहे हैं...', fil: 'Nakikinig sa iyong boses...', ms: 'Mendengar suara anda...'
+    },
+    speaking_text: {
+      en: 'Telmy is speaking...', id: 'Telmy sedang membaca panduan...', ja: 'Telmy が音声を読み上げ中...', ko: 'Telmy가 안내를 읽고 있습니다...',
+      zh: 'Telmy 正在朗读指南...', 'zh-TW': 'Telmy 正在朗讀指引...', vi: 'Telmy đang đọc hướng dẫn...', th: 'Telmy กำลังอ่านคำแนะนำ...',
+      hi: 'Telmy मार्गदर्शन पढ़ रहा है...', fil: 'Binabasa ni Telmy ang gabay...', ms: 'Telmy sedang membaca panduan...'
+    },
+    empty_fields_title: {
+      en: 'Select a Form Field', id: 'Pilih Kolom Formulir', ja: '入力項目を選択してください', ko: '입력란을 선택하세요',
+      zh: '请选择表单项', 'zh-TW': '請選擇表單欄位', vi: 'Chọn trường biểu mẫu', th: 'เลือกช่องกรอกข้อมูล',
+      hi: 'एक फ़ॉर्म फ़ील्ड चुनें', fil: 'Pumili ng Kolum', ms: 'Pilih Ruangan Borang'
+    },
+    empty_fields_desc: {
+      en: 'Hover or click any field badge on the page to view detailed guidelines and examples.',
+      id: 'Arahkan kursor atau klik nomor kolom di formulir sebelah kiri untuk melihat panduan detail dan contoh isian.',
+      ja: '左側のフォームの項目番号にカーソルを合わせるかクリックすると詳細ガイドが表示されます。',
+      ko: '왼쪽 양식의 입력란 번호를 클릭하면 상세 안내와 예시를 확인할 수 있습니다.',
+      zh: '悬停或点击左侧表单中的项目编号，可查看详细填写指南与示例。',
+      'zh-TW': '指向或點擊左側表單上的欄位編號，即可查看詳細說明與範例。',
+      vi: 'Di chuột hoặc nhấp vào số trường trên biểu mẫu để xem hướng dẫn chi tiết và ví dụ.',
+      th: 'ชี้หรือคลิกที่หมายเลขช่องในฟอร์มเพื่อดูคำแนะนำและตัวอย่างโดยละเอียด',
+      hi: 'विस्तृत दिशानिर्देश और उदाहरण देखने के लिए पेज पर किसी फ़ील्ड पर कर्सर ले जाएँ या क्लिक करें।',
+      fil: 'Itapat o i-click ang numero ng kolum sa form para makita ang detalye at halimbawa.',
+      ms: 'Arahkan kursor atau klik nombor ruangan pada borang untuk melihat panduan terperinci.'
+    },
+    detected_fields_header: {
+      en: 'Detected Form Fields', id: 'Daftar Kolom Terdeteksi', ja: '検出された入力項目一覧', ko: '감지된 입력란 목록',
+      zh: '已检测表单项列表', 'zh-TW': '已偵測欄位清單', vi: 'Danh sách trường đã phát hiện', th: 'รายการช่องที่ตรวจพบ',
+      hi: 'पहचाने गए फ़ॉर्म फ़ील्ड्स', fil: 'Mga Nakitang Kolum', ms: 'Senarai Ruangan Dikesan'
+    },
+    progress_title: {
+      en: 'Form Completion Progress', id: 'Progres Pengisian Form', ja: '入力進捗状況', ko: '양식 작성 진행률',
+      zh: '表单填写进度', 'zh-TW': '表單填寫進度', vi: 'Tiến độ hoàn thành biểu mẫu', th: 'ความคืบหน้าการกรอกแบบฟอร์ม',
+      hi: 'फ़ॉर्म भरने की प्रगति', fil: 'Progreso ng Pagsagot', ms: 'Kemajuan Mengisi Borang'
+    },
+    summary_title: {
+      en: '📌 Form Overview', id: '📌 Ringkasan Formulir', ja: '📌 フォーム概要', ko: '📌 양식 개요',
+      zh: '📌 表单概览', 'zh-TW': '📌 表單總覽', vi: '📌 Tổng quan biểu mẫu', th: '📌 ภาพรวมแบบฟอร์ม',
+      hi: '📌 फ़ॉर्म का सारांश', fil: '📌 Buod ng Form', ms: '📌 Ringkasan Borang'
+    },
+    prereq_title: {
+      en: '📑 Prerequisites & Documents', id: '📑 Dokumen yang Perlu Disiapkan', ja: '📑 事前準備書類', ko: '📑 준비 서류',
+      zh: '📑 需准备的文件', 'zh-TW': '📑 需準備的證件', vi: '📑 Giấy tờ cần chuẩn bị', th: '📑 เอกสารที่ต้องเตรียม',
+      hi: '📑 आवश्यक दस्तावेज़', fil: '📑 Mga Kinakailangang Dokumento', ms: '📑 Dokumen Diperlukan'
+    },
+    tips_title: {
+      en: '💡 Helpful Tips', id: '💡 Tips Pengisian', ja: '💡 入力のヒント', ko: '💡 작성 팁',
+      zh: '💡 填写提示', 'zh-TW': '💡 填寫貼士', vi: '💡 Mẹo điền biểu mẫu', th: '💡 เคล็ดลับการกรอก',
+      hi: '💡 उपयोगी सुझाव', fil: '💡 Mga Tip', ms: '💡 Petua Mengisi'
+    },
+    detail_meaning: {
+      en: 'Meaning & Purpose', id: 'Maksud & Fungsi Kolom', ja: '項目の意味と用途', ko: '항목 설명 및 용도',
+      zh: '含义与用途', 'zh-TW': '含義與用途', vi: 'Ý nghĩa & Mục đích', th: 'ความหมายและวัตถุประสงค์',
+      hi: 'अर्थ और उद्देश्य', fil: 'Kahulugan at Layunin', ms: 'Maksud & Fungsi Ruangan'
+    },
+    detail_how: {
+      en: 'How to Fill', id: 'Cara Mengisi', ja: '入力手順', ko: '작성 방법',
+      zh: '如何填写', 'zh-TW': '如何填寫', vi: 'Cách điền', th: 'วิธีการกรอก',
+      hi: 'कैसे भरें', fil: 'Paano Sagutan', ms: 'Cara Mengisi'
+    },
+    detail_example: {
+      en: 'Example Entry', id: 'Contoh Isian', ja: '記入例', ko: '예시',
+      zh: '参考示例', 'zh-TW': '參考範例', vi: 'Ví dụ mẫu', th: 'ตัวอย่างการกรอก',
+      hi: 'उदाहरण', fil: 'Halimbawa', ms: 'Contoh Isian'
+    },
+    detail_copy: {
+      en: 'Copy', id: 'Salin', ja: 'コピー', ko: '복사',
+      zh: '复制', 'zh-TW': '複製', vi: 'Sao chép', th: 'คัดลอก',
+      hi: 'कॉपी करें', fil: 'Kopyahin', ms: 'Salin'
+    },
+    detail_copied: {
+      en: 'Copied!', id: 'Tersalin!', ja: 'コピー完了!', ko: '복사됨!',
+      zh: '已复制!', 'zh-TW': '已複製!', vi: 'Đã sao chép!', th: 'คัดลอกแล้ว!',
+      hi: 'कॉपी हो गया!', fil: 'Nakopya!', ms: 'Disalin!'
+    },
+    detail_avoid: {
+      en: '⚠️ Avoid Mistakes:', id: '⚠️ Hindari Kesalahan:', ja: '⚠️ 注意点:', ko: '⚠️ 주의 사항:',
+      zh: '⚠️ 避免错误:', 'zh-TW': '⚠️ 避免錯誤:', vi: '⚠️ Tránh lỗi:', th: '⚠️ ข้อควรระวัง:',
+      hi: '⚠️ गलतियों से बचें:', fil: '⚠️ Iwasan ang Mali:', ms: '⚠️ Elakkan Kesilapan:'
+    },
+    fields_unit: {
+      en: 'Fields', id: 'Kolom', ja: '項目', ko: '개',
+      zh: '项', 'zh-TW': '項', vi: 'trường', th: 'ช่อง',
+      hi: 'फ़ील्ड्स', fil: 'Kolum', ms: 'Ruangan'
+    }
+  };
+
+  const LOCALE_MAP = {
+    en: 'en-US',
+    id: 'id-ID',
+    ja: 'ja-JP',
+    ko: 'ko-KR',
+    zh: 'zh-CN',
+    'zh-TW': 'zh-TW',
+    vi: 'vi-VN',
+    th: 'th-TH',
+    hi: 'hi-IN',
+    fil: 'fil-PH',
+    ms: 'ms-MY'
+  };
+
+  function t(key) {
+    const entry = I18N[key];
+    if (!entry) return '';
+    return entry[currentLanguage] || entry['en'] || entry['id'] || '';
+  }
+
+  // 1. Initialize Active Tab & Settings
+  async function init() {
+    // Load Settings
+    const stored = await chrome.storage.local.get(['settings']);
+    if (stored.settings) {
+      currentLanguage = stored.settings.language || 'en';
+      langSelect.value = currentLanguage;
+    } else {
+      langSelect.value = 'en';
+    }
+
+    applyLanguageUI();
+
+    // Determine current active tab
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (tab && tab.id) {
+      currentTabId = tab.id;
+      loadSessionChat(tab.url);
+      queryTabStatus(tab.id);
+    }
+
+    setupSpeechRecognition();
+    renderWelcome();
+  }
+
+  // 2. Query Active Tab Status
+  function queryTabStatus(tabId) {
+    if (!tabId) return;
+    chrome.tabs.sendMessage(tabId, { type: 'QUERY_PAGE_STATUS' }, (res) => {
+      if (chrome.runtime.lastError || !res) {
+        // Content script might not be injected, inject it on-demand
+        injectContentScript(tabId);
+      } else {
+        triggerTabRescan(tabId);
+      }
+    });
+  }
+
+  // On-demand injection into active tab
+  async function injectContentScript(tabId) {
+    try {
+      await chrome.scripting.insertCSS({
+        target: { tabId },
+        files: ['content/overlay.css']
+      }).catch(() => {});
+
+      await chrome.scripting.executeScript({
+        target: { tabId },
+        files: [
+          'content/scanner.js',
+          'content/highlighter.js',
+          'content/content-main.js'
+        ]
+      });
+
+      setTimeout(() => triggerTabRescan(tabId), 250);
+    } catch (e) {
+      console.warn('[Telmy SidePanel] On-demand injection skipped:', e.message);
+    }
+  }
+
+  function triggerTabRescan(tabId) {
+    chrome.tabs.sendMessage(tabId, { type: 'TRIGGER_RESCAN' }, (res) => {
+      if (chrome.runtime.lastError) return;
+      if (res && res.count !== undefined) {
+        badgeFieldsCount.textContent = res.count;
+        fieldsCountPill.textContent = `${res.count} Kolom`;
+      }
+    });
+  }
+
+  // 3. Listen for Messages from Content Script & Background
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === 'GMT_PAGE_MAPPED') {
+      detectedFields = message.fields || [];
+      cachedPageSummary = message.summary || null;
+      renderFieldsList(detectedFields);
+      renderSummaryPane(cachedPageSummary, detectedFields);
+      sendResponse({ success: true });
+      return false;
+    }
+
+    if (message.type === 'GMT_FIELD_FOCUSED') {
+      const idx = message.index;
+      selectFieldByIndex(idx, false);
+      sendResponse({ success: true });
+      return false;
+    }
+  });
+
+  // 4. Tab Navigation
+  tabBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const targetTab = btn.getAttribute('data-tab');
+      tabBtns.forEach((b) => b.classList.toggle('active', b === btn));
+      panes.forEach((p) => p.classList.toggle('active', p.id === `pane-${targetTab}`));
+    });
+  });
+
+  // Language Change
+  langSelect.addEventListener('change', (e) => {
+    currentLanguage = e.target.value;
+    chrome.storage.local.get(['settings']).then((res) => {
+      const updated = { ...(res.settings || {}), language: currentLanguage };
+      chrome.storage.local.set({ settings: updated });
+    });
+    applyLanguageUI();
+    if (activeFieldIndex >= 0 && detectedFields[activeFieldIndex]) {
+      renderFieldDetail(detectedFields[activeFieldIndex]);
+    }
+  });
+
+  function applyLanguageUI() {
+    chatInput.placeholder = t('chat_placeholder');
+    const elChat = document.getElementById('lbl-tab-chat');
+    if (elChat) elChat.textContent = t('tab_chat');
+    const elFields = document.getElementById('lbl-tab-fields');
+    if (elFields) elFields.textContent = t('tab_fields');
+    const elSummary = document.getElementById('lbl-tab-summary');
+    if (elSummary) elSummary.textContent = t('tab_summary');
+    const elPrev = document.getElementById('lbl-stepper-prev');
+    if (elPrev) elPrev.textContent = t('stepper_prev');
+    const elNext = document.getElementById('lbl-stepper-next');
+    if (elNext) elNext.textContent = t('stepper_next');
+    const elBrand = document.getElementById('lbl-brand-tag');
+    if (elBrand) elBrand.textContent = t('brand_tag');
+    const elEmptyTitle = document.getElementById('lbl-empty-fields-title');
+    if (elEmptyTitle) elEmptyTitle.textContent = t('empty_fields_title');
+    const elEmptyDesc = document.getElementById('lbl-empty-fields-desc');
+    if (elEmptyDesc) elEmptyDesc.textContent = t('empty_fields_desc');
+    const elHdr = document.getElementById('lbl-detected-fields-header');
+    if (elHdr) elHdr.textContent = t('detected_fields_header');
+    const elProg = document.getElementById('lbl-progress-title');
+    if (elProg) elProg.textContent = t('progress_title');
+    const elSumTitle = document.getElementById('lbl-summary-title');
+    if (elSumTitle) elSumTitle.textContent = t('summary_title');
+    const elPreTitle = document.getElementById('lbl-prereq-title');
+    if (elPreTitle) elPreTitle.textContent = t('prereq_title');
+    const elTips = document.getElementById('lbl-tips-title');
+    if (elTips) elTips.textContent = t('tips_title');
+    if (fieldsCountPill) fieldsCountPill.textContent = `${detectedFields.length} ${t('fields_unit')}`;
+  }
+
+  // Rescan Button
+  btnRescan.addEventListener('click', () => {
+    btnRescan.style.transform = 'rotate(180deg)';
+    setTimeout(() => { btnRescan.style.transform = ''; }, 300);
+    if (currentTabId) queryTabStatus(currentTabId);
+  });
+
+  // 5. Chat & AI Interaction
+  function renderWelcome() {
+    if (chatHistory.length === 0) {
+      appendChatMessage({
+        role: 'assistant',
+        text: t('welcome_msg'),
+        actions: [
+          { type: 'TAB_FIELDS', label: '📋 ' + t('tab_fields') },
+          { type: 'TAB_SUMMARY', label: '📌 ' + t('tab_summary') }
+        ],
+        time: formatTime(new Date())
+      });
+    } else {
+      chatStream.innerHTML = '';
+      chatHistory.forEach(appendChatMessageDOM);
+    }
+  }
+
+  async function handleSendMessage(text) {
+    if (!text || !text.trim()) return;
+    const cleanText = text.trim();
+    chatInput.value = '';
+
+    const userMsg = {
+      role: 'user',
+      text: cleanText,
+      time: formatTime(new Date())
+    };
+    appendChatMessage(userMsg);
+
+    // Call Backend Gateway / Chat API
+    try {
+      const response = await new Promise((resolve) => {
+        chrome.runtime.sendMessage({
+          type: 'SEND_CHAT_MESSAGE',
+          payload: {
+            message: cleanText,
+            history: chatHistory.slice(-8),
+            language: currentLanguage,
+            formContext: {
+              activeField: activeFieldIndex >= 0 ? detectedFields[activeFieldIndex] : null,
+              fieldsCount: detectedFields.length
+            }
+          }
+        }, (res) => {
+          if (chrome.runtime.lastError) resolve(null);
+          else resolve(res);
+        });
+      });
+
+      const reply = response && response.data && response.data.reply
+        ? response.data.reply
+        : (currentLanguage === 'en'
+            ? 'I am ready to help you complete this form. Click on any field on the page to see detailed step-by-step guidance.'
+            : 'Saya siap membantu memandu pengisian formulir ini. Klik salah satu kolom di halaman untuk melihat petunjuk detail.');
+
+      const actions = response && response.data && Array.isArray(response.data.actions)
+        ? response.data.actions
+        : [];
+
+      const assistantMsg = {
+        role: 'assistant',
+        text: reply,
+        actions: actions,
+        time: formatTime(new Date())
+      };
+      appendChatMessage(assistantMsg);
+
+      // Speak response using Gemini TTS
+      if (!isMuted) {
+        speakResponse(reply);
+      }
+    } catch (e) {
+      console.warn('[Telmy Chat Error]', e);
+    }
+  }
+
+  btnSend.addEventListener('click', () => handleSendMessage(chatInput.value));
+  chatInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') handleSendMessage(chatInput.value);
+  });
+
+  function appendChatMessage(msg) {
+    chatHistory.push(msg);
+    saveSessionChat();
+    appendChatMessageDOM(msg);
+  }
+
+  function appendChatMessageDOM(msg) {
+    const item = document.createElement('div');
+    item.className = `chat-msg ${msg.role}`;
+
+    const avatar = document.createElement('div');
+    avatar.className = 'msg-avatar';
+    if (msg.role === 'assistant') {
+      avatar.innerHTML = `<img src="../assets/logo.png" style="width: 18px; height: 18px; object-fit: contain;">`;
+    } else {
+      avatar.textContent = 'U';
+    }
+
+    const bubble = document.createElement('div');
+    bubble.className = 'msg-bubble';
+
+    // Format bold markdown (**text**)
+    const formatted = escapeHTML(msg.text).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    bubble.innerHTML = formatted;
+
+    if (msg.actions && msg.actions.length > 0) {
+      const chips = document.createElement('div');
+      chips.className = 'msg-chips-row';
+      msg.actions.forEach((act) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'action-chip';
+        btn.textContent = act.label || act.type;
+        btn.addEventListener('click', () => handleActionChip(act));
+        chips.appendChild(btn);
+      });
+      bubble.appendChild(chips);
+    }
+
+    const time = document.createElement('div');
+    time.className = 'msg-time';
+    time.textContent = msg.time || '';
+    bubble.appendChild(time);
+
+    item.appendChild(avatar);
+    item.appendChild(bubble);
+    chatStream.appendChild(item);
+    chatStream.scrollTop = chatStream.scrollHeight;
+  }
+
+  function handleActionChip(act) {
+    if (act.type === 'TAB_FIELDS') {
+      document.getElementById('tab-btn-fields').click();
+    } else if (act.type === 'TAB_SUMMARY') {
+      document.getElementById('tab-btn-summary').click();
+    } else if (act.type === 'FOCUS_FIELD' && act.index !== undefined) {
+      selectFieldByIndex(act.index, true);
+      document.getElementById('tab-btn-fields').click();
+    }
+  }
+
+  // 6. Push-to-Talk Voice Engine
+  function setupSpeechRecognition() {
+    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRec) {
+      btnMic.style.display = 'none';
+      return;
+    }
+
+    speechRecognizer = new SpeechRec();
+    speechRecognizer.continuous = false;
+    speechRecognizer.interimResults = true;
+
+    speechRecognizer.onstart = () => {
+      isListening = true;
+      btnMic.classList.add('active');
+      micBanner.style.display = 'flex';
+      micText.textContent = t('mic_listening');
+    };
+
+    speechRecognizer.onresult = (event) => {
+      let interim = '';
+      let final = '';
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) {
+          final += event.results[i][0].transcript;
+        } else {
+          interim += event.results[i][0].transcript;
+        }
+      }
+      if (interim) micText.textContent = `"${interim}"`;
+      if (final) {
+        micBanner.style.display = 'none';
+        handleSendMessage(final);
+      }
+    };
+
+    speechRecognizer.onerror = (e) => {
+      console.warn('[Telmy STT Error]', e.error);
+      stopListening();
+    };
+
+    speechRecognizer.onend = () => {
+      stopListening();
+    };
+  }
+
+  function toggleListening() {
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
+    }
+  }
+
+  function startListening() {
+    if (!speechRecognizer) return;
+    try {
+      speechRecognizer.lang = LOCALE_MAP[currentLanguage] || 'en-US';
+      speechRecognizer.start();
+    } catch (e) {
+      console.warn('[STT Start Error]', e);
+    }
+  }
+
+  function stopListening() {
+    isListening = false;
+    btnMic.classList.remove('active');
+    micBanner.style.display = 'none';
+    if (speechRecognizer) {
+      try { speechRecognizer.stop(); } catch (e) {}
+    }
+  }
+
+  btnMic.addEventListener('click', toggleListening);
+
+  // Mute / Audio Toggle
+  btnMute.addEventListener('click', () => {
+    isMuted = !isMuted;
+    btnMute.classList.toggle('muted', isMuted);
+    if (isMuted) stopSpeaking();
+  });
+
+  // 7. TTS Playback (Gemini Flash-Lite TTS + Browser Fallback)
+  function speakResponse(text) {
+    if (isMuted || !text) return;
+    stopSpeaking();
+
+    isSpeaking = true;
+    audioBar.style.display = 'flex';
+    audioStatusText.textContent = t('speaking_text');
+
+    // 1. Try Gemini TTS via backend gateway
+    chrome.runtime.sendMessage({
+      type: 'VOICE_TTS',
+      payload: { text, language: currentLanguage }
+    }, (res) => {
+      if (!chrome.runtime.lastError && res && res.success && res.audioDataUrl) {
+        currentAudio = new Audio(res.audioDataUrl);
+        currentAudio.onended = stopSpeaking;
+        currentAudio.onerror = () => speakBrowserFallback(text);
+        currentAudio.play().catch(() => speakBrowserFallback(text));
+      } else {
+        speakBrowserFallback(text);
+      }
+    });
+  }
+
+  function speakBrowserFallback(text) {
+    if (!('speechSynthesis' in window)) {
+      stopSpeaking();
+      return;
+    }
+    window.speechSynthesis.cancel();
+    const clean = text.replace(/[*_#`~]/g, '').trim();
+    const utterance = new SpeechSynthesisUtterance(clean);
+    utterance.lang = LOCALE_MAP[currentLanguage] || 'en-US';
+    utterance.onend = stopSpeaking;
+    utterance.onerror = stopSpeaking;
+    window.speechSynthesis.speak(utterance);
+  }
+
+  function stopSpeaking() {
+    isSpeaking = false;
+    audioBar.style.display = 'none';
+    if (currentAudio) {
+      try { currentAudio.pause(); } catch (e) {}
+      currentAudio = null;
+    }
+    if ('speechSynthesis' in window) {
+      try { window.speechSynthesis.cancel(); } catch (e) {}
+    }
+  }
+
+  btnStopAudio.addEventListener('click', stopSpeaking);
+
+  // 8. Fields List & Detail Rendering
+  function renderFieldsList(fields) {
+    fieldsQuickList.innerHTML = '';
+    if (!fields || fields.length === 0) {
+      fieldsEmptyState.style.display = 'block';
+      fieldDetailContent.style.display = 'none';
+      btnStepperPrev.disabled = true;
+      btnStepperNext.disabled = true;
+      stepperIndicator.textContent = '0 / 0';
+      return;
+    }
+
+    fields.forEach((f, idx) => {
+      const item = document.createElement('div');
+      item.className = `quick-field-item ${idx === activeFieldIndex ? 'active' : ''}`;
+      item.innerHTML = `
+        <span class="quick-num">${idx + 1}</span>
+        <span class="quick-title">${escapeHTML(f.metadata.label || f.metadata.name || `Kolom #${idx + 1}`)}</span>
+      `;
+      item.addEventListener('click', () => selectFieldByIndex(idx, true));
+      fieldsQuickList.appendChild(item);
+    });
+
+    stepperIndicator.textContent = `${activeFieldIndex >= 0 ? activeFieldIndex + 1 : 1} / ${fields.length}`;
+    btnStepperPrev.disabled = activeFieldIndex <= 0;
+    btnStepperNext.disabled = activeFieldIndex >= fields.length - 1;
+
+    if (activeFieldIndex < 0 && fields.length > 0) {
+      selectFieldByIndex(0, false);
+    }
+  }
+
+  function selectFieldByIndex(index, notifyPage = true) {
+    if (!detectedFields[index]) return;
+    activeFieldIndex = index;
+
+    // Highlight in quick list
+    const items = fieldsQuickList.querySelectorAll('.quick-field-item');
+    items.forEach((el, i) => el.classList.toggle('active', i === index));
+
+    // Update stepper
+    stepperIndicator.textContent = `${index + 1} / ${detectedFields.length}`;
+    btnStepperPrev.disabled = index <= 0;
+    btnStepperNext.disabled = index >= detectedFields.length - 1;
+
+    // Render detail card
+    renderFieldDetail(detectedFields[index]);
+
+    // Notify tab to highlight and scroll to field
+    if (notifyPage && currentTabId) {
+      chrome.tabs.sendMessage(currentTabId, {
+        type: 'GMT_ACTIVATE_FIELD_BY_INDEX',
+        index: index
+      }, () => { if (chrome.runtime.lastError) {} });
+    }
+  }
+
+  function renderFieldDetail(field) {
+    fieldsEmptyState.style.display = 'none';
+    fieldDetailContent.style.display = 'block';
+
+    const meta = field.metadata || {};
+    const dict = field.dictEntry || {};
+    const trans = (dict.translations && dict.translations[currentLanguage]) || {};
+
+    const title = trans.label || meta.label || meta.name || `Kolom #${activeFieldIndex + 1}`;
+    const meaning = trans.meaning || `Kolom untuk mengisi data ${escapeHTML(title)}. Pastikan sesuai dokumen resmi.`;
+    const howToFill = trans.how_to_fill || 'Ketikkan data secara lengkap dan akurat sesuai kartu identitas Anda.';
+    const example = trans.example || meta.placeholder || 'Contoh sesuai dokumen';
+    const mistakes = trans.common_mistakes || 'Salah ketik angka/huruf atau mengosongkan kolom penting ini.';
+
+    fieldDetailContent.innerHTML = `
+      <div class="field-detail-header">
+        <span class="field-badge-num">#${activeFieldIndex + 1}</span>
+        <h3 class="field-detail-title">${escapeHTML(title)}</h3>
+      </div>
+      <div class="detail-section">
+        <div class="detail-label">${t('detail_meaning')}</div>
+        <div class="detail-text">${escapeHTML(meaning)}</div>
+      </div>
+      <div class="detail-section">
+        <div class="detail-label">${t('detail_how')}</div>
+        <div class="detail-text">${escapeHTML(howToFill)}</div>
+      </div>
+      <div class="detail-section">
+        <div class="detail-label">${t('detail_example')}</div>
+        <div class="example-box">
+          <span class="example-code">${escapeHTML(example)}</span>
+          <button type="button" class="btn-copy-example" id="btn-copy-val">${t('detail_copy')}</button>
+        </div>
+      </div>
+      <div class="alert-warning">
+        <strong>${t('detail_avoid')}</strong> ${escapeHTML(mistakes)}
+      </div>
+    `;
+
+    const copyBtn = fieldDetailContent.querySelector('#btn-copy-val');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(example);
+        copyBtn.textContent = t('detail_copied');
+        setTimeout(() => { copyBtn.textContent = t('detail_copy'); }, 1500);
+      });
+    }
+  }
+
+  // Stepper Buttons
+  btnStepperPrev.addEventListener('click', () => {
+    if (activeFieldIndex > 0) selectFieldByIndex(activeFieldIndex - 1, true);
+  });
+  btnStepperNext.addEventListener('click', () => {
+    if (activeFieldIndex < detectedFields.length - 1) selectFieldByIndex(activeFieldIndex + 1, true);
+  });
+
+  // 9. Summary & Progress Pane
+  function renderSummaryPane(summary, fields) {
+    if (summary && summary.title) {
+      summaryDescText.textContent = `${summary.title}: ${summary.description || 'Formulir pelayanan resmi.'}`;
+    } else {
+      summaryDescText.textContent = currentLanguage === 'en'
+        ? `This page contains ${fields.length} form input fields.`
+        : `Halaman ini memuat ${fields.length} kolom isian formulir.`;
+    }
+
+    if (summary && summary.prerequisites && summary.prerequisites.length > 0) {
+      boxPrerequisites.style.display = 'block';
+      summaryPrereqList.innerHTML = summary.prerequisites.map(p => `<li>${escapeHTML(p)}</li>`).join('');
+    } else {
+      boxPrerequisites.style.display = 'none';
+    }
+
+    // Calculate filled progress
+    const total = fields.length;
+    let filled = 0;
+    fields.forEach(f => {
+      const el = f.metadata ? f.metadata.element : null;
+      if (el && el.value && el.value.trim().length > 0) filled++;
+    });
+
+    const pct = total > 0 ? Math.round((filled / total) * 100) : 0;
+    progressPercent.textContent = `${pct}%`;
+    progressBarFill.style.width = `${pct}%`;
+    progressSubText.textContent = currentLanguage === 'en'
+      ? `${filled} of ${total} fields filled`
+      : `${filled} dari ${total} kolom terisi`;
+  }
+
+  // 10. Helpers & Persistence
+  function formatTime(d) {
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function escapeHTML(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  async function loadSessionChat(url) {
+    try {
+      const key = `telmy_sp_chat_${url ? new URL(url).hostname : 'global'}`;
+      const res = await chrome.storage.local.get([key]);
+      chatHistory = res[key] || [];
+      renderWelcome();
+    } catch (e) {}
+  }
+
+  async function saveSessionChat() {
+    try {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (tab && tab.url) {
+        const key = `telmy_sp_chat_${new URL(tab.url).hostname}`;
+        await chrome.storage.local.set({ [key]: chatHistory.slice(-30) });
+      }
+    } catch (e) {}
+  }
+
+  // Boot
+  init();
+});

@@ -10,7 +10,7 @@ const router = express.Router();
  */
 router.post('/explain', async (req, res) => {
   try {
-    const { metadata, fields, language = 'id', pageContext = '' } = req.body;
+    const { metadata, fields, language = 'en', pageContext = '' } = req.body;
 
     // Batch explanation
     if (Array.isArray(fields)) {

@@ -238,7 +238,7 @@ Return valid JSON:
  * 3. Tries Gemini API (secondary fallback)
  * 4. Gracefully falls back to localized template
  */
-export async function generateFieldExplanation(fieldMetadata, targetLanguage = 'id', pageContext = '') {
+export async function generateFieldExplanation(fieldMetadata, targetLanguage = 'en', pageContext = '') {
   const rawLabel = (fieldMetadata.label || fieldMetadata.name || '').toLowerCase().trim();
   const normalizedKey = rawLabel.replace(/[^a-z0-9_]/g, '_').replace(/_+/g, '_');
 

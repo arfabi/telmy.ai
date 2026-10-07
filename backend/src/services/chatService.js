@@ -9,7 +9,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 /**
  * Handle conversational copilot chat
  */
-export async function handleCopilotChat({ message, history = [], language = 'id', formContext = {} }) {
+export async function handleCopilotChat({ message, history = [], language = 'en', formContext = {} }) {
   const provider = (process.env.AI_PROVIDER || 'openai').toLowerCase();
 
   // Try OpenAI compatible (GLM-5.3-Flash / Sumopod / OpenAI)
@@ -35,12 +35,12 @@ export async function handleCopilotChat({ message, history = [], language = 'id'
 }
 
 function buildSystemPrompt(language, formContext) {
-  const formTitle = formContext.title || 'Formulir Publik Digital';
+  const formTitle = formContext.title || 'Public Digital Form';
   const fields = Array.isArray(formContext.fields) ? formContext.fields : [];
-  const fieldListPreview = fields.slice(0, 15).map((f, i) => `${i + 1}. ${f.label || f.name || 'Kolom'} (${f.type || 'text'})`).join('\n');
+  const fieldListPreview = fields.slice(0, 15).map((f, i) => `${i + 1}. ${f.label || f.name || 'Field'} (${f.type || 'text'})`).join('\n');
 
   return `You are Telmy, a friendly, ultra-helpful, and professional AI Form Explainer and Conversational Co-Pilot for web and government forms.
-You speak naturally to the user in their requested language: ${language.toUpperCase()} (options: ID, EN, ZH, JA, KO).
+You speak naturally to the user in their requested language: ${language.toUpperCase()} (options: EN, ID, JA, KO, ZH, ZH-TW, VI, TH, HI, FIL, MS).
 
 CURRENT FORM CONTEXT:
 - Page Title: "${formTitle}"

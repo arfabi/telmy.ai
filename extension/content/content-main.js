@@ -1,12 +1,24 @@
-// Telmy — Main Content Script Orchestrator
+// Telmy — Main Content Script Orchestrator (Optimized for Chrome Native Side Panel)
 (function () {
+  // Ensure lingering in-page floating panel DOM elements are cleaned up
+  function cleanupFloatingDOM() {
+    const oldPanel = document.getElementById('gmt-side-panel-container');
+    if (oldPanel) oldPanel.remove();
+    const oldPill = document.getElementById('gmt-launcher-pill');
+    if (oldPill) oldPill.remove();
+  }
+  cleanupFloatingDOM();
+
   if (window.__TELMY_INITIALIZED__) {
     // Already loaded, just run a fresh scan
-    if (window.GMTScanner && window.GMTPanel) {
+    if (window.GMTScanner) {
       const items = window.GMTScanner.scanForms(window.__TELMY_DICT__ || []);
       if (items.length > 0 && window.GMTHighlighter) {
         window.GMTHighlighter.attachBadges(items, (item, index) => {
-          window.GMTPanel.render(item, index, items.length, 'id');
+          chrome.runtime.sendMessage({
+            type: 'GMT_FIELD_FOCUSED',
+            index: index
+          }, () => { if (chrome.runtime.lastError) {} });
         });
       }
     }
@@ -14,7 +26,7 @@
   }
   window.__TELMY_INITIALIZED__ = true;
 
-  let gmtSettings = { language: 'id', isActive: true };
+  let gmtSettings = { language: 'en', isActive: true };
   let dictionaryData = null;
   let scannedItems = [];
   let isScanning = false;
@@ -22,7 +34,7 @@
   let domObserver = null;
   let debounceTimer = null;
 
-  // 1. Listen for runtime messages immediately (never delay this)
+  // 1. Listen for runtime messages immediately
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === 'SETTINGS_CHANGED') {
       const wasActive = gmtSettings.isActive;
@@ -30,18 +42,14 @@
 
       if (gmtSettings.isActive === false) {
         if (window.GMTHighlighter) window.GMTHighlighter.clearBadges();
-        if (window.GMTPanel) window.GMTPanel.hide();
       } else if (!wasActive && gmtSettings.isActive) {
         runScanAndHighlight(cachedPageSummary);
-      } else if (gmtSettings.language && window.GMTPanel) {
-        window.GMTPanel.updateLanguage(gmtSettings.language);
       }
       sendResponse({ success: true });
       return false;
     }
 
     if (message.type === 'QUERY_PAGE_STATUS') {
-      // If not yet scanned, do a quick scan right now
       if (scannedItems.length === 0 && window.GMTScanner && gmtSettings.isActive !== false) {
         runScanAndHighlight(cachedPageSummary);
       }
@@ -57,20 +65,27 @@
       sendResponse({ count: scannedItems.length });
       return false;
     }
+
+    if (message.type === 'GMT_ACTIVATE_FIELD_BY_INDEX') {
+      if (window.GMTHighlighter && scannedItems[message.index]) {
+        window.GMTHighlighter.setActiveField(message.index, scannedItems);
+      }
+      sendResponse({ success: true });
+      return false;
+    }
   });
 
-  // 2. Setup MutationObserver for dynamic SPAs, React, Vue, Google Forms, and wizard steps
+  // 2. Setup MutationObserver for dynamic SPAs, React, Vue, Google Forms
   function setupMutationObserver() {
     if (domObserver || !window.MutationObserver) return;
 
     domObserver = new MutationObserver((mutations) => {
       let shouldRescan = false;
       for (const m of mutations) {
-        // Skip mutations inside Telmy UI
         if (m.target && m.target.closest && m.target.closest('.gmt-ui-container')) continue;
         if (m.addedNodes.length > 0) {
           for (const node of m.addedNodes) {
-            if (node.nodeType === 1) { // ELEMENT_NODE
+            if (node.nodeType === 1) {
               if (
                 node.matches && (
                   node.matches('input, select, textarea, [role="textbox"], [role="radiogroup"], [role="group"], [role="combobox"]') ||
@@ -86,24 +101,31 @@
         if (shouldRescan) break;
       }
 
-      if (shouldRescan && gmtSettings.isActive !== false) {
+      if (shouldRescan) {
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(() => {
-          runScanAndHighlight(cachedPageSummary, true);
-        }, 400);
+          if (gmtSettings.isActive !== false) {
+            runScanAndHighlight(cachedPageSummary, true);
+          }
+        }, 350);
       }
     });
 
-    if (document.body) {
-      domObserver.observe(document.body, { childList: true, subtree: true });
-    }
+    domObserver.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
   }
 
+  // 3. Main Init Workflow
   async function init() {
-    // A. Fetch current settings safely
+    cleanupFloatingDOM();
+
+    // A. Fetch current settings from extension storage
     chrome.runtime.sendMessage({ type: 'GET_SETTINGS' }, (settings) => {
-      if (chrome.runtime.lastError) return;
-      if (settings) {
+      if (chrome.runtime.lastError) {
+        gmtSettings = { language: 'en', isActive: true };
+      } else if (settings) {
         gmtSettings = settings;
       }
 
@@ -141,7 +163,7 @@
         // Setup observer after initial scan
         setupMutationObserver();
 
-        // Secondary scans for slow-rendering SPAs (e.g. React/Vue forms that render after mock data)
+        // Secondary scans for slow-rendering SPAs
         setTimeout(() => {
           if (scannedItems.length === 0 && gmtSettings.isActive !== false) {
             runScanAndHighlight(cachedPageSummary);
@@ -155,18 +177,6 @@
         }, 1600);
       });
     });
-
-    // C. Keyboard shortcut: Alt+G toggles panel
-    document.addEventListener('keydown', (e) => {
-      if (e.altKey && (e.key === 'g' || e.key === 'G')) {
-        const panel = document.getElementById('gmt-side-panel-container');
-        if (panel && panel.classList.contains('gmt-collapsed')) {
-          if (window.GMTPanel) window.GMTPanel.expand();
-        } else if (window.GMTPanel) {
-          window.GMTPanel.minimize();
-        }
-      }
-    });
   }
 
   function runScanAndHighlight(pageSummary = null, isIncremental = false) {
@@ -175,40 +185,41 @@
     isScanning = true;
 
     try {
-      // Initialize side panel (only in top-level window, not inside child iframes)
-      if (window.self === window.top && window.GMTPanel && !isIncremental) {
-        window.GMTPanel.initPanel(
-          gmtSettings.language,
-          (targetIndex) => {
-            if (window.GMTHighlighter) {
-              window.GMTHighlighter.setActiveField(targetIndex, scannedItems, (item, index) => {
-                window.GMTPanel.render(item, index, scannedItems.length, gmtSettings.language);
-              });
-            }
-          },
-          (newLang) => {
-            gmtSettings.language = newLang;
-          }
-        );
-      }
+      cleanupFloatingDOM();
 
       // Scan page
       scannedItems = window.GMTScanner.scanForms(dictionaryData);
 
-      // Provide detected fields to side panel
-      if (window.self === window.top && window.GMTPanel) {
-        window.GMTPanel.setPageSummary(pageSummary || cachedPageSummary, scannedItems);
-      }
-
       if (scannedItems.length > 0 && window.GMTHighlighter) {
-        console.log(`[Telmy] Terdeteksi ${scannedItems.length} kolom formulir.`);
-
-        // Attach numbered badges & focus hooks
+        // Attach numbered badges on form inputs
         window.GMTHighlighter.attachBadges(scannedItems, (item, index) => {
-          if (window.GMTPanel) {
-            window.GMTPanel.render(item, index, scannedItems.length, gmtSettings.language);
-          }
+          chrome.runtime.sendMessage({
+            type: 'GMT_FIELD_FOCUSED',
+            index: index
+          }, () => { if (chrome.runtime.lastError) {} });
         });
+
+        // Broadcast serializable fields to Chrome Native Side Panel
+        try {
+          const serializableFields = scannedItems.map(item => ({
+            metadata: {
+              scanIndex: item.metadata.scanIndex,
+              id: item.metadata.id,
+              name: item.metadata.name,
+              type: item.metadata.type,
+              options: item.metadata.options,
+              placeholder: item.metadata.placeholder,
+              label: item.metadata.label
+            },
+            dictEntry: item.dictEntry,
+            isCustomAi: item.isCustomAi
+          }));
+          chrome.runtime.sendMessage({
+            type: 'GMT_PAGE_MAPPED',
+            fields: serializableFields,
+            summary: pageSummary || cachedPageSummary
+          }, () => { if (chrome.runtime.lastError) {} });
+        } catch (e) {}
       }
     } finally {
       isScanning = false;

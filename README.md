@@ -2,11 +2,11 @@
   <img src="logo.png" alt="Telmy.ai Logo" width="220" />
 </p>
 
-# 🌐 Telmy.ai: Your AI Form Guide & Co-Pilot
+# 🌐 Telmy.ai: Your AI Form Filling Assistant
 
-> **Telmy.ai** adalah asisten formulir cerdas berbasis **100% Google AI (Gemini)**, **Firebase**, dan **Chrome Extension (Manifest V3)** yang memandu masyarakat umum maupun warga negara asing (WNA) dalam memahami dan mengisi formulir digital pelayanan publik, administrasi pemerintahan, visa/imigrasi, hingga Google Forms secara mudah, aman, ramah privasi, dan multibahasa.
+> **Telmy.ai** adalah **Your AI Form Filling Assistant** yang memandu siapa pun dalam memahami dan mengisi formulir digital pelayanan publik, administrasi, visa/imigrasi, hingga Google Forms secara mudah, aman, bebas bingung, dan multibahasa.
 > 
-> *Dibangun secara khusus untuk **Google AI Hackathon** dengan arsitektur berstandar Google Cloud, siap rilis di Chrome Web Store dan live di [telmy.id](https://telmy.id) / [telmyai.com](https://telmyai.com).*
+> *Tersedia sebagai Chrome Extension (Manifest V3) siap pakai di Chrome Web Store dan live di [telmy.id](https://telmy.id) / [telmyai.com](https://telmyai.com).*
 
 ---
 
@@ -34,13 +34,19 @@
 - **Badge Nomor Neon:** Menempelkan nomor urut pemandu di samping setiap pertanyaan.
 - **Highlight Ring & Smooth Scroll:** Menyorot kolom aktif dengan spotlight neon dan auto-scroll ke posisi kolom tersebut.
 
-### 5. 🌐 Dukungan Penuh 5 Bahasa (Multilingual)
-Pengalihan bahasa instan tanpa reload halaman:
+### 5. 🌐 Bahasa Utama English & Cakupan Lengkap 11 Bahasa Area JAPAC
+Secara bawaan (*default*), seluruh antarmuka dan landing page menggunakan **Bahasa Inggris (English)** standar internasional. Pengguna dapat beralih bahasa seketika melalui selektor bahasa ke seluruh negara area JAPAC:
+- 🇬🇧 **English (EN - Default Global)**
 - 🇮🇩 **Bahasa Indonesia (ID)**
-- 🇬🇧 **English (EN)**
-- 🇨🇳 **中文 (ZH - Mandarin)**
-- 🇯🇵 **日本語 (JA - Japanese)**
-- 🇰🇷 **한국어 (KO - Korean)**
+- 🇯🇵 **日本語 (JA - Jepang)**
+- 🇰🇷 **한국어 (KO - Korea)**
+- 🇨🇳 **简体中文 (ZH - Tiongkok/Singapura)**
+- 🇹🇼 **繁體中文 (ZH-TW - Taiwan/Hong Kong)**
+- 🇻🇳 **Tiếng Việt (VI - Vietnam)**
+- 🇹🇭 **ไทย (TH - Thailand)**
+- 🇮🇳 **हिन्दी (HI - India)**
+- 🇵🇭 **Filipino (FIL - Filipina)**
+- 🇲🇾 **Bahasa Melayu (MS - Malaysia)**
 
 ### 6. 🔒 Privasi Mutlak (Privacy-First Architecture)
 - Telmy **hanya membaca metadata kolom** (label pertanyaan, tipe input, placeholder, opsi pilihan).

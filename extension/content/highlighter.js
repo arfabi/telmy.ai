@@ -73,17 +73,9 @@ window.GMTHighlighter = (function () {
         });
       }
 
-      // Listen to input changes to update progress bar in real-time
-      el.addEventListener('input', () => {
-        if (window.GMTPanel && window.GMTPanel.setPageSummary) {
-          window.GMTPanel.setPageSummary(null, scannedFields);
-        }
-      });
-      el.addEventListener('change', () => {
-        if (window.GMTPanel && window.GMTPanel.setPageSummary) {
-          window.GMTPanel.setPageSummary(null, scannedFields);
-        }
-      });
+      // Listen to input changes
+      el.addEventListener('input', () => {});
+      el.addEventListener('change', () => {});
     });
   }
 

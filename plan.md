@@ -37,21 +37,19 @@
 ### 🥇 PRIORITAS 1: Web MVP Live di Firebase (`telmy.id` / `telmyai.com`)
 *Target: Aplikasi web aktif, dapat diakses juri/publik, memiliki landing page memukau, playground form interaktif, dan privacy policy resmi.*
 
-- [ ] **1.1. Inisialisasi & Setup Firebase Project:**
-  - Setup Firebase Hosting & Firestore di region terdekat (misal `asia-southeast2` / Jakarta).
-  - Hubungkan domain kustom `telmy.id` / `telmyai.com`.
-- [ ] **1.2. Landing Page Modern & Konversi Tinggi:**
-  - Hero section dengan value proposition jelas: *"Your AI Form Guide for Public & Web Forms"*.
-  - Video Demo Embed (frame mockup video 3 menit).
-  - Penjelasan 4 Pilar Fitur (Visual Highlight, Suara Interaktif Gemini, Panduan Kontekstual, Multi-bahasa).
-  - Bagian "Sebelum vs Sesudah" untuk skor *Problem Alignment & Impact* (pengurangan waktu pengisian dari 25 menit menjadi 5 menit).
-- [ ] **1.3. Live Demo Playground Terintegrasi (`/demo`):**
-  - Halaman formulir simulasi (e.g., Simulasi Apostille / Paspor / Layanan Publik) langsung di website agar juri bisa mencoba ekstensi dalam 1 kali klik tanpa perlu mencari form eksternal.
-- [ ] **1.4. Halaman Panduan Unduh & Instalasi (`/install` atau `/download`):**
-  - Tombol langsung ke tautan Chrome Web Store (jika sudah submit/live).
-  - Tombol download file `.zip` versi pra-rilis + panduan 3 langkah *Load Unpacked* untuk juri hackathon.
-- [ ] **1.5. Halaman Kebijakan Privasi (`/privacy`):**
-  - Syarat mutlak Chrome Web Store & Google Hackathon: menegaskan data isian pengguna (NIK, paspor, dsb.) **tidak disimpan**, hanya metadata struktur formulir yang diproses.
+- [x] **1.1. Inisialisasi & Setup Struktur Web Platform di `backend/public/`:**
+  - Siap di-deploy langsung ke Firebase Hosting / Cloud Run.
+  - Logo aset resmi `logo.png` terintegrasi di seluruh halaman dan ekstensi.
+- [x] **1.2. Landing Page Modern & Bahasa Utama English (JAPAC Support):**
+  - **Bahasa Utama:** Bahasa Inggris (English) sebagai bahasa bawaan standar global/hackathon.
+  - **Multi-bahasa JAPAC:** Dilengkapi *Language Switcher* interaktif di navbar yang mendukung 11 bahasa negara area JAPAC (`en`, `id`, `ja`, `ko`, `zh`, `zh-TW`, `vi`, `th`, `hi`, `fil`, `ms`).
+  - Hero section, Social Impact (Sebelum vs Sesudah), 4 Pilar Fitur, dan Mockup Side Panel.
+- [x] **1.3. Live Demo Playground Terintegrasi (`/demo` atau `/demo.html`):**
+  - Halaman formulir simulasi interaktif (Apostille & Layanan Publik) berbahasa Inggris & dwibahasa agar juri dapat menguji ekstensi seketika.
+- [x] **1.4. Halaman Panduan Unduh & Instalasi (`/download` atau `/download.html`):**
+  - Tautan Chrome Web Store resmi + panduan 3 langkah *Load Unpacked* ZIP untuk juri.
+- [x] **1.5. Halaman Kebijakan Privasi (`/privacy` atau `/privacy.html`):**
+  - Menegaskan komitmen *Privacy-First*, *Push-to-Talk* murni (tanpa wake-word/always-listening), dan tidak menyimpan nilai PII/password.
 
 ---
 
