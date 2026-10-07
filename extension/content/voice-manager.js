@@ -52,7 +52,13 @@ window.TelmyVoice = (function () {
         chrome.runtime.sendMessage({
           type: 'VOICE_TTS',
           payload: { text, language: lang }
-        }, resolve);
+        }, (res) => {
+          if (chrome.runtime.lastError) {
+            resolve(null);
+          } else {
+            resolve(res);
+          }
+        });
       });
 
       if (response && response.success && response.audioDataUrl) {

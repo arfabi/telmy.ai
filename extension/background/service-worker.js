@@ -51,7 +51,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
       for (const tab of tabs) {
         if (tab.id) {
-          chrome.tabs.sendMessage(tab.id, { type: 'SETTINGS_CHANGED', settings: updated }).catch(() => {});
+          chrome.tabs.sendMessage(tab.id, { type: 'SETTINGS_CHANGED', settings: updated }, () => {
+            if (chrome.runtime.lastError) { /* ignore disconnected tabs */ }
+          });
         }
       }
       sendResponse({ success: true, settings: updated });

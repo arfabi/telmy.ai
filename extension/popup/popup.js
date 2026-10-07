@@ -9,8 +9,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   const statFields = document.getElementById('stat-fields-count');
   const statSuggestions = document.getElementById('stat-suggestions-count');
 
-  // Load current settings
+  // Load current settings safely
   chrome.runtime.sendMessage({ type: 'GET_SETTINGS' }, (settings) => {
+    if (chrome.runtime.lastError) return;
     if (settings) {
       toggle.checked = settings.isActive !== false;
       updateUIStatus(toggle.checked);
@@ -18,30 +19,113 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  // Load user suggestions count
+  // Load user suggestions count safely
   chrome.runtime.sendMessage({ type: 'GET_SUGGESTIONS' }, (history) => {
+    if (chrome.runtime.lastError) return;
     if (history && statSuggestions) {
       statSuggestions.textContent = history.length;
     }
   });
 
-  // Query active tab to check fields count
-  const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (activeTab && activeTab.id) {
-    chrome.tabs.sendMessage(activeTab.id, { type: 'QUERY_PAGE_STATUS' }, (res) => {
-      if (chrome.runtime.lastError || !res) {
-        detectedCount.textContent = 'Klik ikon / reload halaman untuk memindai';
+  // Helper to display detection outcome
+  function displayDetectionResult(res) {
+    if (res && res.detectedFieldsCount > 0) {
+      detectedCount.textContent = `${res.detectedFieldsCount} field terdeteksi di form ini`;
+      if (statFields) statFields.textContent = res.detectedFieldsCount;
+    } else {
+      detectedCount.textContent = 'Belum mendeteksi form di halaman ini';
+      if (statFields) statFields.textContent = '0';
+    }
+  }
+
+  // Ensure content scripts are active, auto-injecting if needed
+  async function checkPageStatus(tab) {
+    if (!tab || !tab.id) return;
+    const url = tab.url || '';
+
+    // 1. Browser internal / restricted pages
+    if (
+      url.startsWith('chrome://') ||
+      url.startsWith('chrome-extension://') ||
+      url.startsWith('edge://') ||
+      url.startsWith('devtools://') ||
+      url.startsWith('about:') ||
+      url.includes('chromewebstore.google.com')
+    ) {
+      detectedCount.textContent = 'Halaman sistem browser (tidak dapat dipindai)';
+      if (statFields) statFields.textContent = '0';
+      return;
+    }
+
+    // 2. Check file:// URL permission
+    if (url.startsWith('file://')) {
+      const isAllowedFile = await new Promise((resolve) => {
+        if (chrome.extension && chrome.extension.isAllowedFileSchemeAccess) {
+          chrome.extension.isAllowedFileSchemeAccess(resolve);
+        } else {
+          resolve(false);
+        }
+      });
+      if (!isAllowedFile) {
+        detectedCount.textContent = 'Aktifkan "Izinkan akses ke URL file" di chrome://extensions';
+        if (statFields) statFields.textContent = '0';
+        return;
+      }
+    }
+
+    // 3. Query content script via message
+    chrome.tabs.sendMessage(tab.id, { type: 'QUERY_PAGE_STATUS' }, async (res) => {
+      const err = chrome.runtime.lastError;
+      if (err || !res) {
+        // Content script not yet present in tab (e.g. tab opened before extension loaded)
+        // Attempt programmatic auto-injection
+        try {
+          if (chrome.scripting) {
+            await chrome.scripting.insertCSS({
+              target: { tabId: tab.id },
+              files: ['content/overlay.css']
+            }).catch(() => {});
+
+            await chrome.scripting.executeScript({
+              target: { tabId: tab.id },
+              files: [
+                'content/scanner.js',
+                'content/highlighter.js',
+                'content/voice-manager.js',
+                'content/panel.js',
+                'content/content-main.js'
+              ]
+            });
+
+            // Wait a moment for scanner to initialize and re-query
+            setTimeout(() => {
+              chrome.tabs.sendMessage(tab.id, { type: 'QUERY_PAGE_STATUS' }, (res2) => {
+                const err2 = chrome.runtime.lastError;
+                if (!err2 && res2) {
+                  displayDetectionResult(res2);
+                } else {
+                  detectedCount.textContent = 'Muat ulang tab (F5) untuk memindai';
+                  if (statFields) statFields.textContent = '0';
+                }
+              });
+            }, 300);
+            return;
+          }
+        } catch (injectErr) {
+          // Injection failed
+        }
+        detectedCount.textContent = 'Muat ulang tab (F5) untuk memindai';
         if (statFields) statFields.textContent = '0';
       } else {
-        if (res.detectedFieldsCount > 0) {
-          detectedCount.textContent = `${res.detectedFieldsCount} field terdeteksi di form ini`;
-          if (statFields) statFields.textContent = res.detectedFieldsCount;
-        } else {
-          detectedCount.textContent = 'Belum mendeteksi form di halaman ini';
-          if (statFields) statFields.textContent = '0';
-        }
+        displayDetectionResult(res);
       }
     });
+  }
+
+  // Initial check on active tab
+  const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (activeTab) {
+    checkPageStatus(activeTab);
   }
 
   // Toggle activation
@@ -51,6 +135,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     chrome.runtime.sendMessage({
       type: 'UPDATE_SETTINGS',
       payload: { isActive }
+    }, () => {
+      if (chrome.runtime.lastError) { /* ignore */ }
     });
   });
 
@@ -62,6 +148,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       chrome.runtime.sendMessage({
         type: 'UPDATE_SETTINGS',
         payload: { language: selectedLang }
+      }, () => {
+        if (chrome.runtime.lastError) { /* ignore */ }
       });
     });
   });
@@ -72,16 +160,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     rescanBtn.style.opacity = '0.7';
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (tab && tab.id) {
-      chrome.tabs.sendMessage(tab.id, { type: 'TRIGGER_RESCAN' }, (res) => {
-        setTimeout(() => {
-          rescanBtn.disabled = false;
-          rescanBtn.style.opacity = '1';
-          if (res && res.count !== undefined) {
-            detectedCount.textContent = `${res.count} field terdeteksi`;
-            if (statFields) statFields.textContent = res.count;
-          }
-        }, 300);
+      chrome.tabs.sendMessage(tab.id, { type: 'TRIGGER_RESCAN' }, async (res) => {
+        const err = chrome.runtime.lastError;
+        if (err || !res) {
+          // Attempt recovery and auto-injection
+          await checkPageStatus(tab);
+          setTimeout(() => {
+            rescanBtn.disabled = false;
+            rescanBtn.style.opacity = '1';
+          }, 400);
+        } else {
+          setTimeout(() => {
+            rescanBtn.disabled = false;
+            rescanBtn.style.opacity = '1';
+            if (res && res.count !== undefined) {
+              if (res.count > 0) {
+                detectedCount.textContent = `${res.count} field terdeteksi`;
+              } else {
+                detectedCount.textContent = 'Belum mendeteksi form di halaman ini';
+              }
+              if (statFields) statFields.textContent = res.count;
+            }
+          }, 300);
+        }
       });
+    } else {
+      rescanBtn.disabled = false;
+      rescanBtn.style.opacity = '1';
     }
   });
 

@@ -287,7 +287,11 @@ window.GMTScanner = (function () {
       textarea,
       div[role="radiogroup"],
       div[role="group"],
-      div[role="listbox"]
+      div[role="listbox"],
+      [role="combobox"],
+      [role="textbox"],
+      [role="searchbox"],
+      div[contenteditable="true"]
     `);
 
     const matchedList = [];
@@ -304,8 +308,11 @@ window.GMTScanner = (function () {
         if (!hasCheckboxes) return;
       }
 
-      // Check visibility
-      if (el.offsetWidth === 0 && el.offsetHeight === 0 && !el.getClientRects().length) return;
+      // Check visibility: support custom styled inputs (file upload, masked inputs) whose parent is visible
+      const hasDimensions = el.offsetWidth > 0 || el.offsetHeight > 0 || el.getClientRects().length > 0;
+      const isInput = el.tagName === 'INPUT' || el.tagName === 'SELECT' || el.tagName === 'TEXTAREA';
+      const isParentVisible = el.parentElement && (el.parentElement.offsetWidth > 0 || el.parentElement.offsetHeight > 0);
+      if (!hasDimensions && !(isInput && isParentVisible)) return;
 
       // Group native radio buttons by name so a question with multiple radios doesn't appear multiple times
       if (el.tagName === 'INPUT' && el.type === 'radio' && el.name) {

@@ -158,37 +158,44 @@ window.GMTPanel = (function () {
   }
 
   function loadChatHistory() {
-    chrome.runtime.sendMessage({
-      type: 'GET_CHAT_HISTORY',
-      domain: window.location.hostname
-    }, (history) => {
-      if (Array.isArray(history) && history.length > 0) {
-        chatHistory = history;
-      } else {
-        chatHistory = [
-          {
-            id: 'init_welcome',
-            role: 'assistant',
-            text: t('chat_welcome'),
-            actions: [
-              { type: 'SHOW_SUMMARY', label: '📌 ' + t('tab_summary') }
-            ],
-            time: formatTime(new Date())
-          }
-        ];
-      }
-      if (activeTab === 'chat') {
-        renderChatMessagesOnly();
-      }
-    });
+    try {
+      chrome.runtime.sendMessage({
+        type: 'GET_CHAT_HISTORY',
+        domain: window.location.hostname
+      }, (history) => {
+        if (chrome.runtime.lastError) history = [];
+        if (Array.isArray(history) && history.length > 0) {
+          chatHistory = history;
+        } else {
+          chatHistory = [
+            {
+              id: 'init_welcome',
+              role: 'assistant',
+              text: t('chat_welcome'),
+              actions: [
+                { type: 'SHOW_SUMMARY', label: '📌 ' + t('tab_summary') }
+              ],
+              time: formatTime(new Date())
+            }
+          ];
+        }
+        if (activeTab === 'chat') {
+          renderChatMessagesOnly();
+        }
+      });
+    } catch (e) {}
   }
 
   function saveChatHistory() {
-    chrome.runtime.sendMessage({
-      type: 'SAVE_CHAT_HISTORY',
-      domain: window.location.hostname,
-      history: chatHistory.slice(-30) // Retain last 30 messages
-    });
+    try {
+      chrome.runtime.sendMessage({
+        type: 'SAVE_CHAT_HISTORY',
+        domain: window.location.hostname,
+        history: chatHistory.slice(-30) // Retain last 30 messages
+      }, () => {
+        if (chrome.runtime.lastError) { /* ignore */ }
+      });
+    } catch (e) {}
   }
 
   function formatTime(d) {
@@ -297,6 +304,7 @@ window.GMTPanel = (function () {
       updateFooterStepper();
     } else if (activeTab === 'summary') {
       renderBriefingCard();
+    }
   }
 
   function bindHeaderEvents() {
@@ -308,6 +316,8 @@ window.GMTPanel = (function () {
         chrome.runtime.sendMessage({
           type: 'UPDATE_SETTINGS',
           payload: { language: newLang }
+        }, () => {
+          if (chrome.runtime.lastError) { /* ignore */ }
         });
         if (onLanguageChangeCallback) onLanguageChangeCallback(newLang);
         renderShell();
@@ -582,6 +592,10 @@ window.GMTPanel = (function () {
         }
       }
     }, (res) => {
+      if (chrome.runtime.lastError) {
+        // Fallback if background disconnected
+        res = null;
+      }
       isSendingChat = false;
       const data = res && res.data ? res.data : null;
       const reply = data && data.reply ? data.reply : (currentLanguage === 'en' ? 'I am here to guide you with this form.' : 'Saya siap memandu Anda mengisi formulir ini.');
@@ -920,6 +934,7 @@ window.GMTPanel = (function () {
             domain: window.location.hostname
           }
         }, () => {
+          if (chrome.runtime.lastError) { /* ignore */ }
           submitBtn.disabled = false;
           submitBtn.textContent = t('drawer_submit');
           textArea.value = '';
@@ -949,6 +964,9 @@ window.GMTPanel = (function () {
         pageContext: document.title
       }
     }, (res) => {
+      if (chrome.runtime.lastError) {
+        res = null;
+      }
       item._backendFetched = true;
       if (res && res.success && res.data) {
         if (!item.dictEntry) {
