@@ -1,4 +1,4 @@
-// GuideMe.To (GMT) Main Content Script Orchestrator
+// Telmy — Main Content Script Orchestrator
 (function () {
   let gmtSettings = { language: 'id', isActive: true };
   let dictionaryData = null;

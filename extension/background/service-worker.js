@@ -1,4 +1,4 @@
-// Service Worker for GuideMe.To (GMT)
+// Service Worker for Telmy
 const DEFAULT_SETTINGS = {
   language: 'id', // 'id', 'en', 'zh', 'ja', 'ko'
   isActive: true,
@@ -8,7 +8,7 @@ const DEFAULT_SETTINGS = {
 };
 
 chrome.runtime.onInstalled.addListener(async (details) => {
-  console.log('[GMT] Extension installed/updated:', details.reason);
+  console.log('[Telmy] Extension installed/updated:', details.reason);
   const stored = await chrome.storage.local.get(['settings', 'suggestions_history']);
   if (!stored.settings) {
     await chrome.storage.local.set({ settings: DEFAULT_SETTINGS });

@@ -39,10 +39,11 @@ window.GMTScanner = (function () {
     if (!text) return '';
     return text
       .replace(/[\n\r\t]+/g, ' ')
-      .replace(/\s*\*+\s*$/, '') // remove trailing asterisks
-      .replace(/^\s*\*+\s*/, '') // remove leading asterisks
       .replace(/Pertanyaan ini wajib diisi/gi, '')
       .replace(/This is a required question/gi, '')
+      .replace(/\s*\*+\s*\d+\s*$/, '') // remove trailing badge digits after asterisk, e.g. *1, *2, *3
+      .replace(/\s*\*+\s*$/, '') // remove trailing asterisks
+      .replace(/^\s*\*+\s*/, '') // remove leading asterisks
       .replace(/\s+/g, ' ')
       .trim();
   }

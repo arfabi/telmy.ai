@@ -1,4 +1,4 @@
-// Popup controller for GuideMe.To
+// Popup controller for Telmy
 document.addEventListener('DOMContentLoaded', async () => {
   const toggle = document.getElementById('gmt-active-toggle');
   const statusCard = document.getElementById('gmt-status-box');
@@ -88,11 +88,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   function updateUIStatus(isActive) {
     if (isActive) {
       statusCard.classList.remove('inactive');
-      statusLabel.textContent = 'GMT Aktif & Siap Memandu';
+      statusLabel.textContent = 'Telmy Aktif & Siap Memandu';
     } else {
       statusCard.classList.add('inactive');
-      statusLabel.textContent = 'GMT Dinonaktifkan';
-      detectedCount.textContent = 'Form explainer sedang istirahat';
+      statusLabel.textContent = 'Telmy Dinonaktifkan';
+      detectedCount.textContent = 'Telmy sedang dinonaktifkan';
     }
   }
 

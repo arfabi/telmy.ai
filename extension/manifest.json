@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "GuideMe.To (GMT) — AI Form Explainer",
+  "name": "Telmy.ai: Your AI form-filling assistant",
   "version": "1.0.0",
-  "description": "Smart form co-pilot for public & government forms with dictionary and AI explanations.",
+  "description": "Telmy.ai: Your AI form-filling assistant for public, government, and complex web forms.",
   "icons": {
     "16": "assets/icons/icon16.png",
     "32": "assets/icons/icon32.png",
@@ -23,7 +23,7 @@
       "16": "assets/icons/icon16.png",
       "48": "assets/icons/icon48.png"
     },
-    "default_title": "GuideMe.To (GMT)"
+    "default_title": "Telmy.ai: Your AI form-filling assistant"
   },
   "background": {
     "service_worker": "background/service-worker.js"

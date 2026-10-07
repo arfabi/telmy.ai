@@ -1,4 +1,4 @@
-// GuideMe.To (GMT) — Side Panel Co-Pilot
+// Telmy — Side Panel Co-Pilot
 window.GMTPanel = (function () {
   let panelEl = null;
   let launcherEl = null;
@@ -13,8 +13,8 @@ window.GMTPanel = (function () {
 
   // Complete I18N Matrix for UI text across 5 languages
   const I18N = {
-    brand_title: { id: 'GuideMe.To', en: 'GuideMe.To', zh: 'GuideMe.To', ja: 'GuideMe.To', ko: 'GuideMe.To' },
-    copilot_badge: { id: 'Co-Pilot', en: 'Co-Pilot', zh: '智能助手', ja: 'AIガイド', ko: '코파일럿' },
+    brand_title: { id: 'Telmy.ai', en: 'Telmy.ai', zh: 'Telmy.ai', ja: 'Telmy.ai', ko: 'Telmy.ai' },
+    copilot_badge: { id: 'Form Assistant', en: 'Form Assistant', zh: '表单助手', ja: 'フォームアシスタント', ko: '양식 도우미' },
     page_summary_title: { id: '📌 Ringkasan Formulir', en: '📌 Form Overview', zh: '📌 表单概览', ja: '📌 フォーム概要', ko: '📌 양식 개요' },
     prerequisites_title: { id: 'Dokumen Persiapan:', en: 'Prerequisites:', zh: '建议提前准备材料：', ja: '事前準備書類：', ko: '사전 준비 서류:' },
     progress_label: { id: 'Progres Pengisian', en: 'Form Progress', zh: '填写进度', ja: '入力進捗', ko: '작성 진행도' },
@@ -85,7 +85,7 @@ window.GMTPanel = (function () {
     launcherEl.style.display = 'none';
     launcherEl.innerHTML = `
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-      <span>GuideMe.To</span>
+      <span>Telmy.ai</span>
       <span class="gmt-pill-badge" id="gmt-pill-count">0</span>
     `;
     launcherEl.addEventListener('click', expand);
@@ -527,6 +527,7 @@ window.GMTPanel = (function () {
           label: metadata.label,
           name: metadata.name,
           type: metadata.type,
+          options: metadata.options || null,
           placeholder: metadata.placeholder,
           domain: window.location.hostname
         },
@@ -534,9 +535,8 @@ window.GMTPanel = (function () {
         pageContext: document.title
       }
     }, (res) => {
+      item._backendFetched = true;
       if (res && res.success && res.data) {
-        item._backendFetched = true;
-        // Inject Gemini generated data
         if (!item.dictEntry) {
           item.dictEntry = { source: 'ai', translations: {} };
         }
@@ -549,10 +549,10 @@ window.GMTPanel = (function () {
           foreign_note: res.data.tipsForForeigners || res.data.foreign_note,
           _isRealAi: true
         };
-        // Re-render if this field is still active
-        if (currentFieldItem === item) {
-          renderFieldSlot();
-        }
+      }
+      // Re-render if this field is still active
+      if (currentFieldItem === item) {
+        renderFieldSlot();
       }
     });
   }

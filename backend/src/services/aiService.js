@@ -114,8 +114,8 @@ async function callOpenAiCompatible(fieldMetadata, targetLanguage, pageContext) 
   baseUrl = baseUrl.replace(/\/+$/, ''); // remove trailing slash
   const modelName = process.env.OPENAI_MODEL || 'gpt-4o-mini';
 
-  const systemPrompt = `You are GuideMe.To, an expert multilingual co-pilot for Indonesian government, civil, and legal forms.
-Your mission is to explain Indonesian form fields to general citizens and foreign nationals with utmost clarity, empathy, and professional precision.
+  const systemPrompt = `You are Telmy.ai, an expert AI form-filling assistant for government, civil, and public online forms.
+Your mission is to explain form fields to general citizens and foreign applicants with utmost clarity, empathy, and professional precision.
 
 You MUST translate the Indonesian label to the target language (e.g. "Tempat Lahir" -> "Place of Birth" in English, or "出生地点" in Chinese).
 Provide realistic, culturally appropriate fictional examples (e.g. "New York, USA" or "Jakarta, Indonesia", never generic placeholders).
@@ -137,6 +137,7 @@ Format: You must output ONLY a valid JSON object matching this schema:
   const userPrompt = `Explain this form field:
 - Original Label: "${fieldMetadata.label || fieldMetadata.name || 'Kolom Isian'}"
 - Input Type: "${fieldMetadata.type || 'text'}"
+- Available Options: ${fieldMetadata.options && fieldMetadata.options.length ? JSON.stringify(fieldMetadata.options) : 'None'}
 - Placeholder / Hint: "${fieldMetadata.placeholder || '-'}"
 - Domain / Page: "${fieldMetadata.domain || 'Layanan Administrasi'}" (${pageContext || ''})
 - Target Language: ${targetLanguage.toUpperCase()} (options: en, zh, id, ja, ko)
@@ -200,7 +201,7 @@ async function callGemini(fieldMetadata, targetLanguage, pageContext) {
   });
 
   const prompt = `
-You are GuideMe.To, an AI co-pilot for Indonesian public and government forms.
+You are Telmy.ai, an AI form-filling assistant for public and government forms.
 Task: Explain this field for foreign applicants and general public.
 
 Field info:

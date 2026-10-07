@@ -1,7 +1,7 @@
 {
-  "name": "guidemeto-backend",
+  "name": "telmy-backend",
   "version": "1.0.0",
-  "description": "Backend API for GuideMe.To (GMT) Chrome Extension powered by Firebase Firestore and Gemini API",
+  "description": "Backend API for Telmy Chrome Extension powered by GLM-5.3-Flash, Gemini, and Firebase Firestore",
   "main": "src/index.js",
   "type": "module",
   "scripts": {

@@ -25,7 +25,7 @@ export async function generateFieldExplanation(fieldMetadata, targetLanguage = '
   }
 
   const prompt = `
-Anda adalah asisten panduan formulir layanan publik dan perizinan pemerintah Indonesia bernama GuideMe.To.
+Anda adalah asisten panduan formulir layanan publik dan perizinan berbasis AI bernama Telmy.ai (Your AI form-filling assistant).
 Tugas Anda: Berikan panduan yang sangat jelas, ramah, dan akurat untuk kolom formulir berikut bagi pengguna umum dan WNA.
 
 Informasi Kolom Formulir:

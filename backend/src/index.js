@@ -43,7 +43,7 @@ app.use((req, res, next) => {
 app.get('/health', (req, res) => {
   res.json({
     status: 'healthy',
-    service: 'GuideMe.To Backend API',
+    service: 'Telmy.ai Backend API',
     uptime: process.uptime(),
     timestamp: new Date().toISOString(),
     firebaseConnected: isFirebaseConnected,
@@ -68,7 +68,7 @@ app.use((req, res) => {
 // Start Server
 app.listen(PORT, () => {
   const provider = (process.env.AI_PROVIDER || (process.env.OPENAI_API_KEY ? 'openai' : 'gemini')).toUpperCase();
-  console.log(`🚀 [GMT Server] Running on http://localhost:${PORT}`);
+  console.log(`🚀 [Telmy.ai Server] Running on http://localhost:${PORT}`);
   console.log(`📡 Cloud Run Ready | Health check: http://localhost:${PORT}/health`);
   console.log(`🔥 Firebase Firestore Status: ${isFirebaseConnected ? 'CONNECTED' : 'DISCONNECTED / OFFLINE MODE'}`);
   console.log(`🤖 Active AI Provider: ${provider}`);

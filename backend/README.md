@@ -1,6 +1,6 @@
-# GuideMe.To (GMT) Backend API
+# Telmy.ai Backend API
 
-Backend service untuk ekstensi Chrome **GuideMe.To (GMT) — AI Form Explainer**, siap dijalankan di lokal dengan Node.js dan siap di-deploy langsung ke **Google Cloud Run**.
+Backend service untuk ekstensi Chrome **Telmy.ai: Your AI form-filling assistant**, siap dijalankan di lokal dengan Node.js dan siap di-deploy langsung ke **Google Cloud Run**.
 
 ---
 

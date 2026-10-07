@@ -1,4 +1,4 @@
-// GMT Highlighter: Injects help badges and manages field focus/highlighting
+// Telmy Highlighter: Injects help badges and manages field focus/highlighting
 window.GMTHighlighter = (function () {
   const HIGHLIGHT_CLASS = 'gmt-highlighted-field';
   const BADGE_CLASS = 'gmt-field-badge';
@@ -13,7 +13,7 @@ window.GMTHighlighter = (function () {
       const badge = document.createElement('span');
       badge.className = BADGE_CLASS;
       badge.setAttribute('data-gmt-index', index);
-      badge.title = `Kolom #${index + 1}: ${item.metadata.label || 'Buka panduan GuideMe.To'}`;
+      badge.title = `Kolom #${index + 1}: ${item.metadata.label || 'Buka panduan Telmy.ai'}`;
       badge.textContent = `${index + 1}`;
 
       // 1. Try placing badge next to question heading in card (Google Forms, Material UI, standard forms)
