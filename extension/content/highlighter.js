@@ -14,14 +14,8 @@ window.GMTHighlighter = (function () {
       const badge = document.createElement('span');
       badge.className = BADGE_CLASS;
       badge.setAttribute('data-gmt-index', index);
-      badge.title = 'Buka panduan GMT untuk isian ini';
-      badge.innerHTML = `
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"></circle>
-          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-          <line x1="12" y1="17" x2="12.01" y2="17"></line>
-        </svg>
-      `;
+      badge.title = `Field #${index + 1}: Buka panduan GuideMe.To`;
+      badge.textContent = `${index + 1}`;
 
       // Try placing badge next to label or directly next to input
       let placed = false;
@@ -59,6 +53,13 @@ window.GMTHighlighter = (function () {
       // Event listener on input focus/click
       el.addEventListener('focus', () => {
         setActiveField(index, scannedFields, onFieldSelect, false);
+      });
+
+      // Listen to input changes to update progress bar in real-time
+      el.addEventListener('input', () => {
+        if (window.GMTPanel && window.GMTPanel.setPageSummary) {
+          window.GMTPanel.setPageSummary(null, scannedFields);
+        }
       });
     });
   }

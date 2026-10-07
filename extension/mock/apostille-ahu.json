@@ -2,6 +2,33 @@
   "form_id": "apostille_ahu",
   "domain_pattern": "apostille.ahu.go.id",
   "title": "Permohonan Sertifikat Apostille Kemenkumham",
+  "page_summary": {
+    "id": {
+      "title": "Permohonan Sertifikat Apostille Kemenkumham",
+      "description": "Layanan legalisasi dokumen resmi untuk digunakan di negara pihak Konvensi Apostille. Siapkan identitas (KTP/Paspor) dan dokumen asli yang akan disahkan.",
+      "prerequisites": ["e-KTP (WNI) / Paspor Aktif (WNA)", "Dokumen resmi asli bertanda tangan/stempel", "File scan format PDF/JPG maks 2MB"]
+    },
+    "en": {
+      "title": "Apostille Certificate Application (Ministry of Law)",
+      "description": "Official legalization service for documents to be recognized in Apostille Convention member countries. Prepare your ID/Passport and original documents.",
+      "prerequisites": ["Valid Passport / KITAS", "Original documents with official stamp/signature", "PDF/JPG scan under 2MB"]
+    },
+    "zh": {
+      "title": "海牙附加证明书(Apostille)申请 - 印尼法律人权部",
+      "description": "面向海牙公约缔约国使用的官方公证认证服务。申请前请备齐有效身份证明及需要认证的原始公证书文件。",
+      "prerequisites": ["有效护照或在印尼合法居留证件", "附有官方印章签名的原始文件", "扫描件（PDF或JPG，2MB以内）"]
+    },
+    "ja": {
+      "title": "アポスティーユ証明書発行申請 - 法務人権省",
+      "description": "ハーグ条約加盟国へ提出する公文書の認証手続きページです。有効なパスポートと原本書類をご用意ください。",
+      "prerequisites": ["有効なパスポート / 滞在許可証", "原本書類（公印・署名付き）", "スキャンデータ（2MB以内のPDF/JPG）"]
+    },
+    "ko": {
+      "title": "아포스티유(Apostille) 인증서 발급 신청 - 법무인권부",
+      "description": "아포스티유 협약 가입국 제출용 공문서 인증 서비스입니다. 유효한 여권 및 원본 서류를 준비해 주세요.",
+      "prerequisites": ["유효한 여권 또는 체류증", "공식 직인 및 서명이 포함된 원본 서류", "2MB 이하의 PDF/JPG 스캔본"]
+    }
+  },
   "fields": [
     {
       "id": "nik_paspor",

@@ -1,5 +1,5 @@
 /* =========================================================
-   GuideMe.To (GMT) Content Overlay & Highlight Styles
+   GuideMe.To (GMT) — Side Panel Co-Pilot & Overlay Styles
    Isolated with .gmt- prefix
    ========================================================= */
 
@@ -8,33 +8,38 @@
   outline: 2.5px solid #2563eb !important;
   outline-offset: 2px !important;
   border-color: #2563eb !important;
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15) !important;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.18) !important;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
-/* Question mark badge next to inputs/labels */
+/* Subtle numbered/question badge next to inputs/labels */
 .gmt-field-badge {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  width: 18px !important;
+  min-width: 18px !important;
   height: 18px !important;
+  padding: 0 4px !important;
   margin-left: 6px !important;
-  border-radius: 50% !important;
+  border-radius: 9px !important;
   background-color: #eff6ff !important;
   color: #2563eb !important;
   border: 1px solid #bfdbfe !important;
   cursor: pointer !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  line-height: 1 !important;
   vertical-align: middle !important;
   transition: all 0.2s ease !important;
   box-sizing: border-box !important;
   z-index: 1000 !important;
+  user-select: none !important;
 }
 
 .gmt-field-badge:hover {
   background-color: #2563eb !important;
   color: #ffffff !important;
-  transform: scale(1.15) !important;
+  transform: scale(1.1) !important;
   box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3) !important;
 }
 
@@ -45,147 +50,286 @@
 }
 
 /* =========================================================
-   Floating Explanation Panel Container
+   Side Panel Container (Slide-over from right)
    ========================================================= */
-.gmt-ui-container.gmt-floating-panel {
-  position: absolute !important;
-  width: 360px !important;
-  max-width: calc(100vw - 32px) !important;
-  z-index: 2147483647 !important; /* Topmost overlay */
+.gmt-ui-container.gmt-side-panel {
+  position: fixed !important;
+  top: 0 !important;
+  right: 0 !important;
+  width: 380px !important;
+  max-width: 92vw !important;
+  height: 100vh !important;
+  z-index: 2147483640 !important;
+  background: #ffffff !important;
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12), -1px 0 4px rgba(0, 0, 0, 0.05) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  border-left: 1px solid #e2e8f0 !important;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
   font-size: 13px !important;
   line-height: 1.45 !important;
   color: #1e293b !important;
   box-sizing: border-box !important;
-  animation: gmt-fade-in 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease !important;
+  transform: translateX(0) !important;
+  opacity: 1 !important;
 }
 
-@keyframes gmt-fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.gmt-ui-container.gmt-side-panel.gmt-collapsed {
+  transform: translateX(100%) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
 .gmt-ui-container * {
   box-sizing: border-box !important;
 }
 
-/* Card Styling */
-.gmt-card {
-  background: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
-  border-radius: 12px !important;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.03) !important;
-  overflow: hidden !important;
+/* =========================================================
+   Floating Launcher Pill (When panel is minimized)
+   ========================================================= */
+.gmt-ui-container.gmt-launcher-pill {
+  position: fixed !important;
+  right: 0 !important;
+  top: 45% !important;
+  transform: translateY(-50%) !important;
+  z-index: 2147483639 !important;
   display: flex !important;
-  flex-direction: column !important;
+  align-items: center !important;
+  gap: 7px !important;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
+  color: #ffffff !important;
+  padding: 9px 14px 9px 12px !important;
+  border-radius: 20px 0 0 20px !important;
+  box-shadow: -2px 4px 16px rgba(37, 99, 235, 0.38) !important;
+  cursor: pointer !important;
+  font-family: inherit !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  user-select: none !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
 }
 
-/* Header */
-.gmt-card-header {
+.gmt-ui-container.gmt-launcher-pill:hover {
+  transform: translateY(-50%) translateX(-3px) !important;
+  box-shadow: -4px 6px 20px rgba(37, 99, 235, 0.48) !important;
+}
+
+.gmt-pill-badge {
+  background: #ffffff !important;
+  color: #1d4ed8 !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  padding: 1px 6px !important;
+  border-radius: 10px !important;
+}
+
+/* =========================================================
+   Side Panel Header
+   ========================================================= */
+.gmt-panel-header {
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  padding: 10px 14px !important;
-  background-color: #f8fafc !important;
+  padding: 12px 16px !important;
+  background: #f8fafc !important;
   border-bottom: 1px solid #e2e8f0 !important;
+  flex-shrink: 0 !important;
 }
 
-.gmt-header-left {
+.gmt-brand-container {
   display: flex !important;
   align-items: center !important;
   gap: 8px !important;
 }
 
-.gmt-brand-badge {
-  font-size: 11px !important;
+.gmt-brand-logo {
   font-weight: 700 !important;
-  color: #2563eb !important;
-  letter-spacing: 0.3px !important;
+  font-size: 14px !important;
+  color: #1e293b !important;
+  letter-spacing: -0.3px !important;
 }
 
-/* Source Pill (AI / User) */
-.gmt-source-pill {
-  font-size: 11px !important;
-  font-weight: 600 !important;
-  padding: 2px 8px !important;
-  border-radius: 9999px !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 4px !important;
-}
-
-.gmt-source-ai {
-  background-color: #eff6ff !important;
+.gmt-copilot-tag {
+  background: #dbeafe !important;
   color: #1d4ed8 !important;
-  border: 1px solid #bfdbfe !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  padding: 2px 6px !important;
+  border-radius: 4px !important;
+  text-transform: uppercase !important;
 }
 
-.gmt-source-user {
-  background-color: #f0fdf4 !important;
-  color: #15803d !important;
-  border: 1px solid #bbf7d0 !important;
-}
-
-.gmt-header-right {
+.gmt-header-controls {
   display: flex !important;
   align-items: center !important;
   gap: 6px !important;
 }
 
-.gmt-suggest-top-btn {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 4px !important;
+/* Language Dropdown in Header */
+.gmt-lang-select {
   padding: 4px 8px !important;
-  font-size: 11px !important;
-  font-weight: 600 !important;
-  border-radius: 6px !important;
-  border: 1px solid #cbd5e1 !important;
-  background-color: #ffffff !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
   color: #334155 !important;
+  background-color: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 6px !important;
   cursor: pointer !important;
+  outline: none !important;
+  transition: border-color 0.15s ease !important;
+}
+
+.gmt-lang-select:focus {
+  border-color: #2563eb !important;
+}
+
+.gmt-icon-btn {
+  background: transparent !important;
+  border: none !important;
+  color: #64748b !important;
+  cursor: pointer !important;
+  padding: 4px !important;
+  border-radius: 6px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   transition: all 0.15s ease !important;
 }
 
-.gmt-suggest-top-btn:hover {
-  background-color: #eff6ff !important;
-  border-color: #93c5fd !important;
-  color: #1d4ed8 !important;
-}
-
-.gmt-close-btn {
-  background: none !important;
-  border: none !important;
-  font-size: 18px !important;
-  line-height: 1 !important;
-  color: #94a3b8 !important;
-  cursor: pointer !important;
-  padding: 2px 4px !important;
-  border-radius: 4px !important;
-  transition: color 0.15s ease !important;
-}
-
-.gmt-close-btn:hover {
+.gmt-icon-btn:hover {
+  background-color: #e2e8f0 !important;
   color: #0f172a !important;
-  background-color: #f1f5f9 !important;
 }
 
-/* Field Heading */
-.gmt-field-heading {
-  padding: 12px 14px 8px 14px !important;
+/* =========================================================
+   Side Panel Scrollable Body
+   ========================================================= */
+.gmt-panel-body {
+  flex: 1 !important;
+  overflow-y: auto !important;
+  padding: 16px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+}
+
+/* =========================================================
+   1. Page Briefing Card (Collapsible)
+   ========================================================= */
+.gmt-briefing-card {
+  background: linear-gradient(135deg, #f0f7ff 0%, #f8fafc 100%) !important;
+  border: 1px solid #bfdbfe !important;
+  border-radius: 10px !important;
+  padding: 12px 14px !important;
+  position: relative !important;
+}
+
+.gmt-briefing-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-bottom: 6px !important;
+  cursor: pointer !important;
+}
+
+.gmt-briefing-title-wrap {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  color: #1e40af !important;
+}
+
+.gmt-briefing-desc {
+  font-size: 12px !important;
+  color: #334155 !important;
+  line-height: 1.45 !important;
+  margin-bottom: 8px !important;
+}
+
+.gmt-prerequisites-list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+  margin-bottom: 10px !important;
+}
+
+.gmt-prereq-item {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 6px !important;
+  font-size: 11.5px !important;
+  color: #1e3a8a !important;
+}
+
+.gmt-prereq-bullet {
+  color: #3b82f6 !important;
+  font-weight: bold !important;
+}
+
+/* Progress bar inside briefing */
+.gmt-progress-container {
+  margin-top: 8px !important;
+  padding-top: 8px !important;
+  border-top: 1px dashed #cbd5e1 !important;
+}
+
+.gmt-progress-label-row {
+  display: flex !important;
+  justify-content: space-between !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  color: #475569 !important;
+  margin-bottom: 4px !important;
+}
+
+.gmt-progress-track {
+  width: 100% !important;
+  height: 6px !important;
+  background-color: #e2e8f0 !important;
+  border-radius: 3px !important;
+  overflow: hidden !important;
+}
+
+.gmt-progress-fill {
+  height: 100% !important;
+  background: linear-gradient(90deg, #3b82f6, #10b981) !important;
+  border-radius: 3px !important;
+  transition: width 0.3s ease !important;
+}
+
+/* =========================================================
+   2. Active Field Card
+   ========================================================= */
+.gmt-field-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 10px !important;
+  padding: 14px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
+.gmt-field-topbar {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+}
+
+.gmt-field-title-area {
+  flex: 1 !important;
 }
 
 .gmt-field-title {
-  font-size: 14px !important;
+  margin: 0 !important;
+  font-size: 14.5px !important;
   font-weight: 700 !important;
   color: #0f172a !important;
-  margin: 0 !important;
   line-height: 1.3 !important;
 }
 
@@ -195,37 +339,47 @@
   margin-top: 2px !important;
 }
 
+.gmt-source-tag {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  padding: 2px 7px !important;
+  border-radius: 12px !important;
+  font-size: 10.5px !important;
+  font-weight: 600 !important;
+  white-space: nowrap !important;
+}
+
+.gmt-source-tag.gmt-source-verified {
+  background-color: #dcfce7 !important;
+  color: #15803d !important;
+  border: 1px solid #bbf7d0 !important;
+}
+
+.gmt-source-tag.gmt-source-ai {
+  background-color: #ede9fe !important;
+  color: #6d28d9 !important;
+  border: 1px solid #ddd6fe !important;
+}
+
+/* Format chips */
 .gmt-format-chips {
   display: flex !important;
   flex-wrap: wrap !important;
   gap: 5px !important;
-  margin-top: 6px !important;
 }
 
 .gmt-chip {
-  font-size: 10.5px !important;
-  font-weight: 600 !important;
-  color: #4338ca !important;
-  background-color: #eef2ff !important;
-  border: 1px solid #c7d2fe !important;
-  padding: 1px 7px !important;
+  background-color: #f1f5f9 !important;
+  color: #475569 !important;
+  padding: 2px 7px !important;
   border-radius: 4px !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  letter-spacing: 0.1px !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  border: 1px solid #e2e8f0 !important;
 }
 
-/* Scrollable Content */
-.gmt-card-content {
-  padding: 4px 14px 12px 14px !important;
-  max-height: 380px !important;
-  overflow-y: auto !important;
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 10px !important;
-}
-
-/* Section Blocks */
+/* Sections */
 .gmt-section-block {
   display: flex !important;
   flex-direction: column !important;
@@ -233,121 +387,101 @@
 }
 
 .gmt-block-label {
-  font-size: 11px !important;
-  font-weight: 700 !important;
-  color: #475569 !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.4px !important;
   display: flex !important;
   align-items: center !important;
   gap: 5px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.3px !important;
+  color: #475569 !important;
 }
 
-.gmt-meaning-text {
+.gmt-block-text {
   font-size: 12.5px !important;
   color: #1e293b !important;
-  margin: 0 !important;
-  line-height: 1.45 !important;
-}
-
-.gmt-instruction-text {
-  font-size: 12px !important;
-  color: #334155 !important;
-  margin: 0 !important;
-  line-height: 1.45 !important;
+  line-height: 1.5 !important;
 }
 
 /* Fictional Example Box */
 .gmt-example-box {
-  background-color: #f8fafc !important;
-  border: 1px solid #e2e8f0 !important;
-  border-radius: 6px !important;
-  padding: 6px 10px !important;
-}
-
-.gmt-example-box code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
-  font-size: 11.5px !important;
-  color: #0f172a !important;
-  font-weight: 600 !important;
-  word-break: break-all !important;
-}
-
-/* Common Mistakes Box */
-.gmt-mistake-box {
-  background-color: #fffbeb !important;
-  border: 1px solid #fef3c7 !important;
+  background: #f8fafc !important;
+  border: 1px solid #cbd5e1 !important;
+  border-left: 3px solid #3b82f6 !important;
   border-radius: 6px !important;
   padding: 8px 10px !important;
-}
-
-.gmt-mistake-box .text-warning {
-  color: #b45309 !important;
-}
-
-.gmt-mistake-text {
-  font-size: 11.5px !important;
-  color: #92400e !important;
-  margin: 0 !important;
-}
-
-/* Foreigner Note Box */
-.gmt-foreign-box {
-  background-color: #f0f9ff !important;
-  border: 1px solid #e0f2fe !important;
-  border-radius: 6px !important;
-  padding: 8px 10px !important;
-}
-
-.gmt-foreign-box .text-info {
-  color: #0369a1 !important;
-}
-
-.gmt-foreign-text {
-  font-size: 11.5px !important;
-  color: #075985 !important;
-  margin: 0 !important;
-}
-
-/* Feedback Drawer */
-.gmt-feedback-drawer {
-  background-color: #f8fafc !important;
-  border: 1px solid #cbd5e1 !important;
-  border-radius: 8px !important;
-  padding: 10px !important;
-  margin-top: 4px !important;
-  animation: gmt-fade-in 0.15s ease !important;
-}
-
-.gmt-drawer-header {
-  display: flex !important;
-  justify-content: space-between !important;
-  align-items: center !important;
-  margin-bottom: 6px !important;
-  font-size: 11.5px !important;
-  color: #1e293b !important;
-}
-
-.gmt-drawer-close {
-  background: none !important;
-  border: none !important;
-  font-size: 16px !important;
-  cursor: pointer !important;
-  color: #64748b !important;
-}
-
-.gmt-feedback-input {
-  width: 100% !important;
-  padding: 6px 8px !important;
-  border: 1px solid #cbd5e1 !important;
-  border-radius: 6px !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
   font-size: 12px !important;
-  font-family: inherit !important;
-  resize: vertical !important;
-  outline: none !important;
+  color: #0f172a !important;
+  word-break: break-word !important;
 }
 
-.gmt-feedback-input:focus {
+/* Warning & Foreign Notice Boxes */
+.gmt-alert-mistakes {
+  background: #fffbeb !important;
+  border: 1px solid #fde68a !important;
+  border-radius: 6px !important;
+  padding: 8px 10px !important;
+  font-size: 12px !important;
+  color: #92400e !important;
+  line-height: 1.4 !important;
+}
+
+.gmt-alert-foreign {
+  background: #f0fdf4 !important;
+  border: 1px solid #bbf7d0 !important;
+  border-radius: 6px !important;
+  padding: 8px 10px !important;
+  font-size: 12px !important;
+  color: #166534 !important;
+  line-height: 1.4 !important;
+}
+
+/* Suggest Button */
+.gmt-suggest-action-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  background: #f8fafc !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #334155 !important;
+  padding: 6px 10px !important;
+  border-radius: 6px !important;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  width: 100% !important;
+}
+
+.gmt-suggest-action-btn:hover {
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+/* Suggest Drawer inside Sidebar */
+.gmt-feedback-drawer {
+  background: #f8fafc !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 6px !important;
+  padding: 10px !important;
+  margin-top: 6px !important;
+}
+
+.gmt-feedback-drawer textarea {
+  width: 100% !important;
+  height: 56px !important;
+  padding: 6px 8px !important;
+  font-size: 12px !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 4px !important;
+  outline: none !important;
+  resize: none !important;
+  font-family: inherit !important;
+}
+
+.gmt-feedback-drawer textarea:focus {
   border-color: #2563eb !important;
 }
 
@@ -355,85 +489,157 @@
   display: flex !important;
   justify-content: flex-end !important;
   margin-top: 6px !important;
+  gap: 6px !important;
 }
 
 .gmt-btn-submit {
-  background-color: #2563eb !important;
-  color: white !important;
+  background: #2563eb !important;
+  color: #ffffff !important;
   border: none !important;
-  padding: 4px 10px !important;
-  border-radius: 5px !important;
-  font-size: 11px !important;
+  padding: 5px 12px !important;
+  border-radius: 4px !important;
+  font-size: 11.5px !important;
   font-weight: 600 !important;
   cursor: pointer !important;
 }
 
 .gmt-btn-submit:hover {
-  background-color: #1d4ed8 !important;
+  background: #1d4ed8 !important;
 }
 
-/* Enlarged Footer Navigation */
-.gmt-card-footer {
+/* =========================================================
+   Empty State (When no field is active)
+   ========================================================= */
+.gmt-empty-state {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  text-align: center !important;
+  padding: 24px 16px !important;
+  background: #f8fafc !important;
+  border: 1px dashed #cbd5e1 !important;
+  border-radius: 10px !important;
+}
+
+.gmt-empty-icon {
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 50% !important;
+  background: #dbeafe !important;
+  color: #2563eb !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-bottom: 12px !important;
+}
+
+.gmt-empty-title {
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  color: #1e293b !important;
+  margin-bottom: 6px !important;
+}
+
+.gmt-empty-desc {
+  font-size: 12px !important;
+  color: #64748b !important;
+  line-height: 1.5 !important;
+}
+
+/* Quick Field Selector List inside Empty State */
+.gmt-quick-field-list {
+  width: 100% !important;
+  margin-top: 14px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+  max-height: 220px !important;
+  overflow-y: auto !important;
+  text-align: left !important;
+}
+
+.gmt-quick-field-item {
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  padding: 10px 14px !important;
-  background-color: #f8fafc !important;
+  padding: 6px 10px !important;
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 6px !important;
+  font-size: 12px !important;
+  color: #334155 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+}
+
+.gmt-quick-field-item:hover {
+  background: #eff6ff !important;
+  border-color: #bfdbfe !important;
+  color: #1d4ed8 !important;
+}
+
+/* =========================================================
+   Skeleton Loading State
+   ========================================================= */
+.gmt-skeleton-line {
+  height: 14px !important;
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%) !important;
+  background-size: 200% 100% !important;
+  animation: gmt-skeleton-shimmer 1.5s infinite !important;
+  border-radius: 4px !important;
+  margin-bottom: 8px !important;
+}
+
+@keyframes gmt-skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* =========================================================
+   Side Panel Footer (Stepper Navigation)
+   ========================================================= */
+.gmt-panel-footer {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 10px 16px !important;
+  background: #f8fafc !important;
   border-top: 1px solid #e2e8f0 !important;
-  gap: 10px !important;
+  flex-shrink: 0 !important;
 }
 
 .gmt-nav-btn {
   display: inline-flex !important;
   align-items: center !important;
-  justify-content: center !important;
-  gap: 6px !important;
-  padding: 7px 14px !important;
+  gap: 5px !important;
+  padding: 6px 12px !important;
+  border-radius: 6px !important;
   font-size: 12px !important;
   font-weight: 600 !important;
-  border-radius: 8px !important;
   border: 1px solid #cbd5e1 !important;
-  background-color: #ffffff !important;
-  color: #1e293b !important;
+  background: #ffffff !important;
+  color: #334155 !important;
   cursor: pointer !important;
   transition: all 0.15s ease !important;
-  flex: 1 !important;
-  max-width: 125px !important;
 }
 
 .gmt-nav-btn:hover:not(:disabled) {
-  background-color: #eff6ff !important;
-  border-color: #2563eb !important;
-  color: #2563eb !important;
-  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.12) !important;
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+  border-color: #94a3b8 !important;
 }
 
 .gmt-nav-btn:disabled {
-  opacity: 0.35 !important;
+  opacity: 0.4 !important;
   cursor: not-allowed !important;
-  background-color: #f1f5f9 !important;
-  border-color: #e2e8f0 !important;
-  color: #94a3b8 !important;
 }
 
 .gmt-stepper-counter {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 4px !important;
   font-size: 12px !important;
   font-weight: 700 !important;
-  color: #475569 !important;
-  padding: 4px 8px !important;
-}
-
-.gmt-counter-current {
-  color: #2563eb !important;
-}
-
-.gmt-counter-divider {
-  color: #cbd5e1 !important;
-}
-
-.gmt-counter-total {
   color: #64748b !important;
+}
+
+.gmt-stepper-counter span.gmt-counter-active {
+  color: #2563eb !important;
 }

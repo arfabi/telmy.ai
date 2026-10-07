@@ -19,16 +19,19 @@
 
       // 2. Load mock dictionary
       chrome.runtime.sendMessage({ type: 'LOAD_MOCK_DICTIONARY' }, (res) => {
+        let pageSummary = null;
         if (res && res.success && res.data) {
           dictionaryData = res.data.fields || [];
-          runScanAndHighlight();
+          pageSummary = res.data.page_summary || null;
+          runScanAndHighlight(pageSummary);
         } else if (window.GMT_MOCK_DICTIONARY && window.GMT_MOCK_DICTIONARY.fields) {
           dictionaryData = window.GMT_MOCK_DICTIONARY.fields;
-          runScanAndHighlight();
+          pageSummary = window.GMT_MOCK_DICTIONARY.page_summary || null;
+          runScanAndHighlight(pageSummary);
         } else {
           console.warn('[GMT] Unable to load dictionary, scanning with generic fallback.');
           dictionaryData = [];
-          runScanAndHighlight();
+          runScanAndHighlight(null);
         }
       });
     });
@@ -45,7 +48,6 @@
         } else if (!wasActive && gmtSettings.isActive) {
           runScanAndHighlight();
         } else if (gmtSettings.language) {
-          // Re-render active field in new language if panel is currently visible
           window.GMTPanel.updateLanguage(gmtSettings.language);
         }
       }
@@ -65,43 +67,48 @@
       }
     });
 
-    // 4. Close panel on escape key or outside click
+    // 4. Keyboard shortcut: Alt+G toggles panel
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        window.GMTPanel.hide();
-      }
-    });
-
-    document.addEventListener('click', (e) => {
-      // If clicking outside any input, badge, or panel, don't necessarily close unless wanted
-      if (!e.target.closest('.gmt-ui-container') &&
-          !e.target.closest('.gmt-field-badge') &&
-          !e.target.closest('.gmt-highlighted-field')) {
-        // Can optionally leave open or close
+      if (e.altKey && (e.key === 'g' || e.key === 'G')) {
+        const panel = document.getElementById('gmt-side-panel-container');
+        if (panel && panel.classList.contains('gmt-collapsed')) {
+          window.GMTPanel.expand();
+        } else {
+          window.GMTPanel.minimize();
+        }
       }
     });
   }
 
-  function runScanAndHighlight() {
+  function runScanAndHighlight(pageSummary = null) {
     if (isScanning || gmtSettings.isActive === false) return;
     isScanning = true;
 
     try {
-      // Initialize floating panel
-      window.GMTPanel.initPanel(gmtSettings.language, (targetIndex) => {
-        // Navigation stepper callback
-        window.GMTHighlighter.setActiveField(targetIndex, scannedItems, (item, index) => {
-          window.GMTPanel.render(item, index, scannedItems.length, gmtSettings.language);
-        });
-      });
+      // Initialize side panel
+      window.GMTPanel.initPanel(
+        gmtSettings.language,
+        (targetIndex) => {
+          // Navigation stepper callback
+          window.GMTHighlighter.setActiveField(targetIndex, scannedItems, (item, index) => {
+            window.GMTPanel.render(item, index, scannedItems.length, gmtSettings.language);
+          });
+        },
+        (newLang) => {
+          gmtSettings.language = newLang;
+        }
+      );
 
-      // Scan page
+      // Scan page (skips captcha and bot security inputs automatically)
       scannedItems = window.GMTScanner.scanForms(dictionaryData);
 
-      if (scannedItems.length > 0) {
-        console.log(`[GMT] Successfully mapped ${scannedItems.length} form fields.`);
+      // Provide detected fields to side panel for overview and quick field list
+      window.GMTPanel.setPageSummary(pageSummary, scannedItems);
 
-        // Attach badges & focus hooks
+      if (scannedItems.length > 0) {
+        console.log(`[GMT] Successfully mapped ${scannedItems.length} valid form fields.`);
+
+        // Attach numbered badges & focus hooks
         window.GMTHighlighter.attachBadges(scannedItems, (item, index) => {
           window.GMTPanel.render(item, index, scannedItems.length, gmtSettings.language);
         });

@@ -1,0 +1,25 @@
+{
+  "name": "guidemeto-backend",
+  "version": "1.0.0",
+  "description": "Backend API for GuideMe.To (GMT) Chrome Extension powered by Firebase Firestore and Gemini API",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "seed": "node scripts/seed-dictionary.js"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "firebase-admin": "^13.1.0"
+  },
+  "devDependencies": {
+    "morgan": "^1.10.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

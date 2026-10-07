@@ -175,6 +175,20 @@ window.GMTScanner = (function () {
     return false;
   }
 
+  function isSecurityOrCaptchaField(el, label) {
+    const haystack = [
+      el.id || '',
+      el.name || '',
+      el.getAttribute('placeholder') || '',
+      el.getAttribute('aria-label') || '',
+      typeof el.className === 'string' ? el.className : '',
+      label || ''
+    ].join(' ').toLowerCase();
+
+    const captchaPattern = /(captcha|recaptcha|hcaptcha|turnstile|security[_\s-]?code|kode[_\s-]?keamanan|kode[_\s-]?captcha|verifikasi[_\s-]?kode|csrf|xsrf|_token)/i;
+    return captchaPattern.test(haystack);
+  }
+
   function scanForms(dictionaryFields) {
     const candidates = document.querySelectorAll('input, select, textarea');
     const matchedList = [];
@@ -187,6 +201,12 @@ window.GMTScanner = (function () {
       if (el.closest('.gmt-ui-container')) return; // Ignore GMT's own elements
 
       const label = findAssociatedLabel(el);
+
+      // Exclude captcha, security code, bot tokens
+      if (isSecurityOrCaptchaField(el, label)) {
+        return;
+      }
+
       const rawType = el.tagName.toLowerCase() === 'select' ? 'select' : (el.type || 'text').toLowerCase();
       const placeholder = el.getAttribute('placeholder') || '';
       const mask = detectInputMask(el);
