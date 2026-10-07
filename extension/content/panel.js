@@ -11,10 +11,37 @@ window.GMTPanel = (function () {
   let onLanguageChangeCallback = null;
   let cachedPageSummary = null;
 
+  // Pilar 1 & 2: Active Tab & Conversational Chat State
+  let activeTab = 'chat'; // 'chat' (default) | 'fields' | 'summary'
+  let chatHistory = [];
+  let isSendingChat = false;
+  let interimText = '';
+  let isVoiceSubscribed = false;
+
   // Complete I18N Matrix for UI text across 5 languages
   const I18N = {
     brand_title: { id: 'Telmy.ai', en: 'Telmy.ai', zh: 'Telmy.ai', ja: 'Telmy.ai', ko: 'Telmy.ai' },
-    copilot_badge: { id: 'Form Assistant', en: 'Form Assistant', zh: '表单助手', ja: 'フォームアシスタント', ko: '양식 도우미' },
+    copilot_badge: { id: 'AI Co-Pilot', en: 'AI Co-Pilot', zh: '智能副驾', ja: 'AI コパイロット', ko: 'AI 코파일럿' },
+    tab_chat: { id: '💬 Obrolan', en: '💬 Co-Pilot Chat', zh: '💬 智能对话', ja: '💬 チャット', ko: '💬 대화' },
+    tab_fields: { id: '📋 Kolom', en: '📋 Fields', zh: '📋 表单项', ja: '📋 項目一覧', ko: '📋 입력란' },
+    tab_summary: { id: '📌 Ringkasan', en: '📌 Overview', zh: '📌 概览', ja: '📌 概要', ko: '📌 개요' },
+    chat_welcome: {
+      id: 'Halo! Saya Telmy, asisten pengisian formulir Anda. Silakan tanyakan apa saja tentang formulir ini lewat suara (tekan ikon mikrofon) atau ketik pesan.',
+      en: 'Hello! I am Telmy, your form-filling assistant. Ask me anything about this form using voice or text.',
+      zh: '您好！我是 Telmy，您的表单填写助手。欢迎随时通过语音或文字向我提问。',
+      ja: 'こんにちは！Telmy です。フォームの記入方法について音声またはテキストでご質問ください。',
+      ko: '안녕하세요! Telmy 입니다. 음성이나 텍스트로 양식 작성에 대해 무엇이든 질문해 주세요.'
+    },
+    chat_placeholder: {
+      id: 'Tanya Telmy atau ucapkan sesuatu...',
+      en: 'Ask Telmy or speak anything...',
+      zh: '向 Telmy 提问或直接说话...',
+      ja: 'Telmy に質問するか話しかけてください...',
+      ko: 'Telmy 에게 질문하거나 말해보세요...'
+    },
+    speaking_badge: { id: 'Berbicara...', en: 'Speaking...', zh: '正在朗读...', ja: '音声再生中...', ko: '말하는 중...' },
+    replay_audio: { id: '🔊 Dengar Suara', en: '🔊 Replay Voice', zh: '🔊 重播语音', ja: '🔊 音声再生', ko: '🔊 음성 듣기' },
+    clear_chat: { id: 'Bersihkan Obrolan', en: 'Clear Chat', zh: '清除对话', ja: '履歴削除', ko: '대화 삭제' },
     page_summary_title: { id: '📌 Ringkasan Formulir', en: '📌 Form Overview', zh: '📌 表单概览', ja: '📌 フォーム概要', ko: '📌 양식 개요' },
     prerequisites_title: { id: 'Dokumen Persiapan:', en: 'Prerequisites:', zh: '建议提前准备材料：', ja: '事前準備書類：', ko: '사전 준비 서류:' },
     progress_label: { id: 'Progres Pengisian', en: 'Form Progress', zh: '填写进度', ja: '入力進捗', ko: '작성 진행도' },
@@ -93,8 +120,79 @@ window.GMTPanel = (function () {
     document.body.appendChild(panelEl);
     document.body.appendChild(launcherEl);
 
-    // Initial render empty state
+    // Subscribe to voice engine events once
+    setupVoiceSubscriptions();
+
+    // Load persisted chat history
+    loadChatHistory();
+
+    // Initial render
     renderShell();
+  }
+
+  function setupVoiceSubscriptions() {
+    if (isVoiceSubscribed || !window.TelmyVoice) return;
+    isVoiceSubscribed = true;
+
+    window.TelmyVoice.on('speakStart', () => {
+      const badge = panelEl ? panelEl.querySelector('#gmt-speaking-badge') : null;
+      if (badge) badge.style.display = 'inline-flex';
+    });
+
+    window.TelmyVoice.on('speakEnd', () => {
+      const badge = panelEl ? panelEl.querySelector('#gmt-speaking-badge') : null;
+      if (badge) badge.style.display = 'none';
+    });
+
+    window.TelmyVoice.on('listeningStart', () => {
+      const micBtn = panelEl ? panelEl.querySelector('#gmt-btn-mic') : null;
+      if (micBtn) micBtn.classList.add('gmt-mic-active');
+    });
+
+    window.TelmyVoice.on('listeningEnd', () => {
+      const micBtn = panelEl ? panelEl.querySelector('#gmt-btn-mic') : null;
+      if (micBtn) micBtn.classList.remove('gmt-mic-active');
+      interimText = '';
+      renderChatMessagesOnly();
+    });
+  }
+
+  function loadChatHistory() {
+    chrome.runtime.sendMessage({
+      type: 'GET_CHAT_HISTORY',
+      domain: window.location.hostname
+    }, (history) => {
+      if (Array.isArray(history) && history.length > 0) {
+        chatHistory = history;
+      } else {
+        chatHistory = [
+          {
+            id: 'init_welcome',
+            role: 'assistant',
+            text: t('chat_welcome'),
+            actions: [
+              { type: 'SHOW_SUMMARY', label: '📌 ' + t('tab_summary') }
+            ],
+            time: formatTime(new Date())
+          }
+        ];
+      }
+      if (activeTab === 'chat') {
+        renderChatMessagesOnly();
+      }
+    });
+  }
+
+  function saveChatHistory() {
+    chrome.runtime.sendMessage({
+      type: 'SAVE_CHAT_HISTORY',
+      domain: window.location.hostname,
+      history: chatHistory.slice(-30) // Retain last 30 messages
+    });
+  }
+
+  function formatTime(d) {
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 
   function renderShell() {
@@ -106,6 +204,12 @@ window.GMTPanel = (function () {
         <div class="gmt-brand-container">
           <span class="gmt-brand-logo">${t('brand_title')}</span>
           <span class="gmt-copilot-tag">${t('copilot_badge')}</span>
+          <span class="gmt-speaking-badge" id="gmt-speaking-badge" style="display: none;">
+            <span class="gmt-wave-bar"></span>
+            <span class="gmt-wave-bar"></span>
+            <span class="gmt-wave-bar"></span>
+            <span>${t('speaking_badge')}</span>
+          </span>
         </div>
         <div class="gmt-header-controls">
           <select class="gmt-lang-select" id="gmt-panel-lang-select" title="Pilih Bahasa">
@@ -121,36 +225,78 @@ window.GMTPanel = (function () {
         </div>
       </div>
 
-      <!-- Scrollable Body -->
-      <div class="gmt-panel-body" id="gmt-panel-body-content">
-        <!-- Briefing section will be injected here -->
-        <div id="gmt-briefing-slot"></div>
-        <!-- Active field or empty state will be injected here -->
-        <div id="gmt-field-slot"></div>
+      <!-- Navigation Tabs (Pilar 2) -->
+      <div class="gmt-panel-tabs">
+        <button type="button" class="gmt-tab-btn ${activeTab === 'chat' ? 'active' : ''}" data-tab="chat">
+          ${t('tab_chat')}
+        </button>
+        <button type="button" class="gmt-tab-btn ${activeTab === 'fields' ? 'active' : ''}" data-tab="fields">
+          ${t('tab_fields')} (${allFieldsList.length})
+        </button>
+        <button type="button" class="gmt-tab-btn ${activeTab === 'summary' ? 'active' : ''}" data-tab="summary">
+          ${t('tab_summary')}
+        </button>
       </div>
 
-      <!-- Footer Stepper -->
-      <div class="gmt-panel-footer">
-        <button type="button" class="gmt-nav-btn" id="gmt-prev-btn" disabled>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
-          <span>${t('btn_prev')}</span>
-        </button>
-
-        <div class="gmt-stepper-counter" id="gmt-counter-label">
-          <span class="gmt-counter-active">0</span> / ${allFieldsList.length || 0}
-        </div>
-
-        <button type="button" class="gmt-nav-btn" id="gmt-next-btn" disabled>
-          <span>${t('btn_next')}</span>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
-        </button>
+      <!-- Scrollable Main Container -->
+      <div class="gmt-panel-body" id="gmt-panel-body-content" style="padding: 0; display: flex; flex-direction: column;">
+        ${activeTab === 'chat' ? `
+          <!-- Chat View (Pilar 2) -->
+          <div class="gmt-chat-container">
+            <div class="gmt-chat-stream" id="gmt-chat-stream"></div>
+            <div class="gmt-chat-input-bar">
+              <button type="button" class="gmt-mic-btn" id="gmt-btn-mic" title="Bicara (Speech Recognition)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+              </button>
+              <div class="gmt-chat-input-wrap">
+                <input type="text" class="gmt-chat-input" id="gmt-chat-input" placeholder="${escapeHTML(t('chat_placeholder'))}" />
+                <button type="button" class="gmt-audio-toggle-btn" id="gmt-btn-mute" title="Matikan/Nyalakan Suara AI">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                </button>
+              </div>
+              <button type="button" class="gmt-send-btn" id="gmt-btn-send" title="Kirim Pesan">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              </button>
+            </div>
+          </div>
+        ` : activeTab === 'fields' ? `
+          <!-- Fields List View -->
+          <div style="padding: 16px; overflow-y: auto; flex: 1;">
+            <div id="gmt-field-slot"></div>
+          </div>
+          <!-- Footer Stepper for Fields View -->
+          <div class="gmt-panel-footer">
+            <button type="button" class="gmt-nav-btn" id="gmt-prev-btn" disabled>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
+              <span>${t('btn_prev')}</span>
+            </button>
+            <div class="gmt-stepper-counter" id="gmt-counter-label">
+              <span class="gmt-counter-active">${currentIndex >= 0 ? currentIndex + 1 : 0}</span> / ${allFieldsList.length || 0}
+            </div>
+            <button type="button" class="gmt-nav-btn" id="gmt-next-btn" disabled>
+              <span>${t('btn_next')}</span>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
+            </button>
+          </div>
+        ` : `
+          <!-- Summary View -->
+          <div style="padding: 16px; overflow-y: auto; flex: 1;">
+            <div id="gmt-briefing-slot"></div>
+          </div>
+        `}
       </div>
     `;
 
     bindHeaderEvents();
-    renderBriefingCard();
-    renderFieldSlot();
-    updateFooterStepper();
+
+    if (activeTab === 'chat') {
+      renderChatMessagesOnly();
+      bindChatInputEvents();
+    } else if (activeTab === 'fields') {
+      renderFieldSlot();
+      updateFooterStepper();
+    } else if (activeTab === 'summary') {
+      renderBriefingCard();
   }
 
   function bindHeaderEvents() {
@@ -173,6 +319,17 @@ window.GMTPanel = (function () {
       minBtn.addEventListener('click', minimize);
     }
 
+    // Bind Tab Switching
+    panelEl.querySelectorAll('.gmt-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tab = btn.getAttribute('data-tab');
+        if (tab && tab !== activeTab) {
+          activeTab = tab;
+          renderShell();
+        }
+      });
+    });
+
     const prevBtn = panelEl.querySelector('#gmt-prev-btn');
     if (prevBtn) {
       prevBtn.addEventListener('click', () => {
@@ -190,6 +347,263 @@ window.GMTPanel = (function () {
         }
       });
     }
+  }
+
+  function bindChatInputEvents() {
+    if (!panelEl) return;
+    const input = panelEl.querySelector('#gmt-chat-input');
+    const sendBtn = panelEl.querySelector('#gmt-btn-send');
+    const micBtn = panelEl.querySelector('#gmt-btn-mic');
+    const muteBtn = panelEl.querySelector('#gmt-btn-mute');
+
+    if (sendBtn && input) {
+      sendBtn.addEventListener('click', () => {
+        const val = input.value.trim();
+        if (val) {
+          input.value = '';
+          sendChatMessage(val);
+        }
+      });
+
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const val = input.value.trim();
+          if (val) {
+            input.value = '';
+            sendChatMessage(val);
+          }
+        }
+      });
+    }
+
+    if (micBtn && window.TelmyVoice) {
+      micBtn.addEventListener('click', () => {
+        if (window.TelmyVoice.isListening()) {
+          window.TelmyVoice.stopListening();
+        } else {
+          interimText = '';
+          window.TelmyVoice.startListening({
+            onInterim: (text) => {
+              interimText = text;
+              renderChatMessagesOnly();
+            },
+            onFinal: (text) => {
+              interimText = '';
+              if (text && text.trim()) {
+                sendChatMessage(text.trim());
+              } else {
+                renderChatMessagesOnly();
+              }
+            },
+            onError: (err) => {
+              console.warn('[Speech Recog Error]', err);
+              interimText = '';
+              renderChatMessagesOnly();
+            },
+            lang: currentLanguage
+          });
+        }
+      });
+    }
+
+    if (muteBtn && window.TelmyVoice) {
+      muteBtn.addEventListener('click', () => {
+        const isMuted = !window.TelmyVoice.isMuted();
+        window.TelmyVoice.setMuted(isMuted);
+        muteBtn.classList.toggle('gmt-muted', isMuted);
+        muteBtn.title = isMuted ? 'Nyalakan Suara AI' : 'Matikan Suara AI';
+        muteBtn.innerHTML = isMuted
+          ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="1" y1="1" x2="23" y2="23"/><path d="m9 9 2 2v6l-5-4H2V9h4l3-3"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>`
+          : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>`;
+      });
+    }
+  }
+
+  function renderChatMessagesOnly() {
+    const stream = panelEl ? panelEl.querySelector('#gmt-chat-stream') : null;
+    if (!stream) return;
+
+    let html = '';
+
+    chatHistory.forEach((msg) => {
+      const isUser = msg.role === 'user';
+      html += `
+        <div class="gmt-chat-msg ${isUser ? 'gmt-msg-user' : 'gmt-msg-assistant'}" id="${msg.id}">
+          <div class="gmt-bubble">
+            ${escapeHTML(msg.text).replace(/\n/g, '<br/>')}
+            ${msg.actions && msg.actions.length > 0 ? `
+              <div class="gmt-action-chips-container">
+                ${msg.actions.map((act, actIdx) => `
+                  <button type="button" class="gmt-action-chip" data-action-msg-id="${msg.id}" data-action-index="${actIdx}">
+                    ${act.type === 'HIGHLIGHT_FIELD' ? '🎯' : act.type === 'COPY_EXAMPLE' ? '📋' : act.type === 'SHOW_SUMMARY' ? '📌' : '⚡'}
+                    <span>${escapeHTML(act.label || act.target || 'Aksi')}</span>
+                  </button>
+                `).join('')}
+              </div>
+            ` : ''}
+          </div>
+          <div class="gmt-msg-meta">
+            <span>${msg.time || ''}</span>
+            ${!isUser ? `
+              <span>•</span>
+              <button type="button" class="gmt-btn-replay-audio" data-msg-id="${msg.id}">
+                ${t('replay_audio')}
+              </button>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    });
+
+    // If currently listening, show interim speech bubble
+    if (interimText) {
+      html += `
+        <div class="gmt-chat-msg gmt-msg-user" style="opacity: 0.9;">
+          <div class="gmt-bubble gmt-bubble-interim">
+            <span>🎤 ${escapeHTML(interimText)}...</span>
+          </div>
+        </div>
+      `;
+    }
+
+    // If waiting for backend reply
+    if (isSendingChat) {
+      html += `
+        <div class="gmt-chat-msg gmt-msg-assistant">
+          <div class="gmt-bubble" style="display: flex; align-items: center; gap: 8px;">
+            <svg class="gmt-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+            <span style="font-size: 12px; color: #475569;">${t('loading_ai')}</span>
+          </div>
+        </div>
+      `;
+    }
+
+    stream.innerHTML = html;
+    stream.scrollTop = stream.scrollHeight;
+
+    // Bind replay audio buttons
+    stream.querySelectorAll('.gmt-btn-replay-audio').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const msgId = btn.getAttribute('data-msg-id');
+        const found = chatHistory.find(m => m.id === msgId);
+        if (found && found.text && window.TelmyVoice) {
+          window.TelmyVoice.speak(found.text, currentLanguage);
+        }
+      });
+    });
+
+    // Bind action chips clicks
+    stream.querySelectorAll('.gmt-action-chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const msgId = btn.getAttribute('data-action-msg-id');
+        const actIdx = parseInt(btn.getAttribute('data-action-index'), 10);
+        const msg = chatHistory.find(m => m.id === msgId);
+        if (msg && msg.actions && msg.actions[actIdx]) {
+          executeActionChip(msg.actions[actIdx]);
+        }
+      });
+    });
+  }
+
+  function executeActionChip(action) {
+    if (action.type === 'SHOW_SUMMARY') {
+      activeTab = 'summary';
+      renderShell();
+      return;
+    }
+
+    if (action.type === 'HIGHLIGHT_FIELD') {
+      let targetIdx = -1;
+      if (typeof action.index === 'number') {
+        targetIdx = action.index;
+      } else if (action.target || action.label) {
+        const query = (action.target || action.label).toLowerCase();
+        targetIdx = allFieldsList.findIndex(f => {
+          const l = (f.metadata ? (f.metadata.label || f.metadata.name) : '').toLowerCase();
+          return l.includes(query);
+        });
+      }
+
+      if (targetIdx >= 0 && onNavigateCallback) {
+        onNavigateCallback(targetIdx);
+        // Switch to fields tab to show detailed instructions
+        activeTab = 'fields';
+        renderShell();
+      }
+      return;
+    }
+
+    if (action.type === 'COPY_EXAMPLE') {
+      const textToCopy = action.text || action.label || '';
+      if (textToCopy) {
+        navigator.clipboard.writeText(textToCopy).then(() => {
+          action.label = '✅ Tersalin!';
+          renderChatMessagesOnly();
+        });
+      }
+      return;
+    }
+  }
+
+  function sendChatMessage(text) {
+    if (!text || isSendingChat) return;
+    isSendingChat = true;
+
+    const userMsg = {
+      id: 'msg_' + Date.now(),
+      role: 'user',
+      text: text,
+      time: formatTime(new Date())
+    };
+
+    chatHistory.push(userMsg);
+    saveChatHistory();
+    renderChatMessagesOnly();
+
+    // Prepare fields context for backend
+    const fieldsContext = allFieldsList.slice(0, 20).map(f => ({
+      label: f.metadata ? f.metadata.label : '',
+      name: f.metadata ? f.metadata.name : '',
+      type: f.metadata ? f.metadata.type : ''
+    }));
+
+    chrome.runtime.sendMessage({
+      type: 'SEND_CHAT_MESSAGE',
+      payload: {
+        message: text,
+        history: chatHistory.slice(-8),
+        language: currentLanguage,
+        formContext: {
+          title: document.title,
+          url: window.location.href,
+          domain: window.location.hostname,
+          fields: fieldsContext
+        }
+      }
+    }, (res) => {
+      isSendingChat = false;
+      const data = res && res.data ? res.data : null;
+      const reply = data && data.reply ? data.reply : (currentLanguage === 'en' ? 'I am here to guide you with this form.' : 'Saya siap memandu Anda mengisi formulir ini.');
+      const actions = data && Array.isArray(data.actions) ? data.actions : [];
+
+      const assistantMsg = {
+        id: 'msg_' + Date.now(),
+        role: 'assistant',
+        text: reply,
+        actions: actions,
+        time: formatTime(new Date())
+      };
+
+      chatHistory.push(assistantMsg);
+      saveChatHistory();
+      renderChatMessagesOnly();
+
+      // Automatically speak AI answer via ElevenLabs backend gateway / browser TTS
+      if (window.TelmyVoice && !window.TelmyVoice.isMuted()) {
+        window.TelmyVoice.speak(reply, currentLanguage);
+      }
+    });
   }
 
   function setPageSummary(summaryData, fieldsList = []) {
@@ -585,12 +999,13 @@ window.GMTPanel = (function () {
     currentIndex = index;
     if (lang) currentLanguage = lang;
 
+    // Switch to fields view when user selects a field badge
+    activeTab = 'fields';
+
     // Ensure side panel is expanded and visible
     expand();
 
-    renderBriefingCard();
-    renderFieldSlot();
-    updateFooterStepper();
+    renderShell();
   }
 
   function minimize() {

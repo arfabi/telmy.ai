@@ -8,6 +8,8 @@ import { initFirebase } from './config/firebase.js';
 import explainRoutes from './routes/explain.js';
 import feedbackRoutes from './routes/feedback.js';
 import dictionaryRoutes from './routes/dictionary.js';
+import voiceRoutes from './routes/voice.js';
+import chatRoutes from './routes/chat.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -51,7 +53,8 @@ app.get('/health', (req, res) => {
     openAiConfigured: Boolean(process.env.OPENAI_API_KEY),
     openAiModel: process.env.OPENAI_MODEL || 'gpt-4o-mini',
     openAiBaseUrl: process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1',
-    geminiConfigured: Boolean(process.env.GEMINI_API_KEY)
+    geminiConfigured: Boolean(process.env.GEMINI_API_KEY),
+    elevenLabsConfigured: Boolean(process.env.ELEVENLABS_API_KEY)
   });
 });
 
@@ -59,6 +62,8 @@ app.get('/health', (req, res) => {
 app.use('/api', explainRoutes);
 app.use('/api', feedbackRoutes);
 app.use('/api', dictionaryRoutes);
+app.use('/api', voiceRoutes);
+app.use('/api', chatRoutes);
 
 // Fallback 404
 app.use((req, res) => {
@@ -78,4 +83,5 @@ app.listen(PORT, () => {
   if (process.env.GEMINI_API_KEY) {
     console.log(`✨ Gemini AI Key (Fallback): CONFIGURED`);
   }
+  console.log(`🎙️ ElevenLabs Voice Engine: ${process.env.ELEVENLABS_API_KEY ? 'CONFIGURED (Backend Gateway)' : 'NOT CONFIGURED (Browser TTS Fallback Mode)'}`);
 });

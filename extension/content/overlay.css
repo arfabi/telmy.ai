@@ -651,3 +651,329 @@
 .gmt-stepper-counter span.gmt-counter-active {
   color: #2563eb !important;
 }
+
+/* =========================================================
+   Pilar 1 & 2: Conversational Copilot Chat & Voice UI
+   ========================================================= */
+
+/* Top Tab Bar */
+.gmt-panel-tabs {
+  display: flex !important;
+  background: #f1f5f9 !important;
+  padding: 6px 12px 0 !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  gap: 6px !important;
+}
+
+.gmt-tab-btn {
+  flex: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  padding: 8px 10px !important;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  color: #64748b !important;
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 2px solid transparent !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.gmt-tab-btn:hover {
+  color: #1e293b !important;
+}
+
+.gmt-tab-btn.active {
+  color: #2563eb !important;
+  border-bottom-color: #2563eb !important;
+  background: #ffffff !important;
+  border-radius: 6px 6px 0 0 !important;
+}
+
+/* Chat Stream Container */
+.gmt-chat-container {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+  background: #f8fafc !important;
+}
+
+.gmt-chat-stream {
+  flex: 1 !important;
+  overflow-y: auto !important;
+  padding: 16px 14px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+}
+
+/* Chat Messages */
+.gmt-chat-msg {
+  display: flex !important;
+  flex-direction: column !important;
+  max-width: 88% !important;
+  animation: gmt-fade-in 0.2s ease !important;
+}
+
+@keyframes gmt-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.gmt-chat-msg.gmt-msg-user {
+  align-self: flex-end !important;
+}
+
+.gmt-chat-msg.gmt-msg-assistant {
+  align-self: flex-start !important;
+}
+
+.gmt-bubble {
+  padding: 10px 14px !important;
+  border-radius: 14px !important;
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+  word-break: break-word !important;
+  position: relative !important;
+}
+
+.gmt-msg-user .gmt-bubble {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
+  color: #ffffff !important;
+  border-bottom-right-radius: 3px !important;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25) !important;
+}
+
+.gmt-msg-assistant .gmt-bubble {
+  background: #ffffff !important;
+  color: #1e293b !important;
+  border: 1px solid #e2e8f0 !important;
+  border-bottom-left-radius: 3px !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.04) !important;
+}
+
+.gmt-bubble.gmt-bubble-interim {
+  opacity: 0.75 !important;
+  font-style: italic !important;
+  border: 1px dashed #60a5fa !important;
+}
+
+.gmt-msg-meta {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-size: 10px !important;
+  color: #94a3b8 !important;
+  margin-top: 4px !important;
+  padding: 0 4px !important;
+}
+
+.gmt-msg-user .gmt-msg-meta {
+  justify-content: flex-end !important;
+}
+
+.gmt-btn-replay-audio {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+  background: transparent !important;
+  border: none !important;
+  color: #64748b !important;
+  font-size: 10px !important;
+  cursor: pointer !important;
+  padding: 0 !important;
+  transition: color 0.15s ease !important;
+}
+
+.gmt-btn-replay-audio:hover {
+  color: #2563eb !important;
+}
+
+/* Action Chips inside Chat Bubble */
+.gmt-action-chips-container {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 6px !important;
+  margin-top: 10px !important;
+  padding-top: 8px !important;
+  border-top: 1px solid #f1f5f9 !important;
+}
+
+.gmt-action-chip {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  padding: 5px 10px !important;
+  border-radius: 20px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  background: #eff6ff !important;
+  color: #1d4ed8 !important;
+  border: 1px solid #bfdbfe !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+}
+
+.gmt-action-chip:hover {
+  background: #2563eb !important;
+  color: #ffffff !important;
+  border-color: #2563eb !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 5px rgba(37, 99, 235, 0.2) !important;
+}
+
+/* Chat Input Bar */
+.gmt-chat-input-bar {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 10px 14px !important;
+  background: #ffffff !important;
+  border-top: 1px solid #e2e8f0 !important;
+  position: relative !important;
+}
+
+.gmt-chat-input-wrap {
+  flex: 1 !important;
+  display: flex !important;
+  align-items: center !important;
+  background: #f8fafc !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 24px !important;
+  padding: 4px 12px !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.gmt-chat-input-wrap:focus-within {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
+  background: #ffffff !important;
+}
+
+.gmt-chat-input {
+  flex: 1 !important;
+  border: none !important;
+  background: transparent !important;
+  outline: none !important;
+  font-size: 12.5px !important;
+  color: #0f172a !important;
+  padding: 6px 0 !important;
+}
+
+.gmt-chat-input::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* Mic & Send & Mute Buttons */
+.gmt-mic-btn {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 50% !important;
+  border: none !important;
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  flex-shrink: 0 !important;
+}
+
+.gmt-mic-btn:hover {
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+.gmt-mic-btn.gmt-mic-active {
+  background: #ef4444 !important;
+  color: #ffffff !important;
+  animation: gmt-mic-pulse 1.4s infinite !important;
+}
+
+@keyframes gmt-mic-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); }
+  70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.gmt-send-btn {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 50% !important;
+  border: none !important;
+  background: #2563eb !important;
+  color: #ffffff !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+}
+
+.gmt-send-btn:hover {
+  background: #1d4ed8 !important;
+  transform: scale(1.04) !important;
+}
+
+.gmt-send-btn:disabled {
+  opacity: 0.4 !important;
+  cursor: not-allowed !important;
+}
+
+.gmt-audio-toggle-btn {
+  background: transparent !important;
+  border: none !important;
+  color: #64748b !important;
+  cursor: pointer !important;
+  padding: 4px !important;
+  border-radius: 6px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.15s ease !important;
+}
+
+.gmt-audio-toggle-btn:hover {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+.gmt-audio-toggle-btn.gmt-muted {
+  color: #ef4444 !important;
+}
+
+/* Audio Wave Speaking Indicator in Header */
+.gmt-speaking-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+  padding: 2px 7px !important;
+  border-radius: 12px !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  background: #ecfdf5 !important;
+  color: #059669 !important;
+  border: 1px solid #a7f3d0 !important;
+  animation: gmt-fade-in 0.2s ease !important;
+}
+
+.gmt-wave-bar {
+  width: 2px !important;
+  height: 8px !important;
+  background: #059669 !important;
+  border-radius: 1px !important;
+  animation: gmt-wave 0.8s infinite ease-in-out alternate !important;
+}
+
+.gmt-wave-bar:nth-child(2) { animation-delay: 0.2s !important; height: 12px !important; }
+.gmt-wave-bar:nth-child(3) { animation-delay: 0.4s !important; height: 7px !important; }
+
+@keyframes gmt-wave {
+  0% { transform: scaleY(0.4); }
+  100% { transform: scaleY(1.3); }
+}
+

@@ -145,4 +145,115 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     });
     return true;
   }
+
+  // Pilar 1 & 2: Conversational Copilot Chat
+  if (message.type === 'SEND_CHAT_MESSAGE') {
+    chrome.storage.local.get(['settings']).then(async (res) => {
+      const settings = res.settings || DEFAULT_SETTINGS;
+      const apiUrl = settings.apiUrl || DEFAULT_SETTINGS.apiUrl;
+      const { message: chatMsg, history, language, formContext } = message.payload;
+
+      try {
+        const response = await fetchWithTimeout(`${apiUrl}/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: chatMsg, history, language, formContext })
+        }, 35000);
+
+        if (response.ok) {
+          const json = await response.json();
+          if (json.success && json.data) {
+            sendResponse({ success: true, data: json.data });
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn('[Telmy SW] Chat API failed:', err.message);
+      }
+
+      // Fallback response if backend is offline
+      sendResponse({
+        success: true,
+        fallback: true,
+        data: {
+          reply: language === 'en'
+            ? 'I am currently operating in offline mode. You can still inspect any detected fields on the form.'
+            : 'Saat ini saya beroperasi dalam mode offline. Anda tetap dapat membaca panduan kolom pada formulir ini.',
+          actions: []
+        }
+      });
+    });
+    return true;
+  }
+
+  // Pilar 1: Voice TTS via Backend Gateway
+  if (message.type === 'VOICE_TTS') {
+    chrome.storage.local.get(['settings']).then(async (res) => {
+      const settings = res.settings || DEFAULT_SETTINGS;
+      const apiUrl = settings.apiUrl || DEFAULT_SETTINGS.apiUrl;
+      const { text, language, voiceId } = message.payload;
+
+      try {
+        const response = await fetchWithTimeout(`${apiUrl}/voice/tts`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text, language, voiceId })
+        }, 20000);
+
+        if (response.ok) {
+          const blob = await response.blob();
+          // Convert blob to base64 data URL for easy transfer across extension contexts
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            sendResponse({ success: true, audioDataUrl: reader.result });
+          };
+          reader.readAsDataURL(blob);
+          return;
+        } else {
+          const json = await response.json().catch(() => ({}));
+          sendResponse({ success: false, fallback: true, error: json.error || 'TTS failed' });
+          return;
+        }
+      } catch (err) {
+        sendResponse({ success: false, fallback: true, error: err.message });
+      }
+    });
+    return true;
+  }
+
+  // Check Voice Backend Status
+  if (message.type === 'CHECK_VOICE_STATUS') {
+    chrome.storage.local.get(['settings']).then(async (res) => {
+      const settings = res.settings || DEFAULT_SETTINGS;
+      const apiUrl = settings.apiUrl || DEFAULT_SETTINGS.apiUrl;
+
+      try {
+        const response = await fetchWithTimeout(`${apiUrl}/voice/status`, {}, 5000);
+        if (response.ok) {
+          const json = await response.json();
+          sendResponse({ success: true, ...json });
+          return;
+        }
+      } catch (err) {}
+      sendResponse({ success: false, configured: false });
+    });
+    return true;
+  }
+
+  // Chat History Storage
+  if (message.type === 'GET_CHAT_HISTORY') {
+    const key = `telmy_chat_${message.domain || 'global'}`;
+    chrome.storage.local.get([key]).then((res) => {
+      sendResponse(res[key] || []);
+    });
+    return true;
+  }
+
+  if (message.type === 'SAVE_CHAT_HISTORY') {
+    const key = `telmy_chat_${message.domain || 'global'}`;
+    chrome.storage.local.set({ [key]: message.history || [] }).then(() => {
+      sendResponse({ success: true });
+    });
+    return true;
+  }
 });

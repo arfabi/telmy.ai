@@ -367,33 +367,72 @@
   </div>
 
   <!-- Standalone Injection Simulation for Direct Browser Preview Testing -->
-  <script src="../extension/mock/dictionary-data.js"></script>
-  <script src="../extension/content/scanner.js"></script>
-  <script src="../extension/content/highlighter.js"></script>
-  <script src="../extension/content/panel.js"></script>
   <script>
     // Mock chrome extension environment for direct in-browser testing
     if (typeof chrome === 'undefined' || !chrome.runtime || !chrome.runtime.sendMessage) {
-      console.log('[GMT Demo] Running in standalone mock test environment');
+      console.log('[Telmy Demo] Running in standalone mock test environment');
+      const API_URL = 'http://localhost:8080/api';
       window.chrome = {
         runtime: {
           sendMessage: function(msg, cb) {
             if (msg.type === 'GET_SETTINGS') {
-              if (cb) cb({ language: 'id', isActive: true });
+              if (cb) cb({ language: 'id', isActive: true, apiUrl: API_URL });
             } else if (msg.type === 'LOAD_MOCK_DICTIONARY') {
-              if (window.GMT_MOCK_DICTIONARY) {
-                if (cb) cb({ success: true, data: window.GMT_MOCK_DICTIONARY });
-              } else {
-                fetch('../extension/mock/apostille-ahu.json')
-                  .then(r => r.json())
-                  .then(data => { if (cb) cb({ success: true, data }); })
-                  .catch(err => { if (cb) cb({ success: false, error: err.message }); });
-              }
+              fetch('../extension/mock/apostille-ahu.json')
+                .then(r => r.json())
+                .then(data => { if (cb) cb({ success: true, data }); })
+                .catch(err => { if (cb) cb({ success: false, error: err.message }); });
             } else if (msg.type === 'UPDATE_SETTINGS') {
-              console.log('[GMT Demo] Settings updated:', msg.payload);
+              console.log('[Telmy Demo] Settings updated:', msg.payload);
               if (cb) cb({ success: true });
+            } else if (msg.type === 'GET_CHAT_HISTORY') {
+              try {
+                const saved = JSON.parse(localStorage.getItem('telmy_chat_demo') || '[]');
+                if (cb) cb(saved);
+              } catch (e) { if (cb) cb([]); }
+            } else if (msg.type === 'SAVE_CHAT_HISTORY') {
+              try {
+                localStorage.setItem('telmy_chat_demo', JSON.stringify(msg.history || []));
+                if (cb) cb({ success: true });
+              } catch (e) { if (cb) cb({ success: false }); }
+            } else if (msg.type === 'SEND_CHAT_MESSAGE') {
+              fetch(`${API_URL}/chat`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(msg.payload)
+              })
+                .then(r => r.json())
+                .then(data => { if (cb) cb(data); })
+                .catch(err => {
+                  console.warn('[Telmy Demo] Backend offline fallback:', err);
+                  if (cb) cb({
+                    success: true,
+                    data: {
+                      reply: 'Halo! Saya Telmy dalam mode demo lokal. Ada yang bisa saya bantu terkait pengisian formulir ini?',
+                      actions: []
+                    }
+                  });
+                });
+            } else if (msg.type === 'VOICE_TTS') {
+              fetch(`${API_URL}/voice/tts`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(msg.payload)
+              })
+                .then(r => {
+                  if (r.ok) return r.blob();
+                  throw new Error('TTS failed');
+                })
+                .then(blob => {
+                  const reader = new FileReader();
+                  reader.onloadend = () => { if (cb) cb({ success: true, audioDataUrl: reader.result }); };
+                  reader.readAsDataURL(blob);
+                })
+                .catch(err => { if (cb) cb({ success: false, fallback: true, error: err.message }); });
             } else if (msg.type === 'SUBMIT_SUGGESTION') {
-              console.log('[GMT Demo] Suggestion recorded:', msg.payload);
+              console.log('[Telmy Demo] Suggestion recorded:', msg.payload);
+              if (cb) cb({ success: true });
+            } else {
               if (cb) cb({ success: true });
             }
           },
@@ -404,6 +443,11 @@
       };
     }
   </script>
+  <script src="../extension/mock/dictionary-data.js"></script>
+  <script src="../extension/content/scanner.js"></script>
+  <script src="../extension/content/highlighter.js"></script>
+  <script src="../extension/content/voice-manager.js"></script>
+  <script src="../extension/content/panel.js"></script>
   <script src="../extension/content/content-main.js"></script>
 </body>
 </html>
