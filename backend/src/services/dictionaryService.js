@@ -26,25 +26,20 @@ export async function explainField({ metadata, language = 'id', pageContext = ''
   const cacheKey = `${fieldKey}:${language}`;
   const strategy = (process.env.EXPLAIN_STRATEGY || 'AI_FIRST').toUpperCase();
 
-  // 1. Check in-memory cache
-  if (memoryCache.has(cacheKey)) {
-    return memoryCache.get(cacheKey);
-  }
-
-  // 2. AI_FIRST Strategy: Always call AI model first, then cache to DB
+  // 1. AI_FIRST Strategy: 100% Pure AI from GLM / OpenAI-compatible, bypass Firestore
   if (strategy === 'AI_FIRST') {
     try {
-      console.log(`[Strategy: AI_FIRST] Generating explanation for "${metadata.label || metadata.name}" (${language}) via AI...`);
+      console.log(`[Strategy: AI_FIRST] Requesting 100% fresh AI explanation for "${metadata.label || metadata.name}" (${language})...`);
       const aiExplanation = await generateFieldExplanation(metadata, language, pageContext);
       if (aiExplanation && (aiExplanation.meaning || aiExplanation.howToFill)) {
         const result = {
           ...aiExplanation,
           fieldKey,
           verified: false,
-          source: aiExplanation.source || 'ai_draft'
+          source: 'ai_draft'
         };
 
-        // Cache in Firestore
+        // Optionally record into Firestore in background without blocking
         if (isFirebaseConnected && db) {
           db.collection('entries').doc(fieldKey).set({
             fieldKey,
@@ -61,12 +56,16 @@ export async function explainField({ metadata, language = 'id', pageContext = ''
           }, { merge: true }).catch(() => {});
         }
 
-        memoryCache.set(cacheKey, result);
         return result;
       }
     } catch (aiErr) {
-      console.warn(`[AI_FIRST] AI call failed, falling back to database check:`, aiErr.message);
+      console.warn(`[AI_FIRST] AI call error:`, aiErr.message);
     }
+  }
+
+  // 2. Check in-memory cache for DB_FIRST
+  if (memoryCache.has(cacheKey)) {
+    return memoryCache.get(cacheKey);
   }
 
   // 3. DB_FIRST Strategy: Check Firestore verified dictionary first

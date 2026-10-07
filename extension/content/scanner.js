@@ -10,48 +10,138 @@ window.GMTScanner = (function () {
       .trim();
   }
 
+  const NOISE_LABELS = [
+    'jawaban anda',
+    'your answer',
+    'pertanyaan ini wajib diisi',
+    'this is a required question',
+    'wajib',
+    'required',
+    'opsi',
+    'option',
+    'opsi 1',
+    'option 1',
+    'tambahkan file',
+    'add file',
+    'batal',
+    'cancel',
+    'kirim',
+    'submit',
+    'berikutnya',
+    'next',
+    'kembali',
+    'back',
+    'hapus pilihan',
+    'clear selection'
+  ];
+
+  function cleanLabelText(text) {
+    if (!text) return '';
+    return text
+      .replace(/[\n\r\t]+/g, ' ')
+      .replace(/\s*\*+\s*$/, '') // remove trailing asterisks
+      .replace(/^\s*\*+\s*/, '') // remove leading asterisks
+      .replace(/Pertanyaan ini wajib diisi/gi, '')
+      .replace(/This is a required question/gi, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function isNoiseLabel(text) {
+    if (!text) return true;
+    const clean = text.toLowerCase().trim();
+    if (clean.length < 2) return true;
+    if (NOISE_LABELS.includes(clean)) return true;
+    if (/^entry\.\d+$/i.test(clean)) return true; // Google Forms internal input names
+    return false;
+  }
+
   function findAssociatedLabel(element) {
-    // 1. Label with 'for' attribute matching element.id
-    if (element.id) {
-      const label = document.querySelector(`label[for="${CSS.escape(element.id)}"]`);
-      if (label && label.innerText.trim()) return label.innerText.trim();
+    // 1. Resolve aria-labelledby attribute (Primary for Google Forms & ARIA widgets)
+    const ariaLabelledBy = element.getAttribute('aria-labelledby');
+    if (ariaLabelledBy) {
+      const ids = ariaLabelledBy.trim().split(/\s+/);
+      for (const id of ids) {
+        const target = document.getElementById(id);
+        if (target) {
+          const clone = target.cloneNode(true);
+          clone.querySelectorAll('.v3duvd, input, select, textarea, button').forEach(e => e.remove());
+          const text = cleanLabelText(clone.innerText || clone.textContent);
+          if (text && !isNoiseLabel(text)) {
+            return text;
+          }
+        }
+      }
     }
 
-    // 2. Closest ancestor label
+    // 2. Google Forms & Modern Form Container Cards (Card Heading above input)
+    const card = element.closest('[role="listitem"], .Qr7Oae, .geS5n, .m7zDu, .o3Dpx, .freebirdFormviewerViewNumberedItemContainer, .form-group, .form-row, .form-item, fieldset, section');
+    if (card) {
+      const heading = card.querySelector('[role="heading"], .M7eMe, .c2nTpf, .HoFDJf, legend, label, .form-label, .control-label, h1, h2, h3, h4, h5, h6, [data-title], .field-label');
+      if (heading) {
+        const clone = heading.cloneNode(true);
+        // Remove asterisk spans, badge indicators, or nested inputs
+        clone.querySelectorAll('.v3duvd, .gmt-field-badge, input, select, textarea, button').forEach(e => e.remove());
+        const text = cleanLabelText(clone.innerText || clone.textContent);
+        if (text && !isNoiseLabel(text)) {
+          return text;
+        }
+      }
+    }
+
+    // 3. Standard HTML5 label with 'for' attribute matching element.id
+    if (element.id) {
+      const label = document.querySelector(`label[for="${CSS.escape(element.id)}"]`);
+      if (label) {
+        const text = cleanLabelText(label.innerText);
+        if (text && !isNoiseLabel(text)) return text;
+      }
+    }
+
+    // 4. Closest ancestor label
     const parentLabel = element.closest('label');
     if (parentLabel) {
       const clone = parentLabel.cloneNode(true);
-      // Remove input itself from cloned text
-      const inputs = clone.querySelectorAll('input, select, textarea');
-      inputs.forEach(i => i.remove());
-      const text = clone.innerText.trim();
-      if (text) return text;
+      clone.querySelectorAll('input, select, textarea, .gmt-field-badge').forEach(i => i.remove());
+      const text = cleanLabelText(clone.innerText);
+      if (text && !isNoiseLabel(text)) return text;
     }
 
-    // 3. Preceding sibling label or text element
-    let prev = element.previousElementSibling;
-    while (prev) {
-      if (['LABEL', 'P', 'SPAN', 'DIV', 'H5', 'H6'].includes(prev.tagName) && prev.innerText.trim()) {
-        const text = prev.innerText.trim();
-        if (text.length < 80) return text;
+    // 5. Walk up ancestor tree to find preceding sibling label/heading (Handles label placed above input)
+    let current = element;
+    let depth = 0;
+    while (current && current !== document.body && depth < 5) {
+      let prev = current.previousElementSibling;
+      while (prev) {
+        const headingInPrev = prev.matches('label, [role="heading"], h1, h2, h3, h4, h5, h6, legend')
+          ? prev
+          : prev.querySelector('label, [role="heading"], h1, h2, h3, h4, h5, h6, legend, .form-label');
+        if (headingInPrev) {
+          const text = cleanLabelText(headingInPrev.innerText);
+          if (text && !isNoiseLabel(text)) return text;
+        } else if (['LABEL', 'P', 'SPAN', 'DIV'].includes(prev.tagName)) {
+          const text = cleanLabelText(prev.innerText);
+          if (text && text.length >= 2 && text.length < 100 && !isNoiseLabel(text)) {
+            return text;
+          }
+        }
+        prev = prev.previousElementSibling;
       }
-      prev = prev.previousElementSibling;
+      current = current.parentElement;
+      depth++;
     }
 
-    // 4. Parent container title / label
-    const formGroup = element.closest('.form-group, .form-row, .form-field, .col, .f, div');
-    if (formGroup) {
-      const groupLabel = formGroup.querySelector('label, .control-label, .form-label');
-      if (groupLabel && groupLabel.innerText.trim()) {
-        return groupLabel.innerText.trim();
-      }
-    }
+    // 6. Attributes fallback (Strictly excluding noise placeholders like 'Jawaban Anda')
+    const ariaLabel = cleanLabelText(element.getAttribute('aria-label'));
+    if (ariaLabel && !isNoiseLabel(ariaLabel)) return ariaLabel;
 
-    // 5. Attributes fallback
-    if (element.getAttribute('aria-label')) return element.getAttribute('aria-label').trim();
-    if (element.getAttribute('placeholder')) return element.getAttribute('placeholder').trim();
-    if (element.getAttribute('title')) return element.getAttribute('title').trim();
-    if (element.name) return element.name;
+    const placeholder = cleanLabelText(element.getAttribute('placeholder'));
+    if (placeholder && !isNoiseLabel(placeholder)) return placeholder;
+
+    const title = cleanLabelText(element.getAttribute('title'));
+    if (title && !isNoiseLabel(title)) return title;
+
+    if (element.name && !isNoiseLabel(element.name)) return element.name;
 
     return '';
   }
@@ -190,15 +280,37 @@ window.GMTScanner = (function () {
   }
 
   function scanForms(dictionaryFields) {
-    const candidates = document.querySelectorAll('input, select, textarea');
+    const rawCandidates = document.querySelectorAll(`
+      input:not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"]),
+      select,
+      textarea,
+      div[role="radiogroup"],
+      div[role="group"],
+      div[role="listbox"]
+    `);
+
     const matchedList = [];
+    const seenRadioGroups = new Set();
     let counter = 0;
 
-    candidates.forEach((el) => {
-      // Ignore hidden or non-fillable elements
-      if (el.type === 'hidden' || el.type === 'submit' || el.type === 'button' || el.type === 'reset') return;
+    rawCandidates.forEach((el) => {
+      // Ignore if element is inside GMT's UI
+      if (el.closest('.gmt-ui-container')) return;
+
+      // Filter div[role="group"]: only keep if it contains checkboxes (e.g. Google Forms checkbox groups)
+      if (el.tagName === 'DIV' && el.getAttribute('role') === 'group') {
+        const hasCheckboxes = el.querySelector('[role="checkbox"], input[type="checkbox"]');
+        if (!hasCheckboxes) return;
+      }
+
+      // Check visibility
       if (el.offsetWidth === 0 && el.offsetHeight === 0 && !el.getClientRects().length) return;
-      if (el.closest('.gmt-ui-container')) return; // Ignore GMT's own elements
+
+      // Group native radio buttons by name so a question with multiple radios doesn't appear multiple times
+      if (el.tagName === 'INPUT' && el.type === 'radio' && el.name) {
+        if (seenRadioGroups.has(el.name)) return;
+        seenRadioGroups.add(el.name);
+      }
 
       const label = findAssociatedLabel(el);
 
@@ -207,8 +319,33 @@ window.GMTScanner = (function () {
         return;
       }
 
-      const rawType = el.tagName.toLowerCase() === 'select' ? 'select' : (el.type || 'text').toLowerCase();
-      const placeholder = el.getAttribute('placeholder') || '';
+      let rawType = 'text';
+      if (el.tagName === 'SELECT') {
+        rawType = 'select';
+      } else if (el.tagName === 'TEXTAREA') {
+        rawType = 'textarea';
+      } else if (el.getAttribute('role') === 'radiogroup' || (el.tagName === 'INPUT' && el.type === 'radio')) {
+        rawType = 'radio';
+      } else if ((el.getAttribute('role') === 'group') || (el.tagName === 'INPUT' && el.type === 'checkbox')) {
+        rawType = 'checkbox';
+      } else if (el.getAttribute('role') === 'listbox') {
+        rawType = 'select';
+      } else if (el.type) {
+        rawType = el.type.toLowerCase();
+      }
+
+      // Extract options if it's a choice field
+      let options = [];
+      if (rawType === 'radio' || rawType === 'checkbox' || rawType === 'select') {
+        if (el.tagName === 'SELECT') {
+          options = Array.from(el.querySelectorAll('option')).map(o => o.text.trim()).filter(Boolean);
+        } else {
+          const optionEls = el.querySelectorAll('[role="radio"], [role="checkbox"], .docssharedWizToggleLabeledLabelText, label');
+          options = Array.from(optionEls).map(o => o.innerText.trim()).filter(Boolean);
+        }
+      }
+
+      const placeholder = el.getAttribute ? (el.getAttribute('placeholder') || '') : '';
       const mask = detectInputMask(el);
       const isNumeric = detectNumericNature(el, mask);
 
@@ -218,11 +355,12 @@ window.GMTScanner = (function () {
         id: el.id || '',
         name: el.name || '',
         type: rawType,
+        options: options.length > 0 ? options : null,
         isNumeric: isNumeric,
         placeholder: placeholder,
         mask: mask,
         maxLength: el.maxLength > 0 ? el.maxLength : null,
-        pattern: el.getAttribute('pattern') || null,
+        pattern: el.getAttribute ? (el.getAttribute('pattern') || null) : null,
         label: label
       };
 

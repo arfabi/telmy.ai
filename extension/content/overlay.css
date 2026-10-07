@@ -12,6 +12,14 @@
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
+@keyframes gmt-spin-anim {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.gmt-spin {
+  animation: gmt-spin-anim 1s linear infinite !important;
+}
+
 /* Subtle numbered/question badge next to inputs/labels */
 .gmt-field-badge {
   display: inline-flex !important;

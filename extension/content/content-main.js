@@ -17,19 +17,24 @@
         return;
       }
 
-      // 2. Load mock dictionary
+      // 2. Load mock dictionary (scoped to matching domain or localhost mock)
       chrome.runtime.sendMessage({ type: 'LOAD_MOCK_DICTIONARY' }, (res) => {
         let pageSummary = null;
+        const currentHost = (window.location.hostname || '').toLowerCase();
+
         if (res && res.success && res.data) {
-          dictionaryData = res.data.fields || [];
-          pageSummary = res.data.page_summary || null;
-          runScanAndHighlight(pageSummary);
-        } else if (window.GMT_MOCK_DICTIONARY && window.GMT_MOCK_DICTIONARY.fields) {
-          dictionaryData = window.GMT_MOCK_DICTIONARY.fields;
-          pageSummary = window.GMT_MOCK_DICTIONARY.page_summary || null;
+          const pattern = (res.data.domain_pattern || '').toLowerCase();
+          const isDomainMatch = pattern && (currentHost.includes(pattern) || currentHost.includes('localhost') || currentHost.includes('127.0.0.1') || currentHost === '');
+          if (isDomainMatch) {
+            dictionaryData = res.data.fields || [];
+            pageSummary = res.data.page_summary || null;
+          } else {
+            // Non-Apostille site (e.g. Google Forms): start fresh so AI generates contextual guidance
+            dictionaryData = [];
+            pageSummary = null;
+          }
           runScanAndHighlight(pageSummary);
         } else {
-          console.warn('[GMT] Unable to load dictionary, scanning with generic fallback.');
           dictionaryData = [];
           runScanAndHighlight(null);
         }

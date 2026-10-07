@@ -316,6 +316,41 @@ window.GMTPanel = (function () {
     const metadata = item.metadata;
     const dict = item.dictEntry;
 
+    // In AI_FIRST mode or if not fetched from backend yet, trigger fetch and show AI loading state
+    const hasCachedRealAi = dict && dict.translations && dict.translations[currentLanguage] && dict.translations[currentLanguage]._isRealAi;
+    if (!item._backendFetched && !hasCachedRealAi) {
+      fetchBackendAiExplanation(item, metadata);
+
+      const fieldTitle = metadata.label || metadata.name || t('default_field_title');
+      slot.innerHTML = `
+        <div class="gmt-field-card">
+          <div class="gmt-field-topbar">
+            <div class="gmt-field-title-area">
+              <h3 class="gmt-field-title">${escapeHTML(fieldTitle)}</h3>
+              ${metadata.label && metadata.label !== fieldTitle ? `<div class="gmt-field-orig-label">${escapeHTML(metadata.label)}</div>` : ''}
+            </div>
+            <span class="gmt-source-tag gmt-source-ai" style="background: #ede9fe; color: #6d28d9; border: 1px solid #ddd6fe;">🤖 AI Generating...</span>
+          </div>
+
+          <div style="padding: 24px 8px; text-align: center;">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; color: #4338ca; font-size: 13.5px;">
+              <svg class="gmt-spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+              <span>${currentLanguage === 'zh' ? 'GLM-5.3-Flash 正在深入分析...' : currentLanguage === 'en' ? 'GLM-5.3-Flash is analyzing this field...' : 'GLM-5.3-Flash sedang menganalisis kolom ini...'}</span>
+            </div>
+            <div style="font-size: 12px; color: #64748b; margin-top: 6px;">
+              ${currentLanguage === 'zh' ? '正在提取官方填写规范、示例与涉外注意事项...' : currentLanguage === 'en' ? 'Formulating official instructions, examples & notes for foreigners...' : 'Sedang menyusun arti kolom, panduan, dan contoh isian...'}
+            </div>
+            <div style="margin-top: 18px;">
+              <div class="gmt-skeleton-line" style="width: 100%;"></div>
+              <div class="gmt-skeleton-line" style="width: 85%;"></div>
+              <div class="gmt-skeleton-line" style="width: 70%;"></div>
+            </div>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
     // Determine explanation content
     let fieldData = null;
     let isAi = !dict || dict.source === 'ai';
@@ -323,7 +358,6 @@ window.GMTPanel = (function () {
     if (dict && dict.translations && dict.translations[currentLanguage]) {
       fieldData = dict.translations[currentLanguage];
     } else if (dict && dict.translations && dict.translations['id']) {
-      // If requested language translation isn't stored locally, request AI translation or localized fallback
       fieldData = generateDynamicFallback(metadata, currentLanguage, dict.translations['id']);
     } else {
       fieldData = generateDynamicFallback(metadata, currentLanguage);
@@ -512,7 +546,8 @@ window.GMTPanel = (function () {
           how_to_fill: res.data.howToFill || res.data.how_to_fill,
           example: res.data.example,
           common_mistakes: res.data.commonMistakes || res.data.common_mistakes,
-          foreign_note: res.data.tipsForForeigners || res.data.foreign_note
+          foreign_note: res.data.tipsForForeigners || res.data.foreign_note,
+          _isRealAi: true
         };
         // Re-render if this field is still active
         if (currentFieldItem === item) {

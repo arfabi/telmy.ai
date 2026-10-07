@@ -241,17 +241,21 @@ export async function generateFieldExplanation(fieldMetadata, targetLanguage = '
   const rawLabel = (fieldMetadata.label || fieldMetadata.name || '').toLowerCase().trim();
   const normalizedKey = rawLabel.replace(/[^a-z0-9_]/g, '_').replace(/_+/g, '_');
 
-  // 1. Instant semantic match for standard Indonesian civil fields
-  for (const [key, translations] of Object.entries(KNOWN_SEMANTIC_FIELDS)) {
-    if (normalizedKey.includes(key) || key.includes(normalizedKey)) {
-      if (translations[targetLanguage]) {
-        console.log(`[AI Service] Matched known semantic field: ${key} (${targetLanguage})`);
-        return {
-          ...translations[targetLanguage],
-          confidence: 0.98,
-          source: 'verified',
-          generatedAt: new Date().toISOString()
-        };
+  const strategy = (process.env.EXPLAIN_STRATEGY || 'AI_FIRST').toUpperCase();
+
+  // 1. Instant semantic match for standard Indonesian civil fields (Only for DB_FIRST or fast mode, NEVER with empty string)
+  if (strategy !== 'AI_FIRST' && normalizedKey && normalizedKey.length >= 3) {
+    for (const [key, translations] of Object.entries(KNOWN_SEMANTIC_FIELDS)) {
+      if (normalizedKey === key || normalizedKey.includes(key) || (normalizedKey.length >= 5 && key.includes(normalizedKey))) {
+        if (translations[targetLanguage]) {
+          console.log(`[AI Service] Matched known semantic field: ${key} (${targetLanguage})`);
+          return {
+            ...translations[targetLanguage],
+            confidence: 0.98,
+            source: 'verified',
+            generatedAt: new Date().toISOString()
+          };
+        }
       }
     }
   }
