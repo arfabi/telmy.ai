@@ -11,10 +11,9 @@
     <!-- Brand Header -->
     <header class="sp-header">
       <div class="sp-brand">
-        <img src="../assets/logo.png" alt="Telmy.ai" class="sp-logo">
+        <div id="sp-avatar-slot" class="sp-avatar-slot" title="Telmy AI Companion (Click to interact)"></div>
         <div class="sp-brand-text">
-          <span class="sp-brand-title">Telmy.ai</span>
-          <span class="sp-brand-tag" id="lbl-brand-tag">AI Form Assistant</span>
+          <img src="../assets/telmy_text.png" alt="Telmy.ai" class="sp-brand-logo-img">
         </div>
       </div>
       <div class="sp-controls">
@@ -234,9 +233,11 @@
     <div id="sp-onboarding-modal" class="sp-onboarding-overlay" style="display: none;">
       <div class="onboarding-card">
         <div class="onboarding-header">
-          <img src="../assets/logo.png" alt="Telmy.ai" class="onboarding-logo">
-          <h2>Welcome to Telmy.ai</h2>
-          <p class="onboarding-subtitle">Your AI Form Filling Assistant</p>
+          <div class="onboarding-mascot-wrap">
+            <img src="../assets/telmy_icon.png" alt="Telmy Maskot" class="onboarding-mascot-img">
+          </div>
+          <img src="../assets/telmy_text.png" alt="Telmy.ai" class="onboarding-brand-img">
+          <p class="onboarding-subtitle">Your Friendly AI Form Filling Assistant</p>
         </div>
 
         <div class="onboarding-features-list">
@@ -314,6 +315,7 @@
     </div>
   </div>
 
+  <script src="avatar-controller.js"></script>
   <script src="sidepanel.js"></script>
 </body>
 </html>

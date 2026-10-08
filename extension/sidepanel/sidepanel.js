@@ -98,6 +98,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   let isPageTranslated = false;
   let isTranslating = false;
   let translatedElementCount = 0;
+  let telmyAvatar = null;
 
   // Complete JAPAC Multi-Language Matrix (English default)
   const I18N = {
@@ -330,6 +331,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         activateScannerOnTab(tab.id);
       }
       checkPageTranslationStatus(tab.id);
+    }
+
+    // Initialize Interactive Talking Avatar Companion (Priority 2)
+    if (window.TelmyAvatar) {
+      telmyAvatar = new TelmyAvatar('#sp-avatar-slot', {
+        size: 36,
+        interactive: true,
+        onClick: handleAvatarTap
+      });
     }
 
     setupSpeechRecognition();
@@ -725,6 +735,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
+    if (telmyAvatar) telmyAvatar.setState('THINKING');
+
     // Call Backend Gateway / Chat API
     try {
       const response = await new Promise((resolve) => {
@@ -766,9 +778,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       // Speak response using Gemini TTS
       if (!isMuted) {
         speakResponse(reply);
+      } else {
+        if (telmyAvatar) telmyAvatar.setState('IDLE');
       }
     } catch (e) {
       console.warn('[Telmy Chat Error]', e);
+      if (telmyAvatar) telmyAvatar.setState('IDLE');
     }
   }
 
@@ -790,7 +805,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const avatar = document.createElement('div');
     avatar.className = 'msg-avatar';
     if (msg.role === 'assistant') {
-      avatar.innerHTML = `<img src="../assets/logo.png" style="width: 18px; height: 18px; object-fit: contain;">`;
+      avatar.innerHTML = `<img src="../assets/telmy_icon.png" style="width: 20px; height: 20px; border-radius: 6px; object-fit: contain;">`;
     } else {
       avatar.textContent = 'U';
     }
@@ -1030,6 +1045,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
+  function handleAvatarTap() {
+    const greeting = currentLanguage === 'en'
+      ? "Hi there! 👋 I'm Telmy, your form assistant. You can ask me any question or press the microphone button below to speak with me!"
+      : "Halo! 👋 Saya Telmy, asisten formulir kamu. Kamu bisa tanyakan apa saja atau tekan tombol mikrofon di bawah untuk bicara langsung!";
+
+    appendChatMessage({
+      role: 'assistant',
+      text: greeting,
+      actions: [
+        { type: 'TAB_FIELDS', label: '📋 ' + t('tab_fields') },
+        { type: 'TRANSLATE_PAGE', label: '🌐 ' + t('btn_translate_page') }
+      ],
+      time: formatTime(new Date())
+    });
+
+    if (!isMuted) {
+      speakResponse(greeting);
+    }
+  }
+
   // 6. Push-to-Talk Voice Engine
   function setupSpeechRecognition() {
     const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -1128,6 +1163,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }, (res) => {
       if (!chrome.runtime.lastError && res && res.success && res.audioDataUrl) {
         currentAudio = new Audio(res.audioDataUrl);
+        if (telmyAvatar) {
+          telmyAvatar.attachAudioElement(currentAudio);
+        }
         currentAudio.onended = stopSpeaking;
         currentAudio.onerror = () => speakBrowserFallback(text);
         currentAudio.play().catch(() => speakBrowserFallback(text));
@@ -1146,6 +1184,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const clean = text.replace(/[*_#`~]/g, '').trim();
     const utterance = new SpeechSynthesisUtterance(clean);
     utterance.lang = LOCALE_MAP[currentLanguage] || 'en-US';
+    if (telmyAvatar) {
+      telmyAvatar.startSpeechCadence();
+    }
     utterance.onend = stopSpeaking;
     utterance.onerror = stopSpeaking;
     window.speechSynthesis.speak(utterance);
@@ -1154,6 +1195,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   function stopSpeaking() {
     isSpeaking = false;
     audioBar.style.display = 'none';
+    if (telmyAvatar) {
+      telmyAvatar.setState('IDLE');
+    }
     if (currentAudio) {
       try { currentAudio.pause(); } catch (e) {}
       currentAudio = null;
