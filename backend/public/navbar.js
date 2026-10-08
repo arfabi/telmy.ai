@@ -53,26 +53,33 @@
     if (savedUser) {
       try {
         const user = JSON.parse(savedUser);
-        const displayName = user.displayName || user.name || 'Member';
+        if (user && (user.uid || user.email)) {
+          // Hide redundant sign-in / name text to keep navbar clean & elegant
+          if (navSignin) {
+            navSignin.style.display = 'none';
+          }
 
-        if (navSignin) {
-          navSignin.href = '/dashboard';
-          navSignin.innerHTML = `👤 ${displayName}`;
-          navSignin.title = `Logged in as ${displayName} — Open Member Area`;
-        }
-
-        if (navCta) {
-          navCta.href = '/dashboard';
-          navCta.innerHTML = `Dashboard →`;
-          navCta.title = `Open Dashboard`;
+          // Single, prominent Dashboard action button
+          if (navCta) {
+            navCta.href = '/dashboard';
+            navCta.innerHTML = `👤 Dashboard`;
+            navCta.title = `Open Member Dashboard`;
+            navCta.classList.add('btn-nav-dashboard');
+          }
         }
       } catch (e) {
-        // Fallback to standard guest CTA
+        // Fallback to guest
       }
     } else {
       if (navSignin) {
+        navSignin.style.display = '';
         navSignin.href = '/connect';
         navSignin.textContent = 'Sign In';
+      }
+      if (navCta) {
+        navCta.href = '/download';
+        navCta.textContent = 'Add to Chrome (Free)';
+        navCta.classList.remove('btn-nav-dashboard');
       }
     }
   }

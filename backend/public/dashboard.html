@@ -90,11 +90,11 @@
     }
 
     .sidebar-logo {
-      width: 36px;
-      height: 36px;
-      border-radius: 9px;
+      width: 42px;
+      height: 42px;
+      border-radius: 11px;
       object-fit: contain;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 4px 12px rgba(0, 113, 227, 0.2);
     }
 
     .sidebar-brand-text {
@@ -103,9 +103,9 @@
     }
 
     .brand-title {
-      font-size: 17px;
+      font-size: 19px;
       font-weight: 800;
-      letter-spacing: -0.3px;
+      letter-spacing: -0.4px;
       color: var(--text-main);
     }
 
@@ -843,6 +843,9 @@
             <option value="fil">🇵🇭 Filipino</option>
             <option value="ms">🇲🇾 Melayu</option>
           </select>
+          <button type="button" onclick="openExtensionModal()" class="btn-topbar-action" style="cursor: pointer; background: var(--accent-light); color: var(--accent); border-color: rgba(0, 113, 227, 0.25); font-weight: 600;">
+            Connect Extension ⚡
+          </button>
           <a href="/demo" class="btn-topbar-action">Practice Demo ↗</a>
         </div>
       </header>
@@ -864,10 +867,10 @@
                   Your AI Form-Filling Companion is ready. Open any official government, visa, or scholarship form in Chrome, and Telmy will guide you step-by-step.
                 </p>
               </div>
-              <a href="/download" class="btn-apple-primary" style="white-space: nowrap;">
-                <span>Add to Chrome</span>
+              <button type="button" class="btn-apple-primary" id="btn-dash-connect-ext" onclick="openExtensionModal()" style="white-space: nowrap; cursor: pointer;">
+                <span>Connect Extension</span>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
-              </a>
+              </button>
             </div>
           </div>
 
@@ -1288,6 +1291,71 @@
       <div style="display: flex; gap: 12px;">
         <button onclick="window.print()" class="btn-apple-secondary" style="flex: 1;">🖨️ Print / Save PDF</button>
         <button id="btn-modal-close-action" class="btn-apple-primary" style="flex: 1;">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXTENSION CONNECT & DOWNLOAD MODAL -->
+  <div id="extension-modal" class="invoice-modal">
+    <div class="invoice-modal-card" style="max-width: 520px;">
+      <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <img src="telmy_icon.png" alt="Telmy Robot" style="width: 44px; height: 44px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 113, 227, 0.2);">
+          <div>
+            <h3 style="font-size: 18px; font-weight: 800; color: #0f172a;">Connect Chrome Extension</h3>
+            <span style="font-size: 12px; color: var(--text-secondary);">Link your verified account with Telmy Side Panel</span>
+          </div>
+        </div>
+        <button id="btn-close-extension-modal" onclick="closeExtensionModal()" style="border: none; background: #f1f5f9; width: 30px; height: 30px; border-radius: 50%; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center;">✕</button>
+      </div>
+
+      <!-- User Sync Status Banner -->
+      <div style="background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%); border: 1px solid #bfdbfe; border-radius: var(--radius-md); padding: 16px; margin-bottom: 18px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <span style="font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase;">Current Web Session</span>
+          <span style="background: #ecfdf5; color: #059669; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 9999px;">✓ Authenticated</span>
+        </div>
+        <div style="font-size: 14px; font-weight: 700; color: var(--text-main);" id="ext-modal-user">Telmy Member</div>
+        <div style="font-size: 12px; color: var(--text-secondary);" id="ext-modal-email">user@gmail.com</div>
+        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(0, 113, 227, 0.12); display: flex; justify-content: space-between; font-size: 12.5px;">
+          <span style="color: var(--text-secondary);">Available Form Balance:</span>
+          <strong id="ext-modal-credits" style="color: var(--accent);">5 Forms Remaining</strong>
+        </div>
+      </div>
+
+      <!-- Action Paths -->
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px;">
+        <!-- Path 1: 1-Click Sync -->
+        <div style="background: #ffffff; border: 1px solid var(--card-border); border-radius: var(--radius-md); padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+          <div>
+            <div style="font-size: 13.5px; font-weight: 700; color: var(--text-main);">🔄 Sync Account to Extension</div>
+            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">Already have Telmy installed? Push session & credits to your Side Panel.</div>
+          </div>
+          <button type="button" class="btn-apple-primary" id="btn-modal-sync-ext" onclick="triggerManualExtensionSync()" style="white-space: nowrap; padding: 8px 14px; font-size: 12px; cursor: pointer;">
+            Sync Now
+          </button>
+        </div>
+
+        <!-- Path 2: Download Extension Page -->
+        <div style="background: #ffffff; border: 1px solid var(--card-border); border-radius: var(--radius-md); padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+          <div>
+            <div style="font-size: 13.5px; font-weight: 700; color: var(--text-main);">📥 Extension Download Center</div>
+            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">Install from Chrome Web Store or download package for Developer Mode.</div>
+          </div>
+          <a href="/download" class="btn-apple-secondary" style="white-space: nowrap; padding: 8px 14px; font-size: 12px; text-decoration: none;">
+            Download ↗
+          </a>
+        </div>
+      </div>
+
+      <!-- Quick Guidance -->
+      <div style="background: #f8fafc; border-radius: var(--radius-md); padding: 12px 16px; margin-bottom: 18px; font-size: 12px; color: var(--text-secondary); line-height: 1.5;">
+        <strong style="color: var(--text-main); display: block; margin-bottom: 3px;">💡 Quick Tip:</strong>
+        Press <strong>Alt + G</strong> in Google Chrome to instantly open the Telmy Side Panel on any website or form.
+      </div>
+
+      <div style="display: flex; gap: 12px;">
+        <button onclick="closeExtensionModal()" class="btn-apple-primary" style="flex: 1; cursor: pointer;">Done</button>
       </div>
     </div>
   </div>
@@ -1870,6 +1938,44 @@
       if (modal) {
         modal.addEventListener('click', (e) => {
           if (e.target === modal) modal.classList.remove('open');
+        });
+      }
+
+      // Extension Connect Modal Handlers
+      window.openExtensionModal = function () {
+        const extModal = document.getElementById('extension-modal');
+        if (extModal) {
+          const u = document.getElementById('ext-modal-user');
+          const em = document.getElementById('ext-modal-email');
+          const cr = document.getElementById('ext-modal-credits');
+          if (u) u.textContent = currentUser.displayName || currentUser.name || 'Telmy Member';
+          if (em) em.textContent = currentUser.email || 'Google User';
+          if (cr) cr.textContent = `${currentUser.credits !== undefined ? currentUser.credits : 5} Forms Remaining`;
+          extModal.classList.add('open');
+        }
+      };
+
+      window.closeExtensionModal = function () {
+        const extModal = document.getElementById('extension-modal');
+        if (extModal) extModal.classList.remove('open');
+      };
+
+      window.triggerManualExtensionSync = function () {
+        syncWithCloudAndExtension();
+        showToast('✅ Account & credits synced to Chrome Extension!');
+        const syncBtn = document.getElementById('btn-modal-sync-ext');
+        if (syncBtn) {
+          syncBtn.textContent = '✓ Synced!';
+          setTimeout(() => {
+            syncBtn.textContent = 'Sync Now';
+          }, 2000);
+        }
+      };
+
+      const extModal = document.getElementById('extension-modal');
+      if (extModal) {
+        extModal.addEventListener('click', (e) => {
+          if (e.target === extModal) closeExtensionModal();
         });
       }
 

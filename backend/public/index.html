@@ -72,8 +72,8 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 64px;
-      max-width: 1160px;
+      height: 76px;
+      max-width: 1200px;
       margin: 0 auto;
       padding: 0 24px;
     }
@@ -81,33 +81,29 @@
     .brand {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       text-decoration: none;
       color: #1d1d1f;
     }
 
     .brand-logo {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
       object-fit: contain;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 12px rgba(0, 113, 227, 0.2);
+      transition: transform 0.2s ease;
+    }
+
+    .brand:hover .brand-logo {
+      transform: scale(1.05);
     }
 
     .brand-name {
-      font-size: 18px;
-      font-weight: 700;
+      font-size: 21px;
+      font-weight: 800;
       letter-spacing: -0.5px;
-      color: #1d1d1f;
-    }
-
-    .brand-badge {
-      background: var(--accent-soft);
-      color: var(--accent);
-      font-size: 11px;
-      font-weight: 700;
-      padding: 2px 8px;
-      border-radius: var(--radius-full);
+      color: #0f172a;
     }
 
     .nav-links {
@@ -818,7 +814,6 @@
       <a href="/" class="brand">
         <img src="telmy_icon.png" alt="Telmy logo" class="brand-logo">
         <span class="brand-name">Telmy.ai</span>
-        <span class="brand-badge">Co-Pilot</span>
       </a>
 
       <!-- Mobile Hamburger Button -->
