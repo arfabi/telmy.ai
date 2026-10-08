@@ -36,3 +36,4 @@ $RECYCLE.BIN/
 .cache/
 .temp/
 tmp/
+.firebase/

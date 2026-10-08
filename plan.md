@@ -381,8 +381,8 @@
 | **Hari 6** | Universal PDF Guidance & Interactive Writer (`pdf-lib`) | Upload PDF kedutaan/visa, isi kolom interaktif & ekspor PDF |
 | **Hari 7** | Hybrid Knowledge Base & Firestore Vector Search Engine | Semantic caching field form, RAG kamus istilah, & zero-token PDF |
 | **Hari 8** | Scholarship Suite (Smart Fill, Auditor & Privacy Shield) | 1-Click profil fill, sanity error checker, & PII masking |
-| **Hari 9** | **DEPLOY FIREBASE & END-TO-END ONLINE TESTING** | Deploy `telmy.web.app` & pengujian live ekstensi di internet |
-| **Hari 10** | **SUBMIT CHROME WEB STORE & FINAL HACKATHON SUBMISSION** | Submit ZIP bersih ke Google Developer Console & submit juri |
+| **Hari 9** | **DEPLOY FIREBASE & END-TO-END ONLINE TESTING** | ✅ **SELESAI (LIVE):** Terbit di `https://telmy.web.app` (Landing, Dashboard, Demo, Privacy) |
+| **Hari 10** | **SUBMIT CHROME WEB STORE & FINAL HACKATHON SUBMISSION** | Submit ZIP bersih (`telmy-cws-clean.zip`) ke Google Developer Console & submit juri |
 
 ---
 

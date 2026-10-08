@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "guidemeto-bdf36"
+  },
+  "targets": {
+    "guidemeto-bdf36": {
+      "hosting": {
+        "telmy": [
+          "telmy"
+        ]
+      }
+    }
+  }
+}
