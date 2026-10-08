@@ -1,6 +1,6 @@
-// Telmy — Main Content Script Orchestrator (Optimized for Chrome Native Side Panel)
+// Telmy — Main Content Script Orchestrator (Optimized for On-Demand Chrome Native Side Panel)
 (function () {
-  // Ensure lingering in-page floating panel DOM elements are cleaned up
+  // Ensure any in-page floating panel or launcher pill elements are purged
   function cleanupFloatingDOM() {
     const oldPanel = document.getElementById('gmt-side-panel-container');
     if (oldPanel) oldPanel.remove();
@@ -10,23 +10,14 @@
   cleanupFloatingDOM();
 
   if (window.__TELMY_INITIALIZED__) {
-    // Already loaded, just run a fresh scan
-    if (window.GMTScanner) {
-      const items = window.GMTScanner.scanForms(window.__TELMY_DICT__ || []);
-      if (items.length > 0 && window.GMTHighlighter) {
-        window.GMTHighlighter.attachBadges(items, (item, index) => {
-          chrome.runtime.sendMessage({
-            type: 'GMT_FIELD_FOCUSED',
-            index: index
-          }, () => { if (chrome.runtime.lastError) {} });
-        });
-      }
-    }
     return;
   }
   window.__TELMY_INITIALIZED__ = true;
 
-  let gmtSettings = { language: 'en', isActive: true };
+  // On initial page load, scanner is in passive STANDBY mode (isActive = false)
+  // Badges & DOM observer are only attached when user explicitly activates Telmy
+  let gmtSettings = { language: 'en', isActive: false };
+  let isScannerActivated = false;
   let dictionaryData = null;
   let scannedItems = [];
   let isScanning = false;
@@ -34,38 +25,63 @@
   let domObserver = null;
   let debounceTimer = null;
 
-  // 1. Listen for runtime messages immediately
+  // 1. Listen for runtime messages from Side Panel & Background
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    // A. Explicit Activation (User opened Side Panel / clicked icon)
+    if (message.type === 'ACTIVATE_SCANNER') {
+      isScannerActivated = true;
+      gmtSettings.isActive = true;
+      startScanWorkflow(() => {
+        sendResponse({ success: true, count: scannedItems.length, isActive: true });
+      });
+      return true; // async sendResponse
+    }
+
+    // B. Explicit Deactivation (User clicked Close / X / toggled off)
+    if (message.type === 'DEACTIVATE_SCANNER') {
+      isScannerActivated = false;
+      gmtSettings.isActive = false;
+      stopScanWorkflow();
+      sendResponse({ success: true, isActive: false });
+      return false;
+    }
+
+    // C. Settings changed
     if (message.type === 'SETTINGS_CHANGED') {
       const wasActive = gmtSettings.isActive;
       gmtSettings = message.settings || gmtSettings;
 
       if (gmtSettings.isActive === false) {
-        if (window.GMTHighlighter) window.GMTHighlighter.clearBadges();
-      } else if (!wasActive && gmtSettings.isActive) {
+        stopScanWorkflow();
+      } else if (!wasActive && gmtSettings.isActive && isScannerActivated) {
         runScanAndHighlight(cachedPageSummary);
       }
       sendResponse({ success: true });
       return false;
     }
 
+    // D. Query Status
     if (message.type === 'QUERY_PAGE_STATUS') {
-      if (scannedItems.length === 0 && window.GMTScanner && gmtSettings.isActive !== false) {
-        runScanAndHighlight(cachedPageSummary);
-      }
       sendResponse({
         detectedFieldsCount: scannedItems.length,
-        isActive: gmtSettings.isActive
+        isActive: isScannerActivated && gmtSettings.isActive !== false
       });
       return false;
     }
 
+    // E. Trigger Rescan
     if (message.type === 'TRIGGER_RESCAN') {
-      runScanAndHighlight(cachedPageSummary);
-      sendResponse({ count: scannedItems.length });
-      return false;
+      if (!isScannerActivated) {
+        isScannerActivated = true;
+        gmtSettings.isActive = true;
+      }
+      startScanWorkflow(() => {
+        sendResponse({ count: scannedItems.length, success: true });
+      });
+      return true;
     }
 
+    // F. Highlight Field by Index
     if (message.type === 'GMT_ACTIVATE_FIELD_BY_INDEX') {
       if (window.GMTHighlighter && scannedItems[message.index]) {
         window.GMTHighlighter.setActiveField(message.index, scannedItems);
@@ -75,11 +91,63 @@
     }
   });
 
-  // 2. Setup MutationObserver for dynamic SPAs, React, Vue, Google Forms
+  // 2. Stop Scan Workflow (Clean cleanup on close/off)
+  function stopScanWorkflow() {
+    if (domObserver) {
+      domObserver.disconnect();
+      domObserver = null;
+    }
+    if (window.GMTHighlighter) {
+      window.GMTHighlighter.clearBadges();
+    }
+    cleanupFloatingDOM();
+    scannedItems = [];
+    isScanning = false;
+  }
+
+  // 3. Start Scan Workflow (On-Demand Activation)
+  function startScanWorkflow(onComplete) {
+    cleanupFloatingDOM();
+
+    chrome.runtime.sendMessage({ type: 'GET_SETTINGS' }, (settings) => {
+      if (!chrome.runtime.lastError && settings) {
+        gmtSettings = { ...gmtSettings, ...settings, isActive: true };
+      }
+
+      chrome.runtime.sendMessage({ type: 'LOAD_MOCK_DICTIONARY' }, (res) => {
+        let pageSummary = null;
+        const currentHost = (window.location.hostname || '').toLowerCase();
+
+        if (res && res.success && res.data) {
+          const pattern = (res.data.domain_pattern || '').toLowerCase();
+          const isDomainMatch = pattern && (currentHost.includes(pattern) || currentHost.includes('localhost') || currentHost.includes('127.0.0.1') || currentHost === '');
+          if (isDomainMatch) {
+            dictionaryData = res.data.fields || [];
+            pageSummary = res.data.page_summary || null;
+          } else {
+            dictionaryData = [];
+            pageSummary = null;
+          }
+        } else {
+          dictionaryData = [];
+        }
+
+        window.__TELMY_DICT__ = dictionaryData;
+        cachedPageSummary = pageSummary;
+        runScanAndHighlight(pageSummary);
+        setupMutationObserver();
+
+        if (onComplete) onComplete();
+      });
+    });
+  }
+
+  // 4. Setup MutationObserver for dynamic SPAs (Only runs when scanner active)
   function setupMutationObserver() {
-    if (domObserver || !window.MutationObserver) return;
+    if (domObserver || !window.MutationObserver || !isScannerActivated) return;
 
     domObserver = new MutationObserver((mutations) => {
+      if (!isScannerActivated || gmtSettings.isActive === false) return;
       let shouldRescan = false;
       for (const m of mutations) {
         if (m.target && m.target.closest && m.target.closest('.gmt-ui-container')) continue;
@@ -104,7 +172,7 @@
       if (shouldRescan) {
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(() => {
-          if (gmtSettings.isActive !== false) {
+          if (isScannerActivated && gmtSettings.isActive !== false) {
             runScanAndHighlight(cachedPageSummary, true);
           }
         }, 350);
@@ -117,70 +185,9 @@
     });
   }
 
-  // 3. Main Init Workflow
-  async function init() {
-    cleanupFloatingDOM();
-
-    // A. Fetch current settings from extension storage
-    chrome.runtime.sendMessage({ type: 'GET_SETTINGS' }, (settings) => {
-      if (chrome.runtime.lastError) {
-        gmtSettings = { language: 'en', isActive: true };
-      } else if (settings) {
-        gmtSettings = settings;
-      }
-
-      if (gmtSettings.isActive === false) return;
-
-      // B. Load dictionary data
-      chrome.runtime.sendMessage({ type: 'LOAD_MOCK_DICTIONARY' }, (res) => {
-        if (chrome.runtime.lastError) {
-          dictionaryData = [];
-          runScanAndHighlight(null);
-          return;
-        }
-
-        let pageSummary = null;
-        const currentHost = (window.location.hostname || '').toLowerCase();
-
-        if (res && res.success && res.data) {
-          const pattern = (res.data.domain_pattern || '').toLowerCase();
-          const isDomainMatch = pattern && (currentHost.includes(pattern) || currentHost.includes('localhost') || currentHost.includes('127.0.0.1') || currentHost === '');
-          if (isDomainMatch) {
-            dictionaryData = res.data.fields || [];
-            pageSummary = res.data.page_summary || null;
-          } else {
-            dictionaryData = [];
-            pageSummary = null;
-          }
-          window.__TELMY_DICT__ = dictionaryData;
-          cachedPageSummary = pageSummary;
-          runScanAndHighlight(pageSummary);
-        } else {
-          dictionaryData = [];
-          runScanAndHighlight(null);
-        }
-
-        // Setup observer after initial scan
-        setupMutationObserver();
-
-        // Secondary scans for slow-rendering SPAs
-        setTimeout(() => {
-          if (scannedItems.length === 0 && gmtSettings.isActive !== false) {
-            runScanAndHighlight(cachedPageSummary);
-          }
-        }, 700);
-
-        setTimeout(() => {
-          if (scannedItems.length === 0 && gmtSettings.isActive !== false) {
-            runScanAndHighlight(cachedPageSummary);
-          }
-        }, 1600);
-      });
-    });
-  }
-
+  // 5. Scan and Highlight
   function runScanAndHighlight(pageSummary = null, isIncremental = false) {
-    if (isScanning || gmtSettings.isActive === false) return;
+    if (isScanning || !isScannerActivated || gmtSettings.isActive === false) return;
     if (!window.GMTScanner) return;
     isScanning = true;
 
@@ -226,10 +233,6 @@
     }
   }
 
-  // Initial boot
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
+  // Initial standby boot (Purges any leftover floating UI, waits in passive standby)
+  cleanupFloatingDOM();
 })();

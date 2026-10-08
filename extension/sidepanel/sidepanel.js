@@ -38,6 +38,35 @@ document.addEventListener('DOMContentLoaded', async () => {
   const boxPrerequisites = document.getElementById('box-prerequisites');
   const summaryPrereqList = document.getElementById('summary-prereq-list');
 
+  // User Profile & Standby Elements
+  const btnUser = document.getElementById('sp-btn-user');
+  const btnClose = document.getElementById('sp-btn-close');
+  const btnResume = document.getElementById('sp-btn-resume');
+  const pausedBanner = document.getElementById('sp-paused-banner');
+  const profilePopover = document.getElementById('sp-profile-popover');
+  const userAvatarText = document.getElementById('sp-user-avatar-text');
+  const userAvatarImg = document.getElementById('sp-user-avatar-img');
+  const popoverAvatarText = document.getElementById('popover-avatar-text');
+  const popoverAvatarImg = document.getElementById('popover-avatar-img');
+  const popoverUserName = document.getElementById('popover-user-name');
+  const popoverUserEmail = document.getElementById('popover-user-email');
+  const popoverAuthBadge = document.getElementById('popover-auth-badge');
+  const btnPopoverAuth = document.getElementById('btn-popover-auth');
+  const btnPopoverSignout = document.getElementById('btn-popover-signout');
+
+  // Onboarding Elements
+  const onboardingModal = document.getElementById('sp-onboarding-modal');
+  const onboardingLangSelect = document.getElementById('onboarding-lang-select');
+  const btnOnboardingGoogle = document.getElementById('btn-onboarding-google');
+  const btnOnboardingGuest = document.getElementById('btn-onboarding-guest');
+  const btnOnboardingFinish = document.getElementById('btn-onboarding-finish');
+  const onboardingUnauthed = document.getElementById('onboarding-unauthed');
+  const onboardingAuthed = document.getElementById('onboarding-authed');
+  const onboardingUserName = document.getElementById('onboarding-user-name');
+  const onboardingUserEmail = document.getElementById('onboarding-user-email');
+  const onboardingUserAvatarText = document.getElementById('onboarding-user-avatar-text');
+  const onboardingUserAvatarImg = document.getElementById('onboarding-user-avatar-img');
+
   // State
   let currentLanguage = 'en';
   let isMuted = false;
@@ -50,6 +79,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   let activeFieldIndex = -1;
   let currentTabId = null;
   let cachedPageSummary = null;
+  let currentUser = null;
+  let isScannerRunning = true;
 
   // Complete JAPAC Multi-Language Matrix (English default)
   const I18N = {
@@ -211,10 +242,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     return entry[currentLanguage] || entry['en'] || entry['id'] || '';
   }
 
-  // 1. Initialize Active Tab & Settings
+  // 1. Initialize Active Tab, User & Onboarding
   async function init() {
-    // Load Settings
-    const stored = await chrome.storage.local.get(['settings']);
+    // Load Settings & User
+    const stored = await chrome.storage.local.get(['settings', 'hasCompletedOnboarding', 'user']);
     if (stored.settings) {
       currentLanguage = stored.settings.language || 'en';
       langSelect.value = currentLanguage;
@@ -222,35 +253,271 @@ document.addEventListener('DOMContentLoaded', async () => {
       langSelect.value = 'en';
     }
 
+    currentUser = stored.user || null;
+    renderUserUI();
     applyLanguageUI();
+
+    // Show Onboarding if first-time install
+    if (!stored.hasCompletedOnboarding) {
+      showOnboardingModal();
+    }
+
+    setupUserControlsAndOnboarding();
 
     // Determine current active tab
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (tab && tab.id) {
       currentTabId = tab.id;
       loadSessionChat(tab.url);
-      queryTabStatus(tab.id);
+      if (isScannerRunning) {
+        activateScannerOnTab(tab.id);
+      }
     }
 
     setupSpeechRecognition();
     renderWelcome();
+
+    // Clean up active tab badges when sidepanel is closed/unloaded
+    window.addEventListener('beforeunload', () => {
+      if (currentTabId) {
+        chrome.tabs.sendMessage(currentTabId, { type: 'DEACTIVATE_SCANNER' }, () => {});
+      }
+    });
+
+    // Handle tab switching in browser
+    if (chrome.tabs && chrome.tabs.onActivated) {
+      chrome.tabs.onActivated.addListener(async (activeInfo) => {
+        if (currentTabId && currentTabId !== activeInfo.tabId) {
+          chrome.tabs.sendMessage(currentTabId, { type: 'DEACTIVATE_SCANNER' }, () => {});
+        }
+        currentTabId = activeInfo.tabId;
+        const [newTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (newTab) {
+          loadSessionChat(newTab.url);
+        }
+        if (isScannerRunning) {
+          activateScannerOnTab(currentTabId);
+        }
+      });
+    }
   }
 
-  // 2. Query Active Tab Status
-  function queryTabStatus(tabId) {
-    if (!tabId) return;
-    chrome.tabs.sendMessage(tabId, { type: 'QUERY_PAGE_STATUS' }, (res) => {
-      if (chrome.runtime.lastError || !res) {
-        // Content script might not be injected, inject it on-demand
-        injectContentScript(tabId);
+  // 2. Render User Profile UI in Header & Popover
+  function renderUserUI() {
+    if (currentUser) {
+      const initial = (currentUser.displayName || currentUser.name || currentUser.email || 'U')[0].toUpperCase();
+      if (currentUser.photoURL) {
+        userAvatarImg.src = currentUser.photoURL;
+        userAvatarImg.style.display = 'block';
+        userAvatarText.style.display = 'none';
+
+        popoverAvatarImg.src = currentUser.photoURL;
+        popoverAvatarImg.style.display = 'block';
+        popoverAvatarText.style.display = 'none';
       } else {
-        triggerTabRescan(tabId);
+        userAvatarText.textContent = initial;
+        userAvatarText.style.display = 'block';
+        userAvatarImg.style.display = 'none';
+
+        popoverAvatarText.textContent = initial;
+        popoverAvatarText.style.display = 'block';
+        popoverAvatarImg.style.display = 'none';
+      }
+
+      popoverUserName.textContent = currentUser.displayName || currentUser.name || 'User';
+      popoverUserEmail.textContent = currentUser.email || 'Connected';
+      popoverAuthBadge.textContent = '✓ Firebase Connected';
+      popoverAuthBadge.className = 'badge-auth-status connected';
+
+      btnPopoverAuth.style.display = 'none';
+      btnPopoverSignout.style.display = 'block';
+
+      // Update onboarding preview if open
+      if (onboardingAuthed && onboardingUnauthed) {
+        onboardingUnauthed.style.display = 'none';
+        onboardingAuthed.style.display = 'flex';
+        onboardingUserName.textContent = currentUser.displayName || currentUser.name || 'User';
+        onboardingUserEmail.textContent = currentUser.email || '';
+        if (currentUser.photoURL) {
+          onboardingUserAvatarImg.src = currentUser.photoURL;
+          onboardingUserAvatarImg.style.display = 'block';
+          onboardingUserAvatarText.style.display = 'none';
+        } else {
+          onboardingUserAvatarText.textContent = initial;
+        }
+      }
+    } else {
+      userAvatarText.textContent = '👤';
+      userAvatarText.style.display = 'block';
+      userAvatarImg.style.display = 'none';
+
+      popoverAvatarText.textContent = '👤';
+      popoverAvatarText.style.display = 'block';
+      popoverAvatarImg.style.display = 'none';
+
+      popoverUserName.textContent = 'Guest User';
+      popoverUserEmail.textContent = 'Not signed in';
+      popoverAuthBadge.textContent = 'Guest Mode';
+      popoverAuthBadge.className = 'badge-auth-status';
+
+      btnPopoverAuth.style.display = 'block';
+      btnPopoverSignout.style.display = 'none';
+
+      if (onboardingAuthed && onboardingUnauthed) {
+        onboardingUnauthed.style.display = 'flex';
+        onboardingAuthed.style.display = 'none';
+      }
+    }
+  }
+
+  // 3. User Controls & Onboarding Events
+  function setupUserControlsAndOnboarding() {
+    // A. Profile Popover Toggle
+    btnUser.addEventListener('click', (e) => {
+      e.stopPropagation();
+      profilePopover.style.display = profilePopover.style.display === 'block' ? 'none' : 'block';
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!profilePopover.contains(e.target) && e.target !== btnUser) {
+        profilePopover.style.display = 'none';
+      }
+    });
+
+    btnPopoverAuth.addEventListener('click', () => {
+      profilePopover.style.display = 'none';
+      handleUserAuthConnect();
+    });
+
+    btnPopoverSignout.addEventListener('click', async () => {
+      await chrome.storage.local.remove(['user']);
+      currentUser = null;
+      renderUserUI();
+      profilePopover.style.display = 'none';
+    });
+
+    // B. Close / Pause Scanner Button (Explicit Turn-Off)
+    btnClose.addEventListener('click', () => {
+      if (isScannerRunning) {
+        isScannerRunning = false;
+        deactivateScannerOnTab(currentTabId);
+        pausedBanner.style.display = 'flex';
+      } else {
+        // Close sidepanel window if already paused
+        window.close();
+      }
+    });
+
+    // Resume Scanner Button
+    btnResume.addEventListener('click', () => {
+      isScannerRunning = true;
+      pausedBanner.style.display = 'none';
+      if (currentTabId) {
+        activateScannerOnTab(currentTabId);
+      }
+    });
+
+    // C. Onboarding Wizard Actions
+    onboardingLangSelect.value = currentLanguage;
+    onboardingLangSelect.addEventListener('change', () => {
+      currentLanguage = onboardingLangSelect.value;
+      langSelect.value = currentLanguage;
+      applyLanguageUI();
+    });
+
+    btnOnboardingGoogle.addEventListener('click', handleUserAuthConnect);
+
+    btnOnboardingGuest.addEventListener('click', async () => {
+      await chrome.storage.local.set({ hasCompletedOnboarding: true });
+      closeOnboardingModal();
+      if (currentTabId && isScannerRunning) {
+        activateScannerOnTab(currentTabId);
+      }
+    });
+
+    btnOnboardingFinish.addEventListener('click', async () => {
+      await chrome.storage.local.set({
+        hasCompletedOnboarding: true,
+        settings: { ...(await chrome.storage.local.get(['settings'])).settings, language: currentLanguage }
+      });
+      closeOnboardingModal();
+      if (currentTabId && isScannerRunning) {
+        activateScannerOnTab(currentTabId);
       }
     });
   }
 
+  function showOnboardingModal() {
+    onboardingModal.style.display = 'flex';
+  }
+
+  function closeOnboardingModal() {
+    onboardingModal.style.display = 'none';
+  }
+
+  // Handle Firebase Google Sign-In Connect Flow
+  async function handleUserAuthConnect() {
+    const settings = (await chrome.storage.local.get(['settings'])).settings || {};
+    const apiUrl = settings.apiUrl || 'http://localhost:8080/api';
+    const baseUrl = apiUrl.replace(/\/api\/?$/, '');
+
+    // Check if web connect page is reachable, or simulate 1-click connect
+    try {
+      // 1. Open /connect tab for actual Firebase Google Sign-In
+      const connectUrl = `${baseUrl}/connect`;
+      chrome.tabs.create({ url: connectUrl }, (tab) => {
+        // Tab opened; user completes Google Sign-in on web platform
+      });
+    } catch (e) {
+      // 2. Simulated instant connect for local testing
+      const mockUser = {
+        uid: 'usr_' + Date.now().toString(36),
+        displayName: 'Telmy User',
+        name: 'Telmy User',
+        email: 'user@telmy.id',
+        photoURL: '',
+        language: currentLanguage
+      };
+      await chrome.storage.local.set({ user: mockUser, hasCompletedOnboarding: true });
+      currentUser = mockUser;
+      renderUserUI();
+    }
+  }
+
+  // 4. Activate Scanner on Active Tab (On-Demand)
+  function activateScannerOnTab(tabId) {
+    if (!tabId) return;
+    chrome.tabs.sendMessage(tabId, { type: 'ACTIVATE_SCANNER' }, (res) => {
+      if (chrome.runtime.lastError || !res) {
+        injectContentScript(tabId, () => {
+          chrome.tabs.sendMessage(tabId, { type: 'ACTIVATE_SCANNER' }, (res2) => {
+            if (res2 && res2.count !== undefined) {
+              badgeFieldsCount.textContent = res2.count;
+              fieldsCountPill.textContent = `${res2.count} Kolom`;
+            }
+          });
+        });
+      } else {
+        if (res && res.count !== undefined) {
+          badgeFieldsCount.textContent = res.count;
+          fieldsCountPill.textContent = `${res.count} Kolom`;
+        }
+      }
+    });
+  }
+
+  // Deactivate Scanner on Active Tab (Total DOM Cleanup)
+  function deactivateScannerOnTab(tabId) {
+    if (!tabId) return;
+    chrome.tabs.sendMessage(tabId, { type: 'DEACTIVATE_SCANNER' }, () => {
+      if (chrome.runtime.lastError) {}
+    });
+    badgeFieldsCount.textContent = '0';
+    fieldsCountPill.textContent = '0 Kolom';
+  }
+
   // On-demand injection into active tab
-  async function injectContentScript(tabId) {
+  async function injectContentScript(tabId, onInjected) {
     try {
       await chrome.scripting.insertCSS({
         target: { tabId },
@@ -266,20 +533,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         ]
       });
 
-      setTimeout(() => triggerTabRescan(tabId), 250);
+      if (onInjected) setTimeout(onInjected, 200);
     } catch (e) {
       console.warn('[Telmy SidePanel] On-demand injection skipped:', e.message);
     }
   }
 
   function triggerTabRescan(tabId) {
-    chrome.tabs.sendMessage(tabId, { type: 'TRIGGER_RESCAN' }, (res) => {
-      if (chrome.runtime.lastError) return;
-      if (res && res.count !== undefined) {
-        badgeFieldsCount.textContent = res.count;
-        fieldsCountPill.textContent = `${res.count} Kolom`;
-      }
-    });
+    if (!isScannerRunning) return;
+    activateScannerOnTab(tabId);
   }
 
   // 3. Listen for Messages from Content Script & Background

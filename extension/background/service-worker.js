@@ -71,6 +71,27 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
+  if (message.type === 'SET_USER_SESSION') {
+    chrome.storage.local.set({ user: message.user, hasCompletedOnboarding: true }).then(() => {
+      sendResponse({ success: true });
+    });
+    return true;
+  }
+
+  if (message.type === 'GET_USER_SESSION') {
+    chrome.storage.local.get(['user', 'hasCompletedOnboarding']).then((res) => {
+      sendResponse({ user: res.user || null, hasCompletedOnboarding: Boolean(res.hasCompletedOnboarding) });
+    });
+    return true;
+  }
+
+  if (message.type === 'LOGOUT_USER') {
+    chrome.storage.local.remove(['user']).then(() => {
+      sendResponse({ success: true });
+    });
+    return true;
+  }
+
   if (message.type === 'EXPLAIN_FIELD') {
     chrome.storage.local.get(['settings']).then(async (res) => {
       const settings = res.settings || DEFAULT_SETTINGS;
@@ -269,3 +290,23 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 });
+
+// External message listener (e.g. from telmy.id or localhost web dashboard)
+if (chrome.runtime.onMessageExternal) {
+  chrome.runtime.onMessageExternal.addListener((message, sender, sendResponse) => {
+    if (message.type === 'PING') {
+      sendResponse({ status: 'ok', extension: 'Telmy.ai', version: '1.0.0' });
+      return false;
+    }
+    if (message.type === 'CONNECT_USER') {
+      chrome.storage.local.set({
+        user: message.user,
+        hasCompletedOnboarding: true
+      }).then(() => {
+        sendResponse({ success: true, connected: true });
+      });
+      return true;
+    }
+  });
+}
+

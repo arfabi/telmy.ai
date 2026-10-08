@@ -24,90 +24,117 @@
 
 ---
 
-## 🏆 Matriks Prioritas Kerja (Urutan Eksekusi)
+## 🏆 Matriks Prioritas Kerja (Urutan Eksekusi Baru)
 
 ```
-[Prioritas 1: Web MVP Firebase] ───► [Prioritas 2: Dashboard & Auth Connect]
-               │                                       │
-               ▼                                       ▼
-[Prioritas 3: Ekstensi Lite & CWS] ──► [Prioritas 4: Materi Submission Hackathon]
+[Prioritas 1: Aktivasi On-Demand & Onboarding] ──► [Prioritas 2: Interactive Talking Avatar]
+                       │                                                    │
+                       ▼                                                    ▼
+[Prioritas 3: Translate Full Page (Feature)]  ──► [Prioritas 4: Domain Glossary & Dashboard]
+                       │                                                    │
+                       ▼                                                    ▼
+[Prioritas 5: Final Packaging CWS & Submit]   ──► [Prioritas 6: Materi Hackathon & Demo]
 ```
 
 ---
 
-### 🥇 PRIORITAS 1: Web MVP Live di Firebase (`telmy.id` / `telmyai.com`)
-*Target: Aplikasi web aktif, dapat diakses juri/publik, memiliki landing page memukau, playground form interaktif, dan privacy policy resmi.*
+### 🥇 PRIORITAS 1: Perbaikan Lifecycle Aktivasi (On-Demand Only) & Onboarding Ekstensi
+*Target: Ekstensi HANYA aktif saat sengaja dibuka oleh pengguna (bebas dari floating liar di background) dan memiliki layar penyambutan (onboarding).*
 
-- [x] **1.1. Inisialisasi & Setup Struktur Web Platform di `backend/public/`:**
-  - Siap di-deploy langsung ke Firebase Hosting / Cloud Run.
-  - Logo aset resmi `logo.png` terintegrasi di seluruh halaman dan ekstensi.
-- [x] **1.2. Landing Page Modern & Bahasa Utama English (JAPAC Support):**
-  - **Bahasa Utama:** Bahasa Inggris (English) sebagai bahasa bawaan standar global/hackathon.
-  - **Multi-bahasa JAPAC:** Dilengkapi *Language Switcher* interaktif di navbar yang mendukung 11 bahasa negara area JAPAC (`en`, `id`, `ja`, `ko`, `zh`, `zh-TW`, `vi`, `th`, `hi`, `fil`, `ms`).
-  - Hero section, Social Impact (Sebelum vs Sesudah), 4 Pilar Fitur, dan Mockup Side Panel.
-- [x] **1.3. Live Demo Playground Terintegrasi (`/demo` atau `/demo.html`):**
-  - Halaman formulir simulasi interaktif (Apostille & Layanan Publik) berbahasa Inggris & dwibahasa agar juri dapat menguji ekstensi seketika.
-- [x] **1.4. Halaman Panduan Unduh & Instalasi (`/download` atau `/download.html`):**
-  - Tautan Chrome Web Store resmi + panduan 3 langkah *Load Unpacked* ZIP untuk juri.
-- [x] **1.5. Halaman Kebijakan Privasi (`/privacy` atau `/privacy.html`):**
-  - Menegaskan komitmen *Privacy-First*, *Push-to-Talk* murni (tanpa wake-word/always-listening), dan tidak menyimpan nilai PII/password.
-
----
-
-### 🥈 PRIORITAS 2: User Dashboard & Extension Connect Flow
-*Target: Pengguna bisa login dengan Google, membatasi rate limit API, dan menghubungkan ekstensi secara mulus.*
-
-- [ ] **2.1. Firebase Authentication (Google 1-Click Login):**
-  - Login dengan akun Google di `telmy.id` tanpa ribet form pendaftaran manual.
-- [ ] **2.2. User Dashboard Sederhana (`/dashboard`):**
-  - Statistik pemakaian pengguna (jumlah field yang dipandu, form yang diselesaikan).
-  - Pengaturan profil bahasa default (ID, EN, ZH, JA, KO).
-  - Riwayat saran / feedback yang pernah dikirimkan ke kamus.
-- [ ] **2.3. Extension Connect Seamless (via `externally_connectable`):**
-  - Tombol *"Hubungkan ke Ekstensi"* di dashboard.
-  - Web mengirimkan token/session ke ekstensi via `chrome.runtime.sendMessage(extensionId, ...)` tanpa perlu meminta izin berat `identity` di ekstensi.
+- [x] **1.1. Perilaku Aktivasi On-Demand (Bebas Floating Liar):**
+  - **Prinsip Utama:** Ekstensi HANYA aktif ketika ikon ekstensi di toolbar diklik (atau shortcut `Alt + G`).
+  - Hapus/cegah skrip content menyuntikkan badge atau floating bar secara otomatis saat halaman baru dibuka.
+  - Saat mode NONAKTIF (user klik tombol [X] / Close di side panel atau klik ikon ekstensi lagi):
+    * Hapus semua badge penomoran di DOM.
+    * Nonaktifkan MutationObserver halaman.
+    * Bersihkan seluruh visual overlay.
+  - Saat mode AKTIF: Buka side panel secara eksklusif dan mulai pemindaian formulir.
+- [x] **1.2. Onboarding Flow Saat Pertama Kali Install:**
+  - Layar sambutan (*Welcome Wizard*) yang muncul pertama kali side panel dibuka setelah instalasi.
+  - Memandu pengguna untuk:
+    1. Memilih bahasa utama preferensi bawaan (English default atau salah satu dari 11 bahasa JAPAC).
+    2. Login / Daftar akun melalui **Firebase Authentication** (Google 1-Click Sign-In atau Email).
+    3. Memuat data profil secara otomatis: Nama, Email, Foto Profil (dari Firebase Storage / Google Auth), dan status *"Connected"*.
+  - Tombol *"Mulai Jelajah Form"* untuk menyelesaikan onboarding.
 
 ---
 
-### 🥉 PRIORITAS 3: Ekstensi Chrome Build "Lite" & Submit Web Store
-*Target: Ekstensi bersih, bebas dari izin berbahaya, migrasi ke Chrome Side Panel API, dan disubmit ke CWS pada Hari ke-4.*
+### 🥈 PRIORITAS 2: Interactive Talking Avatar Companion (Master SVG + WaveNet Lip-Sync)
+*Target: Menghadirkan asisten visual beranimasi mulut natural yang tersinkronisasi audio TTS secara real-time.*
 
-- [ ] **3.1. Migrasi ke Gemini Flash-Lite TTS (Audio Pipeline):**
-  - Buat gateway TTS di backend `/api/voice/tts` menggunakan Gemini Flash-Lite TTS / Google Cloud TTS.
-  - Gantikan integrasi ElevenLabs agar dependensi 100% menggunakan teknologi Google.
-- [ ] **3.2. Migrasi ke Chrome Native Side Panel (`chrome.sidePanel`):**
-  - Gantikan inject container DOM overlay `panel.js` dengan file native `sidepanel/sidepanel.html`.
-  - Halaman otomatis menyusut (*responsive push*) tanpa merusak CSS situs web target.
-  - Izin mikrofon (STT) berjalan di origin ekstensi sendiri, tidak lagi bentrok dengan CSP situs target.
-- [ ] **3.3. Pembersihan Manifest V3 (Minimal Permission Policy):**
-  - Hapus `<all_urls>` dan *content script* permanen.
-  - Gunakan `activeTab` + `scripting` (skrip scanner disuntikkan secara on-demand saat user menekan ikon Telmy atau shortcut `Alt+G`).
-  - Permissions: `["storage", "activeTab", "scripting", "sidePanel"]`.
-  - Host permissions: `["https://api.telmy.id/*", "https://telmyai.com/*"]`.
-  - Hapus folder `mock/` dari bundling produksi.
-- [ ] **3.4. Tahan Fitur Berisiko untuk CWS v1 (Privasi & Kecepatan Review):**
-  - **Sistem Suara: Murni Push-to-Talk (Klik Ikon Mikrofon):** Hapus/tunda fitur wake-word atau mikrofon *always-listening*. Mikrofon hanya aktif saat pengguna menekan tombol mikrofon di side panel (mengeliminasi risiko privasi berat dan penolakan reviewer).
-  - Tahan fitur otomatisasi klik formulir (*auto-click*) dan isi otomatis (*auto-fill*) ke website pihak ketiga.
-  - Pertahankan visual highlight ring, badge angka, auto-scroll, dan asisten suara/chat.
-- [ ] **3.5. Pengajuan ke Chrome Web Store (Hari ke-4):**
-  - Siapkan aset listing: Ikon 128px, Screenshot 1280x800, Promo Tile, deskripsi *Single Purpose*: *"AI Form Guide: Understand any web form in your own language"*.
-  - Masukkan kredensial akun uji untuk tim reviewer Google.
-  - Pilih visibilitas **Unlisted** (atau Public) agar proses review lebih cepat.
+- [ ] **2.1. Master SVG Asset & Viseme Layer Architecture:**
+  - 1 File Master SVG murni (ringan, performa tinggi, scalable) dengan layer/group terpisah:
+    * `<g id="mouth-idle">` : Mulut tertutup santai (saat hening/jeda).
+    * `<g id="mouth-aei">` : Terbuka lebar (vokal A, E, I / amplitudo tinggi).
+    * `<g id="mouth-ou">` : Membulat ke depan (vokal O, U / amplitudo menengah).
+    * `<g id="mouth-mbp">` : Terkatup rapat (konsonan M, B, P).
+    * `<g id="mouth-fv">` : Sedikit terbuka ke bibir bawah (konsonan F, V).
+    * `<g id="eyes-blink">` : Kedipan mata independen dengan timer acak (tiap 3–6 detik).
+- [ ] **2.2. Audio-Driven Lip-Sync via Web Audio API:**
+  - Menerima audio stream MP3 dari endpoint Google Cloud TTS WaveNet.
+  - Menggunakan `AudioContext` dan `AnalyserNode` (FFT) di frontend untuk membaca data frekuensi & amplitudo audio per frame (`requestAnimationFrame`).
+  - Memetakan amplitudo langsung ke viseme layer SVG secara dinamis dan mulus.
+- [ ] **2.3. Avatar State Machine & Tampilan UX:**
+  - Tiga Status Avatar:
+    * **Idle:** Ekspresi ramah netral, mata berkedip santai.
+    * **Thinking:** Gestur berpikir + gelembung pemrosesan (*loading bubble*) saat Gemini memproses respons.
+    * **Speaking:** Animasi viseme mulut aktif mengikuti audio WaveNet.
+  - Mode Tampilan:
+    * **Active Mode:** Menampilkan avatar interaktif secara utuh di header Side Panel atau companion widget.
+    * **Compact Mode:** Mode hemat ruang berupa micro-avatar / indikator waveform animasi.
 
 ---
 
-### 🏅 PRIORITAS 4: Materi Submission Hackathon (Safety Net & Penilaian Juri)
-*Target: Semua syarat penilaian Google Hackathon (Technical Merit 40%, Problem Alignment 25%, Execution 20%, Innovation 15%) terpenuhi maksimal.*
+### 🥉 PRIORITAS 3: Fitur Ekstra "Context-Aware Full Page Translation" di Chatbot
+*Target: Melengkapi kemampuan core Form Explainer dengan fitur terjemahan halaman utuh berbasis konteks UI/UX profesional.*
 
-- [ ] **4.1. Video Demonstrasi (Maksimal 3 Menit):**
-  - *Detik 0 - 45:* Masalah riil warga/WNA kesulitan mengisi portal rumit pemerintah (Apostille/Imigrasi/Pajak).
-  - *Detik 45 - 120:* Live demo Telmy.ai: deteksi otomatis form, highlight visual dengan nomor badge, interaksi suara Gemini Flash-Lite TTS, dan Copilot Chat di Side Panel.
-  - *Detik 120 - 180:* Arsitektur teknologi Google (Gemini, Firebase), dashboard dampak sosial, dan penutup.
-- [ ] **4.2. Pitch Deck & Presentasi (Slide PDF):**
-  - Latar belakang masalah, arsitektur Google Cloud & Firebase, analisis dampak aksesibilitas, dan roadmap masa depan.
-- [ ] **4.3. Repositori & Dokumentasi Terbuka:**
-  - README informatif dengan diagram arsitektur.
-  - Panduan instalasi manual (*Load Unpacked ZIP*) beserta tautan live demo di `telmy.id`.
+- [ ] **3.1. Penegasan Core vs Fitur Tambahan:**
+  - **Fungsi Utama Tetap:** AI Form Explainer per kolom (deteksi field, panduan step-by-step, contoh isian fiktif realistis, tips untuk WNA).
+  - **Fitur Tambahan di Chatbot:** Terdapat tombol/penawaran aksi *"Translate Full Page (Context-Aware)"*.
+- [ ] **3.2. Efficient DOM Batch Extraction & JSON Payload:**
+  - Mengumpulkan seluruh teks label UI, navigasi, dan tombol ke dalam 1 struktur JSON ringkas (*key-value pairs*) untuk efisiensi token ekstrem.
+- [ ] **3.3. Hierarki Prompt Engineering Gemini (Context & UI/UX Preservation):**
+  - Mengirim prompt dengan 4 lapis aturan ke `gemini-3.5-flash-lite`:
+    1. *Context Statement:* Analisis domain dan topik utama halaman.
+    2. *Glossary Rules Injection:* Terapkan kata `DO_NOT_TRANSLATE` dan `FORCE_TRANSLATE`.
+    3. *UI/UX Standard Enforcement:* Pastikan elemen tombol/navigasi diterjemahkan sesuai standar industri (*"Daftar"* $\rightarrow$ *"Sign Up"*, bukan *"List"*).
+    4. *Structured Output:* Mengembalikan JSON berpasangan untuk penggantian teks DOM langsung di halaman secara mulus.
+
+---
+
+### 🎖️ PRIORITAS 4: Domain-Based Glossary System (Firestore & Role Management)
+*Target: Database glosarium per domain untuk mencegah kesalahan istilah birokrasi baku.*
+
+- [ ] **4.1. Skema Dokumen Firestore `glossaries/{domain}`:**
+  - `domain`: Nama domain web target (misal: `layanan.kemenkumham.go.id`).
+  - `glossary_items`: Array aturan istilah (`term`, `action`: `DO_NOT_TRANSLATE` | `FORCE_TRANSLATE`, `target_term`).
+  - `user_suggestions`: Array masukan istilah dari pengguna (`user_id`, `suggested_term`, `status`: `PENDING`).
+- [ ] **4.2. Pengelolaan Hak Akses (Role Management):**
+  - **Admin:** Verifikasi & pengesahan istilah glosarium resmi dari dashboard.
+  - **User:** Tombol *"Ajukan Glosarium"* langsung dari panel ekstensi saat menemukan istilah lokal/khusus.
+
+---
+
+### 🏅 PRIORITAS 5: User Dashboard & Firebase Web Platform
+*Target: Web platform terintegrasi di `telmy.id` dengan akun pengguna dan manajemen aset.*
+
+- [ ] **5.1. Firebase Authentication & Storage:**
+  - Login 1-klik dengan Google Sign-In & Email.
+  - Upload & kompresi foto profil pengguna ke Firebase Storage.
+- [ ] **5.2. Web Dashboard (`/dashboard`):**
+  - Mengelola preferensi bahasa bawaan, riwayat form, dan daftar glosarium yang disarankan.
+  - Tombol *"Connect to Extension"* via `externally_connectable`.
+
+---
+
+### 🏁 PRIORITAS 6: Final Packaging & Submission (Chrome Web Store & Hackathon)
+*Target: Lolos review Chrome Web Store dan materi presentasi juri lengkap.*
+
+- [ ] **6.1. Pembersihan Manifest V3 (Minimal Permissions):**
+  - Hanya menggunakan `["storage", "activeTab", "scripting", "sidePanel"]`.
+  - Hapus file mock, konsolidasi resource.
+- [ ] **6.2. Video Demonstrasi (3 Menit) & Pitch Deck:**
+  - Menampilkan live form explaining, talking avatar SVG audio-driven, dan translate full page context-aware.
 
 ---
 
@@ -115,16 +142,16 @@
 
 | Hari | Fokus Utama | Target Luaran |
 | :---: | :--- | :--- |
-| **Hari 1** | Migrasi Voice ke Gemini Flash-Lite TTS + Rancang Side Panel | Backend suara Google siap & struktur `sidepanel/` terbentuk |
-| **Hari 2** | Bersihkan Manifest V3 (Lite) & Injeksi On-Demand | Ekstensi Lite bebas dari `<all_urls>`, lolos uji lokal |
-| **Hari 3** | Persiapan Aset Chrome Web Store & Akun Developer | Screenshot 1280x800, deskripsi single purpose, akun CWS |
-| **Hari 4** | **SUBMIT KE CHROME WEB STORE (UNLISTED)** | Ekstensi masuk antrean review CWS |
-| **Hari 5** | Deploy Firebase MVP: Landing Page & Live Demo | `telmy.id` / `telmyai.com` aktif online dengan SSL |
-| **Hari 6** | Firebase Auth (Google Login) + Dashboard Pengguna | Alur connect web dashboard ke ekstensi selesai |
-| **Hari 7** | Pembuatan Avatar Ringan SVG + Polish UI | Visual side panel lebih hidup & interaktif |
-| **Hari 8** | Perekaman Video Demo 3 Menit & Editing | Video MP4 siap upload YouTube (Unlisted) |
-| **Hari 9** | Pembuatan Pitch Deck / Slide Presentasi | PDF slide selesai sesuai kriteria penilaian juri |
-| **Hari 10** | **FINAL SUBMISSION HACKATHON** | Submit form lomba: link Firebase live, video, deck, & zip/CWS |
+| **Hari 1** | Perbaikan Lifecycle Aktivasi (On-Demand Only, No Floating Liar) | Ekstensi bersih, hanya aktif saat ikon diklik |
+| **Hari 2** | Onboarding Flow Ekstensi + Firebase Auth (Login, Profil & Connect) | Welcome wizard, Google login, load avatar foto & bahasa |
+| **Hari 3** | Rancang Master SVG Talking Avatar + Layer Viseme Mulut | File SVG ringan dengan kontrol layer viseme & kedip |
+| **Hari 4** | Web Audio API Lip-Sync (Sinkronisasi Audio WaveNet TTS Real-time) | Mulut avatar bergerak natural mengikuti frekuensi suara |
+| **Hari 5** | Fitur Tambahan di Chatbot: "Translate Full Page (Context-Aware)" | Batch JSON payload ke Gemini 3.5 Flash-Lite & DOM swap |
+| **Hari 6** | Domain-Based Glossary System di Firestore + Saran Pengguna | Koleksi Firestore `glossaries/{domain}` & role admin/user |
+| **Hari 7** | Deploy Firebase Platform (Hosting Landing Page, Functions, Storage) | `telmy.id` aktif online dengan SSL dan backend API |
+| **Hari 8** | **SUBMIT KE CHROME WEB STORE (UNLISTED)** | Paket Manifest V3 Lite masuk antrean review Google |
+| **Hari 9** | Perekaman Video Demo 3 Menit & Pitch Deck Presentasi | Video MP4 siap tayang & slide PDF kriteria juri siap |
+| **Hari 10** | **FINAL SUBMISSION HACKATHON** | Submit link live Firebase, CWS/ZIP, video, dan pitch deck |
 
 ---
 

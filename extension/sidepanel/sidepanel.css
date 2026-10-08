@@ -895,3 +895,393 @@ body {
   color: var(--sp-text);
   line-height: 1.5;
 }
+
+/* =========================================================
+   Controls & Action Buttons
+   ========================================================= */
+.sp-close-btn:hover {
+  background: #fee2e2;
+  color: #dc2626;
+  border-color: #fca5a5;
+}
+
+.sp-profile-btn {
+  padding: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.sp-avatar-img, .user-avatar-img, .popover-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+/* =========================================================
+   Paused / Standby Banner
+   ========================================================= */
+.sp-paused-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fffbeb;
+  border-bottom: 1px solid #fde68a;
+  padding: 8px 12px;
+  animation: fadeIn 0.2s ease;
+}
+
+.sp-paused-text {
+  display: flex;
+  flex-direction: column;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #92400e;
+}
+
+.sp-paused-text small {
+  font-size: 10px;
+  font-weight: 400;
+  color: #b45309;
+}
+
+.btn-resume-scan {
+  padding: 4px 10px;
+  background: #d97706;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-resume-scan:hover {
+  background: #b45309;
+}
+
+/* =========================================================
+   User Profile Popover
+   ========================================================= */
+.sp-profile-popover {
+  position: absolute;
+  top: 50px;
+  right: 14px;
+  z-index: 999;
+  width: 250px;
+  background: white;
+  border: 1px solid var(--sp-border);
+  border-radius: var(--sp-radius-md);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+  padding: 12px;
+  animation: fadeIn 0.15s ease;
+}
+
+.popover-user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.popover-avatar-wrap {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.popover-user-details {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.popover-user-details strong {
+  font-size: 12.5px;
+  color: var(--sp-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.popover-user-details span {
+  font-size: 11px;
+  color: var(--sp-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.badge-auth-status {
+  display: inline-block;
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-top: 3px;
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.badge-auth-status.connected {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.popover-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.btn-popover-primary {
+  width: 100%;
+  padding: 7px;
+  background: var(--sp-primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-popover-primary:hover {
+  background: var(--sp-primary-hover);
+}
+
+.btn-popover-secondary {
+  width: 100%;
+  padding: 6px;
+  background: white;
+  border: 1px solid var(--sp-border);
+  color: #ef4444;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-popover-secondary:hover {
+  background: #fee2e2;
+}
+
+/* =========================================================
+   Onboarding Wizard Overlay
+   ========================================================= */
+.sp-onboarding-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: fadeIn 0.25s ease;
+}
+
+.onboarding-card {
+  background: white;
+  border-radius: var(--sp-radius-lg);
+  box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  max-width: 360px;
+  padding: 22px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.onboarding-header {
+  text-align: center;
+}
+
+.onboarding-logo {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  margin: 0 auto 8px;
+}
+
+.onboarding-header h2 {
+  font-size: 17px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.onboarding-subtitle {
+  font-size: 11.5px;
+  color: var(--sp-text-muted);
+}
+
+.onboarding-features-list {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--sp-radius-md);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.onboarding-feat-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.feat-icon {
+  font-size: 15px;
+  line-height: 1.2;
+}
+
+.onboarding-feat-item strong {
+  font-size: 11.5px;
+  color: #1e293b;
+  display: block;
+}
+
+.onboarding-feat-item small {
+  font-size: 10px;
+  color: #64748b;
+  display: block;
+}
+
+.onboarding-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.onboarding-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #334155;
+}
+
+.onboarding-select {
+  padding: 8px 10px;
+  border: 1.5px solid var(--sp-border);
+  border-radius: var(--sp-radius-sm);
+  background: white;
+  font-size: 12px;
+  font-weight: 500;
+  color: #0f172a;
+  outline: none;
+}
+
+.onboarding-select:focus {
+  border-color: var(--sp-primary);
+}
+
+.onboarding-auth-box {
+  background: #f8fafc;
+  border: 1px solid var(--sp-border);
+  border-radius: var(--sp-radius-sm);
+  padding: 10px;
+}
+
+.onboarding-auth-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.btn-auth-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: white;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1e293b;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  transition: all 0.2s;
+}
+
+.btn-auth-google:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.btn-auth-guest {
+  padding: 6px;
+  background: transparent;
+  border: none;
+  font-size: 11px;
+  color: #64748b;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: underline;
+}
+
+.btn-auth-guest:hover {
+  color: #334155;
+}
+
+.onboarding-auth-success {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.auth-success-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.auth-success-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.badge-connected {
+  font-size: 10px;
+  font-weight: 700;
+  color: #16a34a;
+}
+
+.btn-onboarding-primary {
+  padding: 10px 14px;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  transition: all 0.2s;
+}
+
+.btn-onboarding-primary:hover {
+  background: linear-gradient(135deg, #1d4ed8, #1e40af);
+  transform: translateY(-1px);
+}
+

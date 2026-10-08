@@ -69,6 +69,7 @@ app.get('/', (req, res) => res.sendFile(path.join(publicDir, 'index.html')));
 app.get('/privacy', (req, res) => res.sendFile(path.join(publicDir, 'privacy.html')));
 app.get('/demo', (req, res) => res.sendFile(path.join(publicDir, 'demo.html')));
 app.get('/download', (req, res) => res.sendFile(path.join(publicDir, 'download.html')));
+app.get('/connect', (req, res) => res.sendFile(path.join(publicDir, 'connect.html')));
 
 // API Routes
 app.use('/api', explainRoutes);
