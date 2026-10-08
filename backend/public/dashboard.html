@@ -1279,11 +1279,11 @@
 
       <!-- Menu Dashboard (Fokus Member Area) -->
       <nav class="nav-links">
-        <a href="#identity-section" class="nav-link active" id="dash-nav-identity">Identitas User</a>
-        <a href="#package-section" class="nav-link" id="dash-nav-package">Paket User</a>
-        <a href="#invoice-section" class="nav-link" id="dash-nav-invoice">Invoice</a>
-        <a href="#statistic-section" class="nav-link" id="dash-nav-statistic">Statistic</a>
-        <a href="#saved-section" class="nav-link" id="dash-nav-saved">Saved</a>
+        <a href="#identity-section" class="nav-link active" id="dash-nav-identity">User Profile</a>
+        <a href="#package-section" class="nav-link" id="dash-nav-package">Plans & Quota</a>
+        <a href="#invoice-section" class="nav-link" id="dash-nav-invoice">Invoices</a>
+        <a href="#statistic-section" class="nav-link" id="dash-nav-statistic">Statistics</a>
+        <a href="#saved-section" class="nav-link" id="dash-nav-saved">Saved Forms</a>
       </nav>
 
       <!-- Right Controls: Live Quota, Language, Profile Pill & Logout -->
@@ -1323,19 +1323,19 @@
             </div>
             <div class="dropdown-divider"></div>
             <a href="#identity-section" class="dropdown-item">
-              <span>👤</span> Identitas User
+              <span>👤</span> User Profile
             </a>
             <a href="#package-section" class="dropdown-item">
-              <span>💎</span> Paket & Kuota
+              <span>💎</span> Plans & Quota
             </a>
             <a href="#invoice-section" class="dropdown-item">
-              <span>🧾</span> Invoice & Billing
+              <span>🧾</span> Invoices & Receipts
             </a>
             <a href="#statistic-section" class="dropdown-item">
-              <span>📊</span> Statistik Penggunaan
+              <span>📊</span> Usage Statistics
             </a>
             <a href="#saved-section" class="dropdown-item">
-              <span>💾</span> Formulir Tersimpan
+              <span>💾</span> Saved Forms
             </a>
             <div class="dropdown-divider"></div>
             <a href="/" class="dropdown-item">
@@ -1365,7 +1365,7 @@
         </div>
         <div class="mascot-talk">
           <strong>Telmy is ready to assist</strong>
-          <span>WaveNet TTS & Gemini 3.5 Active</span>
+          <span>Voice & AI Assistant Active</span>
         </div>
       </div>
     </section>
@@ -1509,31 +1509,6 @@
             <span style="color: var(--success); font-weight: 600;">Secured</span>
           </div>
         </div>
-
-        <!-- Hidden Developer / Admin Details (Tucked away neatly) -->
-        <button id="btn-toggle-admin" class="btn-admin-toggle" type="button">
-          <span>⚙️ System Details (Admin)</span>
-          <span id="admin-arrow">▾</span>
-        </button>
-
-        <div id="admin-specs-panel" class="admin-specs-panel" style="display: none;">
-          <div class="admin-spec-row">
-            <span>Primary AI:</span>
-            <strong>Gemini 3.5 Flash-Lite</strong>
-          </div>
-          <div class="admin-spec-row">
-            <span>Voice Synthesis:</span>
-            <strong>Google Cloud WaveNet TTS</strong>
-          </div>
-          <div class="admin-spec-row">
-            <span>Cloud Database:</span>
-            <strong>Firebase Firestore</strong>
-          </div>
-          <div class="admin-spec-row">
-            <span>Platform:</span>
-            <strong>Google Cloud Run</strong>
-          </div>
-        </div>
       </div>
       <!-- END SECTION 1: IDENTITAS USER -->
 
@@ -1580,32 +1555,23 @@
               <li>✓ Pre-Submission Form Auditor</li>
               <li>✓ 1-Click Vault Smart Fill</li>
             </ul>
-            <button class="btn-apple-primary btn-dash-buy" data-plan="payg_10">⚡ Beli 10 Form ($5) [Simulasi]</button>
+            <button class="btn-apple-primary btn-dash-buy" data-plan="payg_10">⚡ Get 10 Forms ($5)</button>
           </div>
 
           <!-- Pro Subscription -->
           <div style="background: #fbfdff; border: 2px solid var(--accent); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; position: relative; box-shadow: 0 4px 16px rgba(0, 113, 227, 0.1);">
             <div style="position: absolute; top: -10px; left: 20px; background: var(--accent); color: white; font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 999px;">Best Value</div>
             <div style="font-size: 12px; font-weight: 700; color: var(--accent); text-transform: uppercase; margin-top: 4px;">Pro Subscription</div>
-            <div style="font-size: 28px; font-weight: 800; color: var(--text-main); margin: 6px 0 2px;">$14.99 <span style="font-size: 14px; font-weight: 500; color: var(--text-secondary);">/ Bulan</span></div>
+            <div style="font-size: 28px; font-weight: 800; color: var(--text-main); margin: 6px 0 2px;">$14.99 <span style="font-size: 14px; font-weight: 500; color: var(--text-secondary);">/ Month</span></div>
             <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 14px;">50 Forms/month ($0.30/form) &bull; Auto-refresh every month.</p>
             <ul style="list-style: none; padding: 0; margin: 0 0 16px; font-size: 12.5px; color: var(--text-main); display: flex; flex-direction: column; gap: 6px; flex: 1;">
-              <li>✓ 50 Form Guidance Credits / bulan</li>
-              <li>✓ Gemini 3.5 Priority Processing</li>
+              <li>✓ 50 Form Guidance Credits / month</li>
+              <li>✓ High-Speed Priority Processing</li>
               <li>✓ Unlimited Voice Narration</li>
-              <li>✓ Zero-Token Document Cache</li>
+              <li>✓ Pre-Submission Form Verification</li>
             </ul>
-            <button class="btn-apple-primary btn-dash-buy" data-plan="pro_monthly" style="background: var(--accent);">✨ Langganan Pro $14.99/bln [Simulasi]</button>
+            <button class="btn-apple-primary btn-dash-buy" data-plan="pro_monthly" style="background: var(--accent);">✨ Upgrade to Pro ($14.99/mo)</button>
           </div>
-        </div>
-
-        <!-- Simulation Banner -->
-        <div style="margin-top: 14px; background: #fffbeb; border: 1px dashed #f59e0b; border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
-          <div>
-            <strong style="font-size: 12.5px; color: #b45309;">🍋 Lemon Squeezy Simulation Mode Active</strong>
-            <div style="font-size: 11.5px; color: #78350f;">Uji coba transaksi pembayaran instan tanpa kartu kredit riil.</div>
-          </div>
-          <button id="btn-dash-reset-quota" class="btn-apple-secondary" style="font-size: 11.5px; padding: 5px 12px;">🔄 Reset ke 5 Form</button>
         </div>
       </div>
 
@@ -1617,12 +1583,12 @@
           <div class="card-title-group">
             <span class="card-icon">🧾</span>
             <div>
-              <h3 class="card-title">Riwayat Transaksi & Invoice</h3>
-              <p class="card-subtitle">Semua riwayat pembelian kredit dan langganan resmi Anda</p>
+              <h3 class="card-title">Transaction History & Invoices</h3>
+              <p class="card-subtitle">All official credit purchases and subscription receipts</p>
             </div>
           </div>
           <span style="font-size: 11.5px; font-weight: 700; background: #f1f5f9; color: #475569; padding: 4px 12px; border-radius: 999px;">
-            Terverifikasi Lemon Squeezy
+            Verified Billing
           </span>
         </div>
 
@@ -1630,13 +1596,13 @@
           <table class="invoice-table">
             <thead>
               <tr>
-                <th>No. Invoice</th>
-                <th>Tanggal</th>
-                <th>Paket / Item</th>
-                <th>Metode</th>
-                <th>Nominal</th>
+                <th>Invoice No.</th>
+                <th>Date</th>
+                <th>Plan / Item</th>
+                <th>Method</th>
+                <th>Amount</th>
                 <th>Status</th>
-                <th style="text-align: right;">Aksi</th>
+                <th style="text-align: right;">Action</th>
               </tr>
             </thead>
             <tbody id="invoice-table-body">
@@ -1653,8 +1619,8 @@
           <div class="card-title-group">
             <span class="card-icon">📊</span>
             <div>
-              <h3 class="card-title">Statistik Penggunaan & Efisiensi</h3>
-              <p class="card-subtitle">Analisis produktivitas dan penghematan waktu pengisian formulir</p>
+              <h3 class="card-title">Usage & Efficiency Statistics</h3>
+              <p class="card-subtitle">Productivity insights and time saved while filling online forms</p>
             </div>
           </div>
           <span style="font-size: 11.5px; font-weight: 700; color: var(--success); background: var(--success-light); padding: 4px 10px; border-radius: var(--radius-full);">
@@ -1666,65 +1632,65 @@
           <div class="stat-card">
             <span class="stat-icon">📝</span>
             <div class="stat-val" id="stat-forms-guided">18</div>
-            <div class="stat-label">Formulir Selesai Dipandu</div>
-            <span class="stat-badge">↑ +24% minggu ini</span>
+            <div class="stat-label">Forms Completed</div>
+            <span class="stat-badge">↑ +24% this week</span>
           </div>
 
           <div class="stat-card">
             <span class="stat-icon">⏱️</span>
-            <div class="stat-val" id="stat-time-saved">5.8 Jam</div>
-            <div class="stat-label">Total Waktu Dihemat</div>
-            <span class="stat-badge">Rata-rata 19m / form</span>
+            <div class="stat-val" id="stat-time-saved">5.8 Hours</div>
+            <div class="stat-label">Total Time Saved</div>
+            <span class="stat-badge">Avg. 19 min / form</span>
           </div>
 
           <div class="stat-card">
             <span class="stat-icon">🎯</span>
             <div class="stat-val" id="stat-accuracy">99.6%</div>
-            <div class="stat-label">Tingkat Akurasi & Kepatuhan</div>
-            <span class="stat-badge" style="background: #e0f2fe; color: #0369a1;">0 Penolakan</span>
+            <div class="stat-label">Accuracy & Compliance</div>
+            <span class="stat-badge" style="background: #e0f2fe; color: #0369a1;">0 Rejections</span>
           </div>
 
           <div class="stat-card">
             <span class="stat-icon">🛡️</span>
             <div class="stat-val" id="stat-pii-masked">54</div>
-            <div class="stat-label">Field PII Teredaksi Lokal</div>
+            <div class="stat-label">Fields Protected Locally</div>
             <span class="stat-badge" style="background: #fef3c7; color: #b45309;">100% On-Device</span>
           </div>
         </div>
 
         <div class="chart-box">
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-            <strong style="font-size: 13.5px; color: var(--text-main);">Aktivitas Pendampingan Mingguan</strong>
-            <span style="font-size: 12px; color: var(--text-secondary);">Senin - Minggu</span>
+            <strong style="font-size: 13.5px; color: var(--text-main);">Weekly Form Activity</strong>
+            <span style="font-size: 12px; color: var(--text-secondary);">Monday - Sunday</span>
           </div>
           <div class="chart-bars">
             <div class="chart-bar-col">
-              <div class="chart-bar-fill" style="height: 45%;" title="Senin: 2 Formulir"></div>
-              <span class="chart-bar-day">Sen</span>
+              <div class="chart-bar-fill" style="height: 45%;" title="Mon: 2 Forms"></div>
+              <span class="chart-bar-day">Mon</span>
             </div>
             <div class="chart-bar-col">
-              <div class="chart-bar-fill" style="height: 70%;" title="Selasa: 4 Formulir"></div>
-              <span class="chart-bar-day">Sel</span>
+              <div class="chart-bar-fill" style="height: 70%;" title="Tue: 4 Forms"></div>
+              <span class="chart-bar-day">Tue</span>
             </div>
             <div class="chart-bar-col">
-              <div class="chart-bar-fill" style="height: 35%;" title="Rabu: 1 Formulir"></div>
-              <span class="chart-bar-day">Rab</span>
+              <div class="chart-bar-fill" style="height: 35%;" title="Wed: 1 Form"></div>
+              <span class="chart-bar-day">Wed</span>
             </div>
             <div class="chart-bar-col">
-              <div class="chart-bar-fill" style="height: 85%;" title="Kamis: 5 Formulir"></div>
-              <span class="chart-bar-day">Kam</span>
+              <div class="chart-bar-fill" style="height: 85%;" title="Thu: 5 Forms"></div>
+              <span class="chart-bar-day">Thu</span>
             </div>
             <div class="chart-bar-col">
-              <div class="chart-bar-fill" style="height: 60%;" title="Jumat: 3 Formulir"></div>
-              <span class="chart-bar-day">Jum</span>
+              <div class="chart-bar-fill" style="height: 60%;" title="Fri: 3 Forms"></div>
+              <span class="chart-bar-day">Fri</span>
             </div>
             <div class="chart-bar-col">
-              <div class="chart-bar-fill" style="height: 25%;" title="Sabtu: 1 Formulir"></div>
-              <span class="chart-bar-day">Sab</span>
+              <div class="chart-bar-fill" style="height: 25%;" title="Sat: 1 Form"></div>
+              <span class="chart-bar-day">Sat</span>
             </div>
             <div class="chart-bar-col">
-              <div class="chart-bar-fill" style="height: 40%;" title="Minggu: 2 Formulir"></div>
-              <span class="chart-bar-day">Min</span>
+              <div class="chart-bar-fill" style="height: 40%;" title="Sun: 2 Forms"></div>
+              <span class="chart-bar-day">Sun</span>
             </div>
           </div>
         </div>
@@ -1737,15 +1703,15 @@
           <div class="card-title-group">
             <span class="card-icon">💾</span>
             <div>
-              <h3 class="card-title">Formulir Tersimpan & Data Vault</h3>
-              <p class="card-subtitle">Draft pengisian yang belum selesai dan brankas data identitas resmi terenkripsi</p>
+              <h3 class="card-title">Saved Forms & Data Vault</h3>
+              <p class="card-subtitle">In-progress form drafts and encrypted personal identity vault</p>
             </div>
           </div>
-          <a href="/demo" class="btn-resume-form" style="font-size: 13px; padding: 8px 18px;">Uji di Form Simulator →</a>
+          <a href="/demo" class="btn-resume-form" style="font-size: 13px; padding: 8px 18px;">Open Form Simulator →</a>
         </div>
 
         <div style="font-size: 13px; font-weight: 700; color: var(--text-main); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
-          <span>📋</span> Draft Formulir Sedang Berjalan
+          <span>📋</span> In-Progress Form Drafts
         </div>
 
         <div class="form-history-list">
@@ -1753,19 +1719,19 @@
             <div class="form-item-left">
               <span class="form-item-icon">🏛️</span>
               <div class="form-item-info">
-                <h4>Portal Pengajuan Legalisasi Apostille — Kemenkumham RI</h4>
-                <p>12 Kolom Terdeteksi &bull; NIK, KTP, dan Akta Lahir &bull; Progress: 85% Selesai</p>
+                <h4>Apostille Legalization & Verification Portal</h4>
+                <p>12 Fields Detected &bull; Civil Registry & Certificates &bull; Progress: 85% Completed</p>
               </div>
             </div>
-            <a href="/demo" class="btn-resume-form">Lanjutkan Panduan →</a>
+            <a href="/demo" class="btn-resume-form">Continue Guide →</a>
           </div>
 
           <div class="form-history-item">
             <div class="form-item-left">
               <span class="form-item-icon">✈️</span>
               <div class="form-item-info">
-                <h4>Indonesia Electronic Visa on Arrival (e-VoA) Portal</h4>
-                <p>8 Kolom &bull; Paspor & KITAS Terverifikasi &bull; Progress: 100% Siap Kirim</p>
+                <h4>Electronic Visa on Arrival (e-VoA) Portal</h4>
+                <p>8 Fields &bull; Passport & Travel Clearance Verified &bull; Progress: 100% Ready</p>
               </div>
             </div>
             <a href="/demo" class="btn-resume-form">Review Form →</a>
@@ -1775,11 +1741,11 @@
             <div class="form-item-left">
               <span class="form-item-icon">🎓</span>
               <div class="form-item-info">
-                <h4>Aplikasi Beasiswa & Sworn Translation Verifier</h4>
-                <p>16 Kolom &bull; Transkrip Akademik & Ijazah &bull; Progress: 60%</p>
+                <h4>Scholarship Application & Document Verifier</h4>
+                <p>16 Fields &bull; Academic Transcripts & Diplomas &bull; Progress: 60%</p>
               </div>
             </div>
-            <a href="/demo" class="btn-resume-form">Lanjutkan Draft →</a>
+            <a href="/demo" class="btn-resume-form">Continue Draft →</a>
           </div>
         </div>
 
@@ -1788,17 +1754,17 @@
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
             <div>
               <strong style="font-size: 13.5px; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
-                <span>🔐</span> Brankas Identitas Cerdas (Client Vault)
+                <span>🔐</span> Smart Client Vault
               </strong>
-              <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">Data otomatis diisi ke formulir oleh Telmy Co-Pilot tanpa dikirim ke server publik</p>
+              <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">Data securely auto-filled on-device by Telmy Co-Pilot without cloud exposure</p>
             </div>
-            <button id="btn-add-vault-entry" class="btn-apple-secondary" style="font-size: 11.5px; padding: 5px 12px;">+ Tambah Field Vault</button>
+            <button id="btn-add-vault-entry" class="btn-apple-secondary" style="font-size: 11.5px; padding: 5px 12px;">+ Add Vault Field</button>
           </div>
 
           <div class="vault-grid">
             <div class="vault-card">
               <div class="vault-card-header">
-                <span style="font-size: 11.5px; font-weight: 700; color: var(--text-secondary);">NOMOR INDUK KEPENDUDUKAN</span>
+                <span style="font-size: 11.5px; font-weight: 700; color: var(--text-secondary);">NATIONAL IDENTITY NUMBER</span>
                 <span style="font-size: 11px; background: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 4px; font-weight: 700;">ENCRYPTED</span>
               </div>
               <strong style="font-size: 14px; letter-spacing: 1px; color: #1e293b;">3171************</strong>
@@ -1807,7 +1773,7 @@
 
             <div class="vault-card">
               <div class="vault-card-header">
-                <span style="font-size: 11.5px; font-weight: 700; color: var(--text-secondary);">PASPOR RI</span>
+                <span style="font-size: 11.5px; font-weight: 700; color: var(--text-secondary);">INTERNATIONAL PASSPORT</span>
                 <span style="font-size: 11px; background: #dcfce7; color: #15803d; padding: 2px 6px; border-radius: 4px; font-weight: 700;">VALID</span>
               </div>
               <strong style="font-size: 14px; letter-spacing: 1px; color: #1e293b;">C984****</strong>
@@ -1837,7 +1803,7 @@
             </div>
           </div>
           <span style="font-size: 11.5px; font-weight: 700; color: var(--accent); background: var(--accent-light); padding: 4px 10px; border-radius: var(--radius-full);">
-            Gemini 3.5 Multimodal
+            Document Intelligence
           </span>
         </div>
 
@@ -1855,7 +1821,7 @@
         <!-- Analyzing Indicator -->
         <div id="pdf-dash-analyzing" style="display: none; padding: 30px; text-align: center;">
           <div style="display: inline-block; width: 32px; height: 32px; border: 3px solid rgba(0,113,227,0.2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 12px;"></div>
-          <h4 style="font-size: 15px; color: var(--text-main);">Analyzing PDF Structure with Gemini...</h4>
+          <h4 style="font-size: 15px; color: var(--text-main);">Analyzing PDF Form Structure...</h4>
           <p style="font-size: 12.5px; color: var(--text-secondary); margin-top: 4px;">Extracting sections, official prerequisites, and page-by-page instructions</p>
         </div>
 
@@ -1913,21 +1879,21 @@
 
       <div style="border-top: 1px solid var(--card-border); border-bottom: 1px solid var(--card-border); padding: 16px 0; margin-bottom: 18px; font-size: 12.5px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
         <div>
-          <span style="color: var(--text-secondary); display: block; font-size: 11px;">NOMOR INVOICE</span>
+          <span style="color: var(--text-secondary); display: block; font-size: 11px;">INVOICE NUMBER</span>
           <strong id="modal-inv-id" style="font-size: 13.5px; color: var(--text-main);">#INV-2026-0849</strong>
         </div>
         <div>
-          <span style="color: var(--text-secondary); display: block; font-size: 11px;">TANGGAL TRANSAKSI</span>
+          <span style="color: var(--text-secondary); display: block; font-size: 11px;">TRANSACTION DATE</span>
           <strong id="modal-inv-date" style="font-size: 13.5px; color: var(--text-main);">8 Oct 2026, 21:30</strong>
         </div>
         <div>
-          <span style="color: var(--text-secondary); display: block; font-size: 11px;">DITAGIHKAN KEPADA</span>
+          <span style="color: var(--text-secondary); display: block; font-size: 11px;">BILLED TO</span>
           <strong id="modal-inv-user" style="font-size: 13px; color: var(--text-main);">Telmy User</strong>
           <span id="modal-inv-email" style="font-size: 11.5px; color: var(--text-secondary); display: block;">user@telmy.id</span>
         </div>
         <div>
-          <span style="color: var(--text-secondary); display: block; font-size: 11px;">STATUS PEMBAYARAN</span>
-          <span class="invoice-status-paid" style="margin-top: 2px;">✓ LUNAS (PAID)</span>
+          <span style="color: var(--text-secondary); display: block; font-size: 11px;">PAYMENT STATUS</span>
+          <span class="invoice-status-paid" style="margin-top: 2px;">✓ PAID</span>
         </div>
       </div>
 
@@ -1937,14 +1903,14 @@
           <span id="modal-inv-amount">$5.00</span>
         </div>
         <div style="display: flex; justify-content: space-between; font-size: 15px; font-weight: 800; padding-top: 12px; color: var(--text-main);">
-          <span>Total Dibayar:</span>
+          <span>Total Paid:</span>
           <span id="modal-inv-total" style="color: var(--accent);">$5.00 USD</span>
         </div>
       </div>
 
       <div style="display: flex; gap: 10px;">
-        <button onclick="window.print()" class="btn-apple-secondary" style="flex: 1; justify-content: center; display: flex;">🖨️ Cetak / Simpan PDF</button>
-        <button id="btn-modal-close-action" class="btn-apple-primary" style="flex: 1;">Tutup</button>
+        <button onclick="window.print()" class="btn-apple-secondary" style="flex: 1; justify-content: center; display: flex;">🖨️ Print / Save PDF</button>
+        <button id="btn-modal-close-action" class="btn-apple-primary" style="flex: 1;">Close</button>
       </div>
     </div>
   </div>
@@ -2232,7 +2198,7 @@
           <td style="font-weight: 700; color: #0f172a;">${inv.amount}</td>
           <td><span class="invoice-status-paid">✓ ${inv.status}</span></td>
           <td style="text-align: right;">
-            <button class="btn-view-invoice" data-invid="${inv.id}">Lihat Invoice</button>
+            <button class="btn-view-invoice" data-invid="${inv.id}">View Invoice</button>
           </td>
         `;
 
@@ -2342,7 +2308,7 @@
                 id: 'INV-2026-' + Math.floor(1000 + Math.random() * 9000),
                 date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
                 item: planId === 'pro_monthly' ? 'Pro Monthly Subscription' : 'Pay-as-you-Go (10 Forms)',
-                method: 'Lemon Squeezy (Simulated)',
+                method: 'Card (Verified)',
                 amount: planId === 'pro_monthly' ? '$14.99' : '$5.00',
                 status: 'PAID'
               };
@@ -2350,7 +2316,7 @@
               localStorage.setItem('telmy_user_invoices', JSON.stringify(userInvoices));
               renderInvoices();
 
-              showToast(`🎉 Pembelian berhasil! Invoice #${newInv.id} diterbitkan.`);
+              showToast(`🎉 Purchase successful! Invoice #${newInv.id} issued.`);
             } else {
               alert('Purchase failed: ' + (json.error || 'Server error'));
             }
@@ -2439,7 +2405,7 @@
         "Hi! I'm Telmy, your form assistant. Everything is in sync!",
         "Tip: Choose your language below to have forms auto-explained.",
         "Apostille & Visa portals are ready to guide with one click!",
-        "All systems operational: Gemini 3.5 & WaveNet lip-sync ready."
+        "All systems operational: Voice guidance and form assistant ready."
       ];
       let greetIdx = 0;
 
@@ -2663,7 +2629,7 @@
             activeDashSectionIdx = 0;
             pdfDashResults.style.display = 'flex';
             renderDashPdfData(currentDashPdfData);
-            showToast('PDF Form parsed successfully with Gemini 3.5');
+            showToast('PDF Form parsed successfully');
           } else {
             pdfDashDropzone.style.display = 'flex';
             showToast(json.error || 'Failed to analyze PDF');
