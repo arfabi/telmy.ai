@@ -54,6 +54,8 @@ app.get('/health', (req, res) => {
     openAiModel: process.env.OPENAI_MODEL || 'gpt-4o-mini',
     openAiBaseUrl: process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1',
     geminiConfigured: Boolean(process.env.GEMINI_API_KEY),
+    geminiModel: process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite',
+    googleTtsConfigured: Boolean(process.env.GOOGLE_TTS_API_KEY || process.env.GEMINI_API_KEY),
     elevenLabsConfigured: Boolean(process.env.ELEVENLABS_API_KEY)
   });
 });

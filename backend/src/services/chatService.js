@@ -117,7 +117,8 @@ async function callChatOpenAi({ message, history, language, formContext }) {
 
 async function callChatGemini({ message, history, language, formContext }) {
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+  const modelName = process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite';
+  const model = genAI.getGenerativeModel({ model: modelName });
 
   const systemPrompt = buildSystemPrompt(language, formContext);
   const prompt = `${systemPrompt}\n\nUser Question: ${message}`;

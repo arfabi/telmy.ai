@@ -6,17 +6,18 @@
 
 ---
 
-## 🎯 Ringkasan Eksekutif & Kepatuhan Aturan Hackathon
+## 🎯 Ringkasan Eksekutif & Kepatuhan Arsitektur
 
-1. **100% Google AI Native (Menghindari Diskualifikasi):**
-   * **LLM Engine:** 100% Google Gemini (Gemini 1.5 / 2.0 Flash) untuk form scanning, penalaran field, kamus cerdas, dan Copilot Chat. Tidak menggunakan GLM atau pihak ketiga lain.
-   * **Voice TTS Pipeline:** Migrasi penuh dari ElevenLabs ke **Gemini Flash-Lite TTS (Pratinjau)** / Google Cloud TTS.
-     * *SKU Input Teks:* `6D6B-51EE-87C4` ($0,50 / 1 juta token)
-     * *SKU Output Audio:* `676E-5101-0A30` ($6,00 / 1 juta token audio)
-     * *Fallback Klien:* Native Browser SpeechSynthesis (Web Speech API).
-2. **Infrastruktur Produksi:**
-   * **Hosting & Backend:** Firebase Hosting + Cloud Run / Firebase Functions + Firestore.
-   * **Domain Produksi:** `telmy.id` (primer) atau `telmyai.com`.
+1. **Stack Resmi Firebase (Google Cloud Native):**
+   * **Firebase Hosting:** Menyajikan Landing Page, Kebijakan Privasi, Demo, dan Download dari folder `/backend/public` via Global CDN + SSL otomatis di `telmy.id`.
+   * **Firebase Functions (2nd Gen):** Backend API serverless Express.js di region `asia-southeast2` (Jakarta) dengan kuota gratis 2 juta request/bulan.
+   * **Cloud Firestore:** Database penyimpanan kamus istilah resmi birokrasi, prompt cache, dan umpan balik pengguna.
+   * **Firebase Storage:** Object storage penyimpanan foto profil pengguna (5 GB free tier, kompresi otomatis WebP).
+   * **Firebase Authentication:** Login 1-klik dengan Google Sign-In & Email/Password.
+2. **API Eksternal (Google AI & Voice Engine):**
+   * **Gemini 3.5 Flash-Lite:** Model Gemini **paling murah & efisien** ($0.30 input / $2.50 output per 1M token) untuk analisis form instan dan chat co-pilot dengan latensi kilat (<800ms).
+   * **Google Cloud TTS (WaveNet):** Sintesis suara berkualitas tinggi dengan jatah **Free Tier 4.000.000 (4 Juta) Karakter/Bulan GRATIS** yang mencakup 11 bahasa area JAPAC.
+   * **Estimasi Biaya Operasional (< 50 Pengguna/Hari):** Hanya **~$0.30 – $1.20 / bulan** (~Rp 5.000 – Rp 20.000 / bulan), karena TTS, Functions, Storage, Firestore, dan Hosting 100% berada dalam kuota gratis.
 3. **Strategi Dual-Build Ekstensi:**
    * **Build Lite (Chrome Web Store):** Izin minimal (`activeTab`, `scripting`, `sidePanel`, `storage`), host permission sempit ke domain sendiri, tanpa otomasi klik berbahaya, submit di Hari ke-4 dengan mode *Unlisted*.
    * **Build Full (Hackathon Demo & Juri):** Disediakan via file `.zip` (Load Unpacked) di `telmy.id/download` dan didemokan di video 3 menit jika review CWS belum selesai pada hari H.
@@ -128,16 +129,25 @@
 ---
 
 ## 📝 Catatan Teknis & Parameter Konfigurasi
-
-### Model Gemini & Suara
-* **Chat / Form Explainer:** `gemini-1.5-flash` / `gemini-2.0-flash`
-* **Text-to-Speech:** `Gemini 3.8 Flash-Lite TTS (Preview)`
-  * Input SKU: `6D6B-51EE-87C4` ($0.50 / 1M token)
-  * Audio Output SKU: `676E-5101-0A30` ($6.00 / 1M token audio)
-  * Voice Engine Fallback: Web Speech API Browser
-
-### Domain & Endpoints
-* **Website:** `https://telmy.id` atau `https://telmyai.com`
-* **API Gateway:** `https://api.telmy.id` atau Firebase Cloud Functions
-* **Privacy Policy URL:** `https://telmy.id/privacy`
-* **Live Demo URL:** `https://telmy.id/demo`
+ 
+ ### Model Gemini & Suara
+ * **Chat / Form Explainer:** `gemini-3.5-flash-lite` (Paling hemat biaya & latency terendah)
+   * Input: $0.30 per 1M token
+   * Output: $2.50 per 1M token
+ * **Text-to-Speech:** `Google Cloud TTS (WaveNet)`
+   * Kuota Gratis: 4.000.000 karakter / bulan GRATIS
+   * Tarif overage: $4.00 per 1M karakter
+   * Voice Engine Fallback: Web Speech API Browser (Client-side 100% Free)
+ 
+ ### Layanan Firebase
+ * **Hosting:** Firebase Hosting (`backend/public/`)
+ * **Backend API:** Firebase Functions 2nd Gen (Express.js wrapper, region `asia-southeast2`)
+ * **Database:** Cloud Firestore (`asia-southeast2`)
+ * **Object Storage:** Firebase Storage (Foto profil & attachment)
+ * **Auth:** Firebase Authentication (Google 1-Click + Email/Password)
+ 
+ ### Domain & Endpoints
+ * **Website:** `https://telmy.id` atau `https://telmyai.com`
+ * **API Gateway:** Firebase Functions HTTPS endpoint (`/api/**`)
+ * **Privacy Policy URL:** `https://telmy.id/privacy`
+ * **Live Demo URL:** `https://telmy.id/demo`

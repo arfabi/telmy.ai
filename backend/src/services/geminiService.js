@@ -26,7 +26,7 @@ export async function generateFieldExplanation(fieldMetadata, targetLanguage = '
 
   const prompt = `
 Anda adalah asisten panduan formulir layanan publik dan perizinan berbasis AI bernama Telmy.ai (Your AI form-filling assistant).
-Tugas Anda: Berikan panduan yang sangat jelas, ramah, dan akurat untuk kolom formulir berikut bagi pengguna umum dan WNA.
+Tugas Anda: Berikan panduan yang sangat jelas, ramah, dan akurat untuk kolom formulir berikut bagi pengguna umum dan Warga Negara Asing.
 
 Informasi Kolom Formulir:
 - Label Formulir: "${fieldMetadata.label || fieldMetadata.name || 'Kolom Isian'}"
@@ -56,8 +56,9 @@ Format Keluaran (Wajib format JSON valid saja, tanpa tanda markdown \`\`\`json):
 
   try {
     const ai = getClient();
+    const modelName = process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite';
     const model = ai.getGenerativeModel({
-      model: 'gemini-3.8-flash',
+      model: modelName,
       generationConfig: {
         responseMimeType: 'application/json',
         temperature: 0.2
@@ -86,8 +87,8 @@ function createStaticFallback(metadata, lang) {
 
   return {
     label,
-    meaning: isEn 
-      ? `This field requires the appropriate details for "${label}".` 
+    meaning: isEn
+      ? `This field requires the appropriate details for "${label}".`
       : `Kolom ini digunakan untuk memasukkan informasi "${label}" sesuai dokumen resmi Anda.`,
     howToFill: isEn
       ? `Enter your data as registered on your official identification or legal document.`

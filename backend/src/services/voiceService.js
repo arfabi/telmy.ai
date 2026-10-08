@@ -4,22 +4,22 @@
  * with native Web Speech API and ElevenLabs fallbacks.
  */
 
-const GOOGLE_TTS_ENDPOINT = 'https://texttospeech.googleapis.com/v1/text:synthesize';
-const ELEVENLABS_API_BASE = 'https://api.elevenlabs.io/v1';
+const GOOGLE_TTS_ENDPOINT = process.env.GOOGLE_TTS_ENDPOINT || 'https://texttospeech.googleapis.com/v1/text:synthesize';
+const ELEVENLABS_API_BASE = process.env.ELEVENLABS_API_BASE || 'https://api.elevenlabs.io/v1';
 
-// Complete JAPAC Language to Google TTS locale mapping (English default)
+// Complete JAPAC Language to Google Cloud TTS WaveNet mapping (English default)
 const GOOGLE_VOICE_MAP = {
-  en: { languageCode: 'en-US', name: 'en-US-Journey-F', ssmlGender: 'FEMALE' },
-  id: { languageCode: 'id-ID', name: 'id-ID-Standard-A', ssmlGender: 'FEMALE' },
-  ja: { languageCode: 'ja-JP', name: 'ja-JP-Standard-A', ssmlGender: 'FEMALE' },
-  ko: { languageCode: 'ko-KR', name: 'ko-KR-Standard-A', ssmlGender: 'FEMALE' },
-  zh: { languageCode: 'cmn-CN', name: 'cmn-CN-Standard-A', ssmlGender: 'FEMALE' },
-  'zh-TW': { languageCode: 'cmn-TW', name: 'cmn-TW-Standard-A', ssmlGender: 'FEMALE' },
-  vi: { languageCode: 'vi-VN', name: 'vi-VN-Standard-A', ssmlGender: 'FEMALE' },
-  th: { languageCode: 'th-TH', name: 'th-TH-Standard-A', ssmlGender: 'FEMALE' },
-  hi: { languageCode: 'hi-IN', name: 'hi-IN-Standard-A', ssmlGender: 'FEMALE' },
-  fil: { languageCode: 'fil-PH', name: 'fil-PH-Standard-A', ssmlGender: 'FEMALE' },
-  ms: { languageCode: 'ms-MY', name: 'ms-MY-Standard-A', ssmlGender: 'FEMALE' }
+  en: { languageCode: 'en-US', name: process.env.GOOGLE_TTS_VOICE_EN || 'en-US-Wavenet-F', ssmlGender: 'FEMALE' },
+  id: { languageCode: 'id-ID', name: process.env.GOOGLE_TTS_VOICE_ID || 'id-ID-Wavenet-A', ssmlGender: 'FEMALE' },
+  ja: { languageCode: 'ja-JP', name: process.env.GOOGLE_TTS_VOICE_JA || 'ja-JP-Wavenet-A', ssmlGender: 'FEMALE' },
+  ko: { languageCode: 'ko-KR', name: process.env.GOOGLE_TTS_VOICE_KO || 'ko-KR-Wavenet-A', ssmlGender: 'FEMALE' },
+  zh: { languageCode: 'cmn-CN', name: process.env.GOOGLE_TTS_VOICE_ZH || 'cmn-CN-Wavenet-A', ssmlGender: 'FEMALE' },
+  'zh-TW': { languageCode: 'cmn-TW', name: process.env.GOOGLE_TTS_VOICE_ZHTW || 'cmn-TW-Wavenet-A', ssmlGender: 'FEMALE' },
+  vi: { languageCode: 'vi-VN', name: process.env.GOOGLE_TTS_VOICE_VI || 'vi-VN-Wavenet-A', ssmlGender: 'FEMALE' },
+  th: { languageCode: 'th-TH', name: process.env.GOOGLE_TTS_VOICE_TH || 'th-TH-Wavenet-A', ssmlGender: 'FEMALE' },
+  hi: { languageCode: 'hi-IN', name: process.env.GOOGLE_TTS_VOICE_HI || 'hi-IN-Wavenet-A', ssmlGender: 'FEMALE' },
+  fil: { languageCode: 'fil-PH', name: process.env.GOOGLE_TTS_VOICE_FIL || 'fil-PH-Wavenet-A', ssmlGender: 'FEMALE' },
+  ms: { languageCode: 'ms-MY', name: process.env.GOOGLE_TTS_VOICE_MS || 'ms-MY-Wavenet-A', ssmlGender: 'FEMALE' }
 };
 
 /**
@@ -38,10 +38,9 @@ export function getVoiceStatus() {
   const hasGoogle = Boolean(process.env.GEMINI_API_KEY || process.env.GOOGLE_TTS_API_KEY);
   return {
     configured: isVoiceConfigured(),
-    provider: hasGoogle ? 'google-gemini-tts' : (process.env.ELEVENLABS_API_KEY ? 'elevenlabs' : 'browser-speech'),
-    model: 'Gemini 3.8 Flash-Lite TTS (Preview)',
-    skuInput: '6D6B-51EE-87C4',
-    skuOutput: '676E-5101-0A30'
+    provider: hasGoogle ? 'google-cloud-tts' : (process.env.ELEVENLABS_API_KEY ? 'elevenlabs' : 'browser-speech'),
+    model: process.env.GOOGLE_TTS_MODEL_NAME || 'Google Cloud TTS WaveNet',
+    endpoint: GOOGLE_TTS_ENDPOINT
   };
 }
 
