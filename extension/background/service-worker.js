@@ -36,37 +36,42 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = 30000) {
     const res = await fetch(url, { ...options, signal: controller.signal });
     clearTimeout(id);
 
-    // If cloud endpoint returned static HTML (Firebase hosting rewrite because backend not on cloud yet),
-    // automatically attempt local dev backend server (http://localhost:8080/api)
+    // If cloud endpoint returned static HTML (Firebase hosting rewrite not deployed yet),
+    // automatically attempt live Cloud Run endpoint (telmy-ai-git in asia-northeast1)
     const contentType = res.headers.get('content-type') || '';
     if (contentType.includes('text/html') && url.includes('telmy.web.app/api')) {
-      const localUrl = url.replace('https://telmy.web.app/api', 'http://localhost:8080/api');
+      const cloudRunUrl = url.replace('https://telmy.web.app/api', 'https://telmy-ai-git-620239122732.asia-northeast1.run.app/api');
       try {
-        const localController = new AbortController();
-        const localId = setTimeout(() => localController.abort(), 10000);
-        const localRes = await fetch(localUrl, { ...options, signal: localController.signal });
-        clearTimeout(localId);
-        if (localRes.ok && (localRes.headers.get('content-type') || '').includes('application/json')) {
-          console.log(`[Telmy SW] Re-routed request from static cloud to live local server: ${localUrl}`);
-          return localRes;
+        const cloudController = new AbortController();
+        const cloudId = setTimeout(() => cloudController.abort(), 15000);
+        const cloudRes = await fetch(cloudRunUrl, { ...options, signal: cloudController.signal });
+        clearTimeout(cloudId);
+        if (cloudRes.ok && (cloudRes.headers.get('content-type') || '').includes('application/json')) {
+          console.log(`[Telmy SW] Re-routed request from static hosting to live Cloud Run: ${cloudRunUrl}`);
+          return cloudRes;
         }
-      } catch (localErr) {
-        // Local server not reachable either
+      } catch (cloudErr) {
+        // Fallback to local dev if Cloud Run not reachable
+        try {
+          const localUrl = url.replace('https://telmy.web.app/api', 'http://localhost:8080/api');
+          const localRes = await fetch(localUrl, { ...options });
+          if (localRes.ok) return localRes;
+        } catch (e) {}
       }
     }
 
     return res;
   } catch (err) {
     clearTimeout(id);
-    // If cloud network failed, try localhost:8080 as backup
+    // If cloud network failed, try Cloud Run or localhost
     if (url.includes('telmy.web.app/api')) {
-      const localUrl = url.replace('https://telmy.web.app/api', 'http://localhost:8080/api');
+      const cloudRunUrl = url.replace('https://telmy.web.app/api', 'https://telmy-ai-git-620239122732.asia-northeast1.run.app/api');
       try {
-        const localController = new AbortController();
-        const localId = setTimeout(() => localController.abort(), 10000);
-        const localRes = await fetch(localUrl, { ...options, signal: localController.signal });
-        clearTimeout(localId);
-        if (localRes.ok) return localRes;
+        const cloudController = new AbortController();
+        const cloudId = setTimeout(() => cloudController.abort(), 15000);
+        const cloudRes = await fetch(cloudRunUrl, { ...options, signal: cloudController.signal });
+        clearTimeout(cloudId);
+        if (cloudRes.ok) return cloudRes;
       } catch (e) {}
     }
     throw err;
