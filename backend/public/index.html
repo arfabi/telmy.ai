@@ -297,7 +297,7 @@
   <!-- Ambient Top Lighting -->
   <div class="ambient-glow"></div>
 
-  <!-- Navbar -->
+  <!-- Navbar (Menu Utama) -->
   <nav class="navbar">
     <div class="container nav-container">
       <a href="/" class="brand">
@@ -305,12 +305,18 @@
         <span class="brand-name" style="letter-spacing: -0.5px;">Telmy.ai</span>
         <span class="brand-badge" style="background: var(--accent-soft); color: var(--accent); font-weight: 700;">Co-Pilot</span>
       </a>
-      <ul class="nav-links">
-        <li><a href="#superpowers" class="nav-link" id="nav-features">Superpowers</a></li>
-        <li><a href="#pricing" class="nav-link" id="nav-pricing">Pricing</a></li>
-        <li><a href="/dashboard" class="nav-link" id="nav-dashboard">Dashboard</a></li>
-        <li><a href="/demo.html" class="nav-link" id="nav-demo">Live Demo</a></li>
-        <li><a href="/download.html" class="nav-link" id="nav-download">Download Extension</a></li>
+
+      <!-- Mobile Hamburger Button -->
+      <button class="nav-mobile-toggle" id="nav-mobile-toggle" aria-label="Toggle navigation">
+        <span></span><span></span><span></span>
+      </button>
+
+      <ul class="nav-links" id="nav-menu">
+        <li><a href="/" class="nav-link active" id="nav-home">Home</a></li>
+        <li><a href="/#superpowers" class="nav-link" id="nav-features">Superpowers</a></li>
+        <li><a href="/#pricing" class="nav-link" id="nav-pricing">Pricing</a></li>
+        <li><a href="/demo" class="nav-link" id="nav-demo">Live Demo</a></li>
+        <li><a href="/download" class="nav-link" id="nav-download">Download Extension</a></li>
         <li>
           <!-- JAPAC Language Selector -->
           <select id="landing-lang-select" class="lang-select-nav" aria-label="Select Language">
@@ -327,7 +333,7 @@
             <option value="ms">🇲🇾 Melayu</option>
           </select>
         </li>
-        <li><a href="/demo.html" class="btn-nav-cta" id="nav-cta" style="background: var(--accent);">Try Now 🚀</a></li>
+        <li><a href="/demo" class="btn-nav-cta" id="nav-cta">Try Now 🚀</a></li>
       </ul>
     </div>
   </nav>
@@ -753,9 +759,9 @@
       };
 
       if (data.metaTitle) document.title = data.metaTitle;
+      setText('nav-home', data.navHome || 'Home');
       setText('nav-features', data.navFeatures);
       setText('nav-pricing', data.navPricing);
-      setText('nav-dashboard', data.navDashboard);
       setText('nav-demo', data.navDemo);
       setText('nav-download', data.navDownload);
       setText('nav-cta', data.navCta);
@@ -771,16 +777,14 @@
       localStorage.setItem('telmy_landing_lang', lang);
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      const langSelect = document.getElementById('landing-lang-select');
-      const savedLang = localStorage.getItem('telmy_landing_lang') || 'en';
-      langSelect.value = savedLang;
-      setLandingLanguage(savedLang);
+    // Expose for navbar.js
+    window.setLandingLanguage = setLandingLanguage;
 
-      langSelect.addEventListener('change', (e) => {
-        setLandingLanguage(e.target.value);
-      });
+    document.addEventListener('DOMContentLoaded', () => {
+      const savedLang = localStorage.getItem('telmy_landing_lang') || 'en';
+      setLandingLanguage(savedLang);
     });
   </script>
+  <script src="navbar.js"></script>
 </body>
 </html>

@@ -63,18 +63,43 @@
   </style>
 </head>
 <body>
-  <!-- Navbar -->
+  <!-- Navbar (Menu Utama) -->
   <nav class="navbar">
     <div class="container nav-container">
       <a href="/" class="brand">
-        <img src="logo.png" alt="Telmy.ai Logo" class="brand-logo">
-        <span class="brand-name">Telmy.ai</span>
-        <span class="brand-badge">Download</span>
+        <img src="telmy_icon.png" alt="Telmy.ai Logo" class="brand-logo" style="border-radius: 9px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <span class="brand-name" style="letter-spacing: -0.5px;">Telmy.ai</span>
+        <span class="brand-badge" style="background: var(--accent-soft); color: var(--accent); font-weight: 700;">Co-Pilot</span>
       </a>
-      <ul class="nav-links">
-        <li><a href="/" class="nav-link">Home</a></li>
-        <li><a href="/demo.html" class="nav-link">Live Demo</a></li>
-        <li><a href="/privacy.html" class="nav-link">Privacy Policy</a></li>
+
+      <!-- Mobile Hamburger Button -->
+      <button class="nav-mobile-toggle" id="nav-mobile-toggle" aria-label="Toggle navigation">
+        <span></span><span></span><span></span>
+      </button>
+
+      <ul class="nav-links" id="nav-menu">
+        <li><a href="/" class="nav-link" id="nav-home">Home</a></li>
+        <li><a href="/#superpowers" class="nav-link" id="nav-features">Superpowers</a></li>
+        <li><a href="/#pricing" class="nav-link" id="nav-pricing">Pricing</a></li>
+        <li><a href="/demo" class="nav-link" id="nav-demo">Live Demo</a></li>
+        <li><a href="/download" class="nav-link active" id="nav-download">Download Extension</a></li>
+        <li>
+          <!-- JAPAC Language Selector -->
+          <select id="landing-lang-select" class="lang-select-nav" aria-label="Select Language">
+            <option value="en" selected>🇬🇧 English</option>
+            <option value="id">🇮🇩 Indonesia</option>
+            <option value="ja">🇯🇵 日本語</option>
+            <option value="ko">🇰🇷 한국어</option>
+            <option value="zh">🇨🇳 简体中文</option>
+            <option value="zh-TW">🇹🇼 繁體中文</option>
+            <option value="vi">🇻🇳 Tiếng Việt</option>
+            <option value="th">🇹🇭 ไทย</option>
+            <option value="hi">🇮🇳 हिन्दी</option>
+            <option value="fil">🇵🇭 Filipino</option>
+            <option value="ms">🇲🇾 Melayu</option>
+          </select>
+        </li>
+        <li><a href="/demo" class="btn-nav-cta" id="nav-cta">Try Now 🚀</a></li>
       </ul>
     </div>
   </nav>
@@ -152,11 +177,40 @@
 
   <!-- Footer -->
   <footer class="footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <div class="brand" style="margin-bottom: 12px;">
+          <img src="telmy_icon.png" alt="Telmy.ai" class="brand-logo" style="border-radius: 8px;">
+          <span class="brand-name">Telmy.ai</span>
+        </div>
+        <p style="font-size: 13.5px; color: var(--text-muted); line-height: 1.5;">
+          The Friendly AI Form-Filling Companion & Co-Pilot. Making intimidating forms effortlessly accessible.
+        </p>
+      </div>
+      <div>
+        <h4 style="font-size: 13px; font-weight: 700; color: #0f172a; margin-bottom: 14px;">Platform</h4>
+        <ul style="list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 13.5px;">
+          <li><a href="/" style="color: var(--text-muted);">Home</a></li>
+          <li><a href="/#superpowers" style="color: var(--text-muted);">Superpowers</a></li>
+          <li><a href="/#pricing" style="color: var(--text-muted);">Pricing</a></li>
+          <li><a href="/demo" style="color: var(--text-muted);">Live Demo</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 style="font-size: 13px; font-weight: 700; color: #0f172a; margin-bottom: 14px;">Resources</h4>
+        <ul style="list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 13.5px;">
+          <li><a href="/download" style="color: var(--primary); font-weight: 600;">Download Extension</a></li>
+          <li><a href="/dashboard" style="color: var(--text-muted);">User Dashboard</a></li>
+          <li><a href="/privacy" style="color: var(--text-muted);">Privacy Policy</a></li>
+        </ul>
+      </div>
+    </div>
     <div class="container">
       <div class="footer-copy">
-        Copyright © 2026 Telmy.ai. All rights reserved.
+        Crafted with ❤️ for the Google AI Hackathon 2026. Powered by Google Gemini 3.5 & WaveNet.
       </div>
     </div>
   </footer>
+  <script src="navbar.js"></script>
 </body>
 </html>
