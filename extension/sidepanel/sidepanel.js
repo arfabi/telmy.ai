@@ -1038,6 +1038,44 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
+  async function handleTrigger1ClickAutoFill() {
+    const stored = await chrome.storage.local.get(['telmy_autofill', 'user']);
+    let afData = stored.telmy_autofill || null;
+    if (!afData && stored.user) {
+      afData = {
+        name: stored.user.displayName || stored.user.name || '',
+        email: stored.user.email || ''
+      };
+    }
+
+    if (!afData || (!afData.name && !afData.passport && !afData.nik && !afData.email)) {
+      appendChatMessage({
+        role: 'assistant',
+        text: currentLanguage === 'id'
+          ? '⚡ **1-Click AutoFill**: Data profil tersimpan Anda belum diisi. Kunjungi Member Area di https://telmy.web.app/dashboard#autofill untuk menyimpan data paspor, NIK, dan identitas Anda!'
+          : '⚡ **1-Click AutoFill**: Your master profile is not configured yet. Visit your Member Area at https://telmy.web.app/dashboard#autofill to set up your legal name, passport, and identity info!',
+        time: formatTime(new Date())
+      });
+      return;
+    }
+
+    if (currentTabId) {
+      chrome.tabs.sendMessage(currentTabId, {
+        type: 'AUTOFILL_FORM_FIELDS',
+        data: afData
+      }, (res) => {
+        const count = (res && res.filledCount !== undefined) ? res.filledCount : 0;
+        appendChatMessage({
+          role: 'assistant',
+          text: currentLanguage === 'id'
+            ? `⚡ **1-Click AutoFill Selesai**: Berhasil mengisi ${count > 0 ? count + ' kolom' : 'kolom yang cocok'} dari profil aman Anda. Harap periksa kembali sebelum mengirimkan formulir!`
+            : `⚡ **1-Click AutoFill Complete**: Successfully filled ${count > 0 ? count + ' fields' : 'matching fields'} using your encrypted profile vault. Please review all entries before submitting!`,
+          time: formatTime(new Date())
+        });
+      });
+    }
+  }
+
   // =========================================================
   // Context-Aware Page Translation Workflow (Priority 3)
   // =========================================================
@@ -1730,6 +1768,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (chipPdfGuide) {
       chipPdfGuide.addEventListener('click', () => {
         switchSourceMode('pdf');
+      });
+    }
+
+    const chipAutoFill = document.getElementById('chip-autofill');
+    if (chipAutoFill) {
+      chipAutoFill.addEventListener('click', async () => {
+        await handleTrigger1ClickAutoFill();
+      });
+    }
+
+    const chipTelmyBot = document.getElementById('chip-telmy-bot');
+    if (chipTelmyBot) {
+      chipTelmyBot.addEventListener('click', () => {
+        chatInput.focus();
+        chatInput.placeholder = currentLanguage === 'id' ? 'Tanyakan apa pun tentang formulir ini...' : 'Ask me anything about this form...';
+        chatStream.scrollTop = chatStream.scrollHeight;
       });
     }
 

@@ -120,6 +120,58 @@
       return false;
     }
 
+    // G2. Priority 9.1: 1-Click AutoFill All Matching Fields from User Vault
+    if (message.type === 'AUTOFILL_FORM_FIELDS') {
+      const data = message.data || {};
+      let filledCount = 0;
+
+      scannedItems.forEach((item) => {
+        if (!item || !item.metadata || !item.metadata.element) return;
+        const el = item.metadata.element;
+        // Strictly exclude passwords, credit cards, CVVs, tokens
+        const isSafe = el.type !== 'password' &&
+                       !(el.name && /card|cvv|cvc|otp|pin|token/i.test(el.name)) &&
+                       !(el.id && /card|cvv|cvc|otp|pin|token/i.test(el.id));
+        if (!isSafe) return;
+
+        const label = ((item.metadata.label || '') + ' ' + (item.metadata.name || '') + ' ' + (item.metadata.placeholder || '')).toLowerCase();
+        let valToFill = null;
+
+        if (/(full.*name|applicant.*name|nama.*lengkap|your.*name|nama pemohon)/i.test(label) && data.name) {
+          valToFill = data.name;
+        } else if (/(passport|no.*paspor|nomor.*paspor)/i.test(label) && data.passport) {
+          valToFill = data.passport;
+        } else if (/(nik|ktp|national.*id|identity.*number)/i.test(label) && data.nik) {
+          valToFill = data.nik;
+        } else if (/(birth.*date|date.*of.*birth|tanggal.*lahir|dob)/i.test(label) && data.dob) {
+          valToFill = data.dob;
+        } else if (/(nationality|kewarganegaraan|citizenship)/i.test(label) && data.nationality) {
+          valToFill = data.nationality;
+        } else if (/(phone|telp|nomor.*hp|mobile|telephone)/i.test(label) && data.phone) {
+          valToFill = data.phone;
+        } else if (/(address|alamat|domisili|residence)/i.test(label) && data.address) {
+          valToFill = data.address;
+        } else if (/(emergency|kontak.*darurat)/i.test(label) && data.emergency) {
+          valToFill = data.emergency;
+        }
+
+        if (valToFill && !el.value) {
+          try {
+            el.focus();
+            el.value = valToFill;
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+            el.classList.add('gmt-field-smart-filled');
+            setTimeout(() => el.classList.remove('gmt-field-smart-filled'), 1500);
+            filledCount++;
+          } catch (e) {}
+        }
+      });
+
+      sendResponse({ success: true, filledCount });
+      return false;
+    }
+
     // H. Priority 9.2: Form Pre-Submission Auditor (Audit current DOM inputs)
     if (message.type === 'AUDIT_FORM_VALUES') {
       const auditPayload = scannedItems.map((item, idx) => {
