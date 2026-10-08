@@ -9,22 +9,34 @@ const router = express.Router();
  */
 router.post('/explain-pdf', async (req, res) => {
   try {
-    const { pdfBase64, fileName = 'Form.pdf', targetLanguage = 'en' } = req.body;
+    const {
+      pdfBase64,
+      fileBase64,
+      fileName,
+      filename = 'Document.pdf',
+      targetLanguage,
+      language = 'en',
+      mimeType = 'application/pdf'
+    } = req.body;
 
-    if (!pdfBase64) {
+    const finalBase64 = fileBase64 || pdfBase64;
+    const finalFileName = fileName || filename;
+    const finalLang = targetLanguage || language;
+
+    if (!finalBase64) {
       return res.status(400).json({
         success: false,
-        error: 'Missing pdfBase64 payload in request body'
+        error: 'Missing fileBase64 or pdfBase64 payload in request body'
       });
     }
 
-    const result = await explainPdfForm(pdfBase64, fileName, targetLanguage);
+    const result = await explainPdfForm(finalBase64, finalFileName, finalLang, mimeType);
     return res.json(result);
   } catch (error) {
-    console.error('[PDF Route] Error analyzing PDF form:', error);
+    console.error('[PDF Route] Error analyzing document form:', error);
     return res.status(500).json({
       success: false,
-      error: error.message || 'Internal server error while analyzing PDF'
+      error: error.message || 'Internal server error while analyzing document'
     });
   }
 });

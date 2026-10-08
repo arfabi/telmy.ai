@@ -10,23 +10,7 @@
  */
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
-
-// Common Indonesian bureaucratic & civil glossary terms to protect/enrich
-const OFFICIAL_GLOSSARY_RULES = `
-OFFICIAL GLOSSARY & ACRONYM RULES (Preserve or append helpful context):
-- "NIK" -> Keep "NIK" or "NIK (National ID Number)"
-- "KTP" / "KTP-el" -> Keep "KTP" or "KTP (Identity Card)"
-- "KK" / "Kartu Keluarga" -> "Family Card (KK)"
-- "NPWP" -> Keep "NPWP" or "NPWP (Tax ID)"
-- "KITAS" / "KITAP" -> Keep "KITAS" / "KITAP (Residence Permit)"
-- "SKCK" -> "SKCK (Police Clearance Certificate)"
-- "Apostille" -> "Apostille Legalization"
-- "Kemenkumham" -> "Ministry of Law and Human Rights (Kemenkumham)"
-- "Kelurahan" / "Kecamatan" -> "Sub-district / District"
-- "RT/RW" -> Keep "RT/RW (Neighborhood/Hamlet Unit)"
-- "Paspor" -> "Passport"
-- "Akta Kelahiran" -> "Birth Certificate"
-`;
+import { getRelevantGlossaryRules } from './bureaucraticService.js';
 
 // Standard UI/UX conventions mapping
 const UI_UX_CONVENTIONS = `
@@ -48,12 +32,15 @@ UI/UX INDUSTRY WEB CONVENTIONS (Do NOT translate literally):
 `;
 
 /**
- * Build the 4-layer system prompt for page translation
+ * Build the 4-layer system prompt for page translation with Dynamic Glossary RAG
  */
 function buildTranslationPrompt(pageContext, targetLanguage, texts) {
   const langUpper = (targetLanguage || 'en').toUpperCase();
   const domain = pageContext.domain || 'Public Service Portal';
   const title = pageContext.title || 'Digital Government Form';
+
+  // Priority 4.3: Dynamic In-Context RAG Injection of Top Relevant Bureaucratic Terms
+  const dynamicGlossary = getRelevantGlossaryRules(texts, 5);
 
   return `You are Telmy.ai, an expert multilingual web localization and UI/UX translation engine specialized in public service, bureaucratic, and legal forms.
 
@@ -65,7 +52,7 @@ CONTEXT STATEMENT:
 - Page Title: "${title}"
 - Target Language: ${langUpper}
 
-${OFFICIAL_GLOSSARY_RULES}
+${dynamicGlossary}
 
 ${UI_UX_CONVENTIONS}
 

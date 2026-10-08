@@ -8,22 +8,26 @@
  */
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import crypto from 'crypto';
+import { getFirestore } from '../config/firebase.js';
 
 /**
- * Build the system prompt instructing Gemini to analyze the PDF form
+ * Build the system prompt instructing Gemini to analyze the PDF or Image form
  */
 function buildPdfPrompt(targetLanguage = 'en') {
-  return `You are Telmy.ai, an empathetic, expert multilingual AI Form Companion specialized in decoding complex legal, bureaucratic, visa, and government PDF application forms.
+  return `You are Telmy.ai, an empathetic, expert multilingual AI Form Companion specialized in decoding complex legal, bureaucratic, visa, scholarship, and government application documents (both digital PDFs and physical scanned/photographed forms).
 
 TASK:
-Analyze the provided PDF form thoroughly and produce a structured, human-friendly, step-by-step guidance walkthrough in the target language (${targetLanguage}).
+Analyze the provided document (PDF or scanned/camera image) thoroughly and produce a structured, human-friendly, step-by-step guidance walkthrough in the target language (${targetLanguage}).
 
-GUIDELINES:
-1. Explain dense legal/bureaucratic terms in warm, everyday plain language that everyday citizens and international travelers can easily understand.
-2. Provide realistic, properly formatted dummy examples for each input field (e.g. valid date formats, address formats, ID numbers).
-3. Warn against common mistakes that frequently trigger official application rejections.
-4. If applicable, provide clear notes for foreign passport holders or non-residents.
-5. Extract an exact checklist of supporting documents (e.g. photos, bank statements, valid passport) required to be submitted alongside this form.
+MULTIMODAL CAPABILITIES & GUIDELINES:
+1. Support both digital vector PDFs and camera photos/scans of physical paperwork (including angled shots, slight shadows, official stamps, physical checkboxes, or handwritten marks).
+2. For each detected field, explain dense bureaucratic/legal requirements in warm, everyday plain language.
+3. Provide realistic, properly formatted dummy examples for each input field (e.g. valid date formats, address formats, ID numbers).
+4. Warn against common pitfalls and errors that frequently trigger official application rejections.
+5. If applicable, provide clear notes for foreign passport holders or non-residents.
+6. Handwriting & Scan Ambiguity: If any part of the form contains handwritten text, faint ink, or ambiguous markings, flag it in "uncertaintyNotice" so the applicant is advised to verify.
+7. Extract an exact checklist of supporting documents (e.g. photos, bank statements, apostille, transcripts) required.
 
 OUTPUT FORMAT:
 You MUST reply strictly with a valid JSON object (no markdown code blocks, no text before or after).
@@ -43,12 +47,13 @@ The JSON MUST follow this exact schema:
       "fields": [
         {
           "name": "field_identifier",
-          "label": "Field Question as printed on the PDF",
+          "label": "Field Question as printed on the PDF/Form",
           "required": true,
           "meaning": "What this field actually asks for in plain simple terms",
           "example": "A realistic, properly formatted dummy example",
           "pitfall": "Most common mistake that leads to rejection",
-          "foreignerNote": "Special instruction if applicant is a foreign citizen or non-resident (or null if not applicable)"
+          "foreignerNote": "Special instruction if applicant is a foreign citizen or non-resident (or null)",
+          "uncertaintyNotice": "Specific note if handwriting, scan skew, or stamp is ambiguous (or null)"
         }
       ]
     }
@@ -141,21 +146,87 @@ function generateFallbackPdfGuidance(fileName = 'Application Form.pdf', targetLa
   };
 }
 
+const templateMemoryCache = new Map();
+
 /**
- * Main function: Explain PDF Form using Gemini Multimodal Document Processing
+ * Main function: Explain PDF or Image Form using Gemini Multimodal Document Processing
+ * Implements Priority 4.4: Universal Document & PDF Template Cache (Zero-Token Re-Use)
  * 
- * @param {string} base64Pdf - Base64 encoded PDF string
- * @param {string} fileName - Original file name of the PDF
+ * @param {string} base64Payload - Base64 encoded document string
+ * @param {string} fileName - Original file name of the document
  * @param {string} targetLanguage - Target language code (e.g. 'en', 'hi', 'id', 'ja')
+ * @param {string} mimeType - MIME type ('application/pdf', 'image/jpeg', etc.)
  * @returns {Promise<object>} Structured guidance JSON
  */
-export async function explainPdfForm(base64Pdf, fileName = 'Document.pdf', targetLanguage = 'en') {
-  if (!base64Pdf) {
-    throw new Error('Base64 PDF payload is required');
+export async function explainPdfForm(base64Payload, fileName = 'Document.pdf', targetLanguage = 'en', mimeType = 'application/pdf') {
+  if (!base64Payload) {
+    throw new Error('Base64 document payload is required');
   }
 
-  // Strip data URL prefix if present (e.g. "data:application/pdf;base64,")
-  const cleanBase64 = base64Pdf.replace(/^data:application\/pdf;base64,/, '').trim();
+  // Strip data URL prefix if present (e.g. "data:application/pdf;base64," or "data:image/jpeg;base64,")
+  let cleanBase64 = base64Payload;
+  let resolvedMime = mimeType || 'application/pdf';
+
+  const dataUriMatch = base64Payload.match(/^data:([^;]+);base64,(.+)$/);
+  if (dataUriMatch) {
+    resolvedMime = dataUriMatch[1];
+    cleanBase64 = dataUriMatch[2].trim();
+  } else {
+    cleanBase64 = base64Payload.trim();
+    const ext = fileName.toLowerCase().split('.').pop();
+    if (ext === 'jpg' || ext === 'jpeg') resolvedMime = 'image/jpeg';
+    else if (ext === 'png') resolvedMime = 'image/png';
+    else if (ext === 'webp') resolvedMime = 'image/webp';
+    else if (ext === 'pdf') resolvedMime = 'application/pdf';
+  }
+
+  // Priority 4.4: Tingkat 1 (Exact SHA-256 Hash Check)
+  const fileHashSha256 = crypto.createHash('sha256').update(cleanBase64).digest('hex');
+  const cacheKey = `${fileHashSha256}:${targetLanguage}`;
+
+  if (templateMemoryCache.has(cacheKey)) {
+    console.log(`[Document Cache: ZERO-TOKEN] SHA-256 Memory Hit for ${fileName} (${fileHashSha256.slice(0, 12)}...)`);
+    return {
+      success: true,
+      data: templateMemoryCache.get(cacheKey),
+      meta: {
+        fileName,
+        fileHashSha256,
+        zeroToken: true,
+        cached: true,
+        targetLanguage
+      }
+    };
+  }
+
+  const { db, isFirebaseConnected } = getFirestore();
+  if (isFirebaseConnected && db) {
+    try {
+      const docRef = db.collection('document_templates').doc(fileHashSha256);
+      const snapshot = await docRef.get();
+      if (snapshot.exists) {
+        const cachedDoc = snapshot.data();
+        if (cachedDoc.guidanceByLanguage?.[targetLanguage]) {
+          const cachedGuidance = cachedDoc.guidanceByLanguage[targetLanguage];
+          templateMemoryCache.set(cacheKey, cachedGuidance);
+          console.log(`[Document Cache: ZERO-TOKEN] Firestore Hit for ${fileName} (${fileHashSha256.slice(0, 12)}...)`);
+          return {
+            success: true,
+            data: cachedGuidance,
+            meta: {
+              fileName,
+              fileHashSha256,
+              zeroToken: true,
+              cached: true,
+              targetLanguage
+            }
+          };
+        }
+      }
+    } catch (e) {
+      console.warn('[Document Cache] Firestore lookup notice:', e.message);
+    }
+  }
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
@@ -175,36 +246,54 @@ export async function explainPdfForm(base64Pdf, fileName = 'Document.pdf', targe
     });
 
     const promptText = buildPdfPrompt(targetLanguage);
-    const pdfPart = {
+    const documentPart = {
       inlineData: {
         data: cleanBase64,
-        mimeType: 'application/pdf'
+        mimeType: resolvedMime
       }
     };
 
-    console.log(`[PDF Service] Sending PDF "${fileName}" (${Math.round(cleanBase64.length / 1024)} KB base64) to Gemini model "${modelName}"...`);
+    console.log(`[PDF Service] Sending document "${fileName}" (type: ${resolvedMime}, ${Math.round(cleanBase64.length / 1024)} KB base64) to Gemini model "${modelName}"...`);
     const startTime = Date.now();
 
-    const result = await model.generateContent([promptText, pdfPart]);
+    const result = await model.generateContent([promptText, documentPart]);
     const responseText = result.response.text();
     const duration = Date.now() - startTime;
     console.log(`[PDF Service] Gemini responded in ${duration}ms`);
 
     // Parse JSON safely
     const parsed = JSON.parse(responseText.trim());
+
+    // Save to memory cache
+    templateMemoryCache.set(cacheKey, parsed);
+
+    // Save to Firestore asynchronously
+    if (isFirebaseConnected && db) {
+      db.collection('document_templates').doc(fileHashSha256).set({
+        fileHashSha256,
+        documentTitle: parsed.documentTitle || fileName,
+        issuingAuthority: parsed.issuingAuthority || 'Government / Official Portal',
+        mimeType: resolvedMime,
+        createdAt: new Date().toISOString(),
+        guidanceByLanguage: {
+          [targetLanguage]: parsed
+        }
+      }, { merge: true }).catch(() => {});
+    }
+
     return {
       success: true,
       data: parsed,
       meta: {
         fileName,
+        fileHashSha256,
         model: modelName,
         durationMs: duration,
         targetLanguage
       }
     };
   } catch (error) {
-    console.error('[PDF Service] Error processing PDF with Gemini:', error.message);
-    // Graceful fallback to avoid user disruption
+    console.error('[PDF Service] Error processing document with Gemini:', error.message);
     return {
       success: true,
       data: generateFallbackPdfGuidance(fileName, targetLanguage),

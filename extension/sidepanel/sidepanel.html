@@ -52,16 +52,23 @@
       <button id="sp-btn-resume" class="btn-resume-scan">Resume ▶</button>
     </div>
 
-    <!-- PDF Form Detected Alert Banner (Priority 7) -->
+    <!-- PDF Form Detected Alert Banner (Priority 7.5: 1-Click Native Ingestion) -->
     <div id="sp-pdf-alert-banner" class="sp-pdf-alert-banner" style="display: none;">
       <div class="sp-pdf-alert-content">
         <span class="sp-pdf-alert-icon">📄</span>
         <div class="sp-pdf-alert-info">
           <strong id="lbl-pdf-banner-title">PDF Document Detected</strong>
-          <small id="lbl-pdf-banner-sub">Open side-by-side Gemini guidance</small>
+          <small id="lbl-pdf-banner-sub">1-Click Gemini multimodal extraction</small>
         </div>
       </div>
-      <button id="btn-pdf-banner-action" class="btn-pdf-banner-btn">Guide Form ▶</button>
+      <button id="btn-pdf-banner-action" class="btn-pdf-banner-btn">⚡ 1-Click Guide</button>
+    </div>
+
+    <!-- Priority 9.3: Privacy Shield Indicator (Local PII Masking) -->
+    <div id="sp-privacy-bar" class="sp-privacy-bar" title="Sensitive PII like National IDs, Passports, and Phone Numbers are masked locally before AI processing">
+      <span class="privacy-shield-icon">🛡️</span>
+      <span id="lbl-privacy-text" class="privacy-shield-text">Privacy Shield Active: PII Masked Locally</span>
+      <span class="privacy-shield-tag">GDPR Safe</span>
     </div>
 
     <!-- User Profile Popover Dropdown -->
@@ -78,6 +85,7 @@
         </div>
       </div>
       <div class="popover-actions">
+        <button id="btn-open-vault" class="btn-popover-vault">🔐 Profile Vault & Smart Fill</button>
         <button id="btn-popover-auth" class="btn-popover-primary">Connect with Google</button>
         <button id="btn-popover-signout" class="btn-popover-secondary" style="display: none;">Sign Out</button>
       </div>
@@ -199,6 +207,25 @@
             <div id="field-detail-content" style="display: none;"></div>
           </div>
 
+          <!-- Priority 9.2: AI Pre-Submission Auditor Trigger -->
+          <div class="sp-audit-trigger-card">
+            <button type="button" class="btn-run-audit" id="btn-run-form-audit">
+              <span class="audit-btn-icon">🔍</span>
+              <div class="audit-btn-text">
+                <strong id="lbl-audit-btn-title">Audit Form Sebelum Submit</strong>
+                <small id="lbl-audit-btn-sub">Pemeriksaan sanity check kelengkapan & format</small>
+              </div>
+            </button>
+            <div id="sp-audit-report-box" class="sp-audit-report-box" style="display: none;">
+              <div class="audit-report-header">
+                <div class="audit-status-pill" id="audit-status-pill">🟢 100% Ready</div>
+                <strong id="lbl-audit-report-heading">Laporan Audit Form</strong>
+                <button type="button" id="btn-close-audit-report" class="btn-audit-close" title="Tutup laporan">✕</button>
+              </div>
+              <div id="audit-report-items" class="audit-report-items"></div>
+            </div>
+          </div>
+
           <!-- Detected Fields Accordion / Quick List -->
           <div class="sp-fields-list-box">
             <div class="sp-section-heading">
@@ -223,22 +250,22 @@
         </footer>
       </div>
 
-      <!-- VIEW B: PDF Document Guidance Container (Priority 7) -->
+      <!-- VIEW B: PDF & Document Guidance Container (Priority 7) -->
       <div id="pdf-mode-container" class="pdf-mode-view" style="display: none;">
-        <!-- PDF Dropzone Card -->
+        <!-- PDF / Photo Dropzone Card (Priority 7.6: Multimodal Photo & Scan Support) -->
         <div id="sp-pdf-dropzone" class="sp-pdf-dropzone">
-          <input type="file" id="sp-pdf-file-input" accept="application/pdf" style="display: none;">
+          <input type="file" id="sp-pdf-file-input" accept="application/pdf,image/jpeg,image/png,image/webp" style="display: none;">
           <div class="sp-pdf-drop-content" id="sp-pdf-drop-content">
             <div class="sp-pdf-drop-icon">📑</div>
-            <strong id="lbl-pdf-drop-title">Drop PDF Form Here</strong>
-            <p id="lbl-pdf-drop-sub">Drag official visa, tax, or legal form (PDF) or click to browse</p>
-            <button type="button" class="btn-browse-pdf" id="btn-browse-pdf">Choose PDF File</button>
+            <strong id="lbl-pdf-drop-title">Drop PDF or Photo/Scan Here</strong>
+            <p id="lbl-pdf-drop-sub">Drag official visa, scholarship PDF, or smartphone photo of physical paperwork</p>
+            <button type="button" class="btn-browse-pdf" id="btn-browse-pdf">Choose Document or Photo</button>
           </div>
           <!-- Scanning / Gemini Multimodal Processing State -->
           <div class="sp-pdf-analyzing" id="sp-pdf-analyzing" style="display: none;">
             <div class="sp-pdf-spinner"></div>
-            <strong id="lbl-pdf-analyzing-title">Analyzing PDF with Gemini...</strong>
-            <p id="lbl-pdf-analyzing-sub">Extracting sections, official rules & checklist</p>
+            <strong id="lbl-pdf-analyzing-title">Analyzing with Gemini Multimodal...</strong>
+            <p id="lbl-pdf-analyzing-sub">Extracting fields, handwriting, stamps & checklist</p>
           </div>
         </div>
 
@@ -246,7 +273,7 @@
         <div id="sp-pdf-result-card" class="sp-pdf-result-card" style="display: none;">
           <div class="pdf-doc-header-card">
             <div class="pdf-doc-meta">
-              <span class="pdf-badge-tag">📄 PDF Copilot</span>
+              <span class="pdf-badge-tag">📄 Document Copilot</span>
               <button id="btn-reset-pdf" class="btn-reset-pdf-action" title="Analyze another document">New Form</button>
             </div>
             <h3 id="pdf-doc-title" class="pdf-doc-title">Document Title</h3>
@@ -276,6 +303,22 @@
 
           <!-- Field Breakdown for Selected Section -->
           <div id="pdf-active-section-fields" class="pdf-active-section-fields"></div>
+
+          <!-- Priority 7.7: Interactive PDF Form Writer & Official Export -->
+          <div class="pdf-export-action-card" id="pdf-export-card">
+            <div class="pdf-export-info">
+              <strong id="lbl-export-card-title">📝 Interactive Form Writer & Official Export</strong>
+              <p id="lbl-export-card-desc">Type directly into fields above or autofill from your profile, then export the completed document.</p>
+            </div>
+            <div class="pdf-export-btns">
+              <button type="button" class="btn-pdf-action-sec" id="btn-pdf-fill-profile" title="Autofill all matching fields from your Profile Vault">
+                ✨ Fill from Profile
+              </button>
+              <button type="button" class="btn-pdf-action-pri" id="btn-pdf-export-filled" title="Download official filled PDF document">
+                📥 Unduh PDF Terisi Resmi
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -399,6 +442,70 @@
     </div>
   </div>
 
+  <!-- Priority 9.1: Profile Vault & Master Data Modal -->
+  <div id="sp-vault-modal" class="sp-onboarding-overlay" style="display: none;">
+    <div class="vault-modal-card">
+      <div class="vault-header">
+        <div class="vault-header-title">
+          <span class="vault-icon">🔐</span>
+          <div>
+            <strong>Profile Vault (Master Data)</strong>
+            <small>Data disimpan terenkripsi lokal untuk 1-Click Smart Fill</small>
+          </div>
+        </div>
+        <button type="button" id="btn-close-vault" class="btn-close-mini">✕</button>
+      </div>
+      <div class="vault-form-body">
+        <div class="vault-form-row">
+          <label>Nama Paspor / Legal</label>
+          <input type="text" id="vault-fullName" placeholder="e.g. SITI NURHALIZA">
+        </div>
+        <div class="vault-form-row double">
+          <div>
+            <label>No. Paspor</label>
+            <input type="text" id="vault-passportNo" placeholder="e.g. A12345678">
+          </div>
+          <div>
+            <label>NIK / National ID</label>
+            <input type="text" id="vault-nationalId" placeholder="e.g. 3171012345670001">
+          </div>
+        </div>
+        <div class="vault-form-row double">
+          <div>
+            <label>Tanggal Lahir (YYYY-MM-DD)</label>
+            <input type="text" id="vault-dob" placeholder="1998-05-14">
+          </div>
+          <div>
+            <label>Kewarganegaraan</label>
+            <input type="text" id="vault-nationality" placeholder="Indonesian">
+          </div>
+        </div>
+        <div class="vault-form-row double">
+          <div>
+            <label>IPK / GPA (skala 4.0)</label>
+            <input type="text" id="vault-gpa" placeholder="3.85">
+          </div>
+          <div>
+            <label>No. Telepon Aktif</label>
+            <input type="text" id="vault-phone" placeholder="+628123456789">
+          </div>
+        </div>
+        <div class="vault-form-row">
+          <label>Alamat Lengkap / Sesuai KTP/Paspor</label>
+          <input type="text" id="vault-address" placeholder="Jl. Sudirman No. 45, Jakarta Selatan 12190">
+        </div>
+        <div class="vault-form-row">
+          <label>Kontak Darurat (Nama & Hubungan)</label>
+          <input type="text" id="vault-emergencyContact" placeholder="Budi Santoso (Ayah) - +62811987654">
+        </div>
+      </div>
+      <div class="vault-footer">
+        <button type="button" id="btn-save-vault" class="btn-vault-save">💾 Simpan ke Profile Vault</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="pdf-lib.min.js"></script>
   <script src="avatar-controller.js"></script>
   <script src="sidepanel.js"></script>
 </body>

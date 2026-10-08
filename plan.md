@@ -130,26 +130,26 @@
   - Strategi resolusi dinamis di `.env`: `EXPLAIN_STRATEGY=AI_FIRST` (otomatis simpan draft AI ke Firestore) dan `DB_FIRST` (cek cache Firestore terlebih dahulu).
 
 #### 4.2. Firestore Vector Search Engine (Cross-Domain Semantic Cache)
-- [ ] **Firestore Vector Indexing (`text-embedding-004`):**
+- [x] **Firestore Vector Indexing (`text-embedding-004`):**
   - Mengatasi keterbatasan *exact string matching* (`domain:field_label`) yang sering *cache miss* akibat variasi penamaan DOM antar situs web.
   - Tambahkan field `embedding` (vektor 768 dimensi) di koleksi `entries` menggunakan Google Cloud Vertex / Gemini Embeddings API.
-  - Query penelusuran semantik native Firestore:
+  - Query penelusuran semantik native Firestore / Cosine Similarity fallback:
     `db.collection('entries').findNearest('embedding', queryVector, { limit: 1, distanceMeasure: 'COSINE' })`.
   - **Threshold Similarity $\ge 0.90$:** Jika kolom memiliki arti semantik yang sama (contoh: *"Full Name in Passport"* vs *"Nama Lengkap (sesuai Paspor)"*), langsung sajikan panduan terverifikasi dari Firestore tanpa memanggil Gemini API lagi (Latensi <100ms, biaya $0).
 
 #### 4.3. Bureaucratic & Scholarship Term Dictionary (Context-Aware RAG untuk Translasi)
-- [ ] **Koleksi `bureaucratic_terms` (Aturan Preservasi Istilah Resmi):**
+- [x] **Koleksi `bureaucratic_terms` (Aturan Preservasi Istilah Resmi):**
   - Menyimpan istilah resmi beasiswa & birokrasi internasional (contoh: NIK, SKCK, Apostille, ToR / Transcript of Records, Affidavit of Support, Schengen Visa, Alien Registration).
   - Skema data: `term`, `category`, `rule` (`DO_NOT_TRANSLATE` | `FORCE_TRANSLATE` | `EXPLAIN_IN_PARENTHESES`), `targetTranslations`, dan vektor embedding frasa.
-- [ ] **Dynamic In-Context Injection di `translateService.js`:**
+- [x] **Dynamic In-Context Injection di `translateService.js`:**
   - Saat menerjemahkan halaman web beasiswa/visa, lakukan vector search ringkas untuk menemukan Top-5 istilah birokrasi yang relevan di halaman tersebut.
   - Suntikkan hanya 5 istilah tersebut ke prompt Gemini sebagai aturan kamus resmi. Prompt tetap ringkas dan hemat token, namun terjemahan 100% akurat dan baku.
 
 #### 4.4. Universal Document & PDF Template Cache (Zero-Token Re-Use)
-- [ ] **Koleksi `document_templates` (Cache Formulir Populer):**
+- [x] **Koleksi `document_templates` (Cache Formulir Populer):**
   - Menyimpan struktur hasil analisis formulir PDF/Scan beasiswa dan visa resmi (MEXT, LPDP, AAS, visa kedutaan).
   - Skema data: `templateId`, `documentTitle`, `issuingAuthority`, `fileHashSha256`, `sections`, `checklistAttachments`, dan vektor embedding judul/header.
-- [ ] **Pencarian Bertingkat (Hash First, Vector Fallback):**
+- [x] **Pencarian Bertingkat (Hash First, Vector Fallback):**
   - **Tingkat 1 (Exact SHA-256 Hash):** Jika berkas PDF yang diunggah memiliki hash identik dengan berkas yang pernah diproses sebelumnya, langsung kembalikan panduan lengkap secara instan tanpa memanggil Gemini (100% Zero-Token).
   - **Tingkat 2 (Semantic Vector Match):** Untuk formulir hasil foto kamera miring atau scan resolusi berbeda, cocokkan embedding header form dengan template resmi yang ada untuk memberikan panduan standar.
 
@@ -247,31 +247,31 @@
   - Tampilan grid responsif untuk kolom-kolom tiap seksi lengkap dengan tombol audio TTS Web Speech API.
 
 #### 7.5. [⚡ PRIORITAS TINGGI] 1-Click Native Viewer Ingestion (Tanpa Re-Upload)
-- [ ] **Auto-Fetch PDF Langsung dari Tab Aktif:**
+- [x] **Auto-Fetch PDF Langsung dari Tab Aktif:**
   - Banner di Side Panel mendeteksi URL PDF aktif (`https://.../form.pdf`).
   - Tombol aksi *"⚡ Analisis Form Ini Langsung (1-Klik)"*: Background script langsung mengunduh stream PDF via `fetch(tab.url)` ➔ konversi ke Base64 ➔ kirim ke Gemini API.
   - Pengguna tidak perlu lagi mendownload PDF ke komputer lalu drag-and-drop manual.
-- [ ] **Smart Fallback untuk Berkas Lokal (`file:///`):**
+- [x] **Smart Fallback untuk Berkas Lokal (`file:///`):**
   - Jika URL berawalan `file:///`, berikan panduan drag-and-drop yang ramah ke drop zone Side Panel (sesuai restriksi keamanan Chrome).
 
 #### 7.6. [⚡ PRIORITAS TINGGI] Multimodal Photo, Scan & Handwritten Document Engine
-- [ ] **Dukungan Format Gambar Ekstensif:**
+- [x] **Dukungan Format Gambar Ekstensif:**
   - Backend `/api/explain-pdf` diperluas menjadi Universal Document Explainer yang menerima `application/pdf`, `image/jpeg`, `image/png`, dan `image/webp`.
   - Satu pipeline tunggal memanfaatkan Native Multimodal Document Understanding Gemini 3.5 Flash-Lite (tanpa butuh OCR terpisah).
-- [ ] **Client-Side Image Resizer/Compressor (Canvas Optimization):**
+- [x] **Client-Side Image Resizer/Compressor (Canvas Optimization):**
   - Kompresi foto jepretan kamera ponsel (dari 10-15MB menjadi ~500KB) menggunakan HTML5 `<canvas>` (maksimal 2048px, JPEG 85%) sebelum Base64 di-generate. Upload instan dan hemat bandwidth.
-- [ ] **Handwriting & Visual Layout Prompt Enhancement:**
+- [x] **Handwriting & Visual Layout Prompt Enhancement:**
   - Prompt Gemini Multimodal dioptimasi khusus untuk membaca formulir hasil scan miring, coretan tulisan tangan (handwriting recognition), stempel resmi, dan kotak centang fisik.
   - Deteksi ketidakpastian tulisan tangan: Tandai isian ambigu dengan flag `uncertaintyNotice` pada JSON response.
 
 #### 7.7. [⚡ PRIORITAS TINGGI] Interactive PDF Form Writer & Direct Export (pdf-lib Integration)
-- [ ] **Interactive Field Input di Side Panel & Dashboard:**
+- [x] **Interactive Field Input di Side Panel & Dashboard:**
   - Selain melihat panduan seksi-per-seksi, pengguna dapat langsung mengisi jawaban kolom formulir pada panel Telmy.
   - Opsi *"✨ Fill from Profile"* untuk memasukkan data yang tersimpan di Profile Vault langsung ke isian PDF.
-- [ ] **Client-Side PDF Text Overlay Injection (`pdf-lib`):**
+- [x] **Client-Side PDF Text Overlay Injection (`pdf-lib`):**
   - Menggunakan library `pdf-lib` yang berjalan 100% lokal di browser pengguna.
   - Memetakan teks jawaban ke koordinat kolom PDF tanpa memerlukan server pengolah PDF berbayar (aman privasi & biaya $0).
-- [ ] **1-Click Official PDF Export:**
+- [x] **1-Click Official PDF Export:**
   - Tombol aksi *"📥 Unduh PDF Terisi Resmi"*: menghasilkan file PDF asli yang telah terisi rapi dengan format font dan alignment standar dokumen kedutaan/beasiswa, siap langsung dicetak atau diunggah.
 
 ---
@@ -283,11 +283,11 @@
 - [ ] **Free Tier (Gratis 5 Form Awal):**
   - Setiap pengguna baru (terautentikasi via Firebase Auth) otomatis mendapatkan kuota 5 kali analisis form gratis (*no credit card required*).
   - Cukup untuk menyelesaikan dan menguji coba pendaftaran beasiswa, visa, atau formulir portal pemerintah tanpa friksi awal.
-- [ ] **Pay-as-you-Go ($5 untuk 5 Form / $1 per Form - Tanpa Kadaluwarsa):**
-  - Pembelian kredit fleksibel setelah kuota gratis habis ($5 untuk 5 form).
+- [ ] **Pay-as-you-Go ($5 untuk 10 Form / $0.5 per Form - Tanpa Kadaluwarsa):**
+  - Pembelian kredit fleksibel setelah kuota gratis habis ($5 untuk 10 form).
   - **Tanpa batas waktu / tidak pernah kedaluwarsa (No Expiration).**
   - Opsi paling ramah dan ideal bagi pengguna musiman (pendaftar beasiswa luar negeri, pelancong visa, pengurus birokrasi pemerintah) yang menghindari beban komitmen langganan bulanan.
-- [ ] **Pro Subscription ($9.99 per Bulan untuk Kuota 50 Form per Bulan):**
+- [ ] **Pro Subscription ($14.99 per Bulan untuk Kuota 50 Form per Bulan):**
   - Kuota 50 formulir per bulan yang diperbarui (*reset/refreshed*) setiap siklus tagihan bulanan.
   - Ditargetkan untuk pengguna rutin, konsultan beasiswa/studi luar negeri, agen visa/travel, dan profesional legal.
 
@@ -338,31 +338,31 @@
 *Target: Menjadikan Telmy asisten menyeluruh yang aktif membantu pengisian secara aman, memvalidasi isian sebelum disubmit untuk menghindari diskualifikasi beasiswa/visa, dan menjaga privasi data sensitif 100% patuh regulasi Chrome Web Store.*
 
 #### 9.1. [⚡ PRIORITAS TINGGI] Encrypted Profile Vault & User-Initiated 1-Click Smart Fill
-- [ ] **Penyimpanan Master Profil Terenkripsi:**
+- [x] **Penyimpanan Master Profil Terenkripsi:**
   - Pengguna mengisi master profil terverifikasi sekali di Web Dashboard (`/dashboard`) atau Side Panel.
   - Data yang disimpan: Nama Paspor, No Paspor, Tanggal Terbit/Habis, NIK, Tempat/Tanggal Lahir, Nama Ibu Kandung, Kewarganegaraan, Riwayat Pendidikan, IPK (skala 4.0 & skala 100), Kontak Darurat.
   - Disimpan lokal di `chrome.storage.local` dan disinkronkan aman ke Firestore `users/{uid}/profile`.
-- [ ] **User-Initiated 1-Click Smart Fill (Kepatuhan Penuh CWS Policy):**
+- [x] **User-Initiated 1-Click Smart Fill (Kepatuhan Penuh CWS Policy):**
   - **Prinsip Utama:** Tidak ada auto-fill liar/otomatis di background. Manipulasi DOM hanya terjadi saat pengguna mengklik tombol secara sadar (*explicit user gesture*).
   - Saat scanner mengenali kolom input (misal: "Nama Lengkap sesuai Paspor"), tampilkan chip tombol ramah di Side Panel: `[ ✨ Isi dengan Nama Paspor ]`.
   - Sekali klik, nilai langsung terisi ke elemen input web.
   - **Whitelist Filter Aman:** Hanya mengizinkan pengisian field demografi/profil beasiswa; mutlak memblokir field `password`, nomor kartu kredit, CVV, dan kode OTP.
 
 #### 9.2. [⚡ PRIORITAS TINGGI] AI Pre-Submission Form Auditor (Pemeriksa Kesalahan Sebelum Submit)
-- [ ] **Pemindaian Isian Formulir Menyeluruh (One-Click Audit):**
+- [x] **Pemindaian Isian Formulir Menyeluruh (One-Click Audit):**
   - Tombol aksi *"🔍 Audit Form Sebelum Submit"* di header Side Panel.
   - Skrip membaca seluruh nilai yang sudah diketik pengguna pada formulir web atau isian PDF.
   - Dikirim ke endpoint `/api/audit-form` (Gemini 3.5 Flash-Lite) bersama konteks aturan resmi beasiswa/portal tersebut.
-- [ ] **Laporan Audit Visual "Traffic Light" (Zero-Disqualification):**
+- [x] **Laporan Audit Visual "Traffic Light" (Zero-Disqualification):**
   - 🟢 **Format Valid (Green):** Isian sudah sesuai standar (kapitalisasi nama paspor, urutan nama keluarga, format tanggal DD/MM/YYYY).
   - 🟡 **Peringatan Ambigu (Yellow Warning):** Peringatan potensi diskualifikasi (contoh: *"Anda memasukkan gelar 'M.Sc' pada kolom nama belakang; universitas Jerman biasanya menolak gelar di kolom nama"* atau *"Alamat tidak menyertakan kode pos internasional"*).
   - 🔴 **Kesalahan Fatal (Red Error):** Kesalahan fatal yang memicu penolakan (contoh: masa berlaku paspor kurang dari 6 bulan dari estimasi tanggal mulai kuliah, atau format tanggal lahir terbalik antara tanggal dan bulan).
 
 #### 9.3. [⚡ PRIORITAS TINGGI] Privacy Shield & Client-Side PII Auto-Masking
-- [ ] **Client-Side PII Masker (Local Redaction):**
+- [x] **Client-Side PII Masker (Local Redaction):**
   - Sebelum label form, placeholder, atau cuplikan konteks dikirim dari browser ke backend API Gemini, modul sensor lokal di `content/scanner.js` memfilter dan menyamarkan data sensitif pengguna.
   - Masking otomatis menggunakan Regex pattern: Nomor KTP $\rightarrow$ `[MASKED_NATIONAL_ID]`, Nomor Paspor $\rightarrow$ `[MASKED_PASSPORT]`, Nomor Telepon $\rightarrow$ `[MASKED_PHONE]`.
-- [ ] **Indikator Transparansi Privasi di UI:**
+- [x] **Indikator Transparansi Privasi di UI:**
   - Badge proteksi aktif di header Side Panel: `🛡️ Privacy Shield Active (PII Masked Locally)`.
   - Memberikan rasa aman mutlak bagi pendaftar beasiswa dan pengurus dokumen resmi, sekaligus memastikan kepatuhan 100% terhadap Chrome Web Store Privacy Policy & regulasi data global (GDPR).
 

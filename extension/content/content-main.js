@@ -89,6 +89,55 @@
       sendResponse({ success: true });
       return false;
     }
+
+    // G. Priority 9.1: Smart Fill Field Value (User-Initiated explicit action)
+    if (message.type === 'FILL_FIELD_BY_INDEX') {
+      const item = scannedItems[message.index];
+      if (item && item.metadata && item.metadata.element) {
+        const el = item.metadata.element;
+        // Whitelist safety: strictly exclude password and credit card / CVV fields
+        const isSafe = el.type !== 'password' &&
+                       !(el.name && /card|cvv|cvc|otp|pin|token/i.test(el.name)) &&
+                       !(el.id && /card|cvv|cvc|otp|pin|token/i.test(el.id));
+        if (isSafe) {
+          try {
+            el.focus();
+            el.value = message.value || '';
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+            // Add a brief subtle pulse outline to confirm fill
+            el.classList.add('gmt-field-smart-filled');
+            setTimeout(() => el.classList.remove('gmt-field-smart-filled'), 1500);
+            sendResponse({ success: true, filled: true });
+            return false;
+          } catch (e) {
+            sendResponse({ success: false, error: e.message });
+            return false;
+          }
+        }
+      }
+      sendResponse({ success: false, reason: 'Field not found or sensitive' });
+      return false;
+    }
+
+    // H. Priority 9.2: Form Pre-Submission Auditor (Audit current DOM inputs)
+    if (message.type === 'AUDIT_FORM_VALUES') {
+      const auditPayload = scannedItems.map((item, idx) => {
+        const el = item.metadata.element;
+        const val = el ? (el.value || el.innerText || '') : '';
+        const req = el ? (el.required || el.getAttribute('aria-required') === 'true' || item.dictEntry?.required) : false;
+        return {
+          index: idx,
+          label: item.metadata.label || `Field #${idx + 1}`,
+          type: item.metadata.type || 'text',
+          name: item.metadata.name || '',
+          value: val.trim(),
+          required: Boolean(req)
+        };
+      });
+      sendResponse({ success: true, fields: auditPayload });
+      return false;
+    }
   });
 
   // 2. Stop Scan Workflow (Clean cleanup on close/off)

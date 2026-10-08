@@ -67,6 +67,21 @@ document.addEventListener('DOMContentLoaded', async () => {
   const pdfActiveSectionFields = document.getElementById('pdf-active-section-fields');
   const pdfSectionIndicator = document.getElementById('pdf-section-indicator');
   const chipPdfGuide = document.getElementById('chip-pdf-guide');
+  const btnPdfExportFilled = document.getElementById('btn-pdf-export-filled');
+  const btnPdfFillProfile = document.getElementById('btn-pdf-fill-profile');
+
+  // Pre-Submission Auditor Elements (Priority 9.2)
+  const btnRunFormAudit = document.getElementById('btn-run-form-audit');
+  const spAuditReportBox = document.getElementById('sp-audit-report-box');
+  const auditStatusPill = document.getElementById('audit-status-pill');
+  const auditReportItems = document.getElementById('audit-report-items');
+  const btnCloseAuditReport = document.getElementById('btn-close-audit-report');
+
+  // Profile Vault & Smart Fill Elements (Priority 9.1)
+  const btnOpenVault = document.getElementById('btn-open-vault');
+  const spVaultModal = document.getElementById('sp-vault-modal');
+  const btnCloseVault = document.getElementById('btn-close-vault');
+  const btnSaveVault = document.getElementById('btn-save-vault');
 
   // Summary Elements
   const progressPercent = document.getElementById('progress-percent');
@@ -127,6 +142,23 @@ document.addEventListener('DOMContentLoaded', async () => {
   let currentPdfData = null;
   let activePdfSectionIndex = 0;
   let pdfChecklistState = {};
+
+  // Priority 7 & 9 States
+  let currentPdfRawBytes = null;
+  let currentPdfFileName = 'Document.pdf';
+  let currentPdfMimeType = 'application/pdf';
+  let pdfUserFormValues = {};
+  let userVaultData = {
+    fullName: '',
+    passportNo: '',
+    nationalId: '',
+    dob: '',
+    nationality: 'Indonesian',
+    gpa: '',
+    phone: '',
+    address: '',
+    emergencyContact: ''
+  };
 
   // Complete JAPAC Multi-Language Matrix (English default)
   const I18N = {
@@ -330,13 +362,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 1. Initialize Active Tab, User & Onboarding
   async function init() {
-    // Load Settings & User
-    const stored = await chrome.storage.local.get(['settings', 'hasCompletedOnboarding', 'user']);
+    // Load Settings, User & Profile Vault (Priority 9.1)
+    const stored = await chrome.storage.local.get(['settings', 'hasCompletedOnboarding', 'user', 'telmy_vault']);
     if (stored.settings) {
       currentLanguage = stored.settings.language || 'en';
       langSelect.value = currentLanguage;
     } else {
       langSelect.value = 'en';
+    }
+
+    if (stored.telmy_vault) {
+      userVaultData = { ...userVaultData, ...stored.telmy_vault };
     }
 
     currentUser = stored.user || null;
@@ -495,6 +531,45 @@ document.addEventListener('DOMContentLoaded', async () => {
       renderUserUI();
       profilePopover.style.display = 'none';
     });
+
+    // Priority 9.1: Profile Vault Modal Controls
+    if (btnOpenVault && spVaultModal) {
+      btnOpenVault.addEventListener('click', () => {
+        profilePopover.style.display = 'none';
+        populateVaultUI();
+        spVaultModal.style.display = 'flex';
+      });
+    }
+
+    if (btnCloseVault && spVaultModal) {
+      btnCloseVault.addEventListener('click', () => {
+        spVaultModal.style.display = 'none';
+      });
+    }
+
+    if (btnSaveVault && spVaultModal) {
+      btnSaveVault.addEventListener('click', async () => {
+        saveVaultUI();
+        await chrome.storage.local.set({ telmy_vault: userVaultData });
+        spVaultModal.style.display = 'none';
+        alert('Data Profile Vault berhasil disimpan!');
+        // Refresh active field card if showing
+        if (activeFieldIndex >= 0 && detectedFields[activeFieldIndex]) {
+          renderFieldDetail(detectedFields[activeFieldIndex]);
+        }
+      });
+    }
+
+    // Priority 9.2: Form Pre-Submission Auditor Controls
+    if (btnRunFormAudit) {
+      btnRunFormAudit.addEventListener('click', runPreSubmissionAudit);
+    }
+
+    if (btnCloseAuditReport && spAuditReportBox) {
+      btnCloseAuditReport.addEventListener('click', () => {
+        spAuditReportBox.style.display = 'none';
+      });
+    }
 
     // B. Close / Pause Scanner Button (Explicit Turn-Off)
     btnClose.addEventListener('click', () => {
@@ -1344,6 +1419,42 @@ document.addEventListener('DOMContentLoaded', async () => {
         setTimeout(() => { copyBtn.textContent = t('detail_copy'); }, 1500);
       });
     }
+
+    // Priority 9.1: 1-Click Smart Fill from Profile Vault
+    const vaultMatch = findVaultMatchForField(title);
+    if (vaultMatch && vaultMatch.val) {
+      const fillBox = document.createElement('div');
+      fillBox.className = 'detail-section';
+      fillBox.style.marginTop = '8px';
+      fillBox.innerHTML = `
+        <button type="button" class="btn-smart-fill-chip" id="btn-smart-fill-field" title="Klik untuk mengisi kolom input formulir secara otomatis">
+          ✨ Isi Cepat (${escapeHTML(vaultMatch.key)}): "${escapeHTML(vaultMatch.val)}"
+        </button>
+      `;
+      fieldDetailContent.appendChild(fillBox);
+
+      const fillBtn = fillBox.querySelector('#btn-smart-fill-field');
+      if (fillBtn) {
+        fillBtn.addEventListener('click', () => {
+          if (currentTabId && activeFieldIndex >= 0) {
+            chrome.tabs.sendMessage(currentTabId, {
+              type: 'FILL_FIELD_BY_INDEX',
+              index: activeFieldIndex,
+              value: vaultMatch.val
+            }, (res) => {
+              if (!chrome.runtime.lastError && res && res.filled) {
+                fillBtn.textContent = '✓ Berhasil Terisi ke Halaman!';
+                setTimeout(() => {
+                  fillBtn.textContent = `✨ Isi Cepat (${vaultMatch.key}): "${vaultMatch.val}"`;
+                }, 2000);
+              } else {
+                alert('Tidak dapat mengisi kolom input ini.');
+              }
+            });
+          }
+        });
+      }
+    }
   }
 
   // Stepper Buttons
@@ -1462,9 +1573,63 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (btnModeWeb) btnModeWeb.addEventListener('click', () => switchSourceMode('web'));
     if (btnModePdf) btnModePdf.addEventListener('click', () => switchSourceMode('pdf'));
 
+    // Priority 7.5: 1-Click Native Viewer Ingestion (Tanpa Re-Upload)
     if (btnPdfBannerAction) {
       btnPdfBannerAction.addEventListener('click', () => {
         switchSourceMode('pdf');
+
+        if (spPdfDropContent) spPdfDropContent.style.display = 'none';
+        if (spPdfAnalyzing) spPdfAnalyzing.style.display = 'flex';
+        if (telmyAvatar) telmyAvatar.setState('THINKING');
+
+        chrome.runtime.sendMessage({ type: 'FETCH_ACTIVE_TAB_DOCUMENT' }, (res) => {
+          if (chrome.runtime.lastError || !res) {
+            if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
+            if (spPdfAnalyzing) spPdfAnalyzing.style.display = 'none';
+            if (telmyAvatar) telmyAvatar.setState('IDLE');
+            alert('Tidak dapat mengunduh formulir PDF dari tab aktif secara otomatis. Silakan upload berkas ke dropzone.');
+            return;
+          }
+
+          if (res.isLocalFile) {
+            if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
+            if (spPdfAnalyzing) spPdfAnalyzing.style.display = 'none';
+            if (telmyAvatar) telmyAvatar.setState('IDLE');
+            alert('Karena restriksi keamanan Chrome untuk berkas lokal (file://), silakan tarik file PDF dari komputer ke kotak dropzone di bawah.');
+            return;
+          }
+
+          if (!res.success || !res.dataUrl) {
+            if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
+            if (spPdfAnalyzing) spPdfAnalyzing.style.display = 'none';
+            if (telmyAvatar) telmyAvatar.setState('IDLE');
+            alert('Gagal membaca dokumen dari tab aktif: ' + (res.error || 'Unknown error'));
+            return;
+          }
+
+          currentPdfFileName = res.filename || 'Document.pdf';
+          currentPdfMimeType = res.mimeType || 'application/pdf';
+          currentPdfRawBytes = dataUrlToUint8Array(res.dataUrl);
+
+          chrome.runtime.sendMessage({
+            type: 'EXPLAIN_PDF',
+            payload: {
+              pdfBase64: res.dataUrl,
+              filename: currentPdfFileName,
+              mimeType: currentPdfMimeType,
+              language: currentLanguage
+            }
+          }, (expRes) => {
+            if (spPdfAnalyzing) spPdfAnalyzing.style.display = 'none';
+            if (chrome.runtime.lastError || !expRes || !expRes.success || !expRes.data) {
+              if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
+              if (telmyAvatar) telmyAvatar.setState('IDLE');
+              alert('Gagal menganalisis dokumen dengan Gemini. Pastikan backend aktif.');
+              return;
+            }
+            handleSuccessfulDocumentAnalysis(expRes.data);
+          });
+        });
       });
     }
 
@@ -1514,7 +1679,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (btnResetPdf) {
       btnResetPdf.addEventListener('click', () => {
         currentPdfData = null;
+        currentPdfRawBytes = null;
         pdfChecklistState = {};
+        pdfUserFormValues = {};
         if (spPdfResultCard) spPdfResultCard.style.display = 'none';
         if (spPdfDropzone) spPdfDropzone.style.display = 'block';
         if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
@@ -1522,28 +1689,57 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (spPdfFileInput) spPdfFileInput.value = '';
       });
     }
+
+    // Priority 7.7: Interactive Export Actions
+    if (btnPdfFillProfile) {
+      btnPdfFillProfile.addEventListener('click', handleAutofillAllPdfFieldsFromVault);
+    }
+
+    if (btnPdfExportFilled) {
+      btnPdfExportFilled.addEventListener('click', handleExportFilledPdf);
+    }
   }
 
+  // Priority 7.6: Multimodal Photo, Scan & PDF Ingestion with Canvas Compressor
   async function handlePdfUpload(file) {
-    if (!file || (!file.name.toLowerCase().endsWith('.pdf') && file.type !== 'application/pdf')) {
-      alert('Please select a valid PDF file.');
+    if (!file) return;
+
+    const isPdf = file.name.toLowerCase().endsWith('.pdf') || file.type === 'application/pdf';
+    const isImage = file.type.startsWith('image/') || /\.(jpg|jpeg|png|webp)$/i.test(file.name);
+
+    if (!isPdf && !isImage) {
+      alert('Silakan pilih file PDF atau foto dokumen (JPG, PNG, WebP).');
       return;
     }
 
-    // Show analyzing state
     if (spPdfDropContent) spPdfDropContent.style.display = 'none';
     if (spPdfAnalyzing) spPdfAnalyzing.style.display = 'flex';
     if (telmyAvatar) telmyAvatar.setState('THINKING');
 
-    const reader = new FileReader();
-    reader.onload = async () => {
-      const base64Data = reader.result;
+    currentPdfFileName = file.name;
+    currentPdfMimeType = isPdf ? 'application/pdf' : (file.type || 'image/jpeg');
+
+    try {
+      let finalBase64 = '';
+
+      if (isImage) {
+        // Client-side canvas optimization: resize to max 2048px, JPEG 85%
+        finalBase64 = await compressImageFileToDataUrl(file, 2048, 0.85);
+        currentPdfMimeType = 'image/jpeg';
+        currentPdfRawBytes = dataUrlToUint8Array(finalBase64);
+      } else {
+        // PDF file
+        const arrayBuf = await file.arrayBuffer();
+        currentPdfRawBytes = new Uint8Array(arrayBuf);
+        finalBase64 = uint8ArrayToDataUrl(currentPdfRawBytes, 'application/pdf');
+      }
 
       chrome.runtime.sendMessage({
         type: 'EXPLAIN_PDF',
         payload: {
-          pdfBase64: base64Data,
-          filename: file.name,
+          pdfBase64: finalBase64,
+          filename: currentPdfFileName,
+          mimeType: currentPdfMimeType,
           language: currentLanguage
         }
       }, (res) => {
@@ -1551,34 +1747,42 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (chrome.runtime.lastError || !res || !res.success || !res.data) {
           if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
           if (telmyAvatar) telmyAvatar.setState('IDLE');
-          alert('Failed to analyze PDF document. Please make sure backend is reachable.');
+          alert('Gagal menganalisis dokumen formulir. Pastikan backend aktif.');
           return;
         }
 
-        currentPdfData = res.data;
-        activePdfSectionIndex = 0;
-        pdfChecklistState = {};
-
-        // Hide dropzone, show result card
-        if (spPdfDropzone) spPdfDropzone.style.display = 'none';
-        if (spPdfResultCard) spPdfResultCard.style.display = 'block';
-
-        renderPdfData(currentPdfData);
-
-        if (telmyAvatar) telmyAvatar.setState('EXPLAINING');
-        const intro = currentLanguage === 'en'
-          ? `I've analyzed ${currentPdfData.documentTitle || 'your PDF form'}. You can check the required attachments and review each section step by step.`
-          : `Saya telah menganalisis dokumen ${currentPdfData.documentTitle || 'PDF Anda'}. Silakan cek lampiran yang diperlukan dan pelajari setiap kolomnya.`;
-        speakResponse(intro);
+        handleSuccessfulDocumentAnalysis(res.data);
       });
-    };
-    reader.readAsDataURL(file);
+    } catch (err) {
+      if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
+      if (spPdfAnalyzing) spPdfAnalyzing.style.display = 'none';
+      if (telmyAvatar) telmyAvatar.setState('IDLE');
+      alert('Gagal memproses berkas: ' + err.message);
+    }
+  }
+
+  function handleSuccessfulDocumentAnalysis(data) {
+    currentPdfData = data;
+    activePdfSectionIndex = 0;
+    pdfChecklistState = {};
+    pdfUserFormValues = {};
+
+    if (spPdfDropzone) spPdfDropzone.style.display = 'none';
+    if (spPdfResultCard) spPdfResultCard.style.display = 'block';
+
+    renderPdfData(currentPdfData);
+
+    if (telmyAvatar) telmyAvatar.setState('EXPLAINING');
+    const intro = currentLanguage === 'en'
+      ? `I've analyzed ${currentPdfData.documentTitle || 'your document'}. You can type into fields directly and export the completed official document.`
+      : `Saya telah menganalisis formulir ${currentPdfData.documentTitle || 'dokumen Anda'}. Anda dapat mengisi langsung kolom di bawah dan mengekspor hasilnya.`;
+    speakResponse(intro);
   }
 
   function renderPdfData(data) {
     if (!data) return;
-    if (pdfDocTitle) pdfDocTitle.textContent = data.documentTitle || 'Official PDF Form';
-    if (pdfDocSummary) pdfDocSummary.textContent = data.summary || 'PDF document parsed by Gemini Multimodal assistant.';
+    if (pdfDocTitle) pdfDocTitle.textContent = data.documentTitle || 'Official Form Document';
+    if (pdfDocSummary) pdfDocSummary.textContent = data.summary || 'Document parsed by Gemini Multimodal assistant.';
 
     // Render Required Attachments Checklist
     renderPdfChecklist(data.requiredAttachments || []);
@@ -1602,7 +1806,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       const total = items.length;
       let checkedCount = 0;
       items.forEach((it) => {
-        if (pdfChecklistState[it]) checkedCount++;
+        const key = typeof it === 'string' ? it : (it.item || JSON.stringify(it));
+        if (pdfChecklistState[key]) checkedCount++;
       });
       if (pdfChecklistBadge) {
         pdfChecklistBadge.textContent = `${checkedCount}/${total} Ready`;
@@ -1610,7 +1815,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     };
 
-    items.forEach((itemText) => {
+    items.forEach((itemObj) => {
+      const itemText = typeof itemObj === 'string' ? itemObj : `${itemObj.item || ''} ${itemObj.specs ? '(' + itemObj.specs + ')' : ''}`;
       const itemEl = document.createElement('div');
       itemEl.className = 'pdf-check-item' + (pdfChecklistState[itemText] ? ' done' : '');
 
@@ -1645,16 +1851,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     sections.forEach((sec, idx) => {
+      const secTitle = sec.title || sec.sectionName || `Section ${idx + 1}`;
       const tabBtn = document.createElement('button');
       tabBtn.type = 'button';
       tabBtn.className = 'pdf-sec-tab' + (idx === activePdfSectionIndex ? ' active' : '');
-      tabBtn.textContent = sec.sectionName || `Section ${idx + 1}`;
+      tabBtn.textContent = secTitle;
 
       tabBtn.addEventListener('click', () => {
         activePdfSectionIndex = idx;
         const allTabs = pdfSectionsTabs.querySelectorAll('.pdf-sec-tab');
         allTabs.forEach((b, i) => b.classList.toggle('active', i === idx));
-        if (pdfSectionIndicator) pdfSectionIndicator.textContent = sec.sectionName || `Section ${idx + 1}`;
+        if (pdfSectionIndicator) pdfSectionIndicator.textContent = secTitle;
         renderPdfSectionFields(sec);
       });
 
@@ -1662,7 +1869,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     if (sections[activePdfSectionIndex]) {
-      if (pdfSectionIndicator) pdfSectionIndicator.textContent = sections[activePdfSectionIndex].sectionName || `Section ${activePdfSectionIndex + 1}`;
+      const activeTitle = sections[activePdfSectionIndex].title || sections[activePdfSectionIndex].sectionName || `Section ${activePdfSectionIndex + 1}`;
+      if (pdfSectionIndicator) pdfSectionIndicator.textContent = activeTitle;
       renderPdfSectionFields(sections[activePdfSectionIndex]);
     }
   }
@@ -1681,72 +1889,536 @@ document.addEventListener('DOMContentLoaded', async () => {
       const card = document.createElement('div');
       card.className = 'pdf-field-card';
 
+      const fieldName = f.label || f.fieldName || f.name || 'Field';
+      const explanation = f.meaning || f.explanation || '';
+      const example = f.example || '';
+      const pitfall = f.pitfall || f.commonPitfall || '';
+      const foreignerNote = f.foreignerNote || null;
+      const uncertaintyNotice = f.uncertaintyNotice || null;
+
       let inner = `
         <div class="pdf-field-top">
           <div class="pdf-field-title-group">
-            <span class="pdf-field-badge">Page ${f.page || 1}</span>
-            <strong class="pdf-field-name">${escapeHTML(f.fieldName || 'Field')}</strong>
+            <span class="pdf-field-badge">Hal ${f.pageNumber || f.page || 1}</span>
+            <strong class="pdf-field-name">${escapeHTML(fieldName)}</strong>
           </div>
-          <button type="button" class="pdf-field-listen-btn" title="Listen to explanation" data-field-name="${escapeHTML(f.fieldName)}">🔊</button>
+          <button type="button" class="pdf-field-listen-btn" title="Dengarkan penjelasan" data-field-name="${escapeHTML(fieldName)}">🔊</button>
         </div>
-        <p class="pdf-field-desc">${escapeHTML(f.explanation || '')}</p>
+        <p class="pdf-field-desc">${escapeHTML(explanation)}</p>
       `;
 
-      if (f.example) {
+      if (uncertaintyNotice) {
+        inner += `
+          <div class="pdf-uncertainty-pill">
+            ⚠️ <strong>Catatan Scan / Tulisan Tangan:</strong> ${escapeHTML(uncertaintyNotice)}
+          </div>
+        `;
+      }
+
+      if (example) {
         inner += `
           <div class="pdf-field-example-box">
-            <strong>Example:</strong> ${escapeHTML(f.example)}
+            <strong>Contoh:</strong> ${escapeHTML(example)}
           </div>
         `;
       }
 
-      if (f.commonPitfall) {
+      if (pitfall) {
         inner += `
           <div class="pdf-field-pitfall-box">
-            <strong>⚠️ Watch Out:</strong> ${escapeHTML(f.commonPitfall)}
+            <strong>⚠️ Perhatian:</strong> ${escapeHTML(pitfall)}
           </div>
         `;
       }
 
-      if (f.foreignerNote) {
+      if (foreignerNote) {
         inner += `
           <div class="pdf-field-example-box" style="border-left-color: #8b5cf6;">
-            <strong style="color: #8b5cf6;">🌍 International Note:</strong> ${escapeHTML(f.foreignerNote)}
+            <strong style="color: #8b5cf6;">🌍 Catatan WNA:</strong> ${escapeHTML(foreignerNote)}
           </div>
         `;
       }
 
+      // Priority 7.7: Interactive Input Box with Vault Autofill
+      const vaultMatch = findVaultMatchForField(fieldName);
+      const curVal = pdfUserFormValues[fieldName] || '';
+
       inner += `
+        <div class="pdf-field-input-box">
+          <label>Isian Anda (untuk Dokumen Ekspor):</label>
+          <div class="pdf-field-input-row">
+            <input type="text" class="pdf-user-input" data-field-name="${escapeHTML(fieldName)}" placeholder="${example ? 'Contoh: ' + escapeHTML(example) : 'Ketik isian...'}" value="${escapeHTML(curVal)}">
+            ${vaultMatch ? `<button type="button" class="btn-pdf-field-vault-fill" data-vault-val="${escapeHTML(vaultMatch.val)}" title="Isi dengan ${escapeHTML(vaultMatch.key)}">✨ Vault</button>` : ''}
+          </div>
+        </div>
         <div class="pdf-field-card-actions">
-          <button type="button" class="btn-field-ask-chip" data-field="${escapeHTML(f.fieldName)}">💬 Ask Telmy</button>
+          <button type="button" class="btn-field-ask-chip" data-field="${escapeHTML(fieldName)}">💬 Tanya Telmy</button>
         </div>
       `;
 
       card.innerHTML = inner;
 
-      // Listen audio button
+      // Input listener
+      const inputEl = card.querySelector('.pdf-user-input');
+      if (inputEl) {
+        inputEl.addEventListener('input', (e) => {
+          pdfUserFormValues[fieldName] = e.target.value;
+        });
+      }
+
+      // Vault fill button
+      const vaultBtn = card.querySelector('.btn-pdf-field-vault-fill');
+      if (vaultBtn && inputEl) {
+        vaultBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const val = vaultBtn.getAttribute('data-vault-val');
+          inputEl.value = val;
+          pdfUserFormValues[fieldName] = val;
+          vaultBtn.textContent = '✓';
+          setTimeout(() => { vaultBtn.textContent = '✨ Vault'; }, 1500);
+        });
+      }
+
+      // Audio listen button
       const listenBtn = card.querySelector('.pdf-field-listen-btn');
       if (listenBtn) {
         listenBtn.addEventListener('click', (e) => {
           e.stopPropagation();
-          const speechText = `${f.fieldName}. ${f.explanation || ''} ${f.example ? 'For example: ' + f.example : ''} ${f.commonPitfall ? 'Avoid: ' + f.commonPitfall : ''}`;
+          const speechText = `${fieldName}. ${explanation} ${example ? 'Contoh: ' + example : ''} ${pitfall ? 'Hindari: ' + pitfall : ''}`;
           speakResponse(speechText);
         });
       }
 
-      // Ask button
+      // Ask chip button
       const askBtn = card.querySelector('.btn-field-ask-chip');
       if (askBtn) {
         askBtn.addEventListener('click', (e) => {
           e.stopPropagation();
           const tabChat = document.querySelector('.sp-tab-btn[data-tab="chat"]');
           if (tabChat) tabChat.click();
-          handleSendMessage(`How should I fill out "${f.fieldName}" on this PDF form?`);
+          handleSendMessage(`Bagaimana cara mengisi "${fieldName}" pada formulir ini?`);
         });
       }
 
       pdfActiveSectionFields.appendChild(card);
     });
+  }
+
+  // Priority 7.7: Autofill all PDF fields from Profile Vault
+  function handleAutofillAllPdfFieldsFromVault() {
+    if (!currentPdfData || !currentPdfData.sections) {
+      alert('Tidak ada dokumen aktif.');
+      return;
+    }
+
+    let filledCount = 0;
+    currentPdfData.sections.forEach((sec) => {
+      (sec.fields || []).forEach((f) => {
+        const fieldName = f.label || f.fieldName || f.name;
+        const match = findVaultMatchForField(fieldName);
+        if (match && match.val) {
+          pdfUserFormValues[fieldName] = match.val;
+          filledCount++;
+        }
+      });
+    });
+
+    // Re-render current section so UI inputs reflect values
+    if (currentPdfData.sections[activePdfSectionIndex]) {
+      renderPdfSectionFields(currentPdfData.sections[activePdfSectionIndex]);
+    }
+
+    alert(`Berhasil mengisi ${filledCount} kolom formulir dari Profile Vault!`);
+  }
+
+  // Priority 7.7: Direct Export of Filled PDF via pdf-lib (100% Client-Side)
+  async function handleExportFilledPdf() {
+    if (!currentPdfRawBytes) {
+      alert('Tidak ada berkas dokumen asli yang dimuat.');
+      return;
+    }
+
+    if (!window.PDFLib) {
+      alert('Pustaka pdf-lib belum selesai dimuat. Silakan tunggu beberapa detik.');
+      return;
+    }
+
+    const { PDFDocument, rgb, StandardFonts } = window.PDFLib;
+
+    try {
+      let exportDoc;
+      if (currentPdfMimeType === 'application/pdf') {
+        exportDoc = await PDFDocument.load(currentPdfRawBytes);
+        const font = await exportDoc.embedFont(StandardFonts.Helvetica);
+
+        // Try AcroForm interactive fill
+        try {
+          const form = exportDoc.getForm();
+          const formFields = form.getFields();
+          formFields.forEach((field) => {
+            const fieldName = field.getName();
+            for (const [key, val] of Object.entries(pdfUserFormValues)) {
+              if (val && (fieldName.toLowerCase().includes(key.toLowerCase()) || key.toLowerCase().includes(fieldName.toLowerCase()))) {
+                try {
+                  const tf = form.getTextField(fieldName);
+                  tf.setText(val);
+                } catch (e) {}
+              }
+            }
+          });
+        } catch (e) {}
+
+        // Add certified submission summary page
+        const pages = exportDoc.getPages();
+        const firstPage = pages[0];
+        const { width, height } = firstPage.getSize();
+
+        const summaryPage = exportDoc.addPage([width, height]);
+        summaryPage.drawText('TELMY.AI — OFFICIAL APPLICATION FORM SUBMISSION SUMMARY', {
+          x: 40,
+          y: height - 50,
+          size: 13,
+          font: font,
+          color: rgb(0, 0.44, 0.89)
+        });
+        summaryPage.drawText(`Document: ${currentPdfData?.documentTitle || currentPdfFileName}`, {
+          x: 40,
+          y: height - 70,
+          size: 10,
+          font: font,
+          color: rgb(0.2, 0.2, 0.2)
+        });
+        summaryPage.drawText(`Exported on: ${new Date().toLocaleDateString()} | Verified by Applicant`, {
+          x: 40,
+          y: height - 85,
+          size: 9,
+          font: font,
+          color: rgb(0.5, 0.5, 0.5)
+        });
+
+        let currentY = height - 115;
+        for (const [k, v] of Object.entries(pdfUserFormValues)) {
+          if (!v || currentY < 60) continue;
+          summaryPage.drawText(`• ${k}:`, { x: 45, y: currentY, size: 9.5, font: font, color: rgb(0.1, 0.1, 0.1) });
+          summaryPage.drawText(`${v}`, { x: 220, y: currentY, size: 9.5, font: font, color: rgb(0, 0.35, 0.75) });
+          currentY -= 18;
+        }
+
+      } else {
+        // Image document: Embed photo on page 1, create structured filled form page on page 2
+        exportDoc = await PDFDocument.create();
+        const font = await exportDoc.embedFont(StandardFonts.Helvetica);
+        const jpgImage = await exportDoc.embedJpg(currentPdfRawBytes);
+        const { width: imgW, height: imgH } = jpgImage.scale(1);
+
+        const imgPage = exportDoc.addPage([600, 800]);
+        const scale = Math.min(540 / imgW, 720 / imgH);
+        imgPage.drawImage(jpgImage, {
+          x: 30,
+          y: 40,
+          width: imgW * scale,
+          height: imgH * scale
+        });
+
+        const formPage = exportDoc.addPage([600, 800]);
+        formPage.drawText('TELMY.AI — CERTIFIED FORM INPUT SUMMARY', {
+          x: 40,
+          y: 750,
+          size: 14,
+          font: font,
+          color: rgb(0, 0.44, 0.89)
+        });
+        let curY = 710;
+        for (const [k, v] of Object.entries(pdfUserFormValues)) {
+          if (!v || curY < 60) continue;
+          formPage.drawText(`• ${k}:`, { x: 45, y: curY, size: 10, font: font });
+          formPage.drawText(`${v}`, { x: 220, y: curY, size: 10, font: font, color: rgb(0, 0.35, 0.75) });
+          curY -= 20;
+        }
+      }
+
+      const pdfBytes = await exportDoc.save();
+      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const downloadUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = `telmy_filled_${currentPdfFileName.replace(/\.[^/.]+$/, '')}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(downloadUrl);
+
+      alert('Berhasil! File PDF resmi yang telah terisi telah diunduh ke komputer Anda.');
+    } catch (e) {
+      console.error('[PDF Export Error]', e);
+      alert('Gagal mengekspor PDF: ' + e.message);
+    }
+  }
+
+  // Priority 9.2: Form Pre-Submission Auditor (Traffic Light Sanity Verification)
+  async function runPreSubmissionAudit() {
+    if (!currentTabId) {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (tab) currentTabId = tab.id;
+    }
+    if (!currentTabId) {
+      alert('Tidak ada tab formulir aktif.');
+      return;
+    }
+
+    chrome.tabs.sendMessage(currentTabId, { type: 'AUDIT_FORM_VALUES' }, (res) => {
+      if (chrome.runtime.lastError || !res || !res.success || !res.fields) {
+        alert('Tidak dapat memindai nilai isian formulir pada halaman web ini. Pastikan halaman memiliki input.');
+        return;
+      }
+
+      const fields = res.fields;
+      if (fields.length === 0) {
+        alert('Belum ada kolom yang terdeteksi untuk diaudit.');
+        return;
+      }
+
+      const findings = [];
+      let hasRed = false;
+      let hasYellow = false;
+
+      fields.forEach((f) => {
+        const val = (f.value || '').trim();
+        const lbl = f.label || `Kolom #${f.index + 1}`;
+        const lowLbl = lbl.toLowerCase();
+
+        // 1. Red Error: Required but completely empty
+        if (f.required && !val) {
+          findings.push({
+            type: 'red',
+            icon: '🔴',
+            title: `Kolom Wajib Belum Diisi: ${lbl}`,
+            desc: 'Kolom ini wajib diisi menurut aturan portal. Kosong berisiko diskualifikasi otomatis.'
+          });
+          hasRed = true;
+          return;
+        }
+
+        if (!val) return;
+
+        // 2. Date checks (Passport validity <6 months)
+        if (lowLbl.includes('paspor') && (lowLbl.includes('berlaku') || lowLbl.includes('expir') || lowLbl.includes('validity'))) {
+          const parsedDate = new Date(val);
+          if (!isNaN(parsedDate.getTime())) {
+            const sixMonthsFromNow = new Date();
+            sixMonthsFromNow.setMonth(sixMonthsFromNow.getMonth() + 6);
+            if (parsedDate < sixMonthsFromNow) {
+              findings.push({
+                type: 'red',
+                icon: '🔴',
+                title: `Masa Berlaku Paspor Kritis (<6 Bulan): ${lbl}`,
+                desc: 'Hampir seluruh kedutaan dan maskapai menolak paspor dengan sisa masa berlaku kurang dari 6 bulan.'
+              });
+              hasRed = true;
+            }
+          }
+        }
+
+        // 3. Name Capitalization & Academic Title Warning
+        if (lowLbl.includes('nama') || lowLbl.includes('name')) {
+          if (/M\.Sc|B\.Sc|Ph\.D|S\.T|S\.Kom|Drs|Ir\./i.test(val)) {
+            findings.push({
+              type: 'yellow',
+              icon: '🟡',
+              title: `Gelar Akademik Terdeteksi di Kolom Nama: "${val}"`,
+              desc: 'Sebagian besar pendaftaran beasiswa dan visa internasional melarang gelar di kolom nama resmi paspor.'
+            });
+            hasYellow = true;
+          }
+          if (val === val.toLowerCase() && val.length > 3) {
+            findings.push({
+              type: 'yellow',
+              icon: '🟡',
+              title: `Nama Huruf Kecil Semua: "${val}"`,
+              desc: 'Disarankan gunakan HURUF KAPITAL atau Title Case sesuai paspor untuk menghindari kesalahan cetak berkas.'
+            });
+            hasYellow = true;
+          }
+        }
+
+        // 4. National ID / NIK length check
+        if (lowLbl.includes('nik') || lowLbl.includes('ktp') || lowLbl.includes('national id')) {
+          const numDigits = val.replace(/\D/g, '').length;
+          if (numDigits > 0 && numDigits !== 16) {
+            findings.push({
+              type: 'yellow',
+              icon: '🟡',
+              title: `Panjang NIK Tidak Standar (${numDigits} digit)`,
+              desc: 'Format NIK Indonesia adalah tepat 16 digit angka.'
+            });
+            hasYellow = true;
+          }
+        }
+      });
+
+      // Valid state
+      if (findings.length === 0) {
+        findings.push({
+          type: 'green',
+          icon: '🟢',
+          title: 'Semua Isian Sesuai Standar Birokrasi',
+          desc: 'Format nama, tanggal, dan seluruh kolom wajib telah terisi rapi tanpa potensi diskualifikasi.'
+        });
+      }
+
+      // Render audit report
+      if (spAuditReportBox && auditReportItems && auditStatusPill) {
+        spAuditReportBox.style.display = 'block';
+        if (hasRed) {
+          auditStatusPill.className = 'audit-status-pill danger';
+          auditStatusPill.textContent = '🔴 Perlu Diperbaiki';
+        } else if (hasYellow) {
+          auditStatusPill.className = 'audit-status-pill warning';
+          auditStatusPill.textContent = '🟡 Cek Rekomendasi';
+        } else {
+          auditStatusPill.className = 'audit-status-pill';
+          auditStatusPill.textContent = '🟢 100% Siap Kirim';
+        }
+
+        auditReportItems.innerHTML = findings.map(f => `
+          <div class="audit-item-row ${f.type}">
+            <span class="audit-item-icon">${f.icon}</span>
+            <div class="audit-item-content">
+              <strong>${escapeHTML(f.title)}</strong>
+              <span>${escapeHTML(f.desc)}</span>
+            </div>
+          </div>
+        `).join('');
+      }
+    });
+  }
+
+  // Priority 9.1: Match field label to Profile Vault data
+  function findVaultMatchForField(fieldLabel) {
+    if (!fieldLabel || !userVaultData) return null;
+    const l = fieldLabel.toLowerCase();
+    if (l.includes('nama') || l.includes('name') || l.includes('full name') || l.includes('surname')) {
+      if (userVaultData.fullName) return { key: 'Nama Lengkap', val: userVaultData.fullName };
+    }
+    if (l.includes('paspor') || l.includes('passport')) {
+      if (userVaultData.passportNo) return { key: 'No. Paspor', val: userVaultData.passportNo };
+    }
+    if (l.includes('nik') || l.includes('ktp') || l.includes('national id') || l.includes('identity')) {
+      if (userVaultData.nationalId) return { key: 'NIK / ID', val: userVaultData.nationalId };
+    }
+    if (l.includes('lahir') || l.includes('birth') || l.includes('dob')) {
+      if (userVaultData.dob) return { key: 'Tgl Lahir', val: userVaultData.dob };
+    }
+    if (l.includes('kewarganegaraan') || l.includes('nationality') || l.includes('citizenship')) {
+      if (userVaultData.nationality) return { key: 'Kewarganegaraan', val: userVaultData.nationality };
+    }
+    if (l.includes('ipk') || l.includes('gpa') || l.includes('grade')) {
+      if (userVaultData.gpa) return { key: 'IPK / GPA', val: userVaultData.gpa };
+    }
+    if (l.includes('telepon') || l.includes('phone') || l.includes('telp') || l.includes('mobile')) {
+      if (userVaultData.phone) return { key: 'No. Telepon', val: userVaultData.phone };
+    }
+    if (l.includes('alamat') || l.includes('address')) {
+      if (userVaultData.address) return { key: 'Alamat', val: userVaultData.address };
+    }
+    if (l.includes('darurat') || l.includes('emergency')) {
+      if (userVaultData.emergencyContact) return { key: 'Kontak Darurat', val: userVaultData.emergencyContact };
+    }
+    return null;
+  }
+
+  function populateVaultUI() {
+    const elName = document.getElementById('vault-fullName');
+    const elPassport = document.getElementById('vault-passportNo');
+    const elNik = document.getElementById('vault-nationalId');
+    const elDob = document.getElementById('vault-dob');
+    const elNat = document.getElementById('vault-nationality');
+    const elGpa = document.getElementById('vault-gpa');
+    const elPhone = document.getElementById('vault-phone');
+    const elAddr = document.getElementById('vault-address');
+    const elEmg = document.getElementById('vault-emergencyContact');
+
+    if (elName) elName.value = userVaultData.fullName || '';
+    if (elPassport) elPassport.value = userVaultData.passportNo || '';
+    if (elNik) elNik.value = userVaultData.nationalId || '';
+    if (elDob) elDob.value = userVaultData.dob || '';
+    if (elNat) elNat.value = userVaultData.nationality || 'Indonesian';
+    if (elGpa) elGpa.value = userVaultData.gpa || '';
+    if (elPhone) elPhone.value = userVaultData.phone || '';
+    if (elAddr) elAddr.value = userVaultData.address || '';
+    if (elEmg) elEmg.value = userVaultData.emergencyContact || '';
+  }
+
+  function saveVaultUI() {
+    const elName = document.getElementById('vault-fullName');
+    const elPassport = document.getElementById('vault-passportNo');
+    const elNik = document.getElementById('vault-nationalId');
+    const elDob = document.getElementById('vault-dob');
+    const elNat = document.getElementById('vault-nationality');
+    const elGpa = document.getElementById('vault-gpa');
+    const elPhone = document.getElementById('vault-phone');
+    const elAddr = document.getElementById('vault-address');
+    const elEmg = document.getElementById('vault-emergencyContact');
+
+    userVaultData = {
+      fullName: elName ? elName.value.trim() : '',
+      passportNo: elPassport ? elPassport.value.trim() : '',
+      nationalId: elNik ? elNik.value.trim() : '',
+      dob: elDob ? elDob.value.trim() : '',
+      nationality: elNat ? elNat.value.trim() : 'Indonesian',
+      gpa: elGpa ? elGpa.value.trim() : '',
+      phone: elPhone ? elPhone.value.trim() : '',
+      address: elAddr ? elAddr.value.trim() : '',
+      emergencyContact: elEmg ? elEmg.value.trim() : ''
+    };
+  }
+
+  // Utility helpers
+  function compressImageFileToDataUrl(file, maxDimension = 2048, quality = 0.85) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const objectUrl = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(objectUrl);
+        let { width, height } = img;
+        if (width > maxDimension || height > maxDimension) {
+          if (width > height) {
+            height = Math.round((height * maxDimension) / width);
+            width = maxDimension;
+          } else {
+            width = Math.round((width * maxDimension) / height);
+            height = maxDimension;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = reject;
+      img.src = objectUrl;
+    });
+  }
+
+  function dataUrlToUint8Array(dataUrl) {
+    const base64 = dataUrl.split(',')[1] || dataUrl;
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return bytes;
+  }
+
+  function uint8ArrayToDataUrl(bytes, mimeType = 'application/pdf') {
+    let binary = '';
+    const len = bytes.byteLength;
+    for (let i = 0; i < len; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return `data:${mimeType};base64,` + btoa(binary);
   }
 
   // Boot

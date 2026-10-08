@@ -412,9 +412,21 @@ window.GMTScanner = (function () {
     return matchedList;
   }
 
+  // Priority 9.3: Privacy Shield & Client-Side PII Auto-Masking
+  function maskPiiLocally(text) {
+    if (!text || typeof text !== 'string') return text;
+    return text
+      .replace(/\b(?:\d[ -]*?){13,16}\b/g, '[MASKED_CARD_NUMBER]')
+      .replace(/\b\d{16}\b/g, '[MASKED_NATIONAL_ID]')
+      .replace(/\b[A-Z]{1,2}\d{7,9}\b/g, '[MASKED_PASSPORT]')
+      .replace(/(\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4,6}/g, '[MASKED_PHONE]')
+      .replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b/g, '[MASKED_EMAIL]');
+  }
+
   return {
     scanForms,
     matchFieldToDictionary,
-    findAssociatedLabel
+    findAssociatedLabel,
+    maskPiiLocally
   };
 })();

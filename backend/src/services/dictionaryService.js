@@ -1,8 +1,64 @@
 import { getFirestore } from '../config/firebase.js';
 import { generateFieldExplanation } from './aiService.js';
+import { getEmbedding, cosineSimilarity } from './geminiService.js';
 
 // In-memory cache for speed and offline fallback
 const memoryCache = new Map();
+
+/**
+ * Priority 4.2: Semantic Vector Match across verified Firestore entries
+ * @param {string} queryText - Label or field name
+ * @param {string} targetLanguage - Target language
+ * @param {number} threshold - Cosine similarity threshold (default >= 0.90)
+ */
+export async function findSemanticFieldMatch(queryText, targetLanguage = 'en', threshold = 0.90) {
+  const { db, isFirebaseConnected } = getFirestore();
+  if (!isFirebaseConnected || !db || !queryText) return null;
+
+  try {
+    const queryVec = await getEmbedding(queryText);
+    if (!queryVec) return null;
+
+    const snapshot = await db.collection('entries')
+      .where('verified', '==', true)
+      .limit(60)
+      .get();
+
+    if (snapshot.empty) return null;
+
+    let bestMatch = null;
+    let highestSim = 0;
+
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+      if (data.embedding && Array.isArray(data.embedding)) {
+        const sim = cosineSimilarity(queryVec, data.embedding);
+        if (sim > highestSim && sim >= threshold) {
+          highestSim = sim;
+          bestMatch = { data, similarity: sim };
+        }
+      }
+    });
+
+    if (bestMatch && bestMatch.data) {
+      const trans = bestMatch.data.translations?.[targetLanguage];
+      if (trans) {
+        console.log(`[Vector Search Cache Hit] "${queryText}" matched "${bestMatch.data.originalLabel}" (Cosine Sim: ${bestMatch.similarity.toFixed(3)})`);
+        return {
+          ...trans,
+          fieldKey: bestMatch.data.fieldKey,
+          verified: true,
+          source: 'vector_semantic_cache',
+          semanticSimilarity: bestMatch.similarity
+        };
+      }
+    }
+  } catch (err) {
+    console.warn('[Vector Search] Notice:', err.message);
+  }
+
+  return null;
+}
 
 /**
  * Normalize field key for database lookup
@@ -26,10 +82,17 @@ export async function explainField({ metadata, language = 'en', pageContext = ''
   const cacheKey = `${fieldKey}:${language}`;
   const strategy = (process.env.EXPLAIN_STRATEGY || 'AI_FIRST').toUpperCase();
 
-  // 1. AI_FIRST Strategy: 100% Pure AI from GLM / OpenAI-compatible, bypass Firestore
+  // 1. Priority 4.2: Check Semantic Vector Cache First (Cross-Domain, Zero-Token)
+  const semanticMatch = await findSemanticFieldMatch(metadata.label || metadata.name, language, 0.90);
+  if (semanticMatch) {
+    memoryCache.set(cacheKey, semanticMatch);
+    return semanticMatch;
+  }
+
+  // 2. AI_FIRST Strategy: 100% Pure AI from GLM / Gemini
   if (strategy === 'AI_FIRST') {
     try {
-      console.log(`[Strategy: AI_FIRST] Requesting 100% fresh AI explanation for "${metadata.label || metadata.name}" (${language})...`);
+      console.log(`[Strategy: AI_FIRST] Requesting fresh AI explanation for "${metadata.label || metadata.name}" (${language})...`);
       const aiExplanation = await generateFieldExplanation(metadata, language, pageContext);
       if (aiExplanation && (aiExplanation.meaning || aiExplanation.howToFill)) {
         const result = {
@@ -39,21 +102,27 @@ export async function explainField({ metadata, language = 'en', pageContext = ''
           source: 'ai_draft'
         };
 
-        // Optionally record into Firestore in background without blocking
+        // Optionally record into Firestore with embedding in background
         if (isFirebaseConnected && db) {
-          db.collection('entries').doc(fieldKey).set({
-            fieldKey,
-            domain: metadata.domain || 'unknown',
-            originalLabel: metadata.label || metadata.name || '',
-            inputType: metadata.type || 'text',
-            section: metadata.section || '',
-            verified: false,
-            source: 'ai_draft',
-            updatedAt: new Date().toISOString(),
-            translations: {
-              [language]: aiExplanation
-            }
-          }, { merge: true }).catch(() => {});
+          (async () => {
+            try {
+              const emb = await getEmbedding(metadata.label || metadata.name || '');
+              await db.collection('entries').doc(fieldKey).set({
+                fieldKey,
+                domain: metadata.domain || 'unknown',
+                originalLabel: metadata.label || metadata.name || '',
+                inputType: metadata.type || 'text',
+                section: metadata.section || '',
+                verified: false,
+                source: 'ai_draft',
+                embedding: emb || null,
+                updatedAt: new Date().toISOString(),
+                translations: {
+                  [language]: aiExplanation
+                }
+              }, { merge: true });
+            } catch (e) {}
+          })();
         }
 
         return result;

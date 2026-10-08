@@ -308,13 +308,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     chrome.storage.local.get(['settings']).then(async (res) => {
       const settings = res.settings || DEFAULT_SETTINGS;
       const apiUrl = settings.apiUrl || DEFAULT_SETTINGS.apiUrl;
-      const { pdfBase64, filename, language } = message.payload;
+      const { pdfBase64, filename, language, mimeType = 'application/pdf' } = message.payload;
 
       try {
         const response = await fetchWithTimeout(`${apiUrl}/explain-pdf`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ pdfBase64, filename, language })
+          body: JSON.stringify({ pdfBase64, filename, language, mimeType })
         }, 60000);
 
         if (response.ok) {
@@ -325,15 +325,95 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           }
         } else {
           const errJson = await response.json().catch(() => ({}));
-          sendResponse({ success: false, error: errJson.error || 'Server rejected PDF payload' });
+          sendResponse({ success: false, error: errJson.error || 'Server rejected document payload' });
           return;
         }
       } catch (err) {
-        console.warn('[Telmy SW] PDF Explain API error:', err.message);
+        console.warn('[Telmy SW] Document Explain API error:', err.message);
       }
 
-      sendResponse({ success: false, error: 'Failed to analyze PDF form' });
+      sendResponse({ success: false, error: 'Failed to analyze document form' });
     });
+    return true;
+  }
+
+  // Priority 7.5: 1-Click Native Tab Document Ingestion
+  if (message.type === 'FETCH_ACTIVE_TAB_DOCUMENT') {
+    (async () => {
+      try {
+        const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (!tabs || tabs.length === 0) {
+          sendResponse({ success: false, error: 'No active tab found' });
+          return;
+        }
+        const tab = tabs[0];
+        const tabUrl = tab.url || '';
+
+        // Check for local file
+        if (tabUrl.startsWith('file://')) {
+          sendResponse({ success: false, isLocalFile: true, url: tabUrl });
+          return;
+        }
+
+        // Try downloading directly via in-page execution (CORS-safe & session-safe)
+        try {
+          const results = await chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            func: async () => {
+              try {
+                const resp = await fetch(window.location.href);
+                if (!resp.ok) return { success: false, status: resp.status };
+                const blob = await resp.blob();
+                return new Promise((resolve) => {
+                  const reader = new FileReader();
+                  reader.onloadend = () => resolve({
+                    success: true,
+                    dataUrl: reader.result,
+                    mimeType: blob.type || 'application/pdf',
+                    size: blob.size
+                  });
+                  reader.onerror = () => resolve({ success: false, error: 'FileReader error' });
+                  reader.readAsDataURL(blob);
+                });
+              } catch (e) {
+                return { success: false, error: e.message };
+              }
+            }
+          });
+
+          if (results && results[0] && results[0].result && results[0].result.success) {
+            const data = results[0].result;
+            sendResponse({
+              success: true,
+              dataUrl: data.dataUrl,
+              mimeType: data.mimeType,
+              filename: tabUrl.split('/').pop().split('?')[0] || 'document.pdf'
+            });
+            return;
+          }
+        } catch (scriptErr) {
+          console.warn('[Telmy SW] In-page script fetch failed, attempting direct fetch:', scriptErr.message);
+        }
+
+        // Fallback: direct background fetch
+        const resp = await fetchWithTimeout(tabUrl, {}, 25000);
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const blob = await resp.blob();
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          sendResponse({
+            success: true,
+            dataUrl: reader.result,
+            mimeType: blob.type || 'application/pdf',
+            filename: tabUrl.split('/').pop().split('?')[0] || 'document.pdf'
+          });
+        };
+        reader.readAsDataURL(blob);
+      } catch (err) {
+        console.warn('[Telmy SW] Fetch tab document failed:', err.message);
+        sendResponse({ success: false, error: err.message });
+      }
+    })();
     return true;
   }
 
