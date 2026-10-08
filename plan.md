@@ -155,18 +155,36 @@
 
 ---
 
-### 🏅 PRIORITAS 5: User Dashboard & Firebase Web Platform
-*Target: Web platform terintegrasi di `telmy.id` dengan akun pengguna dan manajemen aset.*
+### 🏅 PRIORITAS 5: Member Area Redesign (5-Menu Sidebar + Real Google Auth)
+*Target: Mengubah member area menjadi web app modern dengan Sidebar Kiri, Konten Kanan per modul, sinkronisasi akun Google asli, dan CSS tombol yang rapi.*
 
-- [x] **5.1. Firebase Authentication & Storage:**
-  - Login 1-klik dengan Google Sign-In & Email.
-  - Upload & kompresi foto profil pengguna ke Firebase Storage (dengan format WebP otomatis).
-  - API sync `/api/user/sync` dan `/api/user/avatar`.
-- [x] **5.2. Web Dashboard (`/dashboard`) Berfilosofi Desain Apple:**
-  - Desain Human Interface ala Apple Cupertino (Bento Grid, frosted glass navbar, ambient radial lighting, SF Pro / Inter typography).
-  - Mengelola preferensi bahasa bawaan 11 negara JAPAC secara interaktif.
-  - Riwayat sesi form terpandu (Apostille Kemenkumham, e-VoA Visa) dan simulator langsung.
-  - Tombol *"Sync Profile to Extension"* via `externally_connectable` & `SET_USER_SESSION`.
+- [ ] **5.1. Real Google Account Authentication & Reactive Session Sync:**
+  - **Live Google Identity:** Mengambil nama asli (`displayName`), email resmi (`email`), dan avatar (`photoURL`) langsung dari objek `firebase.auth().signInWithPopup(provider)`.
+  - **Eliminasi Fallback Dummy:** Menghapus fallback statis `"Telmy Member"` dan `"member@telmy.id"` di `connect.html`.
+  - **Reaktif State Listener:** Menggunakan `firebase.auth().onAuthStateChanged()` di `dashboard.html` untuk deteksi sesi login real-time browser tanpa perlu reload manual.
+  - **Sinkronisasi Firestore:** Menyimpan dan mengambil preferensi pengguna dari koleksi `users/{uid}` secara aman.
+
+- [ ] **5.2. Arsitektur Member Area Modern (Sidebar Kiri + Konten Kanan 5 Menu):**
+  - Menggantikan navbar horizontal bertumpuk dengan layout SaaS modern:
+    * **Panel Kiri (Sidebar ~260px):** Logo Telmy.ai, 5 menu navigasi dengan ikon interaktif, info user login, dan tombol logout.
+    * **Panel Kanan (Content Area):** Menampilkan HANYA view aktif secara modular (SPA tab switcher), tidak lagi menumpuk semua card ke bawah dalam 1 halaman panjang.
+  - **5 Menu Terpadu (Simplified & Focused):**
+    1. **📊 Overview:** Cockpit utama, ringkasan sisa kredit/kuota, status ekstensi Chrome, dan aksi cepat (*Quick Actions*).
+    2. **👤 Profile:** Identitas akun Google (nama, email, foto profil) dan pemilih bahasa bawaan (*Default Language*) matriks 11 bahasa JAPAC.
+    3. **📁 Forms:** Pusat dokumen kerja — menggabungkan statistik form, riwayat pengerjaan form (web & PDF), dan tool analisa dokumen PDF.
+    4. **⚡ AutoFill:** Master data pengguna aman (nama legal, paspor, NIK/ID, tanggal lahir, kontak, alamat) untuk 1-Click Smart Fill ekstensi.
+    5. **💳 Usage:** Pusat kuota & transaksi — menampilkan sisa saldo kredit, opsi upgrade paket (Pay-as-you-go & Pro), dan tabel invoice resmi.
+
+- [ ] **5.3. Perbaikan CSS Tombol & Standarisasi Apple HIG:**
+  - Mendefinisikan class `.btn-apple-secondary` secara lengkap (background frosted/white, border halus, hover efek).
+  - Menormalkan `.btn-apple-primary` (menghapus `align-self: flex-start` agar tidak merusak tata letak flexbox modal).
+  - Memperbaiki tombol cetak kwitansi `🖨️ Print / Save PDF` di modal receipt agar rapi dan simetris.
+  - Merapikan tombol `Select PDF File` di dropzone dan tombol badge status `Active by Default`.
+
+- [ ] **5.4. Testing End-to-End & Live Deployment:**
+  - Pengujian flow login Google $\rightarrow$ redirect ke Dashboard $\rightarrow$ verifikasi data nama & email asli tampil.
+  - Pengujian perpindahan 5 menu sidebar secara instan tanpa reload halaman.
+  - Deploy langsung ke Firebase Hosting (`https://telmy.web.app/dashboard`).
 
 ---
 
