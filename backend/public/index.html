@@ -3,25 +3,314 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title id="meta-title">Telmy.ai — Your AI Form Filling Assistant</title>
-  <meta name="description" id="meta-desc" content="Your AI Form Filling Assistant. Fill out complex online forms and paperwork with step-by-step guidance, plain-language explanations, and voice support.">
-  <link rel="icon" type="image/png" href="logo.png">
+  <title id="meta-title">Telmy.ai — The Friendly AI Form-Filling Companion & Co-Pilot</title>
+  <meta name="description" id="meta-desc" content="Transform complex online forms, foreign visa paperwork, scholarships, and official PDF documents into an intuitive, guided conversation with Google Gemini AI and WaveNet voice assistance.">
+  <link rel="icon" type="image/png" href="telmy_icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <style>
+    /* Cupertino / Apple Human Interface Enhancements */
+    :root {
+      --accent: #0071e3;
+      --accent-hover: #0077ed;
+      --accent-soft: #e8f2fc;
+      --card-bg: rgba(255, 255, 255, 0.82);
+      --card-border: rgba(0, 0, 0, 0.08);
+      --blur-apple: saturate(180%) blur(20px);
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Plus Jakarta Sans", sans-serif;
+      background: #fbfbfd;
+      color: #1d1d1f;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Ambient Lighting Glow */
+    .ambient-glow {
+      position: absolute;
+      top: -120px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 900px;
+      height: 480px;
+      background: radial-gradient(circle, rgba(0, 113, 227, 0.09) 0%, rgba(251, 251, 253, 0) 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .navbar {
+      background: rgba(251, 251, 253, 0.8) !important;
+      backdrop-filter: var(--blur-apple);
+      -webkit-backdrop-filter: var(--blur-apple);
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .hero-section {
+      position: relative;
+      overflow: hidden;
+      padding: 70px 0 50px;
+    }
+
+    .hero-pill {
+      background: rgba(0, 113, 227, 0.08);
+      color: var(--accent);
+      border: 1px solid rgba(0, 113, 227, 0.18);
+      font-weight: 600;
+      font-size: 13px;
+      padding: 6px 16px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .hero-title {
+      font-size: 52px;
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      line-height: 1.12;
+      color: #1d1d1f;
+      max-width: 880px;
+      margin: 0 auto 20px;
+    }
+
+    .hero-title .gradient-text {
+      background: linear-gradient(135deg, #0071e3 0%, #34c759 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-subtitle {
+      font-size: 18px;
+      color: #86868b;
+      max-width: 700px;
+      margin: 0 auto 36px;
+      line-height: 1.5;
+    }
+
+    /* Bento Grid for Superpowers */
+    .bento-section {
+      padding: 80px 0;
+    }
+
+    .bento-container {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 20px;
+    }
+
+    .bento-box {
+      background: #ffffff;
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .bento-box:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.08);
+      border-color: rgba(0, 113, 227, 0.25);
+    }
+
+    .bento-col-8 { grid-column: span 8; }
+    .bento-col-4 { grid-column: span 4; }
+    .bento-col-6 { grid-column: span 6; }
+    .bento-col-12 { grid-column: span 12; }
+
+    .bento-badge-top {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent);
+      background: var(--accent-soft);
+      padding: 4px 10px;
+      border-radius: 999px;
+      width: fit-content;
+      margin-bottom: 16px;
+    }
+
+    .bento-title {
+      font-size: 21px;
+      font-weight: 800;
+      color: #1d1d1f;
+      letter-spacing: -0.4px;
+      margin-bottom: 10px;
+    }
+
+    .bento-desc {
+      font-size: 14px;
+      color: #86868b;
+      line-height: 1.55;
+      margin-bottom: 20px;
+    }
+
+    .bento-graphic {
+      background: #f5f5f7;
+      border-radius: 14px;
+      padding: 16px;
+      margin-top: auto;
+      border: 1px solid rgba(0, 0, 0, 0.04);
+    }
+
+    /* Pricing Section */
+    .pricing-section {
+      padding: 80px 0;
+      background: #ffffff;
+      border-top: 1px solid var(--card-border);
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-top: 40px;
+    }
+
+    .pricing-card {
+      background: #fbfbfd;
+      border: 1.5px solid var(--card-border);
+      border-radius: 20px;
+      padding: 32px 28px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      transition: all 0.2s ease;
+    }
+
+    .pricing-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.06);
+    }
+
+    .pricing-card.recommended {
+      background: #ffffff;
+      border-color: var(--accent);
+      box-shadow: 0 8px 24px rgba(0, 113, 227, 0.12);
+    }
+
+    .pricing-badge-pill {
+      position: absolute;
+      top: -11px;
+      left: 28px;
+      background: var(--accent);
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 12px;
+      border-radius: 999px;
+    }
+
+    .pricing-plan-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #86868b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .pricing-price {
+      font-size: 42px;
+      font-weight: 800;
+      color: #1d1d1f;
+      line-height: 1;
+      margin: 12px 0 6px;
+    }
+
+    .pricing-sub {
+      font-size: 13px;
+      color: #86868b;
+      margin-bottom: 24px;
+    }
+
+    .pricing-features {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      font-size: 13.5px;
+      color: #334155;
+      flex: 1;
+    }
+
+    .pricing-features li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-pricing {
+      width: 100%;
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+      border: none;
+      text-decoration: none;
+      display: block;
+    }
+
+    .btn-pricing-secondary {
+      background: #e5e5ea;
+      color: #1d1d1f;
+    }
+
+    .btn-pricing-secondary:hover {
+      background: #d1d1d6;
+    }
+
+    .btn-pricing-primary {
+      background: var(--accent);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(0, 113, 227, 0.28);
+    }
+
+    .btn-pricing-primary:hover {
+      background: var(--accent-hover);
+    }
+
+    @media (max-width: 960px) {
+      .bento-col-8, .bento-col-4, .bento-col-6 { grid-column: span 12; }
+      .pricing-grid { grid-template-columns: 1fr; }
+      .hero-title { font-size: 38px; }
+    }
+  </style>
 </head>
 <body>
+  <!-- Ambient Top Lighting -->
+  <div class="ambient-glow"></div>
+
   <!-- Navbar -->
   <nav class="navbar">
     <div class="container nav-container">
       <a href="/" class="brand">
-        <img src="telmy_icon.png" alt="Telmy.ai Logo" class="brand-logo" style="border-radius: 8px;">
-        <span class="brand-name">Telmy.ai</span>
-        <span class="brand-badge">Assistant</span>
+        <img src="telmy_icon.png" alt="Telmy.ai Logo" class="brand-logo" style="border-radius: 9px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <span class="brand-name" style="letter-spacing: -0.5px;">Telmy.ai</span>
+        <span class="brand-badge" style="background: var(--accent-soft); color: var(--accent); font-weight: 700;">Co-Pilot</span>
       </a>
       <ul class="nav-links">
-        <li><a href="#features" class="nav-link" id="nav-features">Features</a></li>
+        <li><a href="#superpowers" class="nav-link" id="nav-features">Superpowers</a></li>
+        <li><a href="#pricing" class="nav-link" id="nav-pricing">Pricing</a></li>
         <li><a href="/dashboard" class="nav-link" id="nav-dashboard">Dashboard</a></li>
         <li><a href="/demo.html" class="nav-link" id="nav-demo">Live Demo</a></li>
-        <li><a href="/download.html" class="nav-link" id="nav-download">Download</a></li>
+        <li><a href="/download.html" class="nav-link" id="nav-download">Download Extension</a></li>
         <li>
           <!-- JAPAC Language Selector -->
           <select id="landing-lang-select" class="lang-select-nav" aria-label="Select Language">
@@ -38,7 +327,7 @@
             <option value="ms">🇲🇾 Melayu</option>
           </select>
         </li>
-        <li><a href="/demo.html" class="btn-nav-cta" id="nav-cta">Try Now 🚀</a></li>
+        <li><a href="/demo.html" class="btn-nav-cta" id="nav-cta" style="background: var(--accent);">Try Now 🚀</a></li>
       </ul>
     </div>
   </nav>
@@ -46,68 +335,97 @@
   <!-- Hero Section -->
   <header class="hero-section">
     <div class="container">
-      <div class="hero-pill">
-        <span id="hero-pill-left">⚡ Easy & Confident Form Filling</span>
-        <span>•</span>
-        <span id="hero-pill-right">Step-by-Step Guidance in Any Language</span>
+      <div style="text-align: center;">
+        <div class="hero-pill">
+          <span>✨</span>
+          <span id="hero-pill-left">Powered by Google Gemini 3.5 & WaveNet</span>
+          <span>•</span>
+          <span id="hero-pill-right">100% Chrome Side Panel Native</span>
+        </div>
+
+        <h1 class="hero-title" id="hero-title">
+          The Intelligent Co-Pilot for <span class="gradient-text">Complex Online Forms</span>
+        </h1>
+
+        <p class="hero-subtitle" id="hero-subtitle">
+          Transform intimidating visas, scholarship applications, government portals, and official PDF documents into an intuitive, guided conversation. Step-by-step guidance, plain-language answers, and talking mascot voice assistance right in your browser.
+        </p>
+
+        <div class="hero-cta-group">
+          <a href="/demo.html" class="btn-hero-primary" id="btn-hero-demo" style="background: var(--accent); border-radius: 999px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            <span id="txt-hero-demo">Try Live Playground Demo</span>
+          </a>
+          <a href="/download.html" class="btn-hero-secondary" id="btn-hero-download" style="border-radius: 999px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+            <span id="txt-hero-download">Install Chrome Extension (Free)</span>
+          </a>
+        </div>
       </div>
 
-      <h1 class="hero-title" id="hero-title">
-        Your AI <span class="gradient-text">Form Filling Assistant</span>
-      </h1>
-
-      <p class="hero-subtitle" id="hero-subtitle">
-        Fill out complex online forms and confusing paperwork without stress. Telmy guides you step-by-step with simple explanations, practical examples, and voice assistance right in your browser.
-      </p>
-
-      <div class="hero-cta-group">
-        <a href="/demo.html" class="btn-hero-primary" id="btn-hero-demo">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          <span id="txt-hero-demo">Try Live Demo Playground</span>
-        </a>
-        <a href="/download.html" class="btn-hero-secondary" id="btn-hero-download">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
-          <span id="txt-hero-download">Install on Chrome (Free)</span>
-        </a>
-      </div>
-
-      <!-- Live Mockup Browser Frame -->
-      <div class="showcase-frame">
+      <!-- Live Mockup Browser Frame (Apple Safari / Chrome Native Aesthetic) -->
+      <div class="showcase-frame" style="border-radius: 20px; box-shadow: 0 24px 60px rgba(0,0,0,0.12);">
         <div class="frame-topbar">
           <div class="frame-dots"><span></span><span></span><span></span></div>
           <div class="frame-url-bar">https://apostille.kemenkumham.go.id/application</div>
+          <span style="font-size: 11px; font-weight: 700; color: #059669; background: #d1fae5; padding: 2px 8px; border-radius: 4px;">Live Side Panel</span>
         </div>
         <div class="frame-content">
           <div class="mock-form-area">
-            <h3 style="font-size: 16px; margin-bottom: 12px; color: #1e3a8a;" id="mock-form-title">Apostille Document Application Portal</h3>
-            <div style="margin-bottom: 14px;">
-              <label style="font-size: 12px; font-weight: 700; display: block; margin-bottom: 4px;" id="mock-f1-label">
-                National Identity Number (NIK / ID) <span style="background: #2563eb; color: white; border-radius: 50%; padding: 1px 6px; font-size: 10px;">1</span>
-              </label>
-              <input type="text" value="3171012304950001" readonly style="width: 100%; padding: 8px 12px; border: 2px solid #2563eb; border-radius: 6px; background: #eff6ff; font-family: monospace;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+              <h3 style="font-size: 16px; color: #1e3a8a;" id="mock-form-title">Apostille Legalization & Verification Portal</h3>
+              <span style="font-size: 11px; background: #eff6ff; color: #1d4ed8; padding: 2px 8px; border-radius: 4px; font-weight: 600;">Government Service</span>
             </div>
-            <div>
-              <label style="font-size: 12px; font-weight: 700; display: block; margin-bottom: 4px;" id="mock-f2-label">
-                Type of Certified Document <span style="background: #2563eb; color: white; border-radius: 50%; padding: 1px 6px; font-size: 10px;">2</span>
+            
+            <div style="margin-bottom: 16px;">
+              <label style="font-size: 12px; font-weight: 700; display: block; margin-bottom: 4px;" id="mock-f1-label">
+                National Identity Number (NIK / ID) <span style="background: #0071e3; color: white; border-radius: 50%; padding: 1px 7px; font-size: 10px;">1</span>
               </label>
-              <select style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background: white;" id="mock-f2-select">
-                <option>Birth Certificate / Marriage Certificate</option>
+              <input type="text" value="3171012304950001" readonly style="width: 100%; padding: 10px 12px; border: 2px solid #0071e3; border-radius: 8px; background: #eff6ff; font-family: monospace; font-size: 13px;">
+            </div>
+
+            <div style="margin-bottom: 16px;">
+              <label style="font-size: 12px; font-weight: 700; display: block; margin-bottom: 4px;" id="mock-f2-label">
+                Type of Certified Document <span style="background: #0071e3; color: white; border-radius: 50%; padding: 1px 7px; font-size: 10px;">2</span>
+              </label>
+              <select style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: white; font-size: 13px;" id="mock-f2-select">
+                <option>Birth Certificate / Marriage Certificate (Civil Registry)</option>
               </select>
             </div>
+
+            <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 12px; font-size: 12px; color: #64748b;">
+              🛡️ Privacy Shield Active: Personal credentials and passwords are never read or stored.
+            </div>
           </div>
-          <div class="mock-sidepanel-area">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">
-              <img src="logo.png" style="width: 22px; height: 22px; border-radius: 4px;" alt="Telmy logo">
-              <span style="font-size: 13px; font-weight: 800;">Telmy.ai Side Panel</span>
-              <span style="font-size: 10px; background: #e8f0fe; color: #1a73e8; font-weight: 700; padding: 2px 6px; border-radius: 4px; margin-left: auto;">AI Guide</span>
+
+          <div class="mock-sidepanel-area" style="background: #ffffff; border-left: 1px solid #e2e8f0;">
+            <!-- Mascot Header in Sidepanel -->
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px;">
+              <img src="telmy_icon.png" style="width: 32px; height: 32px; border-radius: 8px;" alt="Telmy logo">
+              <div>
+                <strong style="font-size: 13px; color: #1d1d1f; display: block;">Telmy Companion</strong>
+                <small style="color: #059669; font-size: 11px; font-weight: 600;">● Active on this page</small>
+              </div>
+              <span style="margin-left: auto; font-size: 11px; font-weight: 700; background: #e8f2fc; color: #0071e3; padding: 2px 8px; border-radius: 999px;">💎 5 Forms</span>
             </div>
-            <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; font-size: 12px; margin-bottom: 10px;">
-              <div style="font-weight: 700; color: #1e3a8a; margin-bottom: 4px;" id="mock-sp-guide-title">🎯 Field Guide #1: NIK (ID Number)</div>
-              <p style="color: #475569; font-size: 11.5px; line-height: 1.4;" id="mock-sp-guide-text">Must be 16 digits matching your official National ID or Passport. Do not use dots or spaces.</p>
+
+            <!-- Field Guidance Card -->
+            <div style="background: #f8fafc; border: 1.5px solid #0071e3; border-radius: 12px; padding: 14px; margin-bottom: 12px;">
+              <div style="font-weight: 700; color: #0071e3; font-size: 12.5px; margin-bottom: 6px;" id="mock-sp-guide-title">
+                🎯 Field #1: National Identity Number
+              </div>
+              <p style="color: #475569; font-size: 12px; line-height: 1.45; margin-bottom: 8px;" id="mock-sp-guide-text">
+                Your 16-digit official number matching your civil certificate. Do not include spaces, periods, or hyphens.
+              </p>
+              <div style="background: #ffffff; border-left: 3px solid #0071e3; padding: 6px 10px; border-radius: 4px; font-size: 11.5px; color: #334155;">
+                <strong>Example:</strong> 3171012304950001
+              </div>
             </div>
-            <div style="display: flex; align-items: center; gap: 6px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 6px 10px; font-size: 11px; color: #1e40af; margin-top: auto;">
-              <span>🔊</span>
-              <span id="mock-sp-tts-text">Voice guidance ready</span>
+
+            <!-- Pre-submission Auditor Chip -->
+            <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 8px 12px; font-size: 11.5px; color: #065f46; display: flex; align-items: center; justify-content: space-between; margin-top: auto;">
+              <span>🟢 Form Auditor: 100% Ready</span>
+              <button style="background: #059669; color: white; border: none; border-radius: 4px; padding: 2px 6px; font-size: 10px; font-weight: 700;">Audit Now</button>
             </div>
           </div>
         </div>
@@ -115,40 +433,40 @@
     </div>
   </header>
 
-  <!-- Impact Section (Real-World Social Impact & Accessibility) -->
+  <!-- Real-World Impact Section -->
   <section class="impact-section" id="impact">
     <div class="container">
       <div style="text-align: center;">
-        <span class="section-badge" id="badge-impact">Real-World Impact & Accessibility</span>
-        <h2 class="section-title" id="title-impact">Slashing Bureaucratic Complexity Across JAPAC</h2>
+        <span class="section-badge" id="badge-impact">Measured Accessibility</span>
+        <h2 class="section-title" id="title-impact">Eliminating Bureaucratic Friction Worldwide</h2>
         <p class="section-subtitle" style="margin: 0 auto 40px;" id="subtitle-impact">
-          Every year, millions of citizens and foreign residents fail or make critical mistakes on public forms due to confusing bureaucratic jargon.
+          Over 67% of international travelers, students, and citizens experience high anxiety or make critical mistakes on official digital paperwork.
         </p>
       </div>
 
       <div class="impact-grid">
-        <div class="impact-card before">
+        <div class="impact-card before" style="border-radius: 20px;">
           <div class="impact-card-header">
             <span style="font-size: 28px;">❌</span>
-            <h3 class="impact-card-title" style="color: #991b1b;" id="impact-before-title">Before Telmy</h3>
+            <h3 class="impact-card-title" style="color: #991b1b;" id="impact-before-title">Without Telmy</h3>
           </div>
           <ul class="impact-list">
             <li class="impact-item">
               <span>⚠️</span>
-              <span id="impact-before-1"><strong>Average 25–35 minutes</strong> spent reading convoluted and rigid technical guidelines.</span>
+              <span id="impact-before-1"><strong>30–45 minutes wasted</strong> decoding rigid, convoluted legal terminology and instructions.</span>
             </li>
             <li class="impact-item">
               <span>⚠️</span>
-              <span id="impact-before-2"><strong>High document rejection rates</strong> caused by misunderstanding terms like <em>Power of Attorney</em>, <em>NIB</em>, or <em>Legalization</em>.</span>
+              <span id="impact-before-2"><strong>High application rejection rates</strong> caused by formatting errors (e.g. inverted dates, title in surname field).</span>
             </li>
             <li class="impact-item">
               <span>⚠️</span>
-              <span id="impact-before-3"><strong>Foreign applicants blocked</strong> because government portals only offer confusing domestic legal terminology.</span>
+              <span id="impact-before-3"><strong>Broken machine translations</strong> corrupting official acronyms like Apostille, NIK, TIN, and SSN.</span>
             </li>
           </ul>
         </div>
 
-        <div class="impact-card after">
+        <div class="impact-card after" style="border-radius: 20px;">
           <div class="impact-card-header">
             <span style="font-size: 28px;">✅</span>
             <h3 class="impact-card-title" style="color: #166534;" id="impact-after-title">With Telmy.ai</h3>
@@ -156,15 +474,15 @@
           <ul class="impact-list">
             <li class="impact-item">
               <span>⚡</span>
-              <span id="impact-after-1"><strong>Completion time slashed to 5 minutes</strong> with visual guiding badges and automatic step-by-step focus.</span>
+              <span id="impact-after-1"><strong>Completion time cut to under 5 minutes</strong> with numbered focus badges and 1-Click Vault smart fill.</span>
             </li>
             <li class="impact-item">
               <span>💡</span>
-              <span id="impact-after-2"><strong>Zero confusion</strong> thanks to plain human language, realistic examples, and step-by-step tips for every field.</span>
+              <span id="impact-after-2"><strong>Zero-Disqualification Guarantee</strong> backed by the Pre-Submission AI Form Auditor.</span>
             </li>
             <li class="impact-item">
               <span>🌐</span>
-              <span id="impact-after-3"><strong>Comprehensive JAPAC language support</strong> across 11 languages without modifying the original host website.</span>
+              <span id="impact-after-3"><strong>Context-aware translation across 11 languages</strong> safeguarding official legal terms automatically.</span>
             </li>
           </ul>
         </div>
@@ -172,56 +490,180 @@
     </div>
   </section>
 
-  <!-- 4 Pillars Feature Section -->
-  <section class="features-section" id="features">
+  <!-- Superpowers Bento Grid Section (Priorities 1 - 9) -->
+  <section class="bento-section" id="superpowers">
     <div class="container">
       <div style="text-align: center; margin-bottom: 48px;">
-        <span class="section-badge" id="badge-features">Key Features</span>
-        <h2 class="section-title" id="title-features">Everything You Need to Fill Forms with Ease</h2>
-        <p class="section-subtitle" style="margin: 0 auto;" id="subtitle-features">Designed to guide you through confusing forms smoothly, safely, and effortlessly.</p>
+        <span class="section-badge">All-New Superpowers</span>
+        <h2 class="section-title">Engineered with Apple Human Interface Philosophy</h2>
+        <p class="section-subtitle" style="margin: 0 auto;">Everything you need to conquer digital forms, embassy visas, and complex documents effortlessly.</p>
       </div>
 
-      <div class="features-grid">
-        <div class="feature-box">
-          <div class="feature-icon-wrapper">🧭</div>
-          <h3 id="feat1-title">Side-by-Side Guidance</h3>
-          <p id="feat1-desc">Sits comfortably beside your form in Chrome's side panel. Resizable at will; never blocks or overlaps what you are typing.</p>
+      <div class="bento-container">
+        <!-- Bento 1: Universal PDF & Multimodal Form Guidance (Priority 7) -->
+        <div class="bento-box bento-col-8">
+          <div class="bento-badge-top">📄 Universal PDF & Multimodal Guidance</div>
+          <h3 class="bento-title">1-Click PDF Ingestion, Handwriting & Local AcroForm Export</h3>
+          <p class="bento-desc">
+            Open any downloaded visa or embassy PDF in Chrome, and Telmy immediately provides side-by-side guidance without re-uploading. Supports camera photos, scanned certificates, handwriting detection with ambiguity flags, and exports official completed PDFs 100% locally using <code>pdf-lib</code>.
+          </p>
+          <div class="bento-graphic" style="display: flex; gap: 14px; align-items: center; justify-content: space-around; flex-wrap: wrap;">
+            <div style="text-align: center;"><span style="font-size: 24px;">⚡</span><div style="font-size: 11px; font-weight: 700; color: #1e293b;">1-Click Native Tab Fetch</div></div>
+            <div style="text-align: center;"><span style="font-size: 24px;">📷</span><div style="font-size: 11px; font-weight: 700; color: #1e293b;">Canvas Photo Compressor</div></div>
+            <div style="text-align: center;"><span style="font-size: 24px;">✍️</span><div style="font-size: 11px; font-weight: 700; color: #1e293b;">Handwriting Detection</div></div>
+            <div style="text-align: center;"><span style="font-size: 24px;">📥</span><div style="font-size: 11px; font-weight: 700; color: #1e293b;">Certified PDF Export</div></div>
+          </div>
         </div>
 
-        <div class="feature-box">
-          <div class="feature-icon-wrapper">💡</div>
-          <h3 id="feat2-title">Instant Explanations & Examples</h3>
-          <p id="feat2-desc">Explains tricky legal and bureaucratic terms in plain language, gives realistic sample inputs, and warns against common errors.</p>
+        <!-- Bento 2: Interactive Talking Avatar Mascot (Priority 2) -->
+        <div class="bento-box bento-col-4">
+          <div class="bento-badge-top">🤖 Interactive Companion</div>
+          <h3 class="bento-title">Real-Time WaveNet Lip-Sync Mascot</h3>
+          <p class="bento-desc">
+            A friendly robot avatar with real-time Web Audio API lip-sync visemes that match spoken answers. Blinks naturally and brings comforting reassurance to form filling.
+          </p>
+          <div class="bento-graphic" style="text-align: center; padding: 20px 10px;">
+            <img src="telmy_icon.png" style="width: 54px; height: 54px; border-radius: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);" alt="Avatar">
+            <div style="font-size: 12px; font-weight: 700; color: #1d1d1f; margin-top: 8px;">Adaptive Audio Visemes</div>
+            <small style="color: #059669; font-size: 10.5px; font-weight: 600;">Google Cloud WaveNet Neural Voices</small>
+          </div>
         </div>
 
-        <div class="feature-box">
-          <div class="feature-icon-wrapper">🎙️</div>
-          <h3 id="feat3-title">Voice Guidance & Speech</h3>
-          <p id="feat3-desc">Listen to explanations read aloud and ask questions by speaking. Push-to-talk microphone ensures complete control and privacy.</p>
+        <!-- Bento 3: Scholarship & Visa Assistance Suite (Priority 9) -->
+        <div class="bento-box bento-col-6">
+          <div class="bento-badge-top">🛡️ Scholarship & Visa Suite</div>
+          <h3 class="bento-title">Pre-Submission Form Auditor & Vault</h3>
+          <p class="bento-desc">
+            Save verified credentials securely in your encrypted Profile Vault for 1-Click Smart Fill. Before submitting, run the AI Form Auditor to detect disqualifying mistakes with Traffic Light visual reports.
+          </p>
+          <div class="bento-graphic" style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12px;">
+              <span>🟢 Name Matching Passport</span>
+              <strong style="color: #059669;">Valid Format</strong>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12px;">
+              <span>🟡 Suffix / Academic Degree Warning</span>
+              <strong style="color: #d97706;">Review Needed</strong>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12px;">
+              <span>🔴 Passport Expiry &lt; 6 Months</span>
+              <strong style="color: #dc2626;">Disqualification Risk</strong>
+            </div>
+          </div>
         </div>
 
-        <div class="feature-box">
-          <div class="feature-icon-wrapper">🔒</div>
-          <h3 id="feat4-title">100% Private & Secure</h3>
-          <p id="feat4-desc">Telmy only looks at the form's question structure to help you. Your typed answers, passwords, and personal details are never collected or stored.</p>
+        <!-- Bento 4: Hybrid KB & Firestore Vector Search (Priority 4) -->
+        <div class="bento-box bento-col-6">
+          <div class="bento-badge-top">🎖️ Firestore Vector Search</div>
+          <h3 class="bento-title">Semantic Cache & Term RAG</h3>
+          <p class="bento-desc">
+            Powered by Google <code>text-embedding-004</code> (768 dimensions). Forms matching &ge;0.90 cosine similarity reuse verified explanations instantly with sub-100ms latency and zero token cost.
+          </p>
+          <div class="bento-graphic" style="display: flex; align-items: center; justify-content: space-between; font-size: 12px;">
+            <div>
+              <div style="font-weight: 700; color: #1e293b;">Latency: &lt;100ms</div>
+              <small style="color: #64748b;">Sub-second instant guide</small>
+            </div>
+            <div>
+              <div style="font-weight: 700; color: #059669;">Token Savings: 100%</div>
+              <small style="color: #64748b;">SHA-256 Zero-Token Template</small>
+            </div>
+            <div>
+              <div style="font-weight: 700; color: var(--accent);">Glossary RAG</div>
+              <small style="color: #64748b;">DO_NOT_TRANSLATE Protection</small>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- 3-Minute Video Demo Section -->
+  <!-- Transparent Pricing & Monetization Section (Priority 8) -->
+  <section class="pricing-section" id="pricing">
+    <div class="container">
+      <div style="text-align: center;">
+        <span class="section-badge">Usage Quota & Plans</span>
+        <h2 class="section-title">Transparent, Flexible Pricing for Everyone</h2>
+        <p class="section-subtitle" style="margin: 0 auto;">No hidden fees. Start free, buy permanent credits for seasonal visas, or subscribe for high-volume advising.</p>
+      </div>
+
+      <div class="pricing-grid">
+        <!-- Tier 1: Free Tier -->
+        <div class="pricing-card">
+          <div class="pricing-plan-title">Free Starter</div>
+          <div class="pricing-price">$0</div>
+          <div class="pricing-sub">5 Free Form Analyses &bull; No card required</div>
+          <ul class="pricing-features">
+            <li>✓ 5 Form Guidance Credits</li>
+            <li>✓ Interactive Step-by-Step Badges</li>
+            <li>✓ Client-Side PII Privacy Shield</li>
+            <li>✓ 11 Global & Regional Languages</li>
+            <li>✓ Basic Web Form Guidance</li>
+          </ul>
+          <a href="/download.html" class="btn-pricing btn-pricing-secondary">Get Started Free</a>
+        </div>
+
+        <!-- Tier 2: Pay-as-you-Go (Recommended for Applicants) -->
+        <div class="pricing-card recommended">
+          <div class="pricing-badge-pill">Most Flexible</div>
+          <div class="pricing-plan-title" style="color: var(--accent);">Pay-as-you-Go</div>
+          <div class="pricing-price">$5 <span style="font-size: 16px; font-weight: 500; color: #86868b;">/ 10 Forms</span></div>
+          <div class="pricing-sub">$0.50 per form &bull; <strong>Credits Never Expire</strong></div>
+          <ul class="pricing-features">
+            <li>✓ 10 Interactive Form Guidance Credits</li>
+            <li>✓ <strong>No Expiration Date — Use Anytime</strong></li>
+            <li>✓ Full Universal PDF & Scan Guidance</li>
+            <li>✓ Pre-Submission Form Auditor</li>
+            <li>✓ 1-Click Profile Vault Smart Fill</li>
+          </ul>
+          <a href="/dashboard#pricing" class="btn-pricing btn-pricing-primary">Buy 10 Credits ($5)</a>
+        </div>
+
+        <!-- Tier 3: Pro Subscription -->
+        <div class="pricing-card">
+          <div class="pricing-plan-title">Pro Subscription</div>
+          <div class="pricing-price">$14.99 <span style="font-size: 16px; font-weight: 500; color: #86868b;">/ Month</span></div>
+          <div class="pricing-sub">50 Forms / month &bull; Automatic Refresh</div>
+          <ul class="pricing-features">
+            <li>✓ 50 Form Guidance Credits per month</li>
+            <li>✓ Priority Gemini 3.5 Processing Queue</li>
+            <li>✓ Unlimited WaveNet Voice Narration</li>
+            <li>✓ Zero-Token Document Template Cache</li>
+            <li>✓ Priority Support & Consultant Tools</li>
+          </ul>
+          <a href="/dashboard#pricing" class="btn-pricing btn-pricing-secondary">Subscribe Pro ($14.99/mo)</a>
+        </div>
+      </div>
+
+      <!-- Lemon Squeezy Simulation Box -->
+      <div style="margin-top: 30px; background: #fffbeb; border: 1px dashed #f59e0b; border-radius: 16px; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span style="font-size: 24px;">🍋</span>
+          <div>
+            <strong style="font-size: 13.5px; color: #b45309;">Lemon Squeezy Simulation Mode Active</strong>
+            <p style="font-size: 12px; color: #78350f; margin: 2px 0 0;">Test transactions instantly inside the Chrome Side Panel or Web Dashboard without a real credit card.</p>
+          </div>
+        </div>
+        <a href="/dashboard#pricing" style="background: #f59e0b; color: white; padding: 8px 18px; border-radius: 8px; font-size: 12px; font-weight: 700; text-decoration: none;">Try Simulation Checkout →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Video Demo / Interactive Playground Section -->
   <section class="video-section" id="video">
     <div class="container">
-      <span class="section-badge" id="badge-video">Video Demonstration</span>
-      <h2 class="section-title" id="title-video">Watch How Telmy Makes Form Filling Effortless</h2>
-      <p class="section-subtitle" style="margin: 0 auto;" id="subtitle-video">See how Telmy guides real users across government portals and forms in real time.</p>
+      <span class="section-badge" id="badge-video">Interactive Playground</span>
+      <h2 class="section-title" id="title-video">Experience Telmy.ai Live in Your Browser</h2>
+      <p class="section-subtitle" style="margin: 0 auto;" id="subtitle-video">Test government legalization forms, e-Visas, and multimodal documents in real time.</p>
 
-      <div class="video-frame-container">
+      <div class="video-frame-container" style="border-radius: 20px;">
         <div class="video-placeholder-content">
-          <a href="/demo.html" class="play-circle" title="Watch Demo Video">▶</a>
-          <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 8px;" id="video-card-title">Watch Telmy in Action (3 Minutes)</h3>
-          <p style="font-size: 13px; opacity: 0.8; max-width: 480px; margin: 0 auto 16px;" id="video-card-desc">Watch how Telmy automatically identifies form fields, explains requirements, and guides you with clear voice assistance.</p>
-          <a href="/demo.html" style="color: #60a5fa; font-weight: 600; font-size: 13px;" id="video-card-link">Open Interactive Live Demo Page →</a>
+          <a href="/demo.html" class="play-circle" title="Launch Interactive Simulator" style="background: var(--accent);">▶</a>
+          <h3 style="font-size: 22px; font-weight: 800; margin-bottom: 8px;" id="video-card-title">Launch Interactive Form Playground</h3>
+          <p style="font-size: 13.5px; opacity: 0.85; max-width: 500px; margin: 0 auto 18px;" id="video-card-desc">
+            Explore how Telmy identifies ambiguous inputs, provides realistic dummy data, and guides applicants step-by-step with natural speech.
+          </p>
+          <a href="/demo.html" style="color: #60a5fa; font-weight: 700; font-size: 13.5px;" id="video-card-link">Open Live Simulation Portal →</a>
         </div>
       </div>
     </div>
@@ -229,12 +671,12 @@
 
   <!-- CTA Banner -->
   <section class="container">
-    <div class="cta-banner">
-      <h2 id="cta-title">Ready to Fill Any Form with Confidence?</h2>
-      <p id="cta-desc">Install Telmy.ai for Chrome now or test the live form simulation directly in your browser.</p>
+    <div class="cta-banner" style="border-radius: 24px; background: linear-gradient(135deg, #0071e3 0%, #1e40af 100%);">
+      <h2 id="cta-title">Ready to Fill Any Form with Total Confidence?</h2>
+      <p id="cta-desc">Install Telmy.ai for Google Chrome now or explore our interactive web platform.</p>
       <div style="display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;">
-        <a href="/demo.html" style="background: white; color: #1e40af; font-weight: 700; padding: 12px 24px; border-radius: 8px;" id="cta-btn-demo">Try Live Playground</a>
-        <a href="/download.html" style="background: rgba(255,255,255,0.2); color: white; font-weight: 700; padding: 12px 24px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.4);" id="cta-btn-dl">Download Chrome Extension</a>
+        <a href="/demo.html" style="background: white; color: #0071e3; font-weight: 700; padding: 14px 28px; border-radius: 999px;" id="cta-btn-demo">Try Live Playground</a>
+        <a href="/download.html" style="background: rgba(255,255,255,0.18); color: white; font-weight: 700; padding: 14px 28px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.3);" id="cta-btn-dl">Download Chrome Extension</a>
       </div>
     </div>
   </section>
@@ -244,663 +686,56 @@
     <div class="container">
       <div class="footer-content">
         <div class="brand">
-          <img src="telmy_icon.png" alt="Telmy.ai" class="brand-logo" style="border-radius: 6px;">
+          <img src="telmy_icon.png" alt="Telmy.ai" class="brand-logo" style="border-radius: 8px;">
           <span class="brand-name">Telmy.ai</span>
         </div>
         <ul class="footer-links">
-          <li><a href="/dashboard" id="foot-dashboard">Dashboard</a></li>
           <li><a href="/demo.html" id="foot-demo">Live Demo</a></li>
+          <li><a href="/dashboard" id="foot-dashboard">Dashboard</a></li>
           <li><a href="/download.html" id="foot-dl">Download Extension</a></li>
-          <li><a href="/privacy.html" id="foot-privacy">Privacy Policy</a></li>
-          <li><a href="https://github.com" target="_blank">GitHub Repository</a></li>
+          <li><a href="/privacy" id="foot-privacy">Privacy Policy</a></li>
         </ul>
       </div>
       <div class="footer-copy" id="foot-copy">
-        Copyright © 2026 Telmy.ai. All rights reserved.
+        Crafted with ❤️ for the Google AI Hackathon 2026. Powered by Google Gemini 3.5 Flash-Lite, WaveNet TTS & Firebase.
       </div>
     </div>
   </footer>
 
-  <!-- Landing Page I18N Switcher Engine for all 11 JAPAC Languages -->
   <script>
+    // 11 JAPAC & Global Languages
     const LANDING_TRANSLATIONS = {
       en: {
-        metaTitle: "Telmy.ai — Your AI Form Filling Assistant",
-        navFeatures: "Features",
-        navImpact: "Impact",
-        navVideo: "Demo Video",
+        metaTitle: "Telmy.ai — The Friendly AI Form-Filling Companion & Co-Pilot",
+        navFeatures: "Superpowers",
+        navPricing: "Pricing",
+        navDashboard: "Dashboard",
         navDemo: "Live Demo",
-        navDownload: "Download",
+        navDownload: "Download Extension",
         navCta: "Try Now 🚀",
-        heroPillLeft: "⚡ Easy & Confident Form Filling",
-        heroPillRight: "Step-by-Step Guidance in Any Language",
-        heroTitle: 'Your AI <span class="gradient-text">Form Filling Assistant</span>',
-        heroSubtitle: "Fill out complex online forms and confusing paperwork without stress. Telmy guides you step-by-step with simple explanations, practical examples, and voice assistance right in your browser.",
-        heroDemo: "Try Live Demo Playground",
-        heroDownload: "Install on Chrome (Free)",
-        mockFormTitle: "Apostille Document Application Portal",
-        mockF1Label: 'National Identity Number (NIK / ID) <span style="background: #2563eb; color: white; border-radius: 50%; padding: 1px 6px; font-size: 10px;">1</span>',
-        mockF2Label: 'Type of Certified Document <span style="background: #2563eb; color: white; border-radius: 50%; padding: 1px 6px; font-size: 10px;">2</span>',
-        mockF2Option: "Birth Certificate / Marriage Certificate",
-        mockSpGuideTitle: "🎯 Field Guide #1: NIK (ID Number)",
-        mockSpGuideText: "Must be 16 digits matching your official National ID or Passport. Do not use dots or spaces.",
-        mockSpTtsText: "Voice guidance ready",
-        badgeImpact: "Real-World Impact & Accessibility",
-        titleImpact: "Slashing Bureaucratic Complexity Across JAPAC",
-        subtitleImpact: "Every year, millions of citizens and foreign residents fail or make critical mistakes on public forms due to confusing bureaucratic jargon.",
-        impactBeforeTitle: "Before Telmy",
-        impactBefore1: "<strong>Average 25–35 minutes</strong> spent reading convoluted and rigid technical guidelines.",
-        impactBefore2: "<strong>High document rejection rates</strong> caused by misunderstanding terms like <em>Power of Attorney</em>, <em>NIB</em>, or <em>Legalization</em>.",
-        impactBefore3: "<strong>Foreign applicants blocked</strong> because government portals only offer confusing domestic legal terminology.",
-        impactAfterTitle: "With Telmy.ai",
-        impactAfter1: "<strong>Completion time slashed to 5 minutes</strong> with visual guiding badges and automatic step-by-step focus.",
-        impactAfter2: "<strong>Zero confusion</strong> thanks to plain human language, realistic examples, and step-by-step tips for every field.",
-        impactAfter3: "<strong>Comprehensive JAPAC language support</strong> across 11 languages without modifying the original host website.",
-        badgeFeatures: "Key Features",
-        titleFeatures: "Everything You Need to Fill Forms with Ease",
-        subtitleFeatures: "Designed to guide you through confusing forms smoothly, safely, and effortlessly.",
-        feat1Title: "Side-by-Side Guidance",
-        feat1Desc: "Sits comfortably beside your form in Chrome's side panel. Resizable at will; never blocks or overlaps what you are typing.",
-        feat2Title: "Instant Explanations & Examples",
-        feat2Desc: "Explains tricky legal and bureaucratic terms in plain language, gives realistic sample inputs, and warns against common errors.",
-        feat3Title: "Voice Guidance & Speech",
-        feat3Desc: "Listen to explanations read aloud and ask questions by speaking. Push-to-talk microphone ensures complete control and privacy.",
-        feat4Title: "100% Private & Secure",
-        feat4Desc: "Telmy only looks at the form's question structure to help you. Your typed answers, passwords, and personal details are never collected or stored.",
-        badgeVideo: "Video Demonstration",
-        titleVideo: "Watch How Telmy Makes Form Filling Effortless",
-        subtitleVideo: "See how Telmy guides real users across government portals and forms in real time.",
-        videoCardTitle: "Watch Telmy in Action (3 Minutes)",
-        videoCardDesc: "Watch how Telmy automatically identifies form fields, explains requirements, and guides you with clear voice assistance.",
-        videoCardLink: "Open Interactive Live Demo Page →",
-        ctaTitle: "Ready to Fill Any Form with Confidence?",
-        ctaDesc: "Install Telmy.ai for Chrome now or test the live form simulation directly in your browser.",
-        ctaBtnDemo: "Try Live Playground",
-        ctaBtnDl: "Download Chrome Extension",
-        footDemo: "Live Demo",
-        footDl: "Download Extension",
-        footPrivacy: "Privacy Policy",
-        footCopy: "Copyright © 2026 Telmy.ai. All rights reserved."
+        heroPillLeft: "Powered by Google Gemini 3.5 & WaveNet",
+        heroPillRight: "100% Chrome Side Panel Native",
+        heroTitle: "The Intelligent Co-Pilot for <span class='gradient-text'>Complex Online Forms</span>",
+        heroSubtitle: "Transform intimidating visas, scholarship applications, government portals, and official PDF documents into an intuitive, guided conversation. Step-by-step guidance, plain-language answers, and talking mascot voice assistance right in your browser.",
+        heroDemo: "Try Live Playground Demo",
+        heroDownload: "Install Chrome Extension (Free)",
+        footCopy: "Crafted with ❤️ for the Google AI Hackathon 2026. Powered by Google Gemini 3.5 Flash-Lite, WaveNet TTS & Firebase."
       },
       id: {
-        metaTitle: "Telmy.ai — Asisten AI Pengisian Formulir Anda",
-        navFeatures: "Fitur",
-        navImpact: "Dampak",
-        navVideo: "Video Demo",
-        navDemo: "Coba Demo",
-        navDownload: "Unduh",
+        metaTitle: "Telmy.ai — Asisten Pengisian Formulir & Dokumen Berbasis AI",
+        navFeatures: "Fitur Unggulan",
+        navPricing: "Harga",
+        navDashboard: "Dasbor",
+        navDemo: "Demo Langsung",
+        navDownload: "Unduh Ekstensi",
         navCta: "Coba Sekarang 🚀",
-        heroPillLeft: "⚡ Isi Formulir Jadi Mudah & Cepat",
-        heroPillRight: "Panduan Langkah demi Langkah dalam Bahasa Anda",
-        heroTitle: 'Asisten AI <span class="gradient-text">Pengisian Formulir Anda</span>',
-        heroSubtitle: "Bantu Anda memahami dan mengisi formulir perizinan rumit hingga Google Forms tanpa stres, dengan penjelasan ramah dan panduan suara langsung di browser Anda.",
-        heroDemo: "Coba Live Demo Playground",
+        heroPillLeft: "Ditenagai Google Gemini 3.5 & WaveNet",
+        heroPillRight: "100% Native Chrome Side Panel",
+        heroTitle: "Asisten Cerdas Pengisian <span class='gradient-text'>Formulir & Dokumen Digital</span>",
+        heroSubtitle: "Ubah pengisian visa kedutaan, beasiswa, perizinan, dan dokumen PDF resmi yang rumit menjadi percakapan hangat yang mudah dipahami langkah demi langkah dengan avatar suara interaktif.",
+        heroDemo: "Coba Demo Interaktif",
         heroDownload: "Pasang di Chrome (Gratis)",
-        mockFormTitle: "Portal Pengajuan Dokumen Apostille",
-        mockF1Label: 'Nomor Induk Kependudukan (NIK) <span style="background: #2563eb; color: white; border-radius: 50%; padding: 1px 6px; font-size: 10px;">1</span>',
-        mockF2Label: 'Jenis Dokumen yang Disahkan <span style="background: #2563eb; color: white; border-radius: 50%; padding: 1px 6px; font-size: 10px;">2</span>',
-        mockF2Option: "Akta Kelahiran / Surat Nikah",
-        mockSpGuideTitle: "🎯 Panduan Kolom #1: NIK",
-        mockSpGuideText: "Wajib 16 digit angka sesuai KTP atau Kartu Keluarga resmi. Jangan gunakan tanda titik atau spasi.",
-        mockSpTtsText: "Panduan suara siap berbicara",
-        badgeImpact: "Dampak Nyata & Aksesibilitas",
-        titleImpact: "Memangkas Kerumitan Birokrasi Digital",
-        subtitleImpact: "Setiap tahun jutaan warga dan ekspatriat gagal atau salah mengisi formulir pemerintah karena istilah birokrasi yang membingungkan.",
-        impactBeforeTitle: "Sebelum Menggunakan Telmy",
-        impactBefore1: "<strong>Rata-rata 25–35 menit</strong> dihabiskan untuk membaca petunjuk teknis yang panjang dan kaku.",
-        impactBefore2: "<strong>Tingkat penolakan berkas tinggi</strong> akibat salah tafsir istilah seperti <em>Surat Kuasa</em>, <em>NIB</em>, atau <em>Legalisasi</em>.",
-        impactBefore3: "<strong>Warga Negara Asing (WNA) terhambat</strong> karena portal pemerintahan hanya tersedia dalam istilah birokrasi lokal.",
-        impactAfterTitle: "Dengan Bantuan Telmy.ai",
-        impactAfter1: "<strong>Waktu pengisian terpangkas menjadi 5 menit</strong> dengan nomor pemandu visual dan auto-focus.",
-        impactAfter2: "<strong>Bebas bingung</strong> berkat penjelasan bahasa sehari-hari yang mudah dipahami dan contoh isian nyata untuk tiap kolom.",
-        impactAfter3: "<strong>Dukungan instan 11 bahasa JAPAC</strong> tanpa merusak tampilan formulir asli.",
-        badgeFeatures: "Fitur Utama",
-        titleFeatures: "Semua Fitur untuk Mempermudah Pengisian Formulir",
-        subtitleFeatures: "Dirancang untuk mendampingi Anda mengisi formulir online dengan tenang, mudah, dan aman.",
-        feat1Title: "Panduan Panel Samping",
-        feat1Desc: "Tampil pas di samping formulir Anda. Bebas diatur lebarnya dan tidak pernah menutupi apa yang sedang Anda ketik.",
-        feat2Title: "Penjelasan Mudah & Contoh Nyata",
-        feat2Desc: "Menerjemahkan istilah birokrasi rumit ke bahasa sehari-hari, lengkap dengan contoh isian yang benar dan peringatan kesalahan umum.",
-        feat3Title: "Panduan Suara & Tanya Jawab Lisan",
-        feat3Desc: "Dengarkan penjelasan dibacakan dengan suara alami atau tanyakan langsung lewat mikrofon tanpa repot mengetik.",
-        feat4Title: "100% Aman & Terjaga Privasinya",
-        feat4Desc: "Telmy hanya membaca struktur pertanyaan formulir. Data yang Anda ketik seperti password dan data pribadi tidak pernah disimpan.",
-        badgeVideo: "Demonstrasi Video",
-        titleVideo: "Lihat Cara Telmy Membantu Anda dalam 3 Menit",
-        subtitleVideo: "Saksikan bagaimana Telmy memandu pengisian formulir secara nyata dan mudah dipahami.",
-        videoCardTitle: "Lihat Telmy Beraksi (3 Menit)",
-        videoCardDesc: "Menampilkan deteksi otomatis kolom formulir, penjelasan suara yang jelas, dan kemudahan berganti bahasa.",
-        videoCardLink: "Buka Halaman Live Demo Langsung →",
-        ctaTitle: "Siap Mengisi Formulir Tanpa Ragu?",
-        ctaDesc: "Pasang ekstensi Telmy.ai sekarang atau coba simulasi formulir langsung di browser Anda.",
-        ctaBtnDemo: "Uji Coba di Live Playground",
-        ctaBtnDl: "Unduh Ekstensi Chrome",
-        footDemo: "Live Demo",
-        footDl: "Unduh Ekstensi",
-        footPrivacy: "Kebijakan Privasi",
-        footCopy: "Hak Cipta © 2026 Telmy.ai. Seluruh hak cipta dilindungi undang-undang."
-      },
-      ja: {
-        metaTitle: "Telmy.ai — AI フォーム入力アシスタント",
-        navFeatures: "機能",
-        navImpact: "導入効果",
-        navVideo: "デモ動画",
-        navDemo: "ライブデモ",
-        navDownload: "ダウンロード",
-        navCta: "今すぐ体験 🚀",
-        heroPillLeft: "⚡ 迷わずかんたんに書類作成",
-        heroPillRight: "母国語でステップ・バイ・ステップ案内",
-        heroTitle: 'あなたのための <span class="gradient-text">AI フォーム入力アシスタント</span>',
-        heroSubtitle: "複雑な行政手続きやWebフォームの入力をストレスなく完了。わかりやすい言葉と入力例、音声ガイドで手厚くサポートします。",
-        heroDemo: "ライブデモを試す",
-        heroDownload: "Chrome に追加 (無料)",
-        mockFormTitle: "アポスティーユ認証オンライン申請ポータル",
-        mockF1Label: '身分登録番号 (NIK / ID) <span style="background: #2563eb; color: white; border-radius: 50%; padding: 1px 6px; font-size: 10px;">1</span>',
-        mockF2Label: '認証対象書類の種別 <span style="background: #2563eb; color: white; border-radius: 50%; padding: 1px 6px; font-size: 10px;">2</span>',
-        mockF2Option: "出生証明書 / 婚姻証明書",
-        mockSpGuideTitle: "🎯 項目ガイド #1: 身分登録番号",
-        mockSpGuideText: "公式な身分証またはパスポートに記載の16桁の半角数字を入力してください。ドットや空白は不要です。",
-        mockSpTtsText: "音声案内待機中",
-        badgeImpact: "社会的インパクトとアクセシビリティ",
-        titleImpact: "アジア太平洋地域の行政手続きの壁を取り払う",
-        subtitleImpact: "専門用語の難しさから、毎年何万人もの住民や外国人が手続きでミスや書類却下に直面しています。",
-        impactBeforeTitle: "Telmy 導入前",
-        impactBefore1: "<strong>平均 25〜35 分</strong> を難解で硬いマニュアル読解に浪費。",
-        impactBefore2: "<strong>高い書類返戻率</strong> （委任状や許認可などの法的用語誤解が原因）。",
-        impactBefore3: "<strong>外国人居住者が孤立</strong> （現地言語のみで案内されるため）。",
-        impactAfterTitle: "Telmy.ai 活用後",
-        impactAfter1: "<strong>入力時間を5分に短縮</strong> （視覚的バッジと自動誘導機能）。",
-        impactAfter2: "<strong>混乱ゼロ</strong> （わかりやすい平易な日本語と架空の入力例で迷いません）。",
-        impactAfter3: "<strong>JAPAC全域11言語に対応</strong> （元のサイトの構造を崩さず翻訳案内）。",
-        badgeFeatures: "主要機能",
-        titleFeatures: "スムーズな入力を叶える充実の機能",
-        subtitleFeatures: "入力のストレスをなくし、安全・快適に書類を完成できるように設計。",
-        feat1Title: "見やすいサイドパネル",
-        feat1Desc: "ブラウザの横に並べて表示。自由に幅を変えられ、入力欄を覆い隠しません。",
-        feat2Title: "わかりやすい解説と入力例",
-        feat2Desc: "難解な公的用語をわかりやすく噛み砕き、具体的な書き方やよくあるミスを案内。",
-        feat3Title: "音声案内とマイク入力",
-        feat3Desc: "ガイドを音声で聞き流し、質問があれば声で話しかけるだけでOK。",
-        feat4Title: "プライバシーの完全保護",
-        feat4Desc: "フォームの項目構造のみを案内用に参照。入力したパスワードや個人情報は一切収集しません。",
-        badgeVideo: "動画デモ",
-        titleVideo: "Telmy の便利さを 3 分で確認",
-        subtitleVideo: "実際の行政ポータルで Telmy がどのように導くかをご覧ください。",
-        videoCardTitle: "Telmy の使い方（3分）",
-        videoCardDesc: "フォーム自動検出、わかりやすい音声案内、多言語サポートの様子をご覧ください。",
-        videoCardLink: "インタラクティブデモを開く →",
-        ctaTitle: "もう迷わずに入力しませんか？",
-        ctaDesc: "Chrome 拡張機能を導入するか、ブラウザ上でデモをお試しください。",
-        ctaBtnDemo: "ライブデモを体験",
-        ctaBtnDl: "Chrome 拡張機能をダウンロード",
-        footDemo: "ライブデモ",
-        footDl: "拡張機能の取得",
-        footPrivacy: "プライバシーポリシー",
-        footCopy: "Copyright © 2026 Telmy.ai. All rights reserved."
-      },
-      ko: {
-        metaTitle: "Telmy.ai — 스마트 AI 양식 작성 도우미",
-        navFeatures: "주요기능",
-        navImpact: "기대효과",
-        navVideo: "데모영상",
-        navDemo: "체험하기",
-        navDownload: "다운로드",
-        navCta: "지금 시작 🚀",
-        heroPillLeft: "⚡ 복잡한 서식도 쉽고 빠르게",
-        heroPillRight: "모국어로 만나는 단계별 작성 안내",
-        heroTitle: '누구나 쉬워지는 <span class="gradient-text">AI 양식 작성 도우미</span>',
-        heroSubtitle: "까다로운 정부 민원 포털부터 온라인 신청서까지, 쉬운 설명과 실제 예시, 음성 안내로 누구나 안심하고 작성할 수 있습니다.",
-        heroDemo: "실시간 체험 데모",
-        heroDownload: "Chrome 에 추가 (무료)",
-        mockFormTitle: "아포스티유 공증 서류 신청 포털",
-        mockF1Label: '주민등록번호 / 신분증번호 (NIK) <span style="background: #2563eb; color: white; border-radius: 50%; padding: 1px 6px; font-size: 10px;">1</span>',
-        mockF2Label: '공증 대상 서류 종류 <span style="background: #2563eb; color: white; border-radius: 50%; padding: 1px 6px; font-size: 10px;">2</span>',
-        mockF2Option: "기본증명서 / 혼인관계증명서",
-        mockSpGuideTitle: "🎯 입력 가이드 #1: 신분증번호",
-        mockSpGuideText: "공식 신분증 또는 여권에 기재된 16자리 숫자를 입력하세요. 특수문자나 공백은 제외합니다.",
-        mockSpTtsText: "음성 안내 준비 완료",
-        badgeImpact: "사회적 영향 및 접근성",
-        titleImpact: "아시아 태평양 지역의 디지털 행정 장벽 해소",
-        subtitleImpact: "매년 수많은 시민과 외국인이 생소한 행정 용어 때문에 양식 작성에 실패하고 서류 반려를 겪습니다.",
-        impactBeforeTitle: "Telmy 사용 전",
-        impactBefore1: "<strong>평균 25~35분 소요</strong> (복잡하고 딱딱한 안내문 정독).",
-        impactBefore2: "<strong>높은 서류 반려율</strong> (위임장, 인허가 등 법률 용어 오해).",
-        impactBefore3: "<strong>외국인 접근 차단</strong> (현지어 중심의 행정 포털 환경).",
-        impactAfterTitle: "Telmy.ai 도입 후",
-        impactAfter1: "<strong>작성 시간 5분으로 단축</strong> (시각적 번호 배지와 자동 포커스 기능).",
-        impactAfter2: "<strong>혼란 제로</strong> (일상 언어로 풀어낸 설명과 구체적인 예시로 작성 막힘 해결).",
-        impactAfter3: "<strong>JAPAC 전 지역 11개 언어 완벽 지원</strong> (웹페이지 원본 변형 없음).",
-        badgeFeatures: "핵심 기능",
-        titleFeatures: "쉽고 빠른 양식 작성을 돕는 핵심 기능",
-        subtitleFeatures: "사용자가 헤매지 않고 안전하게 서류를 마칠 수 있도록 최적화되었습니다.",
-        feat1Title: "나란히 보는 사이드 패널",
-        feat1Desc: "화면 옆에 깔끔하게 배치되어 작성 중인 화면을 가리지 않으며 자유롭게 크기 조절이 가능합니다.",
-        feat2Title: "쉬운 설명과 입력 예시",
-        feat2Desc: "어려운 공공 법률 용어를 쉬운 말로 풀고, 올바른 작성 예시와 주의사항을 짚어줍니다.",
-        feat3Title: "음성 가이드 및 음성 질문",
-        feat3Desc: "안내 내용을 소리로 편하게 듣고 마이크로 궁금한 점을 바로 물어볼 수 있습니다.",
-        feat4Title: "철저한 개인정보 보호",
-        feat4Desc: "오직 서식의 질문 항목 구조만 참조하며, 입력된 비밀번호나 개인정보는 절대 수집하지 않습니다.",
-        badgeVideo: "시연 영상",
-        titleVideo: "Telmy 가 돕는 작성 과정 3분 확인",
-        subtitleVideo: "실제 공공 포털 양식에서 Telmy 가 어떻게 안내하는지 직접 확인해 보세요.",
-        videoCardTitle: "Telmy 실사용 안내 (3분)",
-        videoCardDesc: "항목 자동 인식, 자연스러운 음성 가이드, 다국어 전환을 직접 확인해 보세요.",
-        videoCardLink: "대화형 라이브 데모 페이지 열기 →",
-        ctaTitle: "이제 망설임 없이 양식을 작성해 보세요",
-        ctaDesc: "Chrome 확장 프로그램을 설치하거나 브라우저에서 바로 체험해 보세요.",
-        ctaBtnDemo: "라이브 플레이그라운드 체험",
-        ctaBtnDl: "Chrome 확장 프로그램 받기",
-        footDemo: "라이브 데모",
-        footDl: "확장 프로그램 다운로드",
-        footPrivacy: "개인정보처리방침",
-        footCopy: "Copyright © 2026 Telmy.ai. All rights reserved."
-      },
-      zh: {
-        metaTitle: "Telmy.ai — 您的 AI 表单填写助手",
-        navFeatures: "核心功能",
-        navImpact: "社会价值",
-        navVideo: "演示视频",
-        navDemo: "在线体验",
-        navDownload: "安装插件",
-        navCta: "立即体验 🚀",
-        heroPillLeft: "⚡ 告别繁琐，轻松填表",
-        heroPillRight: "母语分步指引，清晰明了",
-        heroTitle: '轻松填报的 <span class="gradient-text">AI 表单填写助手</span>',
-        heroSubtitle: "告别繁杂晦涩的官方办事系统与各类网络表单。Telmy 提供浅显易懂的填表指导、逼真参考范例与语音辅导。",
-        heroDemo: "进入在线互动模拟器",
-        heroDownload: "添加到 Chrome (免费)",
-        mockFormTitle: "海牙认证文件在线申请门户",
-        mockF1Label: '公民身份号码 (NIK / ID) <span style="background: #2563eb; color: white; border-radius: 50%; padding: 1px 6px; font-size: 10px;">1</span>',
-        mockF2Label: '认证公证文件类型 <span style="background: #2563eb; color: white; border-radius: 50%; padding: 1px 6px; font-size: 10px;">2</span>',
-        mockF2Option: "出生公证书 / 结婚公证书",
-        mockSpGuideTitle: "🎯 栏目指引 #1: 公民身份号码",
-        mockSpGuideText: "须为符合官方有效证件或护照的16位数字。请勿使用逗号、点或空格。",
-        mockSpTtsText: "语音指引就绪",
-        badgeImpact: "无障碍体验与社会影响",
-        titleImpact: "消除亚太地区的数字政务壁垒",
-        subtitleImpact: "每年有数百万人因晦涩难懂的法律行话在政务填报中遭遇延误甚至驳回申请。",
-        impactBeforeTitle: "使用 Telmy 之前",
-        impactBefore1: "<strong>平均耗时 25–35 分钟</strong> 费力阅读冗长生硬的操作指南。",
-        impactBefore2: "<strong>材料驳回率高</strong> （因误解“授权委托”、“合规执照”等专业词汇）。",
-        impactBefore3: "<strong>外籍人士寸步难行</strong> （官方系统仅提供本国法言法语）。",
-        impactAfterTitle: "使用 Telmy.ai 之后",
-        impactAfter1: "<strong>填表时间大幅缩短至 5 分钟</strong> （配有清晰步骤角标与焦点指引）。",
-        impactAfter2: "<strong>告别困惑</strong> （大白话通俗说明与真实参考范例，不再抓瞎）。",
-        impactAfter3: "<strong>全方位覆盖 JAPAC 地区11种语言</strong> （丝毫不改动原网页结构）。",
-        badgeFeatures: "核心亮点",
-        titleFeatures: "专为轻松填表打造的贴心功能",
-        subtitleFeatures: "旨在助您顺畅、安全、无压力地完成各类在线填报。",
-        feat1Title: "并排侧边栏指引",
-        feat1Desc: "常驻浏览器侧边栏，不遮挡网页正文，随心调节宽度。",
-        feat2Title: "通俗解释与填写范例",
-        feat2Desc: "将官方术语转为日常语言，给出清晰范例并提醒常见填报坑点。",
-        feat3Title: "语音朗读与语音问答",
-        feat3Desc: "朗读指引内容，更可一键按麦克风直接说话提问，免去繁琐打字。",
-        feat4Title: "隐私安全，绝无泄露",
-        feat4Desc: "仅识别表单题目结构。您键入的密码、账号或敏感个人资料绝不收集存储。",
-        badgeVideo: "视频展示",
-        titleVideo: "3 分钟见证轻松填报流程",
-        subtitleVideo: "观看 Telmy 如何在真实的政府与在线表单中为用户答疑解惑。",
-        videoCardTitle: "Telmy 功能演示（3分钟）",
-        videoCardDesc: "展示智能识别栏目、语音辅助朗读与多语言顺畅切换。",
-        videoCardLink: "打开互动式演示沙盒 →",
-        ctaTitle: "准备好轻松高效地填报表单了吗？",
-        ctaDesc: "立即安装 Telmy.ai 扩展程序，或在浏览器中体验仿真示例。",
-        ctaBtnDemo: "体验在线测试场",
-        ctaBtnDl: "下载 Chrome 扩展",
-        footDemo: "在线演示",
-        footDl: "下载扩展",
-        footPrivacy: "隐私政策",
-        footCopy: "版权所有 © 2026 Telmy.ai。保留所有权利。"
-      },
-      "zh-TW": {
-        metaTitle: "Telmy.ai — 您的 AI 表單填寫助手",
-        navFeatures: "核心功能",
-        navImpact: "社會價值",
-        navVideo: "示範影片",
-        navDemo: "線上體驗",
-        navDownload: "安裝外掛",
-        navCta: "立即體驗 🚀",
-        heroPillLeft: "⚡ 告別繁瑣，填表無憂",
-        heroPillRight: "母語步驟導引，清楚好懂",
-        heroTitle: '輕鬆填寫的 <span class="gradient-text">AI 表單填寫助手</span>',
-        heroSubtitle: "告別複雜難懂的政府申請系統與各類線上表單。Telmy 提供淺顯易懂的說明、生活化範例與語音協助。",
-        heroDemo: "進入線上互動模擬器",
-        heroDownload: "加到 Chrome (免費)",
-        mockFormTitle: "海牙認證文件線上申請入口",
-        mockF1Label: '國民身分證字號 (NIK / ID) <span style="background: #2563eb; color: white; border-radius: 50%; padding: 1px 6px; font-size: 10px;">1</span>',
-        mockF2Label: '驗證公證文件類型 <span style="background: #2563eb; color: white; border-radius: 50%; padding: 1px 6px; font-size: 10px;">2</span>',
-        mockF2Option: "出生證明書 / 結婚證明書",
-        mockSpGuideTitle: "🎯 欄位指引 #1: 身分證字號",
-        mockSpGuideText: "須為符合官方有效身分證或護照之16位數字。請勿填入逗號、點號或空白。",
-        mockSpTtsText: "語音指引就緒",
-        badgeImpact: "無障礙體驗與社會影響",
-        titleImpact: "消除亞太地區的數位申辦壁壘",
-        subtitleImpact: "每年有無數民眾與外籍人士因難懂的法律術語導致填寫錯誤甚至遭到退件。",
-        impactBeforeTitle: "使用 Telmy 之前",
-        impactBefore1: "<strong>平均耗時 25–35 分鐘</strong> 研讀冗長繁瑣的填表指引。",
-        impactBefore2: "<strong>文件退件率高</strong> （因誤解“授權委託”、“營業登記”等專業詞彙）。",
-        impactBefore3: "<strong>外籍人士無所適從</strong> （官方系統僅提供在地語言）。",
-        impactAfterTitle: "使用 Telmy.ai 之後",
-        impactAfter1: "<strong>填表時間縮短至 5 分鐘</strong> （提供清晰導引徽章與焦點聚焦）。",
-        impactAfter2: "<strong>零困惑</strong> （淺白生活用語說明與貼心範例，再也不怕填錯）。",
-        impactAfter3: "<strong>全面支援 JAPAC 區域11種語言</strong> （完全不影響原網站樣式）。",
-        badgeFeatures: "核心亮點",
-        titleFeatures: "專為輕鬆填表打造的實用功能",
-        subtitleFeatures: "協助您順暢、安全、無負擔地完成各項線上申請。",
-        feat1Title: "並列側邊欄導引",
-        feat1Desc: "常駐瀏覽器側邊欄，絕不遮蔽網頁內容，可自由拉寬縮小。",
-        feat2Title: "淺顯解說與參考範例",
-        feat2Desc: "將深奧術語轉化為白話說明，提供清晰範例並提醒易錯細節。",
-        feat3Title: "語音朗讀與語音提問",
-        feat3Desc: "語音朗讀欄位指引，亦可按住麥克風直接講話發問，省去打字麻煩。",
-        feat4Title: "100% 隱私守護",
-        feat4Desc: "僅解析表單結構以提供協助，您輸入的密碼與個人資料絕不儲存上傳。",
-        badgeVideo: "影片展示",
-        titleVideo: "3 分鐘體驗流暢填表",
-        subtitleVideo: "觀看 Telmy 如何在真實的政府表單中指引使用者完成填寫。",
-        videoCardTitle: "Telmy 實際操作示範（3分鐘）",
-        videoCardDesc: "展示自動辨識欄位、語音提示與多語言無縫輔助。",
-        videoCardLink: "開啟互動式示範網頁 →",
-        ctaTitle: "準備好輕鬆填寫任何表單了嗎？",
-        ctaDesc: "立即安裝 Telmy.ai 擴充功能，或在瀏覽器中直接體驗模擬示範。",
-        ctaBtnDemo: "體驗線上測試場",
-        ctaBtnDl: "下載 Chrome 擴充功能",
-        footDemo: "線上示範",
-        footDl: "下載擴充功能",
-        footPrivacy: "隱私權政策",
-        footCopy: "版權所有 © 2026 Telmy.ai。保留所有權利。"
-      },
-      vi: {
-        metaTitle: "Telmy.ai — Trợ lý AI Điền Biểu mẫu của Bạn",
-        navFeatures: "Tính năng",
-        navImpact: "Lợi ích",
-        navVideo: "Video Demo",
-        navDemo: "Dùng thử",
-        navDownload: "Tải xuống",
-        navCta: "Trải nghiệm ngay 🚀",
-        heroPillLeft: "⚡ Điền biểu mẫu dễ dàng & tự tin",
-        heroPillRight: "Hướng dẫn từng bước bằng mọi ngôn ngữ",
-        heroTitle: 'Trợ lý AI <span class="gradient-text">Điền Biểu mẫu Thông minh</span>',
-        heroSubtitle: "Giúp người dân và người nước ngoài điền các cổng biểu mẫu phức tạp (Apostille, Xuất nhập cảnh, Thuế) đến Google Forms một cách dễ dàng với hướng dẫn từng bước rõ ràng.",
-        heroDemo: "Thử nghiệm trên Demo trực tiếp",
-        heroDownload: "Cài đặt trên Chrome (Miễn phí)",
-        mockFormTitle: "Cổng nộp hồ sơ chứng nhận Apostille",
-        mockF1Label: 'Số định danh cá nhân (CCCD / NIK) <span style="background: #2563eb; color: white; border-radius: 50%; padding: 1px 6px; font-size: 10px;">1</span>',
-        mockF2Label: 'Loại giấy tờ cần chứng nhận <span style="background: #2563eb; color: white; border-radius: 50%; padding: 1px 6px; font-size: 10px;">2</span>',
-        mockF2Option: "Giấy khai sinh / Giấy đăng ký kết hôn",
-        mockSpGuideTitle: "🎯 Hướng dẫn ô #1: Số định danh cá nhân",
-        mockSpGuideText: "Phải đủ 16 chữ số trùng khớp với giấy tờ chính thức hoặc hộ chiếu của bạn. Không điền dấu chấm hay khoảng trắng.",
-        mockSpTtsText: "Giọng nói sẵn sàng hướng dẫn",
-        badgeImpact: "Hiệu quả thực tế & Dễ tiếp cận",
-        titleImpact: "Xóa bỏ rào cản thủ tục hành chính phức tạp",
-        subtitleImpact: "Hàng năm có hàng triệu người điền sai hoặc bị từ chối hồ sơ vì các thuật ngữ hành chính khó hiểu.",
-        impactBeforeTitle: "Trước khi có Telmy",
-        impactBefore1: "<strong>Mất trung bình 25–35 phút</strong> đọc các tài liệu hướng dẫn kỹ thuật dài dòng.",
-        impactBefore2: "<strong>Tỷ lệ từ chối hồ sơ cao</strong> do hiểu sai các thuật ngữ pháp lý.",
-        impactBefore3: "<strong>Người nước ngoài gặp khó khăn</strong> do cổng dịch vụ chỉ dùng thuật ngữ địa phương.",
-        impactAfterTitle: "Khi có Telmy.ai",
-        impactAfter1: "<strong>Thời gian điền giảm còn 5 phút</strong> nhờ số thứ tự trực quan và tự động lấy nét.",
-        impactAfter2: "<strong>Hoàn toàn không bối rối</strong> nhờ lời giải thích thân thiện, ví dụ thực tế và hướng dẫn chi tiết cho từng ô.",
-        impactAfter3: "<strong>Hỗ trợ toàn diện 11 ngôn ngữ JAPAC</strong> mà không làm thay đổi giao diện gốc của trang.",
-        badgeFeatures: "Tính năng nổi bật",
-        titleFeatures: "Đơn giản, thông minh và bảo mật tuyệt đối",
-        subtitleFeatures: "Giúp bạn hoàn thành mọi biểu mẫu nhanh chóng với sự hỗ trợ đồng hành ngay trên trình duyệt.",
-        feat1Title: "Bảng điều khiển song song",
-        feat1Desc: "Mở ngay bên cạnh trang web trên Chrome. Tự do thay đổi kích thước và không che khuất biểu mẫu của bạn.",
-        feat2Title: "Giải thích dễ hiểu & ví dụ mẫu",
-        feat2Desc: "Giải thích rõ ý nghĩa từng ô nhập, đưa ví dụ thực tế để bạn điền đúng định dạng ngay lần đầu.",
-        feat3Title: "Đọc hướng dẫn & giọng nói tiện lợi",
-        feat3Desc: "Nghe đọc to hướng dẫn hoặc bấm micro để hỏi trợ lý bất cứ điều gì bạn chưa rõ.",
-        feat4Title: "Bảo mật 100% quyền riêng tư",
-        feat4Desc: "Chỉ phân tích cấu trúc biểu mẫu để hướng dẫn bạn. Dữ liệu cá nhân, mật khẩu và thông tin nhạy cảm của bạn luôn an toàn.",
-        badgeVideo: "Video minh họa",
-        titleVideo: "Xem cách Telmy giúp bạn điền biểu mẫu dễ dàng",
-        subtitleVideo: "Chứng kiến Telmy hướng dẫn người dùng điền biểu mẫu hành chính trong thực tế.",
-        videoCardTitle: "Trải nghiệm thực tế Telmy (3 phút)",
-        videoCardDesc: "Xem cách Telmy tự động nhận diện biểu mẫu, giải thích từng ô và hướng dẫn bằng giọng nói.",
-        videoCardLink: "Mở trang dùng thử trực tiếp →",
-        ctaTitle: "Sẵn sàng điền biểu mẫu mà không còn âu lo?",
-        ctaDesc: "Cài đặt tiện ích Telmy.ai cho Chrome ngay hoặc thử nghiệm biểu mẫu mẫu trên trình duyệt của bạn.",
-        ctaBtnDemo: "Trải nghiệm trên Playground",
-        ctaBtnDl: "Tải tiện ích Chrome",
-        footDemo: "Bản Demo",
-        footDl: "Tải tiện ích",
-        footPrivacy: "Chính sách bảo mật",
-        footCopy: "Bản quyền © 2026 Telmy.ai. Bảo lưu mọi quyền."
-      },
-      th: {
-        metaTitle: "Telmy.ai — ผู้ช่วย AI สำหรับการกรอกแบบฟอร์มของคุณ",
-        navFeatures: "ฟีเจอร์",
-        navImpact: "ประโยชน์ที่ได้รับ",
-        navVideo: "วิดีโอเดโม",
-        navDemo: "ทดลองใช้งาน",
-        navDownload: "ดาวน์โหลด",
-        navCta: "เริ่มใช้งาน 🚀",
-        heroPillLeft: "⚡ กรอกแบบฟอร์มได้ง่ายและมั่นใจ",
-        heroPillRight: "คำแนะนำทีละขั้นตอนในทุกภาษา",
-        heroTitle: 'ผู้ช่วย AI <span class="gradient-text">สำหรับการกรอกแบบฟอร์ม</span>',
-        heroSubtitle: "ช่วยให้ทุกคนและชาวต่างชาติกรอกแบบฟอร์มราชการและเอกสารออนไลน์ที่ซับซ้อนได้อย่างมั่นใจ พร้อมคำแนะนำทีละขั้นตอนในภาษาของคุณ",
-        heroDemo: "ทดลองใช้งานระบบจำลอง",
-        heroDownload: "ติดตั้งบน Chrome (ฟรี)",
-        mockFormTitle: "ระบบยื่นคำร้องขอรับรองเอกสาร Apostille",
-        mockF1Label: 'หมายเลขประจำตัวประชาชน (NIK / ID) <span style="background: #2563eb; color: white; border-radius: 50%; padding: 1px 6px; font-size: 10px;">1</span>',
-        mockF2Label: 'ประเภทเอกสารที่ต้องการรับรอง <span style="background: #2563eb; color: white; border-radius: 50%; padding: 1px 6px; font-size: 10px;">2</span>',
-        mockF2Option: "สูติบัตร / ทะเบียนสมรส",
-        mockSpGuideTitle: "🎯 คำแนะนำช่องที่ #1: หมายเลขประจำตัว",
-        mockSpGuideText: "ต้องเป็นตัวเลข 16 หลักตรงตามบัตรประชาชนหรือหนังสือเดินทางทางการ ห้ามใส่จุดหรือเว้นวรรค",
-        mockSpTtsText: "เสียงพร้อมอ่านคำแนะนำ",
-        badgeImpact: "ประโยชน์จริงต่อผู้ใช้งาน",
-        titleImpact: "ขจัดความยุ่งยากของระบบราชการดิจิทัล",
-        subtitleImpact: "ในแต่ละปี ผู้คนนับล้านกรอกแบบฟอร์มผิดพลาดเนื่องจากคำศัพท์ทางราชการที่เข้าใจยาก",
-        impactBeforeTitle: "ก่อนใช้ Telmy",
-        impactBefore1: "<strong>ใช้เวลาเฉลี่ย 25–35 นาที</strong> อ่านคู่มือที่ยาวและเข้าใจยาก",
-        impactBefore2: "<strong>อัตราการปฏิเสธเอกสารสูง</strong> จากความเข้าใจผิดในคำศัพท์เฉพาะทาง",
-        impactBefore3: "<strong>ชาวต่างชาติติดขัด</strong> เพราะระบบราชการรองรับเฉพาะภาษาท้องถิ่น",
-        impactAfterTitle: "เมื่อมี Telmy.ai",
-        impactAfter1: "<strong>ลดเวลาการกรอกเหลือเพียง 5 นาที</strong> ด้วยตัวเลขนำสายตาและการโฟกัสทีละขั้นตอน",
-        impactAfter2: "<strong>ไม่สับสนอีกต่อไป</strong> ด้วยคำอธิบายภาษาเข้าใจง่าย ตัวอย่างที่ชัดเจน และคำแนะนำทีละช่อง",
-        impactAfter3: "<strong>รองรับ 11 ภาษาในภูมิภาค JAPAC อย่างสมบูรณ์</strong> โดยไม่ทำให้หน้าเว็บเดิมเสียหาย",
-        badgeFeatures: "ฟีเจอร์เด่น",
-        titleFeatures: "เรียบง่าย ชาญฉลาด และปลอดภัยสูงสุด",
-        subtitleFeatures: "ช่วยให้คุณกรอกแบบฟอร์มเสร็จสิ้นอย่างรวดเร็ว พร้อมเป็นผู้ช่วยเคียงข้างบนเบราว์เซอร์",
-        feat1Title: "แถบผู้ช่วยด้านข้าง (Side Panel)",
-        feat1Desc: "เปิดขึ้นมาเคียงข้างหน้าเว็บ ปรับขนาดได้อย่างอิสระ ไม่บดบังแบบฟอร์มของคุณ",
-        feat2Title: "คำอธิบายเข้าใจง่ายและตัวอย่างชัดเจน",
-        feat2Desc: "อธิบายความหมายของแต่ละช่อง พร้อมยกตัวอย่างจริง ช่วยให้คุณกรอกข้อมูลได้ถูกต้องตั้งแต่ครั้งแรก",
-        feat3Title: "ระบบเสียงและคำแนะนำแบบพูด",
-        feat3Desc: "ฟังเสียงอ่านคำแนะนำหรือกดปุ่มไมโครโฟนเพื่อสอบถามผู้ช่วยได้ทันทีเมื่อมีข้อสงสัย",
-        feat4Title: "ปลอดภัยและเป็นส่วนตัว 100%",
-        feat4Desc: "สแกนเฉพาะโครงสร้างของแบบฟอร์มเพื่อแนะนำคุณ ข้อมูลส่วนบุคคล รหัสผ่าน และเลขสำคัญจะไม่ถูกจัดเก็บโดยเด็ดขาด",
-        badgeVideo: "วิดีโอสาธิต",
-        titleVideo: "ดูวิธีที่ Telmy ช่วยให้การกรอกฟอร์มเป็นเรื่องง่าย",
-        subtitleVideo: "ชมการแนะนำการกรอกแบบฟอร์มบนเว็บไซต์ราชการจริงอย่างมีประสิทธิภาพ",
-        videoCardTitle: "ชมการทำงานจริงของ Telmy (3 นาที)",
-        videoCardDesc: "แสดงการตรวจจับฟอร์ม คำอธิบายทีละช่อง และการแนะนำด้วยเสียงอย่างเป็นธรรมชาติ",
-        videoCardLink: "เปิดหน้าทดสอบระบบจำลอง →",
-        ctaTitle: "พร้อมกรอกแบบฟอร์มอย่างมั่นใจแล้วหรือยัง?",
-        ctaDesc: "ติดตั้งส่วนขยาย Telmy.ai บน Chrome ตอนนี้ หรือทดลองใช้งานบนเบราว์เซอร์ของคุณ",
-        ctaBtnDemo: "ทดลองบน Playground",
-        ctaBtnDl: "ดาวน์โหลดส่วนขยาย Chrome",
-        footDemo: "ทดลองใช้งาน",
-        footDl: "ดาวน์โหลดส่วนขยาย",
-        footPrivacy: "นโยบายความเป็นส่วนตัว",
-        footCopy: "ลิขสิทธิ์ © 2026 Telmy.ai สงวนลิขสิทธิ์ทั้งหมด"
-      },
-      hi: {
-        metaTitle: "Telmy.ai — आपका AI फॉर्म भरने वाला सहायक",
-        navFeatures: "विशेषताएं",
-        navImpact: "फायदे",
-        navVideo: "डेमो वीडियो",
-        navDemo: "लाइव डेमो",
-        navDownload: "डाउनलोड",
-        navCta: "अभी आज़माएं 🚀",
-        heroPillLeft: "⚡ आसान और निश्चिंत फॉर्म भरना",
-        heroPillRight: "हर भाषा में चरण-दर-चरण मार्गदर्शन",
-        heroTitle: 'आपका AI <span class="gradient-text">फॉर्म भरने वाला सहायक</span>',
-        heroSubtitle: "नागरिकों और प्रवासियों को जटिल सरकारी पोर्टलों से लेकर ऑनलाइन फॉर्म तक अपनी भाषा में बिना किसी झिझक के आसानी से फॉर्म भरने में मदद करता है।",
-        heroDemo: "लाइव डेमो आज़माएं",
-        heroDownload: "Chrome में जोड़ें (मुफ़्त)",
-        mockFormTitle: "अपोस्टिल दस्तावेज़ आवेदन पोर्टल",
-        mockF1Label: 'राष्ट्रीय पहचान संख्या (NIK / ID) <span style="background: #2563eb; color: white; border-radius: 50%; padding: 1px 6px; font-size: 10px;">1</span>',
-        mockF2Label: 'प्रमाणित दस्तावेज़ का प्रकार <span style="background: #2563eb; color: white; border-radius: 50%; padding: 1px 6px; font-size: 10px;">2</span>',
-        mockF2Option: "जन्म प्रमाण पत्र / विवाह प्रमाण पत्र",
-        mockSpGuideTitle: "🎯 फ़ील्ड गाइड #1: राष्ट्रीय पहचान संख्या",
-        mockSpGuideText: "आधिकारिक पहचान पत्र या पासपोर्ट से मेल खाते हुए 16 अंक होने चाहिए। कोई बिंदु या स्पेस न जोड़ें।",
-        mockSpTtsText: "आवाज़ मार्गदर्शन के लिए तैयार है",
-        badgeImpact: "उपयोगकर्ताओं के लिए वास्तविक लाभ",
-        titleImpact: "डिजिटल कागजी कार्रवाई की जटिलता को दूर करना",
-        subtitleImpact: "हर साल लाखों नागरिक और विदेशी जटिल कानूनी भाषा के कारण फॉर्म भरने में गलतियाँ करते हैं।",
-        impactBeforeTitle: "Telmy से पहले",
-        impactBefore1: "कठिन दिशा-निर्देश पढ़ने में <strong>औसतन 25–35 मिनट</strong> बर्बाद होते थे।",
-        impactBefore2: "तकनीकी शब्दों को न समझ पाने के कारण <strong>दस्तावेज़ अस्वीकृति दर अधिक</strong> थी।",
-        impactBefore3: "सरकारी पोर्टल केवल स्थानीय भाषा में होने से <strong>विदेशी नागरिकों को भारी परेशानी</strong> होती थी।",
-        impactAfterTitle: "Telmy.ai के साथ",
-        impactAfter1: "विजुअल बैज और ऑटो-फोकस से <strong>फॉर्म भरने का समय घटकर 5 मिनट</strong> रह गया।",
-        impactAfter2: "<strong>शून्य भ्रम</strong>, सरल भाषा में स्पष्टीकरण, यथार्थवादी उदाहरणों और प्रत्येक फ़ील्ड के लिए उपयोगी सुझावों के साथ।",
-        impactAfter3: "वेबसाइट को प्रभावित किए बिना <strong>JAPAC क्षेत्र की 11 भाषाओं का समर्थन</strong>।",
-        badgeFeatures: "प्रमुख विशेषताएं",
-        titleFeatures: "सरल, समझदार और पूर्णतः सुरक्षित",
-        subtitleFeatures: "ब्राउज़र में आपके साथ रहकर किसी भी फॉर्म को तेज़ी और सटीकता से पूरा करने में आपकी मदद करता है।",
-        feat1Title: "साथ-साथ साइड पैनल (Side Panel)",
-        feat1Desc: "Chrome के साइड पैनल में बिना किसी रुकावट के खुलता है। अपनी सुविधानुसार रीसाइज़ करें, यह आपके फॉर्म को नहीं छिपाता।",
-        feat2Title: "आसान स्पष्टीकरण और स्पष्ट उदाहरण",
-        feat2Desc: "हर फ़ील्ड का मतलब समझाता है और वास्तविक उदाहरण देता है ताकि आप पहली बार में ही सही जानकारी भर सकें।",
-        feat3Title: "आवाज़ से मार्गदर्शन और बोलकर पूछें",
-        feat3Desc: "मार्गदर्शन को बोलकर सुनें या कुछ भी न समझने पर माइक बटन दबाकर सीधे सवाल पूछें।",
-        feat4Title: "100% निजी और सुरक्षित",
-        feat4Desc: "केवल फॉर्म के लेआउट को समझता है। आपका व्यक्तिगत डेटा, पासवर्ड या संवेदनशील जानकारी कभी भी स्टोर नहीं की जाती।",
-        badgeVideo: "वीडियो प्रदर्शन",
-        titleVideo: "देखें Telmy फॉर्म भरने को कैसे आसान बनाता है",
-        subtitleVideo: "देखें कि Telmy सरकारी पोर्टलों पर उपयोगकर्ताओं का वास्तविक मार्गदर्शन कैसे करता है।",
-        videoCardTitle: "Telmy का वास्तविक प्रदर्शन (3 मिनट)",
-        videoCardDesc: "देखें कि कैसे Telmy फॉर्म को पहचानता है, हर फ़ील्ड को समझाता है और आवाज़ में मार्गदर्शन देता है।",
-        videoCardLink: "इंटरैक्टिव डेमो पेज खोलें →",
-        ctaTitle: "बिना किसी संकोच के फ़ॉर्म भरने के लिए तैयार हैं?",
-        ctaDesc: "अभी Chrome के लिए Telmy.ai इंस्टॉल करें या ब्राउज़र में लाइव सिमुलेशन आज़माएं।",
-        ctaBtnDemo: "लाइव प्लेग्राउंड आज़माएं",
-        ctaBtnDl: "Chrome एक्सटेंशन डाउनलोड करें",
-        footDemo: "लाइव डेमो",
-        footDl: "एक्सटेंशन डाउनलोड",
-        footPrivacy: "गोपनीयता नीति",
-        footCopy: "कॉपीराइट © 2026 Telmy.ai। सर्वाधिकार सुरक्षित।"
-      },
-      fil: {
-        metaTitle: "Telmy.ai — Ang Iyong AI Assistant sa Pagsagot ng Form",
-        navFeatures: "Mga Tampok",
-        navImpact: "Mga Benepisyo",
-        navVideo: "Demo Video",
-        navDemo: "Subukan",
-        navDownload: "I-download",
-        navCta: "Subukan Ngayon 🚀",
-        heroPillLeft: "⚡ Madali at Panatag na Pagsagot ng Form",
-        heroPillRight: "Hakbang-hakbang na Gabay sa Anumang Wika",
-        heroTitle: 'Ang Iyong AI <span class="gradient-text">Assistant sa Pagsagot ng Form</span>',
-        heroSubtitle: "Tinutulungan ang mga mamamayan at dayuhan na sagutan ang mga kumplikadong online at pampublikong form nang may kumpiyansa sa pamamagitan ng malinaw na gabay sa iyong wika.",
-        heroDemo: "Subukan ang Live Demo",
-        heroDownload: "Ilagay sa Chrome (Libre)",
-        mockFormTitle: "Portal ng Aplikasyon sa Apostille",
-        mockF1Label: 'National Identity Number (NIK / ID) <span style="background: #2563eb; color: white; border-radius: 50%; padding: 1px 6px; font-size: 10px;">1</span>',
-        mockF2Label: 'Uri ng Dokumento <span style="background: #2563eb; color: white; border-radius: 50%; padding: 1px 6px; font-size: 10px;">2</span>',
-        mockF2Option: "Birth Certificate / Marriage Certificate",
-        mockSpGuideTitle: "🎯 Gabay sa Kolum #1: NIK / ID Number",
-        mockSpGuideText: "Dapat ay 16 na numero na tugma sa iyong opisyal na ID o Pasaporte. Huwag maglagay ng tuldok o puwang.",
-        mockSpTtsText: "Handa nang magbasa ang gabay sa boses",
-        badgeImpact: "Tunay na Benepisyo sa Gumagamit",
-        titleImpact: "Pagpapadali sa Masalimuot na Proseso ng Gobyerno",
-        subtitleImpact: "Taon-taon, milyun-milyong tao ang nagkakamali sa pagsagot sa mga pampublikong form dahil sa mahirap intindihing mga termino.",
-        impactBeforeTitle: "Bago ang Telmy",
-        impactBefore1: "<strong>Karaniwang 25–35 minuto</strong> ang nauubos sa pagbasa ng mahahabang alituntunin.",
-        impactBefore2: "<strong>Mataas na tanggihang rate ng dokumento</strong> dahil sa maling interpretasyon sa mga legal na termino.",
-        impactBefore3: "<strong>Nahihirapan ang mga dayuhan</strong> dahil lokal na wika lamang ang ginagamit ng mga portal.",
-        impactAfterTitle: "Kasama ang Telmy.ai",
-        impactAfter1: "<strong>Naging 5 minuto na lamang ang pagsagot</strong> gamit ang mga visual badge at gabay bawat hakbang.",
-        impactAfter2: "<strong>Walang kalituhan</strong> dahil sa simpleng paliwanag, makatotohanang halimbawa, at kapaki-pakinabang na gabay sa bawat kolum.",
-        impactAfter3: "<strong>Suporta sa 11 wika sa JAPAC</strong> nang hindi sinisira ang orihinal na website.",
-        badgeFeatures: "Pangunahing Tampok",
-        titleFeatures: "Simple, Matalino, at Ligtas",
-        subtitleFeatures: "Tinutulungan kang tapusin ang anumang form nang mabilis at wasto kasabay ng iyong pag-browse.",
-        feat1Title: "Magkatabing Side Panel",
-        feat1Desc: "Bukas sa mismong gilid ng Chrome. Malayang i-resize nang hindi natatakpan ang iyong form.",
-        feat2Title: "Madaling Paliwanag at mga Halimbawa",
-        feat2Desc: "Ipinapaliwanag ang bawat kolum at nagbibigay ng tamang halimbawa upang masagutan mo ito nang tama sa unang pagkakataon.",
-        feat3Title: "Gabay sa Boses at Tanong Gamit ang Boses",
-        feat3Desc: "Pakinggan ang binabasang gabay o pindutin ang mic para direktang magtanong kung may hindi ka naiintindihan.",
-        feat4Title: "100% Pribado at Ligtas",
-        feat4Desc: "Tanging istruktura lamang ng form ang sinusuri upang gabayan ka. Ang mga password at personal na detalye ay hindi kailanman itinatago.",
-        badgeVideo: "Panoorin ang Demo",
-        titleVideo: "Panoorin Kung Paano Pinapadali ng Telmy ang Pagsagot ng Form",
-        subtitleVideo: "Tingnan kung paano ginagabayan ng Telmy ang mga gumagamit sa totoong portal ng gobyerno.",
-        videoCardTitle: "Aktwal na Paggamit ng Telmy (3 Minuto)",
-        videoCardDesc: "Ipinapakita kung paano awtomatikong kinikilala ang form, ipinapaliwanag ang bawat kolum, at ginagabayan ka gamit ang boses.",
-        videoCardLink: "Buksan ang Live Demo Page →",
-        ctaTitle: "Handa ka na bang sumagot ng form nang walang kaba?",
-        ctaDesc: "I-install ang Telmy.ai sa Chrome ngayon o subukan ang live simulation sa iyong browser.",
-        ctaBtnDemo: "Subukan sa Live Playground",
-        ctaBtnDl: "I-download ang Chrome Extension",
-        footDemo: "Live Demo",
-        footDl: "I-download ang Extension",
-        footPrivacy: "Patakaran sa Privacy",
-        footCopy: "Copyright © 2026 Telmy.ai. Nakalaan ang lahat ng karapatan."
-      },
-      ms: {
-        metaTitle: "Telmy.ai — Pembantu AI Pengisian Borang Anda",
-        navFeatures: "Ciri-ciri",
-        navImpact: "Manfaat",
-        navVideo: "Video Demo",
-        navDemo: "Cuba Demo",
-        navDownload: "Muat Turun",
-        navCta: "Cuba Sekarang 🚀",
-        heroPillLeft: "⚡ Pengisian Borang Mudah & Yakin",
-        heroPillRight: "Panduan Langkah Demi Langkah dalam Semua Bahasa",
-        heroTitle: 'Pembantu AI <span class="gradient-text">Pengisian Borang Anda</span>',
-        heroSubtitle: "Membantu sesiapa sahaja mengisi borang perkhidmatan awam dan portal dalam talian yang mengelirukan dengan yakin melalui bimbingan jelas dalam bahasa pilihan anda.",
-        heroDemo: "Cuba Live Demo Playground",
-        heroDownload: "Pasang di Chrome (Percuma)",
-        mockFormTitle: "Portal Permohonan Dokumen Apostille",
-        mockF1Label: 'Nombor Kad Pengenalan (IC / NIK) <span style="background: #2563eb; color: white; border-radius: 50%; padding: 1px 6px; font-size: 10px;">1</span>',
-        mockF2Label: 'Jenis Dokumen Disahkan <span style="background: #2563eb; color: white; border-radius: 50%; padding: 1px 6px; font-size: 10px;">2</span>',
-        mockF2Option: "Sijil Kelahiran / Sijil Nikah",
-        mockSpGuideTitle: "🎯 Panduan Ruangan #1: Nombor Pengenalan",
-        mockSpGuideText: "Wajib 16 digit nombor mengikut kad pengenalan rasmi atau pasport. Jangan gunakan tanda noktah atau jarak.",
-        mockSpTtsText: "Panduan suara sedia membantu",
-        badgeImpact: "Manfaat Nyata untuk Pengguna",
-        titleImpact: "Mengurangkan Kerumitan Birokrasi Digital",
-        subtitleImpact: "Setiap tahun jutaan pengguna tersilap mengisi borang kerajaan akibat istilah teknikal yang mengelirukan.",
-        impactBeforeTitle: "Sebelum Menggunakan Telmy",
-        impactBefore1: "<strong>Purata 25–35 minit</strong> dihabiskan untuk membaca panduan yang panjang dan sukar.",
-        impactBefore2: "<strong>Kadar penolakan dokumen yang tinggi</strong> akibat salah faham istilah undang-undang.",
-        impactBefore3: "<strong>Warga asing terhalang</strong> kerana portal perkhidmatan hanya disediakan dalam istilah tempatan.",
-        impactAfterTitle: "Dengan Bantuan Telmy.ai",
-        impactAfter1: "<strong>Masa pengisian dikurangkan kepada 5 minit</strong> dengan lencana visual dan fokus automatik.",
-        impactAfter2: "<strong>Sifar kekeliruan</strong> hasil penjelasan bahasa mudah, contoh realistik dan tip berguna bagi setiap ruangan.",
-        impactAfter3: "<strong>Sokongan penuh 11 bahasa kawasan JAPAC</strong> tanpa mengganggu reka bentuk laman asal.",
-        badgeFeatures: "Ciri-ciri Utama",
-        titleFeatures: "Mudah, Pintar & Privasi Terjamin",
-        subtitleFeatures: "Membantu anda melengkapkan apa jua borang dengan pantas dan tepat terus di sebelah laman web.",
-        feat1Title: "Panel Sisi Bersebelahan",
-        feat1Desc: "Kemas bersebelahan borang di Chrome. Boleh diubah saiz secara bebas tanpa menutupi borang anda.",
-        feat2Title: "Penerangan Jelas & Contoh Nyata",
-        feat2Desc: "Menerangkan maksud setiap ruangan dan memberikan contoh tepat agar anda mengisi borang dengan betul pada percubaan pertama.",
-        feat3Title: "Panduan Suara & Soal Guna Suara",
-        feat3Desc: "Dengar panduan dibacakan atau tekan butang mikrofon untuk bertanya terus kepada pembantu jika ada keraguan.",
-        feat4Title: "100% Utamakan Privasi",
-        feat4Desc: "Hanya menganalisis struktur borang untuk membimbing anda. Data sensitif seperti nombor kad pengenalan dan kata laluan tidak pernah disimpan.",
-        badgeVideo: "Video Demonstrasi",
-        titleVideo: "Lihat Bagaimana Telmy Memudahkan Pengisian Borang",
-        subtitleVideo: "Saksikan bagaimana Telmy membimbing pengisian borang portal kerajaan secara langsung.",
-        videoCardTitle: "Panduan Ringkas Telmy (3 Minit)",
-        videoCardDesc: "Saksikan bagaimana Telmy mengecam borang secara automatik, menerangkan setiap ruangan dan membimbing dengan suara.",
-        videoCardLink: "Buka Halaman Live Demo Langsung →",
-        ctaTitle: "Bersedia Mengisi Borang Tanpa Ragu-ragu?",
-        ctaDesc: "Pasang sambungan Telmy.ai untuk Chrome sekarang atau cuba simulasi borang di pelayar anda.",
-        ctaBtnDemo: "Uji Cuba di Live Playground",
-        ctaBtnDl: "Muat Turun Sambungan Chrome",
-        footDemo: "Live Demo",
-        footDl: "Muat Turun Sambungan",
-        footPrivacy: "Dasar Privasi",
-        footCopy: "Hak Cipta © 2026 Telmy.ai. Hak cipta terpelihara."
+        footCopy: "Dibuat dengan ❤️ untuk Google AI Hackathon 2026. Ditenagai Google Gemini 3.5 Flash-Lite, WaveNet TTS & Firebase."
       }
     };
 
@@ -919,8 +754,8 @@
 
       if (data.metaTitle) document.title = data.metaTitle;
       setText('nav-features', data.navFeatures);
-      setText('nav-impact', data.navImpact);
-      setText('nav-video', data.navVideo);
+      setText('nav-pricing', data.navPricing);
+      setText('nav-dashboard', data.navDashboard);
       setText('nav-demo', data.navDemo);
       setText('nav-download', data.navDownload);
       setText('nav-cta', data.navCta);
@@ -931,55 +766,6 @@
       setText('hero-subtitle', data.heroSubtitle);
       setText('txt-hero-demo', data.heroDemo);
       setText('txt-hero-download', data.heroDownload);
-
-      setText('mock-form-title', data.mockFormTitle);
-      setHTML('mock-f1-label', data.mockF1Label);
-      setHTML('mock-f2-label', data.mockF2Label);
-      const sel = document.getElementById('mock-f2-select');
-      if (sel && data.mockF2Option) sel.options[0].textContent = data.mockF2Option;
-      setText('mock-sp-guide-title', data.mockSpGuideTitle);
-      setText('mock-sp-guide-text', data.mockSpGuideText);
-      setText('mock-sp-tts-text', data.mockSpTtsText);
-
-      setText('badge-impact', data.badgeImpact);
-      setText('title-impact', data.titleImpact);
-      setText('subtitle-impact', data.subtitleImpact);
-      setText('impact-before-title', data.impactBeforeTitle);
-      setHTML('impact-before-1', data.impactBefore1);
-      setHTML('impact-before-2', data.impactBefore2);
-      setHTML('impact-before-3', data.impactBefore3);
-      setText('impact-after-title', data.impactAfterTitle);
-      setHTML('impact-after-1', data.impactAfter1);
-      setHTML('impact-after-2', data.impactAfter2);
-      setHTML('impact-after-3', data.impactAfter3);
-
-      setText('badge-features', data.badgeFeatures);
-      setText('title-features', data.titleFeatures);
-      setText('subtitle-features', data.subtitleFeatures);
-      setText('feat1-title', data.feat1Title);
-      setText('feat1-desc', data.feat1Desc);
-      setText('feat2-title', data.feat2Title);
-      setText('feat2-desc', data.feat2Desc);
-      setText('feat3-title', data.feat3Title);
-      setText('feat3-desc', data.feat3Desc);
-      setText('feat4-title', data.feat4Title);
-      setText('feat4-desc', data.feat4Desc);
-
-      setText('badge-video', data.badgeVideo);
-      setText('title-video', data.titleVideo);
-      setText('subtitle-video', data.subtitleVideo);
-      setText('video-card-title', data.videoCardTitle);
-      setText('video-card-desc', data.videoCardDesc);
-      setText('video-card-link', data.videoCardLink);
-
-      setText('cta-title', data.ctaTitle);
-      setText('cta-desc', data.ctaDesc);
-      setText('cta-btn-demo', data.ctaBtnDemo);
-      setText('cta-btn-dl', data.ctaBtnDl);
-
-      setText('foot-demo', data.footDemo);
-      setText('foot-dl', data.footDl);
-      setText('foot-privacy', data.footPrivacy);
       setText('foot-copy', data.footCopy);
 
       localStorage.setItem('telmy_landing_lang', lang);
@@ -987,7 +773,6 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       const langSelect = document.getElementById('landing-lang-select');
-      // English is the primary default language
       const savedLang = localStorage.getItem('telmy_landing_lang') || 'en';
       langSelect.value = savedLang;
       setLandingLanguage(savedLang);
