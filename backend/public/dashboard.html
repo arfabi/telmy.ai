@@ -1288,7 +1288,7 @@
 
       <!-- Right Controls: Live Quota, Language, Profile Pill & Logout -->
       <div class="nav-right-controls">
-        <a href="#package-section" class="nav-quota-pill" id="nav-quota-pill" title="Sisa Kuota Form">
+        <a href="#package-section" class="nav-quota-pill" id="nav-quota-pill" title="Remaining Form Quota">
           <span>💎</span>
           <span id="nav-quota-count">5</span>
           <span>Forms</span>
@@ -1697,14 +1697,14 @@
       </div>
       <!-- END SECTION 4: STATISTIC -->
 
-      <!-- SECTION 5: SAVED FORMS & VAULT -->
+      <!-- SECTION 5: SAVED FORMS & HISTORY -->
       <div class="bento-card col-span-12 member-section" id="saved-section">
         <div class="card-header">
           <div class="card-title-group">
             <span class="card-icon">💾</span>
             <div>
-              <h3 class="card-title">Saved Forms & Data Vault</h3>
-              <p class="card-subtitle">In-progress form drafts and encrypted personal identity vault</p>
+              <h3 class="card-title">Saved Forms & History</h3>
+              <p class="card-subtitle">In-progress form drafts and verified guidance history</p>
             </div>
           </div>
           <a href="/demo" class="btn-resume-form" style="font-size: 13px; padding: 8px 18px;">Open Form Simulator →</a>
@@ -1714,7 +1714,7 @@
           <span>📋</span> In-Progress Form Drafts
         </div>
 
-        <div class="form-history-list">
+        <div class="form-history-list" id="form-history-list">
           <div class="form-history-item">
             <div class="form-item-left">
               <span class="form-item-icon">🏛️</span>
@@ -1746,48 +1746,6 @@
               </div>
             </div>
             <a href="/demo" class="btn-resume-form">Continue Draft →</a>
-          </div>
-        </div>
-
-        <!-- Identity Vault Cards -->
-        <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--card-border);">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-            <div>
-              <strong style="font-size: 13.5px; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
-                <span>🔐</span> Smart Client Vault
-              </strong>
-              <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">Data securely auto-filled on-device by Telmy Co-Pilot without cloud exposure</p>
-            </div>
-            <button id="btn-add-vault-entry" class="btn-apple-secondary" style="font-size: 11.5px; padding: 5px 12px;">+ Add Vault Field</button>
-          </div>
-
-          <div class="vault-grid">
-            <div class="vault-card">
-              <div class="vault-card-header">
-                <span style="font-size: 11.5px; font-weight: 700; color: var(--text-secondary);">NATIONAL IDENTITY NUMBER</span>
-                <span style="font-size: 11px; background: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 4px; font-weight: 700;">ENCRYPTED</span>
-              </div>
-              <strong style="font-size: 14px; letter-spacing: 1px; color: #1e293b;">3171************</strong>
-              <span style="font-size: 11px; color: var(--text-secondary);">Auto-fill on government & legal forms</span>
-            </div>
-
-            <div class="vault-card">
-              <div class="vault-card-header">
-                <span style="font-size: 11.5px; font-weight: 700; color: var(--text-secondary);">INTERNATIONAL PASSPORT</span>
-                <span style="font-size: 11px; background: #dcfce7; color: #15803d; padding: 2px 6px; border-radius: 4px; font-weight: 700;">VALID</span>
-              </div>
-              <strong style="font-size: 14px; letter-spacing: 1px; color: #1e293b;">C984****</strong>
-              <span style="font-size: 11px; color: var(--text-secondary);">Auto-fill on visa & international travel forms</span>
-            </div>
-
-            <div class="vault-card">
-              <div class="vault-card-header">
-                <span style="font-size: 11.5px; font-weight: 700; color: var(--text-secondary);">LEGAL FULL NAME</span>
-                <span style="font-size: 11px; background: #f3e8ff; color: #7e22ce; padding: 2px 6px; border-radius: 4px; font-weight: 700;">MATCHED</span>
-              </div>
-              <strong style="font-size: 14px; color: #1e293b;" id="vault-display-name">Alex Pratama</strong>
-              <span style="font-size: 11px; color: var(--text-secondary);">Standardized spelling across official papers</span>
-            </div>
           </div>
         </div>
       </div>
@@ -1921,7 +1879,22 @@
     <span id="toast-message">Settings successfully synced</span>
   </div>
 
+  <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
   <script>
+    // Initialize Firebase Client SDK
+    const firebaseConfig = {
+      apiKey: "AIzaSyBibds09YOwLFUaEk8p_W-vEP1OI1RNwkk",
+      authDomain: "guidemeto-bdf36.firebaseapp.com",
+      projectId: "guidemeto-bdf36",
+      storageBucket: "guidemeto-bdf36.firebasestorage.app",
+      messagingSenderId: "1055819077227",
+      appId: "1:1055819077227:web:80c85025a1f6a1e360f786"
+    };
+
+    if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
     // 11 JAPAC Languages with crisp vector circular flag SVGs
     const LANGUAGES = [
       {
@@ -2015,9 +1988,9 @@
       return 'Good evening';
     }
 
-    // Initialize Dashboard
+    // Initialize Dashboard with Firebase Auth & Cloud Firestore
     function initDashboard() {
-      // Load from localStorage or mock
+      // 1. Initial cached state
       const saved = localStorage.getItem('telmy_user');
       if (saved) {
         try {
@@ -2029,13 +2002,51 @@
       renderLanguageGrid();
       setupAvatarUpload();
       setupMascotInteractions();
-      loadDashQuota();
       setupDashPayment();
       setupUserDropdown();
       initMemberAreaTabs();
       initInvoiceSystem();
+      loadSavedForms();
 
-      greetingTitle.textContent = `${getAppleGreeting()}, ${currentUser.displayName || 'Friend'}`;
+      // 2. Real Firebase Auth Observer & Cloud Firestore Sync
+      if (typeof firebase !== 'undefined' && firebase.auth) {
+        firebase.auth().onAuthStateChanged(async (fbUser) => {
+          if (fbUser) {
+            currentUser.uid = fbUser.uid;
+            currentUser.email = fbUser.email || currentUser.email;
+            if (fbUser.displayName) currentUser.displayName = fbUser.displayName;
+            if (fbUser.photoURL) currentUser.photoURL = fbUser.photoURL;
+
+            // Fetch stored user data from Firestore via backend
+            try {
+              const uRes = await fetch(`/api/user/${encodeURIComponent(fbUser.uid)}`);
+              if (uRes.ok) {
+                const uJson = await uRes.json();
+                if (uJson.data) {
+                  currentUser = { ...currentUser, ...uJson.data };
+                }
+              }
+            } catch (e) {}
+
+            localStorage.setItem('telmy_user', JSON.stringify(currentUser));
+            renderUserFields();
+            renderLanguageGrid();
+            loadDashQuota();
+            loadUserInvoices();
+            loadSavedForms();
+          } else {
+            loadDashQuota();
+            loadUserInvoices();
+            loadSavedForms();
+          }
+          greetingTitle.textContent = `${getAppleGreeting()}, ${currentUser.displayName || 'Member'}`;
+        });
+      } else {
+        loadDashQuota();
+        loadUserInvoices();
+        loadSavedForms();
+        greetingTitle.textContent = `${getAppleGreeting()}, ${currentUser.displayName || 'Member'}`;
+      }
     }
 
     // Menu Dashboard: Profile dropdown & controls
@@ -2062,8 +2073,12 @@
       }
 
       if (btnLogout) {
-        btnLogout.addEventListener('click', () => {
+        btnLogout.addEventListener('click', async () => {
+          if (typeof firebase !== 'undefined' && firebase.auth) {
+            try { await firebase.auth().signOut(); } catch (e) {}
+          }
           localStorage.removeItem('telmy_user');
+          localStorage.removeItem('telmy_user_invoices');
           if (window.chrome && chrome.runtime && chrome.runtime.sendMessage) {
             try {
               chrome.runtime.sendMessage({ type: 'LOGOUT_USER_SESSION' }, () => {});
@@ -2149,37 +2164,54 @@
           userInvoices = JSON.parse(saved);
         } catch (e) {}
       }
-
-      if (!userInvoices || userInvoices.length === 0) {
-        userInvoices = [
-          {
-            id: 'INV-2026-0849',
-            date: '8 Oct 2026, 21:30',
-            item: 'Pay-as-you-Go (10 Forms)',
-            method: 'Lemon Squeezy (Card)',
-            amount: '$5.00',
-            status: 'PAID'
-          },
-          {
-            id: 'INV-2026-0712',
-            date: '1 Oct 2026, 14:15',
-            item: 'Free Welcome Bonus (5 Forms)',
-            method: 'Platform Promotion',
-            amount: '$0.00',
-            status: 'PAID'
-          }
-        ];
-        localStorage.setItem('telmy_user_invoices', JSON.stringify(userInvoices));
-      }
-
       renderInvoices();
       setupInvoiceModal();
+      loadUserInvoices();
+    }
 
-      const btnAddVault = document.getElementById('btn-add-vault-entry');
-      if (btnAddVault) {
-        btnAddVault.addEventListener('click', () => {
-          showToast('New encrypted vault field created: Standard Passport ID');
-        });
+    async function loadUserInvoices() {
+      try {
+        const uid = currentUser?.uid || 'guest_user';
+        const res = await fetch(`/api/payment/invoices/${encodeURIComponent(uid)}`);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.data && Array.isArray(json.data) && json.data.length > 0) {
+            userInvoices = json.data;
+            localStorage.setItem('telmy_user_invoices', JSON.stringify(userInvoices));
+            renderInvoices();
+          }
+        }
+      } catch (e) {
+        console.warn('Could not fetch invoices from Firestore:', e.message);
+      }
+    }
+
+    async function loadSavedForms() {
+      const container = document.getElementById('form-history-list');
+      if (!container) return;
+
+      try {
+        const uid = currentUser?.uid || 'guest_user';
+        const res = await fetch(`/api/user/saved-forms/${encodeURIComponent(uid)}`);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.data && Array.isArray(json.data) && json.data.length > 0) {
+            container.innerHTML = json.data.map(item => `
+              <div class="form-history-item">
+                <div class="form-item-left">
+                  <span class="form-item-icon">${item.icon || '📝'}</span>
+                  <div class="form-item-info">
+                    <h4>${escapeHtml(item.title)}</h4>
+                    <p>${item.fieldsCount || 10} Fields &bull; ${escapeHtml(item.category || 'Official Form')} &bull; Progress: ${item.progress || 80}%</p>
+                  </div>
+                </div>
+                <a href="/demo" class="btn-resume-form">${item.progress === 100 ? 'Review Form →' : 'Continue Guide →'}</a>
+              </div>
+            `).join('');
+          }
+        }
+      } catch (e) {
+        console.warn('Could not fetch saved forms from Firestore:', e.message);
       }
     }
 
@@ -2191,14 +2223,14 @@
       userInvoices.forEach(inv => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td><strong style="color: var(--accent); font-family: monospace;">#${inv.id}</strong></td>
+          <td><strong style="color: var(--accent); font-family: monospace;">#${inv.id || inv.invoiceId}</strong></td>
           <td style="color: var(--text-secondary); font-size: 12px;">${inv.date}</td>
           <td><strong>${inv.item}</strong></td>
           <td style="color: var(--text-secondary); font-size: 12px;">${inv.method}</td>
           <td style="font-weight: 700; color: #0f172a;">${inv.amount}</td>
           <td><span class="invoice-status-paid">✓ ${inv.status}</span></td>
           <td style="text-align: right;">
-            <button class="btn-view-invoice" data-invid="${inv.id}">View Invoice</button>
+            <button class="btn-view-invoice" data-invid="${inv.id || inv.invoiceId}">View Invoice</button>
           </td>
         `;
 
@@ -2230,10 +2262,10 @@
       const modal = document.getElementById('invoice-modal');
       if (!modal) return;
 
-      document.getElementById('modal-inv-id').textContent = `#${inv.id}`;
+      document.getElementById('modal-inv-id').textContent = `#${inv.id || inv.invoiceId}`;
       document.getElementById('modal-inv-date').textContent = inv.date;
-      document.getElementById('modal-inv-user').textContent = currentUser.displayName || 'Telmy User';
-      document.getElementById('modal-inv-email').textContent = currentUser.email || 'user@telmy.id';
+      document.getElementById('modal-inv-user').textContent = currentUser.displayName || 'Telmy Member';
+      document.getElementById('modal-inv-email').textContent = currentUser.email || 'member@telmy.id';
       document.getElementById('modal-inv-item').textContent = inv.item;
       document.getElementById('modal-inv-amount').textContent = inv.amount;
       document.getElementById('modal-inv-total').textContent = `${inv.amount} USD`;
@@ -2303,20 +2335,10 @@
             if (json.success && json.user) {
               updateDashQuotaUI(json.user);
 
-              // Dynamically append new invoice to member area
-              const newInv = {
-                id: 'INV-2026-' + Math.floor(1000 + Math.random() * 9000),
-                date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
-                item: planId === 'pro_monthly' ? 'Pro Monthly Subscription' : 'Pay-as-you-Go (10 Forms)',
-                method: 'Card (Verified)',
-                amount: planId === 'pro_monthly' ? '$14.99' : '$5.00',
-                status: 'PAID'
-              };
-              userInvoices.unshift(newInv);
-              localStorage.setItem('telmy_user_invoices', JSON.stringify(userInvoices));
-              renderInvoices();
+              // Reload real Firestore invoices
+              await loadUserInvoices();
 
-              showToast(`🎉 Purchase successful! Invoice #${newInv.id} issued.`);
+              showToast(`🎉 Purchase successful! Invoice #${json.invoice?.id || 'NEW'} issued.`);
             } else {
               alert('Purchase failed: ' + (json.error || 'Server error'));
             }
@@ -2328,27 +2350,6 @@
           }
         });
       });
-
-      const resetBtn = document.getElementById('btn-dash-reset-quota');
-      if (resetBtn) {
-        resetBtn.addEventListener('click', async () => {
-          const uid = currentUser?.uid || 'guest_user';
-          const res = await fetch('/api/payment/reset-quota', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ uid })
-          });
-          const json = await res.json();
-          if (json.success) {
-            updateDashQuotaUI({
-              plan: 'free',
-              totalRemaining: 5,
-              quota: json.data?.quota || { freeRemaining: 5 }
-            });
-            showToast('Quota reset to 5 free forms');
-          }
-        });
-      }
     }
 
     function renderUserFields() {
@@ -2357,15 +2358,12 @@
       const photo = currentUser.photoURL || 'telmy_icon.png';
       displayImg.src = photo;
       navAvatar.src = photo;
-      navUserName.textContent = currentUser.displayName || 'Telmy User';
+      navUserName.textContent = currentUser.displayName || 'Telmy Member';
 
       const dropName = document.getElementById('dropdown-user-name');
       const dropEmail = document.getElementById('dropdown-user-email');
-      if (dropName) dropName.textContent = currentUser.displayName || 'Telmy User';
-      if (dropEmail) dropEmail.textContent = currentUser.email || 'user@telmy.id';
-
-      const vaultName = document.getElementById('vault-display-name');
-      if (vaultName) vaultName.textContent = currentUser.displayName || 'Alex Pratama';
+      if (dropName) dropName.textContent = currentUser.displayName || 'Telmy Member';
+      if (dropEmail) dropEmail.textContent = currentUser.email || 'member@telmy.id';
     }
 
     function renderLanguageGrid() {

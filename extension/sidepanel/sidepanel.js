@@ -68,7 +68,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const pdfSectionIndicator = document.getElementById('pdf-section-indicator');
   const chipPdfGuide = document.getElementById('chip-pdf-guide');
   const btnPdfExportFilled = document.getElementById('btn-pdf-export-filled');
-  const btnPdfFillProfile = document.getElementById('btn-pdf-fill-profile');
 
   // Pre-Submission Auditor Elements (Priority 9.2)
   const btnRunFormAudit = document.getElementById('btn-run-form-audit');
@@ -76,12 +75,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const auditStatusPill = document.getElementById('audit-status-pill');
   const auditReportItems = document.getElementById('audit-report-items');
   const btnCloseAuditReport = document.getElementById('btn-close-audit-report');
-
-  // Profile Vault & Smart Fill Elements (Priority 9.1)
-  const btnOpenVault = document.getElementById('btn-open-vault');
-  const spVaultModal = document.getElementById('sp-vault-modal');
-  const btnCloseVault = document.getElementById('btn-close-vault');
-  const btnSaveVault = document.getElementById('btn-save-vault');
 
   // Summary Elements
   const progressPercent = document.getElementById('progress-percent');
@@ -111,7 +104,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const onboardingModal = document.getElementById('sp-onboarding-modal');
   const onboardingLangSelect = document.getElementById('onboarding-lang-select');
   const btnOnboardingGoogle = document.getElementById('btn-onboarding-google');
-  const btnOnboardingGuest = document.getElementById('btn-onboarding-guest');
   const btnOnboardingFinish = document.getElementById('btn-onboarding-finish');
   const onboardingUnauthed = document.getElementById('onboarding-unauthed');
   const onboardingAuthed = document.getElementById('onboarding-authed');
@@ -162,17 +154,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   let currentPdfFileName = 'Document.pdf';
   let currentPdfMimeType = 'application/pdf';
   let pdfUserFormValues = {};
-  let userVaultData = {
-    fullName: '',
-    passportNo: '',
-    nationalId: '',
-    dob: '',
-    nationality: 'Indonesian',
-    gpa: '',
-    phone: '',
-    address: '',
-    emergencyContact: ''
-  };
 
   // Complete JAPAC Multi-Language Matrix (English default)
   const I18N = {
@@ -412,17 +393,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 1. Initialize Active Tab, User & Onboarding
   async function init() {
-    // Load Settings, User & Profile Vault (Priority 9.1)
-    const stored = await chrome.storage.local.get(['settings', 'hasCompletedOnboarding', 'user', 'telmy_vault']);
+    // Load Settings & User
+    const stored = await chrome.storage.local.get(['settings', 'hasCompletedOnboarding', 'user']);
     if (stored.settings) {
       currentLanguage = stored.settings.language || 'en';
       langSelect.value = currentLanguage;
     } else {
       langSelect.value = 'en';
-    }
-
-    if (stored.telmy_vault) {
-      userVaultData = { ...userVaultData, ...stored.telmy_vault };
     }
 
     currentUser = stored.user || null;
@@ -585,34 +562,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       profilePopover.style.display = 'none';
     });
 
-    // Priority 9.1: Profile Vault Modal Controls
-    if (btnOpenVault && spVaultModal) {
-      btnOpenVault.addEventListener('click', () => {
-        profilePopover.style.display = 'none';
-        populateVaultUI();
-        spVaultModal.style.display = 'flex';
-      });
-    }
-
-    if (btnCloseVault && spVaultModal) {
-      btnCloseVault.addEventListener('click', () => {
-        spVaultModal.style.display = 'none';
-      });
-    }
-
-    if (btnSaveVault && spVaultModal) {
-      btnSaveVault.addEventListener('click', async () => {
-        saveVaultUI();
-        await chrome.storage.local.set({ telmy_vault: userVaultData });
-        spVaultModal.style.display = 'none';
-        alert('Data Profile Vault berhasil disimpan!');
-        // Refresh active field card if showing
-        if (activeFieldIndex >= 0 && detectedFields[activeFieldIndex]) {
-          renderFieldDetail(detectedFields[activeFieldIndex]);
-        }
-      });
-    }
-
     // Priority 9.2: Form Pre-Submission Auditor Controls
     if (btnRunFormAudit) {
       btnRunFormAudit.addEventListener('click', runPreSubmissionAudit);
@@ -655,15 +604,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     btnOnboardingGoogle.addEventListener('click', handleUserAuthConnect);
 
-    btnOnboardingGuest.addEventListener('click', async () => {
-      await chrome.storage.local.set({ hasCompletedOnboarding: true });
-      closeOnboardingModal();
-      if (currentTabId && isScannerRunning) {
-        activateScannerOnTab(currentTabId);
-      }
-    });
-
     btnOnboardingFinish.addEventListener('click', async () => {
+      if (!currentUser) {
+        handleUserAuthConnect();
+        return;
+      }
       await chrome.storage.local.set({
         hasCompletedOnboarding: true,
         settings: { ...(await chrome.storage.local.get(['settings'])).settings, language: currentLanguage }
@@ -686,31 +631,24 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Handle Firebase Google Sign-In Connect Flow
   async function handleUserAuthConnect() {
     const settings = (await chrome.storage.local.get(['settings'])).settings || {};
-    const apiUrl = settings.apiUrl || 'http://localhost:8080/api';
+    const apiUrl = settings.apiUrl || 'https://telmy.web.app/api';
     const baseUrl = apiUrl.replace(/\/api\/?$/, '');
 
-    // Check if web connect page is reachable, or simulate 1-click connect
-    try {
-      // 1. Open /connect tab for actual Firebase Google Sign-In
-      const connectUrl = `${baseUrl}/connect`;
-      chrome.tabs.create({ url: connectUrl }, (tab) => {
-        // Tab opened; user completes Google Sign-in on web platform
-      });
-    } catch (e) {
-      // 2. Simulated instant connect for local testing
-      const mockUser = {
-        uid: 'usr_' + Date.now().toString(36),
-        displayName: 'Telmy User',
-        name: 'Telmy User',
-        email: 'user@telmy.id',
-        photoURL: '',
-        language: currentLanguage
-      };
-      await chrome.storage.local.set({ user: mockUser, hasCompletedOnboarding: true });
-      currentUser = mockUser;
-      renderUserUI();
-    }
+    // Open live /connect tab for actual Firebase Google Sign-In
+    const connectUrl = `${baseUrl}/connect`;
+    chrome.tabs.create({ url: connectUrl });
   }
+
+  // Listen for background session storage updates (e.g. from web /connect)
+  chrome.storage.onChanged.addListener((changes, areaName) => {
+    if (areaName === 'local' && changes.user) {
+      currentUser = changes.user.newValue;
+      renderUserUI();
+      if (currentUser && onboardingModal) {
+        closeOnboardingModal();
+      }
+    }
+  });
 
   // 4. Activate Scanner on Active Tab (On-Demand)
   function activateScannerOnTab(tabId) {
@@ -721,14 +659,14 @@ document.addEventListener('DOMContentLoaded', async () => {
           chrome.tabs.sendMessage(tabId, { type: 'ACTIVATE_SCANNER' }, (res2) => {
             if (res2 && res2.count !== undefined) {
               badgeFieldsCount.textContent = res2.count;
-              fieldsCountPill.textContent = `${res2.count} Kolom`;
+              fieldsCountPill.textContent = `${res2.count} ${t('tab_fields') || 'Fields'}`;
             }
           });
         });
       } else {
         if (res && res.count !== undefined) {
           badgeFieldsCount.textContent = res.count;
-          fieldsCountPill.textContent = `${res.count} Kolom`;
+          fieldsCountPill.textContent = `${res.count} ${t('tab_fields') || 'Fields'}`;
         }
       }
     });
@@ -741,7 +679,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (chrome.runtime.lastError) {}
     });
     badgeFieldsCount.textContent = '0';
-    fieldsCountPill.textContent = '0 Kolom';
+    fieldsCountPill.textContent = `0 ${t('tab_fields') || 'Fields'}`;
   }
 
   // On-demand injection into active tab
@@ -1215,8 +1153,8 @@ document.addEventListener('DOMContentLoaded', async () => {
           appendChatMessage({
             role: 'assistant',
             text: currentLanguage === 'en'
-              ? `🌐 **Full Page Translated (${translatedElementCount} elements)**\n\nThe webpage has been translated into **English** using **Gemini 3.5 Flash-Lite**.\n\n✓ **Official Bureaucracy Terms Preserved** (e.g., NIK, KTP, NPWP, SKCK)\n✓ **UI/UX Standards Applied** (Button & navigation actions mapped professionally)\n\nYou can click **Show Original** at any time to revert.`
-              : `🌐 **Halaman Berhasil Diterjemahkan (${translatedElementCount} elemen)**\n\nSeluruh teks UI halaman telah diterjemahkan ke bahasa **${langUpper}** menggunakan **Gemini 3.5 Flash-Lite**.\n\n✓ **Istilah Birokrasi Baku Terjaga** (NIK, KTP, KK, SKCK)\n✓ **Standar UI/UX Profesional** (Tombol navigasi disesuaikan secara natural)\n\nKlik **Kembalikan Asli** kapan saja jika ingin membaca versi asli.`,
+              ? `🌐 **Full Page Translated (${translatedElementCount} elements)**\n\nThe webpage has been translated into **English** using **Google Gemini**.\n\n✓ **Official Bureaucracy Terms Preserved** (e.g., NIK, KTP, NPWP, SKCK)\n✓ **UI/UX Standards Applied** (Button & navigation actions mapped professionally)\n\nYou can click **Show Original** at any time to revert.`
+              : `🌐 **Halaman Berhasil Diterjemahkan (${translatedElementCount} elemen)**\n\nSeluruh teks UI halaman telah diterjemahkan ke bahasa **${langUpper}** menggunakan **Google Gemini**.\n\n✓ **Istilah Birokrasi Baku Terjaga** (NIK, KTP, KK, SKCK)\n✓ **Standar UI/UX Profesional** (Tombol navigasi disesuaikan secara natural)\n\nKlik **Kembalikan Asli** kapan saja jika ingin membaca versi asli.`,
             actions: [
               { type: 'REVERT_PAGE', label: '🔙 ' + t('btn_revert_page') },
               { type: 'TAB_FIELDS', label: '📋 ' + t('tab_fields') }
@@ -1531,41 +1469,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     }
 
-    // Priority 9.1: 1-Click Smart Fill from Profile Vault
-    const vaultMatch = findVaultMatchForField(title);
-    if (vaultMatch && vaultMatch.val) {
-      const fillBox = document.createElement('div');
-      fillBox.className = 'detail-section';
-      fillBox.style.marginTop = '8px';
-      fillBox.innerHTML = `
-        <button type="button" class="btn-smart-fill-chip" id="btn-smart-fill-field" title="Klik untuk mengisi kolom input formulir secara otomatis">
-          ✨ Isi Cepat (${escapeHTML(vaultMatch.key)}): "${escapeHTML(vaultMatch.val)}"
-        </button>
-      `;
-      fieldDetailContent.appendChild(fillBox);
-
-      const fillBtn = fillBox.querySelector('#btn-smart-fill-field');
-      if (fillBtn) {
-        fillBtn.addEventListener('click', () => {
-          if (currentTabId && activeFieldIndex >= 0) {
-            chrome.tabs.sendMessage(currentTabId, {
-              type: 'FILL_FIELD_BY_INDEX',
-              index: activeFieldIndex,
-              value: vaultMatch.val
-            }, (res) => {
-              if (!chrome.runtime.lastError && res && res.filled) {
-                fillBtn.textContent = '✓ Berhasil Terisi ke Halaman!';
-                setTimeout(() => {
-                  fillBtn.textContent = `✨ Isi Cepat (${vaultMatch.key}): "${vaultMatch.val}"`;
-                }, 2000);
-              } else {
-                alert('Tidak dapat mengisi kolom input ini.');
-              }
-            });
-          }
-        });
-      }
-    }
   }
 
   // Stepper Buttons
@@ -1712,7 +1615,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
             if (spPdfAnalyzing) spPdfAnalyzing.style.display = 'none';
             if (telmyAvatar) telmyAvatar.setState('IDLE');
-            alert('Tidak dapat mengunduh formulir PDF dari tab aktif secara otomatis. Silakan upload berkas ke dropzone.');
+            alert('Could not download PDF form from the active tab automatically. Please upload your document to the dropzone.');
             return;
           }
 
@@ -1720,7 +1623,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
             if (spPdfAnalyzing) spPdfAnalyzing.style.display = 'none';
             if (telmyAvatar) telmyAvatar.setState('IDLE');
-            alert('Karena restriksi keamanan Chrome untuk berkas lokal (file://), silakan tarik file PDF dari komputer ke kotak dropzone di bawah.');
+            alert('Due to Chrome local file restrictions (file://), please drag and drop the PDF file from your computer into the dropzone below.');
             return;
           }
 
@@ -1728,7 +1631,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
             if (spPdfAnalyzing) spPdfAnalyzing.style.display = 'none';
             if (telmyAvatar) telmyAvatar.setState('IDLE');
-            alert('Gagal membaca dokumen dari tab aktif: ' + (res.error || 'Unknown error'));
+            alert('Failed to read document from active tab: ' + (res.error || 'Unknown error'));
             return;
           }
 
@@ -1749,7 +1652,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (expRes && expRes.quotaExhausted) {
               if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
               if (telmyAvatar) telmyAvatar.setState('IDLE');
-              openPaywallModal('Sisa kuota gratis Anda telah habis. Beli kredit atau upgrade ke Pro untuk melanjutkan.');
+              openPaywallModal('Your free form quota is exhausted. Purchase credits or upgrade to Pro to continue.');
               return;
             }
             if (expRes && expRes.quota) {
@@ -1758,7 +1661,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (chrome.runtime.lastError || !expRes || !expRes.success || !expRes.data) {
               if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
               if (telmyAvatar) telmyAvatar.setState('IDLE');
-              alert('Gagal menganalisis dokumen dengan Gemini. Pastikan backend aktif.');
+              alert('Failed to analyze document with Gemini. Please ensure backend is active.');
               return;
             }
             handleSuccessfulDocumentAnalysis(expRes.data);
@@ -1825,10 +1728,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Priority 7.7: Interactive Export Actions
-    if (btnPdfFillProfile) {
-      btnPdfFillProfile.addEventListener('click', handleAutofillAllPdfFieldsFromVault);
-    }
-
     if (btnPdfExportFilled) {
       btnPdfExportFilled.addEventListener('click', handleExportFilledPdf);
     }
@@ -1842,7 +1741,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const isImage = file.type.startsWith('image/') || /\.(jpg|jpeg|png|webp)$/i.test(file.name);
 
     if (!isPdf && !isImage) {
-      alert('Silakan pilih file PDF atau foto dokumen (JPG, PNG, WebP).');
+      alert('Please select a valid PDF file or document image (JPG, PNG, WebP).');
       return;
     }
 
@@ -1881,7 +1780,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (res && res.quotaExhausted) {
           if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
           if (telmyAvatar) telmyAvatar.setState('IDLE');
-          openPaywallModal('Sisa kuota gratis Anda telah habis. Beli kredit atau upgrade ke Pro untuk melanjutkan.');
+          openPaywallModal('Your free form quota is exhausted. Purchase credits or upgrade to Pro to continue.');
           return;
         }
         if (res && res.quota) {
@@ -1890,7 +1789,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (chrome.runtime.lastError || !res || !res.success || !res.data) {
           if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
           if (telmyAvatar) telmyAvatar.setState('IDLE');
-          alert('Gagal menganalisis dokumen formulir. Pastikan backend aktif.');
+          alert('Failed to analyze form document. Please ensure backend is active.');
           return;
         }
 
@@ -1900,7 +1799,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
       if (spPdfAnalyzing) spPdfAnalyzing.style.display = 'none';
       if (telmyAvatar) telmyAvatar.setState('IDLE');
-      alert('Gagal memproses berkas: ' + err.message);
+      alert('Failed to process file: ' + err.message);
     }
   }
 
@@ -2082,20 +1981,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         `;
       }
 
-      // Priority 7.7: Interactive Input Box with Vault Autofill
-      const vaultMatch = findVaultMatchForField(fieldName);
+      // Priority 7.7: Interactive Input Box
       const curVal = pdfUserFormValues[fieldName] || '';
 
       inner += `
         <div class="pdf-field-input-box">
-          <label>Isian Anda (untuk Dokumen Ekspor):</label>
+          <label>Your Input (for Exported Document):</label>
           <div class="pdf-field-input-row">
-            <input type="text" class="pdf-user-input" data-field-name="${escapeHTML(fieldName)}" placeholder="${example ? 'Contoh: ' + escapeHTML(example) : 'Ketik isian...'}" value="${escapeHTML(curVal)}">
-            ${vaultMatch ? `<button type="button" class="btn-pdf-field-vault-fill" data-vault-val="${escapeHTML(vaultMatch.val)}" title="Isi dengan ${escapeHTML(vaultMatch.key)}">✨ Vault</button>` : ''}
+            <input type="text" class="pdf-user-input" data-field-name="${escapeHTML(fieldName)}" placeholder="${example ? 'e.g. ' + escapeHTML(example) : 'Type entry...'}" value="${escapeHTML(curVal)}">
           </div>
         </div>
         <div class="pdf-field-card-actions">
-          <button type="button" class="btn-field-ask-chip" data-field="${escapeHTML(fieldName)}">💬 Tanya Telmy</button>
+          <button type="button" class="btn-field-ask-chip" data-field="${escapeHTML(fieldName)}">💬 Ask Telmy</button>
         </div>
       `;
 
@@ -2109,25 +2006,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
       }
 
-      // Vault fill button
-      const vaultBtn = card.querySelector('.btn-pdf-field-vault-fill');
-      if (vaultBtn && inputEl) {
-        vaultBtn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const val = vaultBtn.getAttribute('data-vault-val');
-          inputEl.value = val;
-          pdfUserFormValues[fieldName] = val;
-          vaultBtn.textContent = '✓';
-          setTimeout(() => { vaultBtn.textContent = '✨ Vault'; }, 1500);
-        });
-      }
-
       // Audio listen button
       const listenBtn = card.querySelector('.pdf-field-listen-btn');
       if (listenBtn) {
         listenBtn.addEventListener('click', (e) => {
           e.stopPropagation();
-          const speechText = `${fieldName}. ${explanation} ${example ? 'Contoh: ' + example : ''} ${pitfall ? 'Hindari: ' + pitfall : ''}`;
+          const speechText = `${fieldName}. ${explanation} ${example ? 'Example: ' + example : ''} ${pitfall ? 'Avoid: ' + pitfall : ''}`;
           speakResponse(speechText);
         });
       }
@@ -2139,7 +2023,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           e.stopPropagation();
           const tabChat = document.querySelector('.sp-tab-btn[data-tab="chat"]');
           if (tabChat) tabChat.click();
-          handleSendMessage(`Bagaimana cara mengisi "${fieldName}" pada formulir ini?`);
+          handleSendMessage(currentLanguage === 'id' ? `Bagaimana cara mengisi "${fieldName}" pada formulir ini?` : `How do I complete "${fieldName}" on this form?`);
         });
       }
 
@@ -2147,42 +2031,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // Priority 7.7: Autofill all PDF fields from Profile Vault
-  function handleAutofillAllPdfFieldsFromVault() {
-    if (!currentPdfData || !currentPdfData.sections) {
-      alert('Tidak ada dokumen aktif.');
-      return;
-    }
-
-    let filledCount = 0;
-    currentPdfData.sections.forEach((sec) => {
-      (sec.fields || []).forEach((f) => {
-        const fieldName = f.label || f.fieldName || f.name;
-        const match = findVaultMatchForField(fieldName);
-        if (match && match.val) {
-          pdfUserFormValues[fieldName] = match.val;
-          filledCount++;
-        }
-      });
-    });
-
-    // Re-render current section so UI inputs reflect values
-    if (currentPdfData.sections[activePdfSectionIndex]) {
-      renderPdfSectionFields(currentPdfData.sections[activePdfSectionIndex]);
-    }
-
-    alert(`Berhasil mengisi ${filledCount} kolom formulir dari Profile Vault!`);
-  }
-
   // Priority 7.7: Direct Export of Filled PDF via pdf-lib (100% Client-Side)
   async function handleExportFilledPdf() {
     if (!currentPdfRawBytes) {
-      alert('Tidak ada berkas dokumen asli yang dimuat.');
+      alert('No original document loaded.');
       return;
     }
 
     if (!window.PDFLib) {
-      alert('Pustaka pdf-lib belum selesai dimuat. Silakan tunggu beberapa detik.');
+      alert('PDF library is loading. Please wait a few seconds.');
       return;
     }
 
@@ -2291,10 +2148,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       a.remove();
       URL.revokeObjectURL(downloadUrl);
 
-      alert('Berhasil! File PDF resmi yang telah terisi telah diunduh ke komputer Anda.');
+      alert('Success! The completed official PDF document has been downloaded to your computer.');
     } catch (e) {
       console.error('[PDF Export Error]', e);
-      alert('Gagal mengekspor PDF: ' + e.message);
+      alert('Failed to export PDF: ' + e.message);
     }
   }
 
@@ -2305,7 +2162,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (tab) currentTabId = tab.id;
     }
     if (!currentTabId) {
-      alert('Tidak ada tab formulir aktif.');
+      alert('No active form tab found.');
       return;
     }
 
@@ -2455,86 +2312,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // Priority 9.1: Match field label to Profile Vault data
-  function findVaultMatchForField(fieldLabel) {
-    if (!fieldLabel || !userVaultData) return null;
-    const l = fieldLabel.toLowerCase();
-    if (l.includes('nama') || l.includes('name') || l.includes('full name') || l.includes('surname')) {
-      if (userVaultData.fullName) return { key: 'Nama Lengkap', val: userVaultData.fullName };
-    }
-    if (l.includes('paspor') || l.includes('passport')) {
-      if (userVaultData.passportNo) return { key: 'No. Paspor', val: userVaultData.passportNo };
-    }
-    if (l.includes('nik') || l.includes('ktp') || l.includes('national id') || l.includes('identity')) {
-      if (userVaultData.nationalId) return { key: 'NIK / ID', val: userVaultData.nationalId };
-    }
-    if (l.includes('lahir') || l.includes('birth') || l.includes('dob')) {
-      if (userVaultData.dob) return { key: 'Tgl Lahir', val: userVaultData.dob };
-    }
-    if (l.includes('kewarganegaraan') || l.includes('nationality') || l.includes('citizenship')) {
-      if (userVaultData.nationality) return { key: 'Kewarganegaraan', val: userVaultData.nationality };
-    }
-    if (l.includes('ipk') || l.includes('gpa') || l.includes('grade')) {
-      if (userVaultData.gpa) return { key: 'IPK / GPA', val: userVaultData.gpa };
-    }
-    if (l.includes('telepon') || l.includes('phone') || l.includes('telp') || l.includes('mobile')) {
-      if (userVaultData.phone) return { key: 'No. Telepon', val: userVaultData.phone };
-    }
-    if (l.includes('alamat') || l.includes('address')) {
-      if (userVaultData.address) return { key: 'Alamat', val: userVaultData.address };
-    }
-    if (l.includes('darurat') || l.includes('emergency')) {
-      if (userVaultData.emergencyContact) return { key: 'Kontak Darurat', val: userVaultData.emergencyContact };
-    }
-    return null;
-  }
-
-  function populateVaultUI() {
-    const elName = document.getElementById('vault-fullName');
-    const elPassport = document.getElementById('vault-passportNo');
-    const elNik = document.getElementById('vault-nationalId');
-    const elDob = document.getElementById('vault-dob');
-    const elNat = document.getElementById('vault-nationality');
-    const elGpa = document.getElementById('vault-gpa');
-    const elPhone = document.getElementById('vault-phone');
-    const elAddr = document.getElementById('vault-address');
-    const elEmg = document.getElementById('vault-emergencyContact');
-
-    if (elName) elName.value = userVaultData.fullName || '';
-    if (elPassport) elPassport.value = userVaultData.passportNo || '';
-    if (elNik) elNik.value = userVaultData.nationalId || '';
-    if (elDob) elDob.value = userVaultData.dob || '';
-    if (elNat) elNat.value = userVaultData.nationality || 'Indonesian';
-    if (elGpa) elGpa.value = userVaultData.gpa || '';
-    if (elPhone) elPhone.value = userVaultData.phone || '';
-    if (elAddr) elAddr.value = userVaultData.address || '';
-    if (elEmg) elEmg.value = userVaultData.emergencyContact || '';
-  }
-
-  function saveVaultUI() {
-    const elName = document.getElementById('vault-fullName');
-    const elPassport = document.getElementById('vault-passportNo');
-    const elNik = document.getElementById('vault-nationalId');
-    const elDob = document.getElementById('vault-dob');
-    const elNat = document.getElementById('vault-nationality');
-    const elGpa = document.getElementById('vault-gpa');
-    const elPhone = document.getElementById('vault-phone');
-    const elAddr = document.getElementById('vault-address');
-    const elEmg = document.getElementById('vault-emergencyContact');
-
-    userVaultData = {
-      fullName: elName ? elName.value.trim() : '',
-      passportNo: elPassport ? elPassport.value.trim() : '',
-      nationalId: elNik ? elNik.value.trim() : '',
-      dob: elDob ? elDob.value.trim() : '',
-      nationality: elNat ? elNat.value.trim() : 'Indonesian',
-      gpa: elGpa ? elGpa.value.trim() : '',
-      phone: elPhone ? elPhone.value.trim() : '',
-      address: elAddr ? elAddr.value.trim() : '',
-      emergencyContact: elEmg ? elEmg.value.trim() : ''
-    };
-  }
-
   // Utility helpers
   function compressImageFileToDataUrl(file, maxDimension = 2048, quality = 0.85) {
     return new Promise((resolve, reject) => {
@@ -2632,12 +2409,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Update modal metrics if elements exist
     if (paywallSumRemaining) paywallSumRemaining.textContent = remaining;
     if (paywallSumPlan) {
-      const planName = data.plan === 'pro' ? 'Pro Subscription ($14.99/bln)' :
-                       data.plan === 'payg' ? 'Pay-as-you-Go' : 'Free Tier (Gratis)';
+      const planName = data.plan === 'pro' ? 'Pro Subscription ($14.99/mo)' :
+                       data.plan === 'payg' ? 'Pay-as-you-Go' : 'Free Tier';
       paywallSumPlan.textContent = planName;
     }
-    if (paywallSumPayg) paywallSumPayg.textContent = `${q.purchasedCreditsRemaining || 0} Form`;
-    if (paywallSumPro) paywallSumPro.textContent = `${q.subscriptionQuotaRemaining || 0} Form`;
+    if (paywallSumPayg) paywallSumPayg.textContent = `${q.purchasedCreditsRemaining || 0} Forms`;
+    if (paywallSumPro) paywallSumPro.textContent = `${q.subscriptionQuotaRemaining || 0} Forms`;
   }
 
   function openPaywallModal(reasonSubtitle) {
@@ -2660,7 +2437,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   function setupQuotaAndPaywall() {
     if (spQuotaBadge) {
       spQuotaBadge.addEventListener('click', () => {
-        openPaywallModal('Tingkatkan kuota formulir untuk analisis tanpa batas');
+        openPaywallModal('Upgrade your form quota for uninterrupted assistance');
       });
     }
 
@@ -2676,7 +2453,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const triggerPurchase = (planId, btn) => {
       const originalText = btn.textContent;
-      btn.textContent = '⏳ Memproses...';
+      btn.textContent = '⏳ Processing...';
       btn.disabled = true;
 
       chrome.runtime.sendMessage({ type: 'SIMULATE_PURCHASE', planId }, (res) => {
@@ -2690,22 +2467,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             totalRemaining: res.user?.totalRemaining || 10
           };
           refreshUserQuota(quotaData);
-          alert(`🎉 Pembayaran Berhasil Disimulasikan!\n\nPaket: ${res.plan?.name || planId}\nSisa Kuota: ${res.user?.totalRemaining || 'Bertambah'}\n\nTerima kasih telah menggunakan Telmy!`);
+          alert(`🎉 Purchase Successful!\n\nPlan: ${res.plan?.name || planId}\nRemaining Quota: ${res.user?.totalRemaining || 'Added'}\n\nThank you for choosing Telmy!`);
           closePaywallModal();
         } else {
-          alert('Simulasi pembayaran gagal atau server offline. Pastikan backend aktif di localhost:8080.');
+          alert('Purchase processing failed. Please verify your connection.');
         }
       });
     };
 
     btnTierPurchases.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const planId = btn.getAttribute('data-plan') || 'payg_10';
-        triggerPurchase(planId, btn);
-      });
-    });
-
-    btnSimInstants.forEach(btn => {
       btn.addEventListener('click', () => {
         const planId = btn.getAttribute('data-plan') || 'payg_10';
         triggerPurchase(planId, btn);

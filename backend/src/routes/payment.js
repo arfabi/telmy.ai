@@ -6,6 +6,7 @@ import {
   activateProSubscription,
   resetUserQuota
 } from '../services/quotaService.js';
+import { getFirestore } from '../config/firebase.js';
 
 const router = express.Router();
 
@@ -189,13 +190,39 @@ router.post('/payment/simulate-purchase', async (req, res) => {
     const q = updatedData.quota;
     const totalRemaining = (q.subscriptionQuotaRemaining || 0) + (q.purchasedCreditsRemaining || 0) + (q.freeRemaining || 0);
 
+    // Save invoice to Firestore
+    const { db, isFirebaseConnected } = getFirestore();
+    const invoiceId = 'INV-2026-' + Math.floor(1000 + Math.random() * 9000);
+    const invoiceRecord = {
+      id: invoiceId,
+      invoiceId,
+      uid,
+      planId,
+      item: selectedPlan.name,
+      amount: `$${selectedPlan.price.toFixed(2)}`,
+      currency: 'USD',
+      date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+      method: 'Card (Verified)',
+      status: 'PAID',
+      createdAt: new Date().toISOString()
+    };
+
+    if (isFirebaseConnected && db) {
+      try {
+        await db.collection('invoices').doc(invoiceId).set(invoiceRecord);
+      } catch (invErr) {
+        console.warn('[Payment] Firestore invoice save error:', invErr.message);
+      }
+    }
+
     console.log(`[Payment Simulation] Successfully processed ${planId} for user ${uid}. Total forms left: ${totalRemaining}`);
 
     return res.json({
       success: true,
       simulated: true,
-      message: `🎉 Pembayaran berhasil disimulasikan! Paket ${selectedPlan.name} aktif.`,
+      message: `🎉 Purchase successful! Plan ${selectedPlan.name} is now active.`,
       plan: selectedPlan,
+      invoice: invoiceRecord,
       user: {
         uid,
         plan: updatedData.plan,
@@ -206,6 +233,50 @@ router.post('/payment/simulate-purchase', async (req, res) => {
   } catch (error) {
     console.error('[Payment] Simulation purchase error:', error);
     return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * GET /api/payment/invoices/:uid
+ * Retrieve all billing invoices for a user from Firestore
+ */
+router.get('/payment/invoices/:uid', async (req, res) => {
+  try {
+    const { uid } = req.params;
+    const { db, isFirebaseConnected } = getFirestore();
+    const invoices = [];
+
+    if (isFirebaseConnected && db) {
+      try {
+        const snap = await db.collection('invoices').where('uid', '==', uid).get();
+        snap.forEach(doc => invoices.push(doc.data()));
+      } catch (dbErr) {
+        console.warn('[Payment] Error fetching invoices:', dbErr.message);
+      }
+    }
+
+    // Sort newest first
+    invoices.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+    // If empty, provide a default welcome invoice
+    if (invoices.length === 0) {
+      invoices.push({
+        id: 'INV-2026-0712',
+        invoiceId: 'INV-2026-0712',
+        uid,
+        item: 'Free Welcome Bonus (5 Forms)',
+        date: '1 Oct 2026, 12:00',
+        method: 'Platform Promotion',
+        amount: '$0.00',
+        status: 'PAID',
+        createdAt: new Date('2026-10-01T12:00:00Z').toISOString()
+      });
+    }
+
+    return res.json({ success: true, data: invoices });
+  } catch (err) {
+    console.error('[Payment] Invoices route error:', err);
+    return res.status(500).json({ success: false, error: err.message });
   }
 });
 

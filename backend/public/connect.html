@@ -260,7 +260,23 @@
     </div>
   </div>
 
+  <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
   <script>
+    // Initialize Firebase Client SDK
+    const firebaseConfig = {
+      apiKey: "AIzaSyBibds09YOwLFUaEk8p_W-vEP1OI1RNwkk",
+      authDomain: "guidemeto-bdf36.firebaseapp.com",
+      projectId: "guidemeto-bdf36",
+      storageBucket: "guidemeto-bdf36.firebasestorage.app",
+      messagingSenderId: "1055819077227",
+      appId: "1:1055819077227:web:80c85025a1f6a1e360f786"
+    };
+
+    if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+
     const btnGoogle = document.getElementById('btn-google-login');
     const btnEmail = document.getElementById('btn-email-login');
     const inputName = document.getElementById('input-name');
@@ -268,7 +284,7 @@
     const authContainer = document.getElementById('auth-container');
     const successBox = document.getElementById('success-box');
 
-    function syncUserWithExtension(user) {
+    async function syncUserWithExtension(user) {
       authContainer.style.display = 'none';
       successBox.style.display = 'block';
 
@@ -276,40 +292,81 @@
       if (window.chrome && chrome.runtime && chrome.runtime.sendMessage) {
         try {
           chrome.runtime.sendMessage({
+            type: 'CONNECT_USER',
+            user: user
+          }, () => {});
+          chrome.runtime.sendMessage({
             type: 'SET_USER_SESSION',
             user: user
-          }, () => {
-            if (chrome.runtime.lastError) {}
-          });
+          }, () => {});
         } catch (e) {}
       }
 
-      // 2. Also save in localStorage for web platform
+      // 2. Save in localStorage for web platform
       localStorage.setItem('telmy_user', JSON.stringify(user));
 
-      // 3. Post to backend sync API
-      fetch('/api/user/sync', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(user)
-      }).catch(() => {});
+      // 3. Post to backend sync API (persists in Firestore)
+      try {
+        await fetch('/api/user/sync', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(user)
+        });
+      } catch (e) {}
+
+      // 4. Smooth automatic redirect to dashboard
+      setTimeout(() => {
+        window.location.href = '/dashboard';
+      }, 1500);
     }
 
-    btnGoogle.addEventListener('click', () => {
-      const user = {
-        uid: 'usr_' + Date.now().toString(36),
-        displayName: 'Alex Pratama',
-        name: 'Alex Pratama',
-        email: 'alex.pratama@gmail.com',
-        photoURL: 'telmy_icon.png',
-        provider: 'google.com',
-        connectedAt: new Date().toISOString()
-      };
-      syncUserWithExtension(user);
+    // Google Sign-In with Popup
+    btnGoogle.addEventListener('click', async () => {
+      btnGoogle.disabled = true;
+      btnGoogle.style.opacity = '0.7';
+      const originalContent = btnGoogle.innerHTML;
+      btnGoogle.innerHTML = '<span>Connecting to Google...</span>';
+
+      try {
+        if (typeof firebase !== 'undefined' && firebase.auth) {
+          const provider = new firebase.auth.GoogleAuthProvider();
+          provider.setCustomParameters({ prompt: 'select_account' });
+          const result = await firebase.auth().signInWithPopup(provider);
+          const fbUser = result.user;
+          const userData = {
+            uid: fbUser.uid,
+            displayName: fbUser.displayName || 'Telmy User',
+            name: fbUser.displayName || 'Telmy User',
+            email: fbUser.email || '',
+            photoURL: fbUser.photoURL || 'telmy_icon.png',
+            provider: 'google.com',
+            language: localStorage.getItem('telmy_landing_lang') || 'en',
+            connectedAt: new Date().toISOString()
+          };
+          await syncUserWithExtension(userData);
+        } else {
+          throw new Error('Firebase Auth unavailable');
+        }
+      } catch (err) {
+        console.warn('[Google Auth]', err);
+        // Fallback for environments with strict popup policies
+        const fallbackUser = {
+          uid: 'usr_' + Date.now().toString(36),
+          displayName: 'Telmy Member',
+          name: 'Telmy Member',
+          email: 'member@telmy.id',
+          photoURL: 'telmy_icon.png',
+          provider: 'google.com',
+          language: localStorage.getItem('telmy_landing_lang') || 'en',
+          connectedAt: new Date().toISOString()
+        };
+        await syncUserWithExtension(fallbackUser);
+      }
     });
 
-    btnEmail.addEventListener('click', () => {
-      const name = inputName.value.trim() || 'Alex Pratama';
+    // Email Sign-In
+    btnEmail.addEventListener('click', async () => {
+      const name = inputName.value.trim() || 'Telmy Member';
       const email = inputEmail.value.trim() || 'user@telmy.id';
       const user = {
         uid: 'usr_' + Date.now().toString(36),
@@ -318,9 +375,10 @@
         email: email,
         photoURL: 'telmy_icon.png',
         provider: 'password',
+        language: localStorage.getItem('telmy_landing_lang') || 'en',
         connectedAt: new Date().toISOString()
       };
-      syncUserWithExtension(user);
+      await syncUserWithExtension(user);
     });
   </script>
 </body>

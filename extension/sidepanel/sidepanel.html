@@ -89,7 +89,6 @@
         </div>
       </div>
       <div class="popover-actions">
-        <button id="btn-open-vault" class="btn-popover-vault">🔐 Profile Vault & Smart Fill</button>
         <button id="btn-popover-auth" class="btn-popover-primary">Connect with Google</button>
         <button id="btn-popover-signout" class="btn-popover-secondary" style="display: none;">Sign Out</button>
       </div>
@@ -299,11 +298,8 @@
               <p id="lbl-export-card-desc">Type directly into fields above or autofill from your profile, then export the completed document.</p>
             </div>
             <div class="pdf-export-btns">
-              <button type="button" class="btn-pdf-action-sec" id="btn-pdf-fill-profile" title="Autofill all matching fields from your Profile Vault">
-                ✨ Fill from Profile
-              </button>
               <button type="button" class="btn-pdf-action-pri" id="btn-pdf-export-filled" title="Download official filled PDF document">
-                📥 Unduh PDF Terisi Resmi
+                📥 Download Completed PDF
               </button>
             </div>
           </div>
@@ -406,7 +402,6 @@
                 <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
                 <span>Sign in with Google</span>
               </button>
-              <button id="btn-onboarding-guest" class="btn-auth-guest">Continue as Guest</button>
             </div>
             <div id="onboarding-authed" class="onboarding-auth-success" style="display: none;">
               <div class="auth-success-avatar">
@@ -430,70 +425,7 @@
     </div>
   </div>
 
-  <!-- Priority 9.1: Profile Vault & Master Data Modal -->
-  <div id="sp-vault-modal" class="sp-onboarding-overlay" style="display: none;">
-    <div class="vault-modal-card">
-      <div class="vault-header">
-        <div class="vault-header-title">
-          <span class="vault-icon">🔐</span>
-          <div>
-            <strong>Profile Vault (Master Data)</strong>
-            <small>Data disimpan terenkripsi lokal untuk 1-Click Smart Fill</small>
-          </div>
-        </div>
-        <button type="button" id="btn-close-vault" class="btn-close-mini">✕</button>
-      </div>
-      <div class="vault-form-body">
-        <div class="vault-form-row">
-          <label>Nama Paspor / Legal</label>
-          <input type="text" id="vault-fullName" placeholder="e.g. SITI NURHALIZA">
-        </div>
-        <div class="vault-form-row double">
-          <div>
-            <label>No. Paspor</label>
-            <input type="text" id="vault-passportNo" placeholder="e.g. A12345678">
-          </div>
-          <div>
-            <label>NIK / National ID</label>
-            <input type="text" id="vault-nationalId" placeholder="e.g. 3171012345670001">
-          </div>
-        </div>
-        <div class="vault-form-row double">
-          <div>
-            <label>Tanggal Lahir (YYYY-MM-DD)</label>
-            <input type="text" id="vault-dob" placeholder="1998-05-14">
-          </div>
-          <div>
-            <label>Kewarganegaraan</label>
-            <input type="text" id="vault-nationality" placeholder="Indonesian">
-          </div>
-        </div>
-        <div class="vault-form-row double">
-          <div>
-            <label>IPK / GPA (skala 4.0)</label>
-            <input type="text" id="vault-gpa" placeholder="3.85">
-          </div>
-          <div>
-            <label>No. Telepon Aktif</label>
-            <input type="text" id="vault-phone" placeholder="+628123456789">
-          </div>
-        </div>
-        <div class="vault-form-row">
-          <label>Alamat Lengkap / Sesuai KTP/Paspor</label>
-          <input type="text" id="vault-address" placeholder="Jl. Sudirman No. 45, Jakarta Selatan 12190">
-        </div>
-        <div class="vault-form-row">
-          <label>Kontak Darurat (Nama & Hubungan)</label>
-          <input type="text" id="vault-emergencyContact" placeholder="Budi Santoso (Ayah) - +62811987654">
-        </div>
-      </div>
-      <div class="vault-footer">
-        <button type="button" id="btn-save-vault" class="btn-vault-save">💾 Simpan ke Profile Vault</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Priority 8: Paywall & Quota Upgrade Modal (Lemon Squeezy Simulation) -->
+  <!-- Priority 8: Paywall & Quota Upgrade Modal (Lemon Squeezy) -->
   <div id="sp-paywall-modal" class="sp-modal" style="display: none;">
     <div class="sp-modal-content sp-paywall-modal-content">
       <div class="sp-modal-header">
@@ -501,72 +433,62 @@
           <span class="sp-paywall-badge-icon">💎</span>
           <div>
             <h3>Form Analysis Quota</h3>
-            <p class="sp-paywall-subtitle" id="paywall-status-subtitle">Kelola kuota panduan formulir Telmy</p>
+            <p class="sp-paywall-subtitle" id="paywall-status-subtitle">Manage your Telmy form guidance credits & tier</p>
           </div>
         </div>
-        <button id="btn-close-paywall" class="sp-modal-close" title="Tutup">&times;</button>
+        <button id="btn-close-paywall" class="sp-modal-close" title="Close">&times;</button>
       </div>
       <div class="sp-paywall-body">
         <!-- Live Quota Summary Card -->
         <div class="sp-quota-summary-card">
           <div class="quota-summary-metric">
             <span class="quota-sum-num" id="paywall-sum-remaining">5</span>
-            <span class="quota-sum-label">Form Tersisa</span>
+            <span class="quota-sum-label">Forms Remaining</span>
           </div>
           <div class="quota-summary-details">
-            <div class="quota-row"><span class="q-label">Plan Aktif:</span> <strong id="paywall-sum-plan">Free Tier</strong></div>
-            <div class="quota-row"><span class="q-label">Kredit Permanen (PAYG):</span> <span id="paywall-sum-payg">0 Form</span></div>
-            <div class="quota-row"><span class="q-label">Langganan Pro (Bulanan):</span> <span id="paywall-sum-pro">0 Form</span></div>
+            <div class="quota-row"><span class="q-label">Active Tier:</span> <strong id="paywall-sum-plan">Free Tier</strong></div>
+            <div class="quota-row"><span class="q-label">Permanent Credits (PAYG):</span> <span id="paywall-sum-payg">0 Forms</span></div>
+            <div class="quota-row"><span class="q-label">Pro Subscription (Monthly):</span> <span id="paywall-sum-pro">0 Forms</span></div>
           </div>
         </div>
 
         <div class="sp-paywall-tiers">
           <!-- Tier 1: PAYG -->
           <div class="paywall-tier-card" id="card-tier-payg">
-            <div class="tier-badge-pill">Populer & Fleksibel</div>
+            <div class="tier-badge-pill">Popular & Flexible</div>
             <div class="tier-header">
               <h4>Pay-as-you-Go</h4>
-              <div class="tier-price"><span class="currency">$</span><span class="amount">5</span> <span class="unit">/ 10 Form</span></div>
-              <div class="tier-subtext">$0.50 / form &bull; <strong>Tanpa Batas Waktu</strong></div>
+              <div class="tier-price"><span class="currency">$</span><span class="amount">5</span> <span class="unit">/ 10 Forms</span></div>
+              <div class="tier-subtext">$0.50 / form &bull; <strong>Never Expires</strong></div>
             </div>
             <ul class="tier-features">
-              <li>✓ 10 kredit analisis form web & PDF</li>
-              <li>✓ Tidak pernah kedaluwarsa (No expiration)</li>
-              <li>✓ AI Pre-Submission Form Auditor</li>
-              <li>✓ 1-Click Vault Smart Fill</li>
+              <li>✓ 10 interactive web & PDF form credits</li>
+              <li>✓ Never expires — use anytime</li>
+              <li>✓ Pre-Submission Form Error Auditor</li>
+              <li>✓ Multilingual explanations & natural audio</li>
             </ul>
             <button class="btn-tier-purchase btn-tier-payg" data-plan="payg_10">
-              ⚡ Beli Kredit $5
+              ⚡ Purchase Credits $5
             </button>
           </div>
 
           <!-- Tier 2: Pro Subscription -->
           <div class="paywall-tier-card recommended" id="card-tier-pro">
-            <div class="tier-badge-pill highlight">Nilai Terbaik</div>
+            <div class="tier-badge-pill highlight">Best Value</div>
             <div class="tier-header">
               <h4>Pro Subscription</h4>
-              <div class="tier-price"><span class="currency">$</span><span class="amount">14.99</span> <span class="unit">/ Bulan</span></div>
-              <div class="tier-subtext">50 Form/bulan &bull; Refresh Otomatis</div>
+              <div class="tier-price"><span class="currency">$</span><span class="amount">14.99</span> <span class="unit">/ Month</span></div>
+              <div class="tier-subtext">50 Forms/month &bull; Auto-Renewal</div>
             </div>
             <ul class="tier-features">
-              <li>✓ 50 formulir per bulan ($0.30/form)</li>
-              <li>✓ Prioritas antrean Gemini 3.5 Flash-Lite</li>
+              <li>✓ 50 forms per month ($0.30/form)</li>
+              <li>✓ Priority Gemini AI processing</li>
               <li>✓ Zero-Token Document Template Cache</li>
-              <li>✓ Narasi suara WaveNet tak terbatas</li>
+              <li>✓ Unlimited Voice Narration</li>
             </ul>
             <button class="btn-tier-purchase btn-tier-pro" data-plan="pro_monthly">
-              ✨ Langganan Pro $14.99/bln
+              ✨ Subscribe Pro $14.99/mo
             </button>
-          </div>
-        </div>
-
-        <!-- Lemon Squeezy Simulation Notice / Quick Simulator -->
-        <div class="sp-simulation-box">
-          <div class="sim-badge">🍋 Lemon Squeezy Test Mode</div>
-          <p class="sim-info">Mode simulasi aktif. Anda dapat menguji transaksi instan tanpa kartu kredit nyata.</p>
-          <div class="sim-actions">
-            <button class="btn-sim-instant" data-plan="payg_10">⚡ Simulasi Beli PAYG (10 Form)</button>
-            <button class="btn-sim-instant secondary" data-plan="pro_monthly">✨ Simulasi Aktifkan Pro (50 Form)</button>
           </div>
         </div>
       </div>

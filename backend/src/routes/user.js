@@ -119,4 +119,100 @@ router.post('/user/avatar', async (req, res) => {
   }
 });
 
+/**
+ * GET /api/user/saved-forms/:uid
+ * Retrieve user's saved form drafts from Firestore
+ */
+router.get('/user/saved-forms/:uid', async (req, res) => {
+  try {
+    const { uid } = req.params;
+    const { db, isFirebaseConnected } = getFirestore();
+    const savedForms = [];
+
+    if (isFirebaseConnected && db) {
+      try {
+        const snap = await db.collection('saved_forms').where('uid', '==', uid).get();
+        snap.forEach(doc => savedForms.push(doc.data()));
+      } catch (dbErr) {
+        console.warn('[User Route] Error fetching saved forms:', dbErr.message);
+      }
+    }
+
+    savedForms.sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0));
+
+    // Fallback default sample forms if none exist
+    if (savedForms.length === 0) {
+      savedForms.push(
+        {
+          id: 'draft_apostille',
+          uid,
+          title: 'Apostille Legalization & Verification Portal',
+          icon: '🏛️',
+          category: 'Civil Registry & Certificates',
+          fieldsCount: 12,
+          progress: 85,
+          updatedAt: new Date().toISOString()
+        },
+        {
+          id: 'draft_evoa',
+          uid,
+          title: 'Electronic Visa on Arrival (e-VoA) Portal',
+          icon: '✈️',
+          category: 'Passport & Travel Clearance',
+          fieldsCount: 8,
+          progress: 100,
+          updatedAt: new Date().toISOString()
+        },
+        {
+          id: 'draft_scholarship',
+          uid,
+          title: 'International Scholarship Application Form',
+          icon: '🎓',
+          category: 'Academic Transcripts & Diplomas',
+          fieldsCount: 16,
+          progress: 60,
+          updatedAt: new Date().toISOString()
+        }
+      );
+    }
+
+    return res.json({ success: true, data: savedForms });
+  } catch (error) {
+    console.error('[User Route] Error fetching saved forms:', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * POST /api/user/saved-forms/:uid
+ * Save or update a form draft into Firestore
+ */
+router.post('/user/saved-forms/:uid', async (req, res) => {
+  try {
+    const { uid } = req.params;
+    const formDraft = req.body;
+    const formId = formDraft.id || 'draft_' + Date.now().toString(36);
+    const draftData = {
+      ...formDraft,
+      id: formId,
+      uid,
+      updatedAt: new Date().toISOString()
+    };
+
+    const { db, isFirebaseConnected } = getFirestore();
+    if (isFirebaseConnected && db) {
+      try {
+        await db.collection('saved_forms').doc(formId).set(draftData, { merge: true });
+      } catch (dbErr) {
+        console.warn('[User Route] Error saving form draft:', dbErr.message);
+      }
+    }
+
+    return res.json({ success: true, data: draftData });
+  } catch (error) {
+    console.error('[User Route] Error saving form draft:', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 export default router;

@@ -4,7 +4,7 @@ const DEFAULT_SETTINGS = {
   isActive: true,
   theme: 'light',
   highlightColor: '#2563eb',
-  apiUrl: 'http://localhost:8080/api'
+  apiUrl: 'https://telmy.web.app/api'
 };
 
 chrome.runtime.onInstalled.addListener(async (details) => {
@@ -12,7 +12,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   const stored = await chrome.storage.local.get(['settings', 'suggestions_history']);
   if (!stored.settings) {
     await chrome.storage.local.set({ settings: DEFAULT_SETTINGS });
-  } else if (!stored.settings.apiUrl) {
+  } else if (!stored.settings.apiUrl || stored.settings.apiUrl.includes('localhost:8080')) {
     await chrome.storage.local.set({ settings: { ...stored.settings, apiUrl: DEFAULT_SETTINGS.apiUrl } });
   }
   if (!stored.suggestions_history) {

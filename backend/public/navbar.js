@@ -47,18 +47,32 @@
 
     // 3. Dynamic Authentication State Detection (Menu Utama -> Dashboard Link)
     const navCta = document.getElementById('nav-cta');
+    const navSignin = document.getElementById('nav-signin');
     const savedUser = localStorage.getItem('telmy_user');
 
-    if (savedUser && navCta) {
+    if (savedUser) {
       try {
         const user = JSON.parse(savedUser);
-        const displayName = user.displayName || user.name || 'User';
-        navCta.href = '/dashboard';
-        navCta.innerHTML = `👤 Dashboard`;
-        navCta.title = `Logged in as ${displayName} — Open Dashboard`;
-        navCta.classList.add('btn-nav-dashboard');
+        const displayName = user.displayName || user.name || 'Member';
+
+        if (navSignin) {
+          navSignin.href = '/dashboard';
+          navSignin.innerHTML = `👤 ${displayName}`;
+          navSignin.title = `Logged in as ${displayName} — Open Member Area`;
+        }
+
+        if (navCta) {
+          navCta.href = '/dashboard';
+          navCta.innerHTML = `Dashboard →`;
+          navCta.title = `Open Dashboard`;
+        }
       } catch (e) {
         // Fallback to standard guest CTA
+      }
+    } else {
+      if (navSignin) {
+        navSignin.href = '/connect';
+        navSignin.textContent = 'Sign In';
       }
     }
   }
