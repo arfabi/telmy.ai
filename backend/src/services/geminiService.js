@@ -115,11 +115,11 @@ export async function getEmbedding(text) {
   if (!ai) return null;
 
   try {
-    const embeddingModel = ai.getGenerativeModel({ model: 'text-embedding-004' });
+    const embeddingModel = ai.getGenerativeModel({ model: 'gemini-embedding-001' });
     const res = await embeddingModel.embedContent(text.slice(0, 2048));
     return res.embedding?.values || null;
   } catch (err) {
-    console.warn('[Gemini Embedding] text-embedding-004 failed:', err.message);
+    console.warn('[Gemini Embedding] gemini-embedding-001 failed:', err.message);
     return null;
   }
 }
