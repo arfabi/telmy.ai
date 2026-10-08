@@ -663,25 +663,35 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   // 4. Activate Scanner on Active Tab (On-Demand)
-  function activateScannerOnTab(tabId) {
+  async function activateScannerOnTab(tabId) {
     if (!tabId) return;
-    chrome.tabs.sendMessage(tabId, { type: 'ACTIVATE_SCANNER' }, (res) => {
-      if (chrome.runtime.lastError || !res) {
-        injectContentScript(tabId, () => {
-          chrome.tabs.sendMessage(tabId, { type: 'ACTIVATE_SCANNER' }, (res2) => {
-            if (res2 && res2.count !== undefined) {
-              badgeFieldsCount.textContent = res2.count;
-              fieldsCountPill.textContent = `${res2.count} ${t('tab_fields') || 'Fields'}`;
-            }
-          });
-        });
-      } else {
-        if (res && res.count !== undefined) {
-          badgeFieldsCount.textContent = res.count;
-          fieldsCountPill.textContent = `${res.count} ${t('tab_fields') || 'Fields'}`;
-        }
+    try {
+      const tab = await chrome.tabs.get(tabId).catch(() => null);
+      if (!tab || !tab.url || tab.url.startsWith('chrome://') || tab.url.startsWith('chrome-extension://') || tab.url.startsWith('edge://') || tab.url.startsWith('about:') || tab.url.startsWith('view-source:')) {
+        badgeFieldsCount.textContent = '0';
+        fieldsCountPill.textContent = `0 ${t('tab_fields') || 'Fields'}`;
+        return;
       }
-    });
+
+      chrome.tabs.sendMessage(tabId, { type: 'ACTIVATE_SCANNER' }, (res) => {
+        if (chrome.runtime.lastError || !res) {
+          injectContentScript(tabId, () => {
+            chrome.tabs.sendMessage(tabId, { type: 'ACTIVATE_SCANNER' }, (res2) => {
+              if (chrome.runtime.lastError) {}
+              if (res2 && res2.count !== undefined) {
+                badgeFieldsCount.textContent = res2.count;
+                fieldsCountPill.textContent = `${res2.count} ${t('tab_fields') || 'Fields'}`;
+              }
+            });
+          });
+        } else {
+          if (res && res.count !== undefined) {
+            badgeFieldsCount.textContent = res.count;
+            fieldsCountPill.textContent = `${res.count} ${t('tab_fields') || 'Fields'}`;
+          }
+        }
+      });
+    } catch (err) {}
   }
 
   // Deactivate Scanner on Active Tab (Total DOM Cleanup)
@@ -697,6 +707,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   // On-demand injection into active tab
   async function injectContentScript(tabId, onInjected) {
     try {
+      const tab = await chrome.tabs.get(tabId).catch(() => null);
+      if (!tab || !tab.url || tab.url.startsWith('chrome://') || tab.url.startsWith('chrome-extension://') || tab.url.startsWith('edge://') || tab.url.startsWith('about:') || tab.url.startsWith('view-source:')) {
+        return;
+      }
+
       await chrome.scripting.insertCSS({
         target: { tabId },
         files: ['content/overlay.css']
@@ -714,7 +729,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       if (onInjected) setTimeout(onInjected, 200);
     } catch (e) {
-      console.warn('[Telmy SidePanel] On-demand injection skipped:', e.message);
+      // Internal system page or frame restricted
     }
   }
 
@@ -820,7 +835,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   btnRescan.addEventListener('click', () => {
     btnRescan.style.transform = 'rotate(180deg)';
     setTimeout(() => { btnRescan.style.transform = ''; }, 300);
-    if (currentTabId) queryTabStatus(currentTabId);
+    if (currentTabId) activateScannerOnTab(currentTabId);
   });
 
   // 5. Chat & AI Interaction
