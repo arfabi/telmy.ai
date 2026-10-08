@@ -3,29 +3,44 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title id="meta-title">Telmy.ai — The Friendly AI Form-Filling Companion & Co-Pilot</title>
-  <meta name="description" id="meta-desc" content="Transform complex online forms, foreign visa paperwork, scholarships, and official PDF documents into an intuitive, guided conversation with Google Gemini AI and WaveNet voice assistance.">
+  <title id="meta-title">Telmy.ai — Fill out any official form with confidence</title>
+  <meta name="description" id="meta-desc" content="Telmy is a friendly helper that appears beside your browser. It explains every question on your visa, scholarship, or government form in plain words, one field at a time.">
   <link rel="icon" type="image/png" href="telmy_icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <style>
-    /* Cupertino / Apple Human Interface Enhancements */
+    /* =========================================================
+       Apple Human Interface Guidelines & Cupertino Aesthetics
+       ========================================================= */
     :root {
       --accent: #0071e3;
       --accent-hover: #0077ed;
       --accent-soft: #e8f2fc;
-      --card-bg: rgba(255, 255, 255, 0.82);
+      --success: #34c759;
+      --warning: #ff9500;
+      --danger: #ff3b30;
+      --card-bg: rgba(255, 255, 255, 0.88);
       --card-border: rgba(0, 0, 0, 0.08);
       --blur-apple: saturate(180%) blur(20px);
+      --radius-sm: 10px;
+      --radius-md: 18px;
+      --radius-lg: 24px;
+      --radius-full: 999px;
+      --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.04);
+      --shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.08);
     }
     
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Plus Jakarta Sans", sans-serif;
       background: #fbfbfd;
       color: #1d1d1f;
+      line-height: 1.5;
       -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
     }
 
     /* Ambient Lighting Glow */
@@ -34,276 +49,776 @@
       top: -120px;
       left: 50%;
       transform: translateX(-50%);
-      width: 900px;
-      height: 480px;
-      background: radial-gradient(circle, rgba(0, 113, 227, 0.09) 0%, rgba(251, 251, 253, 0) 70%);
+      width: 1000px;
+      height: 520px;
+      background: radial-gradient(circle, rgba(0, 113, 227, 0.08) 0%, rgba(251, 251, 253, 0) 70%);
       pointer-events: none;
       z-index: 0;
     }
 
+    /* Navbar */
     .navbar {
-      background: rgba(251, 251, 253, 0.8) !important;
+      background: rgba(251, 251, 253, 0.82) !important;
       backdrop-filter: var(--blur-apple);
       -webkit-backdrop-filter: var(--blur-apple);
       border-bottom: 1px solid var(--card-border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      transition: background 0.3s;
     }
 
+    .nav-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: #1d1d1f;
+    }
+
+    .brand-logo {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      object-fit: contain;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .brand-name {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: #1d1d1f;
+    }
+
+    .brand-badge {
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      list-style: none;
+    }
+
+    .nav-link {
+      font-size: 13.5px;
+      font-weight: 500;
+      color: #515154;
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      color: var(--accent);
+    }
+
+    .lang-select-nav {
+      background: rgba(0, 0, 0, 0.04);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-full);
+      padding: 6px 12px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #1d1d1f;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .btn-nav-cta {
+      background: var(--accent);
+      color: #ffffff !important;
+      padding: 8px 18px;
+      border-radius: var(--radius-full);
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 2px 8px rgba(0, 113, 227, 0.2);
+    }
+
+    .btn-nav-cta:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 113, 227, 0.3);
+    }
+
+    /* Hero Section */
     .hero-section {
       position: relative;
-      overflow: hidden;
-      padding: 70px 0 50px;
+      padding: 72px 0 54px;
+      text-align: center;
     }
 
     .hero-pill {
-      background: rgba(0, 113, 227, 0.08);
+      background: rgba(0, 113, 227, 0.06);
       color: var(--accent);
-      border: 1px solid rgba(0, 113, 227, 0.18);
+      border: 1px solid rgba(0, 113, 227, 0.16);
       font-weight: 600;
       font-size: 13px;
       padding: 6px 16px;
-      border-radius: 999px;
+      border-radius: var(--radius-full);
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      margin-bottom: 24px;
+      margin-bottom: 22px;
     }
 
     .hero-title {
-      font-size: 52px;
+      font-size: 54px;
       font-weight: 800;
-      letter-spacing: -1.5px;
-      line-height: 1.12;
+      letter-spacing: -1.6px;
+      line-height: 1.1;
       color: #1d1d1f;
-      max-width: 880px;
-      margin: 0 auto 20px;
-    }
-
-    .hero-title .gradient-text {
-      background: linear-gradient(135deg, #0071e3 0%, #34c759 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      max-width: 840px;
+      margin: 0 auto 18px;
     }
 
     .hero-subtitle {
       font-size: 18px;
-      color: #86868b;
-      max-width: 700px;
-      margin: 0 auto 36px;
+      color: #6e6e73;
+      max-width: 680px;
+      margin: 0 auto 32px;
       line-height: 1.5;
+      font-weight: 400;
     }
 
-    /* Bento Grid for Superpowers */
-    .bento-section {
-      padding: 80px 0;
-    }
-
-    .bento-container {
-      display: grid;
-      grid-template-columns: repeat(12, 1fr);
-      gap: 20px;
-    }
-
-    .bento-box {
-      background: #ffffff;
-      border: 1px solid var(--card-border);
-      border-radius: 20px;
-      padding: 30px;
-      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    .hero-cta-group {
       display: flex;
-      flex-direction: column;
-      position: relative;
-      overflow: hidden;
+      gap: 14px;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
     }
 
-    .bento-box:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.08);
-      border-color: rgba(0, 113, 227, 0.25);
-    }
-
-    .bento-col-8 { grid-column: span 8; }
-    .bento-col-4 { grid-column: span 4; }
-    .bento-col-6 { grid-column: span 6; }
-    .bento-col-12 { grid-column: span 12; }
-
-    .bento-badge-top {
+    .btn-hero-primary {
+      background: var(--accent);
+      color: white !important;
+      font-size: 15px;
+      font-weight: 600;
+      padding: 13px 28px;
+      border-radius: var(--radius-full);
+      text-decoration: none;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 4px 14px rgba(0, 113, 227, 0.25);
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--accent);
-      background: var(--accent-soft);
-      padding: 4px 10px;
-      border-radius: 999px;
-      width: fit-content;
-      margin-bottom: 16px;
+      gap: 8px;
     }
 
-    .bento-title {
-      font-size: 21px;
-      font-weight: 800;
-      color: #1d1d1f;
-      letter-spacing: -0.4px;
-      margin-bottom: 10px;
+    .btn-hero-primary:hover {
+      background: var(--accent-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 113, 227, 0.35);
     }
 
-    .bento-desc {
-      font-size: 14px;
+    .btn-hero-secondary {
+      background: rgba(0, 0, 0, 0.05);
+      color: #1d1d1f !important;
+      font-size: 15px;
+      font-weight: 600;
+      padding: 13px 26px;
+      border-radius: var(--radius-full);
+      text-decoration: none;
+      transition: all 0.2s;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-hero-secondary:hover {
+      background: rgba(0, 0, 0, 0.08);
+      transform: translateY(-1px);
+    }
+
+    .hero-footnote {
+      font-size: 12.5px;
       color: #86868b;
-      line-height: 1.55;
-      margin-bottom: 20px;
+      margin-top: 10px;
     }
 
-    .bento-graphic {
-      background: #f5f5f7;
-      border-radius: 14px;
-      padding: 16px;
-      margin-top: auto;
-      border: 1px solid rgba(0, 0, 0, 0.04);
-    }
-
-    /* Pricing Section */
-    .pricing-section {
-      padding: 80px 0;
+    /* Showcase Frame */
+    .showcase-frame {
+      max-width: 960px;
+      margin: 44px auto 0;
       background: #ffffff;
-      border-top: 1px solid var(--card-border);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      text-align: left;
+    }
+
+    .frame-topbar {
+      background: #f5f5f7;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
       border-bottom: 1px solid var(--card-border);
     }
 
-    .pricing-grid {
+    .frame-dots { display: flex; gap: 6px; }
+    .frame-dots span { width: 10px; height: 10px; border-radius: 50%; }
+    .frame-dots span:nth-child(1) { background: #ff5f56; }
+    .frame-dots span:nth-child(2) { background: #ffbd2e; }
+    .frame-dots span:nth-child(3) { background: #27c93f; }
+
+    .frame-url-bar {
+      flex: 1;
+      background: #ffffff;
+      border: 1px solid rgba(0,0,0,0.08);
+      padding: 5px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      color: #6e6e73;
+      font-family: monospace;
+    }
+
+    .frame-content {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      min-height: 340px;
+    }
+
+    .mock-form-area {
+      padding: 28px;
+      background: #ffffff;
+      border-right: 1px solid var(--card-border);
+    }
+
+    .mock-sidepanel-area {
+      padding: 24px;
+      background: #fafafc;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Section Styling */
+    section {
+      padding: 80px 0;
+      position: relative;
+    }
+
+    .section-header {
+      text-align: center;
+      max-width: 720px;
+      margin: 0 auto 48px;
+    }
+
+    .section-badge {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent);
+      background: var(--accent-soft);
+      padding: 4px 12px;
+      border-radius: var(--radius-full);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+    }
+
+    .section-title {
+      font-size: 36px;
+      font-weight: 800;
+      letter-spacing: -0.8px;
+      color: #1d1d1f;
+      margin-bottom: 12px;
+      line-height: 1.2;
+    }
+
+    .section-subtitle {
+      font-size: 16px;
+      color: #6e6e73;
+      line-height: 1.5;
+    }
+
+    /* Comparison Table / Cards */
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      max-width: 980px;
+      margin: 0 auto;
+    }
+
+    .comparison-card {
+      padding: 32px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--card-border);
+      box-shadow: var(--shadow-subtle);
+    }
+
+    .comparison-card.without {
+      background: #fff9f9;
+      border-color: #fecdd3;
+    }
+
+    .comparison-card.with {
+      background: #f7fdf9;
+      border-color: #bbf7d0;
+    }
+
+    .comparison-card-title {
+      font-size: 20px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+
+    .comparison-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .comparison-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: 14.5px;
+      line-height: 1.45;
+    }
+
+    .comparison-item strong {
+      display: block;
+      color: #1d1d1f;
+      margin-bottom: 2px;
+    }
+
+    /* Steps (How It Works) */
+    .steps-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 24px;
-      margin-top: 40px;
+      max-width: 1040px;
+      margin: 0 auto 40px;
+    }
+
+    .step-card {
+      background: #ffffff;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 32px 26px;
+      box-shadow: var(--shadow-subtle);
+      text-align: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .step-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .step-icon-wrap {
+      width: 58px;
+      height: 58px;
+      border-radius: 16px;
+      background: var(--accent-soft);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      margin: 0 auto 20px;
+    }
+
+    .step-card h3 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: #1d1d1f;
+    }
+
+    .step-card p {
+      font-size: 14px;
+      color: #6e6e73;
+      line-height: 1.5;
+    }
+
+    /* Features Grid */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 20px;
+      max-width: 1120px;
+      margin: 0 auto;
+    }
+
+    .feature-card {
+      background: #ffffff;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 26px;
+      box-shadow: var(--shadow-subtle);
+      transition: transform 0.2s, box-shadow 0.2s;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .feature-icon {
+      font-size: 28px;
+      margin-bottom: 14px;
+    }
+
+    .feature-card h3 {
+      font-size: 17px;
+      font-weight: 700;
+      color: #1d1d1f;
+      margin-bottom: 8px;
+    }
+
+    .feature-card p {
+      font-size: 13.5px;
+      color: #6e6e73;
+      line-height: 1.5;
+    }
+
+    .feature-card .traffic-light-box {
+      margin-top: 14px;
+      background: #f5f5f7;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    /* Privacy Section */
+    .privacy-card {
+      max-width: 860px;
+      margin: 0 auto;
+      background: #ffffff;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 38px 32px;
+      box-shadow: var(--shadow-subtle);
+    }
+
+    .privacy-commitments {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin: 28px 0;
+    }
+
+    .privacy-item {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      font-size: 13.5px;
+      line-height: 1.45;
+    }
+
+    .privacy-item strong {
+      display: block;
+      color: #1d1d1f;
+      margin-bottom: 2px;
+    }
+
+    .privacy-item span.icon {
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    /* Pricing */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      max-width: 1040px;
+      margin: 0 auto;
     }
 
     .pricing-card {
-      background: #fbfbfd;
-      border: 1.5px solid var(--card-border);
-      border-radius: 20px;
-      padding: 32px 28px;
+      background: #ffffff;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 32px 24px;
+      box-shadow: var(--shadow-subtle);
       display: flex;
       flex-direction: column;
       position: relative;
-      transition: all 0.2s ease;
     }
 
-    .pricing-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.06);
+    .pricing-card.featured {
+      border: 2px solid var(--accent);
+      background: #fbfdff;
+      box-shadow: 0 10px 30px rgba(0, 113, 227, 0.12);
     }
 
-    .pricing-card.recommended {
-      background: #ffffff;
-      border-color: var(--accent);
-      box-shadow: 0 8px 24px rgba(0, 113, 227, 0.12);
-    }
-
-    .pricing-badge-pill {
+    .pricing-pill-badge {
       position: absolute;
-      top: -11px;
-      left: 28px;
+      top: -12px;
+      left: 24px;
       background: var(--accent);
       color: white;
       font-size: 11px;
       font-weight: 700;
       padding: 3px 12px;
-      border-radius: 999px;
+      border-radius: var(--radius-full);
     }
 
-    .pricing-plan-title {
-      font-size: 14px;
+    .pricing-name {
+      font-size: 16px;
       font-weight: 700;
-      color: #86868b;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      color: #1d1d1f;
+      margin-bottom: 4px;
     }
 
     .pricing-price {
-      font-size: 42px;
+      font-size: 34px;
       font-weight: 800;
       color: #1d1d1f;
-      line-height: 1;
-      margin: 12px 0 6px;
+      margin-bottom: 6px;
+      letter-spacing: -0.5px;
     }
 
-    .pricing-sub {
-      font-size: 13px;
+    .pricing-price span {
+      font-size: 14px;
+      font-weight: 500;
       color: #86868b;
-      margin-bottom: 24px;
     }
 
-    .pricing-features {
+    .pricing-desc {
+      font-size: 13px;
+      color: #6e6e73;
+      margin-bottom: 20px;
+      min-height: 38px;
+    }
+
+    .pricing-list {
       list-style: none;
-      padding: 0;
-      margin: 0 0 28px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
       font-size: 13.5px;
-      color: #334155;
+      color: #1d1d1f;
+      margin-bottom: 28px;
       flex: 1;
     }
 
-    .pricing-features li {
+    .pricing-list li {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
 
     .btn-pricing {
       width: 100%;
-      padding: 12px 20px;
-      border-radius: 12px;
+      padding: 12px;
+      border-radius: var(--radius-full);
       font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
+      font-weight: 600;
       text-align: center;
-      transition: all 0.15s;
-      border: none;
       text-decoration: none;
-      display: block;
+      transition: all 0.15s;
+      cursor: pointer;
     }
 
-    .btn-pricing-secondary {
-      background: #e5e5ea;
+    .btn-pricing-sec {
+      background: rgba(0, 0, 0, 0.05);
       color: #1d1d1f;
+      border: 1px solid rgba(0, 0, 0, 0.08);
     }
 
-    .btn-pricing-secondary:hover {
-      background: #d1d1d6;
+    .btn-pricing-sec:hover {
+      background: rgba(0, 0, 0, 0.08);
     }
 
-    .btn-pricing-primary {
+    .btn-pricing-pri {
       background: var(--accent);
-      color: #ffffff;
-      box-shadow: 0 4px 14px rgba(0, 113, 227, 0.28);
+      color: white !important;
+      border: none;
+      box-shadow: 0 2px 8px rgba(0, 113, 227, 0.25);
     }
 
-    .btn-pricing-primary:hover {
+    .btn-pricing-pri:hover {
       background: var(--accent-hover);
     }
 
-    @media (max-width: 960px) {
-      .bento-col-8, .bento-col-4, .bento-col-6 { grid-column: span 12; }
+    /* Practice Demo Section */
+    .practice-card {
+      max-width: 860px;
+      margin: 0 auto;
+      background: linear-gradient(135deg, #f0f6ff 0%, #e8f2fc 100%);
+      border: 1px solid rgba(0, 113, 227, 0.2);
+      border-radius: var(--radius-lg);
+      padding: 44px 32px;
+      text-align: center;
+      box-shadow: var(--shadow-subtle);
+    }
+
+    /* FAQ Accordion */
+    .faq-container {
+      max-width: 820px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .faq-item {
+      background: #ffffff;
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      overflow: hidden;
+      transition: all 0.2s;
+    }
+
+    .faq-question {
+      padding: 18px 22px;
+      width: 100%;
+      text-align: left;
+      font-size: 15.5px;
+      font-weight: 600;
+      color: #1d1d1f;
+      background: none;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      outline: none;
+    }
+
+    .faq-answer {
+      display: none;
+      padding: 0 22px 18px;
+      font-size: 14px;
+      color: #515154;
+      line-height: 1.55;
+    }
+
+    .faq-item.open .faq-answer {
+      display: block;
+    }
+
+    .faq-chevron {
+      transition: transform 0.2s;
+      color: #86868b;
+    }
+
+    .faq-item.open .faq-chevron {
+      transform: rotate(180deg);
+    }
+
+    /* Final CTA */
+    .final-cta {
+      background: linear-gradient(135deg, #0071e3 0%, #004b99 100%);
+      color: white;
+      border-radius: var(--radius-lg);
+      padding: 56px 32px;
+      text-align: center;
+      max-width: 1040px;
+      margin: 0 auto;
+    }
+
+    .final-cta h2 {
+      font-size: 34px;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+
+    .final-cta p {
+      font-size: 16px;
+      opacity: 0.9;
+      margin-bottom: 28px;
+    }
+
+    /* Footer */
+    .footer {
+      background: #ffffff;
+      border-top: 1px solid var(--card-border);
+      padding: 40px 0 30px;
+      margin-top: 60px;
+      font-size: 13px;
+    }
+
+    .footer-content {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+      list-style: none;
+    }
+
+    .footer-links a {
+      color: #6e6e73;
+      text-decoration: none;
+    }
+
+    .footer-links a:hover {
+      color: var(--accent);
+    }
+
+    .footer-copy {
+      max-width: 1120px;
+      margin: 20px auto 0;
+      padding: 20px 24px 0;
+      border-top: 1px solid #f1f5f9;
+      text-align: center;
+      color: #86868b;
+      font-size: 12px;
+    }
+
+    @media (max-width: 860px) {
+      .hero-title { font-size: 36px; }
+      .frame-content { grid-template-columns: 1fr; }
+      .comparison-grid { grid-template-columns: 1fr; }
+      .steps-grid { grid-template-columns: 1fr; }
       .pricing-grid { grid-template-columns: 1fr; }
-      .hero-title { font-size: 38px; }
+      .privacy-commitments { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
     }
   </style>
 </head>
 <body>
-  <!-- Ambient Top Lighting -->
   <div class="ambient-glow"></div>
 
-  <!-- Navbar (Menu Utama) -->
+  <!-- 1. Navigation -->
   <nav class="navbar">
-    <div class="container nav-container">
+    <div class="nav-container">
       <a href="/" class="brand">
-        <img src="telmy_icon.png" alt="Telmy.ai Logo" class="brand-logo" style="border-radius: 9px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-        <span class="brand-name" style="letter-spacing: -0.5px;">Telmy.ai</span>
-        <span class="brand-badge" style="background: var(--accent-soft); color: var(--accent); font-weight: 700;">Co-Pilot</span>
+        <img src="telmy_icon.png" alt="Telmy logo" class="brand-logo">
+        <span class="brand-name">Telmy.ai</span>
+        <span class="brand-badge">Co-Pilot</span>
       </a>
 
       <!-- Mobile Hamburger Button -->
@@ -313,12 +828,13 @@
 
       <ul class="nav-links" id="nav-menu">
         <li><a href="/" class="nav-link active" id="nav-home">Home</a></li>
-        <li><a href="/#superpowers" class="nav-link" id="nav-features">Superpowers</a></li>
-        <li><a href="/#pricing" class="nav-link" id="nav-pricing">Pricing</a></li>
-        <li><a href="/demo" class="nav-link" id="nav-demo">Live Demo</a></li>
-        <li><a href="/download" class="nav-link" id="nav-download">Download Extension</a></li>
+        <li><a href="#how-it-works" class="nav-link" id="nav-how">How It Works</a></li>
+        <li><a href="#features" class="nav-link" id="nav-features">Features</a></li>
+        <li><a href="#pricing" class="nav-link" id="nav-pricing">Pricing</a></li>
+        <li><a href="#faq" class="nav-link" id="nav-faq">FAQ</a></li>
+        <li><a href="/demo" class="nav-link" id="nav-demo">Try the Demo</a></li>
         <li>
-          <!-- JAPAC Language Selector -->
+          <!-- 11 JAPAC Languages Selector -->
           <select id="landing-lang-select" class="lang-select-nav" aria-label="Select Language">
             <option value="en" selected>🇬🇧 English</option>
             <option value="id">🇮🇩 Indonesia</option>
@@ -334,105 +850,99 @@
           </select>
         </li>
         <li><a href="/connect" class="nav-link" id="nav-signin" style="font-weight: 600; color: var(--accent);">Sign In</a></li>
-        <li><a href="/demo" class="btn-nav-cta" id="nav-cta">Try Now 🚀</a></li>
+        <li><a href="/download" class="btn-nav-cta" id="nav-cta">Add to Chrome (Free)</a></li>
       </ul>
     </div>
   </nav>
 
-  <!-- Hero Section -->
-  <header class="hero-section">
+  <!-- 2. Hero Section -->
+  <header class="hero-section" id="hero">
     <div class="container">
-      <div style="text-align: center;">
-        <div class="hero-pill">
-          <span>✨</span>
-          <span id="hero-pill-left">Powered by Google Gemini & Google Cloud TTS</span>
-          <span>•</span>
-          <span id="hero-pill-right">100% Chrome Side Panel Native</span>
-        </div>
-
-        <h1 class="hero-title" id="hero-title">
-          The Intelligent Co-Pilot for <span class="gradient-text">Complex Online Forms</span>
-        </h1>
-
-        <p class="hero-subtitle" id="hero-subtitle">
-          Transform intimidating visas, scholarship applications, government portals, and official PDF documents into an intuitive, guided conversation. Step-by-step guidance, plain-language answers, and talking mascot voice assistance right in your browser.
-        </p>
-
-        <div class="hero-cta-group">
-          <a href="/demo.html" class="btn-hero-primary" id="btn-hero-demo" style="background: var(--accent); border-radius: 999px;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-            <span id="txt-hero-demo">Try Live Playground Demo</span>
-          </a>
-          <a href="/download.html" class="btn-hero-secondary" id="btn-hero-download" style="border-radius: 999px;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
-            <span id="txt-hero-download">Install Chrome Extension (Free)</span>
-          </a>
-        </div>
+      <div class="hero-pill">
+        <span>✨</span>
+        <span id="hero-badge">Free to start &bull; Works right inside Chrome</span>
       </div>
 
-      <!-- Live Mockup Browser Frame (Apple Safari / Chrome Native Aesthetic) -->
-      <div class="showcase-frame" style="border-radius: 20px; box-shadow: 0 24px 60px rgba(0,0,0,0.12);">
+      <h1 class="hero-title" id="hero-title">
+        Fill out any official form with confidence.
+      </h1>
+
+      <p class="hero-subtitle" id="hero-subtitle">
+        Telmy is a friendly helper that appears beside your browser. It explains every question on your visa, scholarship, or government form in plain words, one field at a time.
+      </p>
+
+      <div class="hero-cta-group">
+        <a href="/download" class="btn-hero-primary" id="btn-hero-add">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+          <span id="txt-hero-add">Add to Chrome (Free)</span>
+        </a>
+        <a href="/demo" class="btn-hero-secondary" id="btn-hero-demo">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          <span id="txt-hero-demo">Try the Demo</span>
+        </a>
+      </div>
+
+      <div class="hero-footnote" id="hero-footnote">
+        No credit card needed. Your passwords are never read or saved.
+      </div>
+
+      <!-- Demo preview: Browser mock frame -->
+      <div class="showcase-frame">
         <div class="frame-topbar">
           <div class="frame-dots"><span></span><span></span><span></span></div>
-          <div class="frame-url-bar">https://apostille.kemenkumham.go.id/application</div>
+          <div class="frame-url-bar">https://immigration.gov.example/visa-application</div>
           <span style="font-size: 11px; font-weight: 700; color: #059669; background: #d1fae5; padding: 2px 8px; border-radius: 4px;">Live Side Panel</span>
         </div>
         <div class="frame-content">
+          <!-- Web Form Side -->
           <div class="mock-form-area">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
-              <h3 style="font-size: 16px; color: #1e3a8a;" id="mock-form-title">Apostille Legalization & Verification Portal</h3>
+              <h3 style="font-size: 16px; color: #1e3a8a;">Official Visa Application Portal</h3>
               <span style="font-size: 11px; background: #eff6ff; color: #1d4ed8; padding: 2px 8px; border-radius: 4px; font-weight: 600;">Government Service</span>
             </div>
-            
-            <div style="margin-bottom: 16px;">
-              <label style="font-size: 12px; font-weight: 700; display: block; margin-bottom: 4px;" id="mock-f1-label">
-                National Identity Number (NIK / ID) <span style="background: #0071e3; color: white; border-radius: 50%; padding: 1px 7px; font-size: 10px;">1</span>
-              </label>
-              <input type="text" value="3171012304950001" readonly style="width: 100%; padding: 10px 12px; border: 2px solid #0071e3; border-radius: 8px; background: #eff6ff; font-family: monospace; font-size: 13px;">
-            </div>
 
             <div style="margin-bottom: 16px;">
-              <label style="font-size: 12px; font-weight: 700; display: block; margin-bottom: 4px;" id="mock-f2-label">
-                Type of Certified Document <span style="background: #0071e3; color: white; border-radius: 50%; padding: 1px 7px; font-size: 10px;">2</span>
+              <label style="font-size: 12px; font-weight: 700; display: block; margin-bottom: 6px;">
+                National ID Number <span style="background: #0071e3; color: white; border-radius: 50%; padding: 1px 7px; font-size: 10px;">1</span>
               </label>
-              <select style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: white; font-size: 13px;" id="mock-f2-select">
-                <option>Birth Certificate / Marriage Certificate (Civil Registry)</option>
-              </select>
+              <input type="text" value="3171012304950001" readonly style="width: 100%; padding: 10px 12px; border: 2px solid #0071e3; border-radius: 8px; background: #eff6ff; font-family: monospace; font-size: 13.5px;">
+              <div style="font-size: 11.5px; color: #64748b; margin-top: 4px;">
+                Enter your 16-digit ID number exactly as it appears on your certificate. Do not use spaces, dots, or dashes.
+              </div>
             </div>
 
-            <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 12px; font-size: 12px; color: #64748b;">
-              🛡️ Privacy Shield Active: Personal credentials and passwords are never read or stored.
+            <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 10px 14px; font-size: 12.5px; color: #166534; display: flex; align-items: center; gap: 8px;">
+              <span>✅</span>
+              <strong>Form check: Everything looks ready.</strong>
             </div>
           </div>
 
-          <div class="mock-sidepanel-area" style="background: #ffffff; border-left: 1px solid #e2e8f0;">
-            <!-- Mascot Header in Sidepanel -->
+          <!-- Side Panel Helper Side -->
+          <div class="mock-sidepanel-area">
             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px;">
-              <img src="telmy_icon.png" style="width: 32px; height: 32px; border-radius: 8px;" alt="Telmy logo">
+              <img src="telmy_icon.png" style="width: 32px; height: 32px; border-radius: 8px;" alt="Telmy Companion">
               <div>
                 <strong style="font-size: 13px; color: #1d1d1f; display: block;">Telmy Companion</strong>
                 <small style="color: #059669; font-size: 11px; font-weight: 600;">● Active on this page</small>
               </div>
-              <span style="margin-left: auto; font-size: 11px; font-weight: 700; background: #e8f2fc; color: #0071e3; padding: 2px 8px; border-radius: 999px;">💎 5 Forms</span>
+              <span style="margin-left: auto; font-size: 11px; font-weight: 700; background: #e8f2fc; color: #0071e3; padding: 2px 8px; border-radius: 999px;">5 Forms Free</span>
             </div>
 
-            <!-- Field Guidance Card -->
-            <div style="background: #f8fafc; border: 1.5px solid #0071e3; border-radius: 12px; padding: 14px; margin-bottom: 12px;">
-              <div style="font-weight: 700; color: #0071e3; font-size: 12.5px; margin-bottom: 6px;" id="mock-sp-guide-title">
-                🎯 Field #1: National Identity Number
+            <div style="background: #ffffff; border: 1.5px solid #0071e3; border-radius: 12px; padding: 14px; box-shadow: var(--shadow-subtle);">
+              <div style="font-weight: 700; color: #0071e3; font-size: 12.5px; margin-bottom: 6px;">
+                🎯 Field 1: National ID Number
               </div>
-              <p style="color: #475569; font-size: 12px; line-height: 1.45; margin-bottom: 8px;" id="mock-sp-guide-text">
-                Your 16-digit official number matching your civil certificate. Do not include spaces, periods, or hyphens.
+              <p style="color: #475569; font-size: 12px; line-height: 1.45; margin-bottom: 8px;">
+                Enter your 16-digit ID number exactly as it appears on your certificate. Do not use spaces, dots, or dashes.
               </p>
-              <div style="background: #ffffff; border-left: 3px solid #0071e3; padding: 6px 10px; border-radius: 4px; font-size: 11.5px; color: #334155;">
+              <div style="background: #f8fafc; border-left: 3px solid #0071e3; padding: 6px 10px; border-radius: 4px; font-size: 11.5px; color: #334155;">
                 <strong>Example:</strong> 3171012304950001
               </div>
             </div>
 
-            <!-- Pre-submission Auditor Chip -->
             <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 8px 12px; font-size: 11.5px; color: #065f46; display: flex; align-items: center; justify-content: space-between; margin-top: auto;">
-              <span>🟢 Form Auditor: 100% Ready</span>
-              <button style="background: #059669; color: white; border: none; border-radius: 4px; padding: 2px 6px; font-size: 10px; font-weight: 700;">Audit Now</button>
+              <span>🟢 Form check: Looks ready</span>
+              <span style="font-weight: 700;">Verified</span>
             </div>
           </div>
         </div>
@@ -440,56 +950,73 @@
     </div>
   </header>
 
-  <!-- Real-World Impact Section -->
-  <section class="impact-section" id="impact">
+  <!-- 3. The Problem Section -->
+  <section id="problem">
     <div class="container">
-      <div style="text-align: center;">
-        <span class="section-badge" id="badge-impact">Measured Accessibility</span>
-        <h2 class="section-title" id="title-impact">Eliminating Bureaucratic Friction Worldwide</h2>
-        <p class="section-subtitle" style="margin: 0 auto 40px;" id="subtitle-impact">
-          Over 67% of international travelers, students, and citizens experience high anxiety or make critical mistakes on official digital paperwork.
+      <div class="section-header">
+        <h2 class="section-title">Official forms are confusing. Small mistakes can be costly.</h2>
+        <p class="section-subtitle">
+          Visa, scholarship, and government forms use hard words and strict rules. Many people feel stressed and unsure. One wrong date or name can mean delays or a rejected application.
         </p>
       </div>
 
-      <div class="impact-grid">
-        <div class="impact-card before" style="border-radius: 20px;">
-          <div class="impact-card-header">
-            <span style="font-size: 28px;">❌</span>
-            <h3 class="impact-card-title" style="color: #991b1b;" id="impact-before-title">Without Telmy</h3>
+      <div class="comparison-grid">
+        <!-- Without Telmy -->
+        <div class="comparison-card without">
+          <div class="comparison-card-title" style="color: #b91c1c;">
+            <span>❌</span> Without Telmy
           </div>
-          <ul class="impact-list">
-            <li class="impact-item">
-              <span>⚠️</span>
-              <span id="impact-before-1"><strong>30–45 minutes wasted</strong> decoding rigid, convoluted legal terminology and instructions.</span>
+          <ul class="comparison-list">
+            <li class="comparison-item">
+              <span>⏱</span>
+              <div>
+                <strong>Spend 30–45 minutes</strong>
+                <span>Trying to understand difficult legal and bureaucratic wording.</span>
+              </div>
             </li>
-            <li class="impact-item">
-              <span>⚠️</span>
-              <span id="impact-before-2"><strong>High application rejection rates</strong> caused by formatting errors (e.g. inverted dates, title in surname field).</span>
+            <li class="comparison-item">
+              <span>❌</span>
+              <div>
+                <strong>Risk application delays or rejection</strong>
+                <span>For small mistakes, like swapped dates or a title in the surname box.</span>
+              </div>
             </li>
-            <li class="impact-item">
-              <span>⚠️</span>
-              <span id="impact-before-3"><strong>Broken machine translations</strong> corrupting official acronyms like Apostille, NIK, TIN, and SSN.</span>
-            </li>
-          </ul>
-        </div>
-
-        <div class="impact-card after" style="border-radius: 20px;">
-          <div class="impact-card-header">
-            <span style="font-size: 28px;">✅</span>
-            <h3 class="impact-card-title" style="color: #166534;" id="impact-after-title">With Telmy.ai</h3>
-          </div>
-          <ul class="impact-list">
-            <li class="impact-item">
-              <span>⚡</span>
-              <span id="impact-after-1"><strong>Completion time cut to under 5 minutes</strong> with numbered focus badges and 1-Click Vault smart fill.</span>
-            </li>
-            <li class="impact-item">
-              <span>💡</span>
-              <span id="impact-after-2"><strong>Zero-Disqualification Guarantee</strong> backed by the Pre-Submission AI Form Auditor.</span>
-            </li>
-            <li class="impact-item">
+            <li class="comparison-item">
               <span>🌐</span>
-              <span id="impact-after-3"><strong>Context-aware translation across 11 languages</strong> safeguarding official legal terms automatically.</span>
+              <div>
+                <strong>Translation tools get official terms wrong</strong>
+                <span>Important terms like Apostille, NIK, TIN, or SSN get corrupted or lost.</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- With Telmy -->
+        <div class="comparison-card with">
+          <div class="comparison-card-title" style="color: #15803d;">
+            <span>✅</span> With Telmy
+          </div>
+          <ul class="comparison-list">
+            <li class="comparison-item">
+              <span>⚡</span>
+              <div>
+                <strong>Finish in minutes</strong>
+                <span>With a clear, plain-language explanation and example for every field.</span>
+              </div>
+            </li>
+            <li class="comparison-item">
+              <span>✅</span>
+              <div>
+                <strong>Catch common mistakes</strong>
+                <span>Automatic sanity checks verify your answers before you submit.</span>
+              </div>
+            </li>
+            <li class="comparison-item">
+              <span>🌍</span>
+              <div>
+                <strong>Official terms stay correct</strong>
+                <span>Critical legal and government acronyms are preserved accurately in 11 languages.</span>
+              </div>
             </li>
           </ul>
         </div>
@@ -497,240 +1024,428 @@
     </div>
   </section>
 
-  <!-- Superpowers Bento Grid Section (Priorities 1 - 9) -->
-  <section class="bento-section" id="superpowers">
+  <!-- 4. How It Works Section -->
+  <section id="how-it-works" style="background: #ffffff; border-top: 1px solid var(--card-border); border-bottom: 1px solid var(--card-border);">
     <div class="container">
-      <div style="text-align: center; margin-bottom: 48px;">
-        <span class="section-badge">All-New Superpowers</span>
-        <h2 class="section-title">Engineered with Apple Human Interface Philosophy</h2>
-        <p class="section-subtitle" style="margin: 0 auto;">Everything you need to conquer digital forms, embassy visas, and complex documents effortlessly.</p>
+      <div class="section-header">
+        <span class="section-badge">Simple Process</span>
+        <h2 class="section-title">Three simple steps</h2>
+        <p class="section-subtitle">No complicated manuals. Telmy works right where you need it.</p>
       </div>
 
-      <div class="bento-container">
-        <!-- Bento 1: Universal PDF & Document Guidance -->
-        <div class="bento-box bento-col-8">
-          <div class="bento-badge-top">📄 PDF & Document Guidance</div>
-          <h3 class="bento-title">1-Click Guidance for Visa, Tax & Embassy PDF Forms</h3>
-          <p class="bento-desc">
-            Open any downloaded visa or official application PDF directly in Chrome, or snap a photo of paper paperwork. Telmy provides side-by-side guidance without re-uploading, explains every box clearly, and helps you download completed, ready-to-submit documents.
-          </p>
-          <div class="bento-graphic" style="display: flex; gap: 14px; align-items: center; justify-content: space-around; flex-wrap: wrap;">
-            <div style="text-align: center;"><span style="font-size: 24px;">⚡</span><div style="font-size: 11px; font-weight: 700; color: #1e293b;">1-Click PDF Guidance</div></div>
-            <div style="text-align: center;"><span style="font-size: 24px;">📷</span><div style="font-size: 11px; font-weight: 700; color: #1e293b;">Photo & Paper Support</div></div>
-            <div style="text-align: center;"><span style="font-size: 24px;">✍️</span><div style="font-size: 11px; font-weight: 700; color: #1e293b;">Handwriting Assistance</div></div>
-            <div style="text-align: center;"><span style="font-size: 24px;">📥</span><div style="font-size: 11px; font-weight: 700; color: #1e293b;">Ready-to-Print Documents</div></div>
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-icon-wrap">🧩</div>
+          <h3>Step 1: Add Telmy to Chrome</h3>
+          <p>It takes one click and it's free. No technical setup required.</p>
+        </div>
+
+        <div class="step-card">
+          <div class="step-icon-wrap">📋</div>
+          <h3>Step 2: Open your form</h3>
+          <p>Open any website form or PDF. Telmy appears in a friendly side panel right next to it.</p>
+        </div>
+
+        <div class="step-card">
+          <div class="step-icon-wrap">💡</div>
+          <h3>Step 3: Follow the guide</h3>
+          <p>Telmy explains each field, shows an example, and tells you what to enter. Before you submit, it checks your answers for mistakes.</p>
+        </div>
+      </div>
+
+      <div style="text-align: center;">
+        <a href="/download" class="btn-hero-primary">Add to Chrome (Free)</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. Features Section -->
+  <section id="features">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-badge">Core Capabilities</span>
+        <h2 class="section-title">Everything you need to finish your form without stress</h2>
+        <p class="section-subtitle">Simple tools that make difficult paperwork feel easy.</p>
+      </div>
+
+      <div class="features-grid">
+        <!-- Feature 1 -->
+        <div class="feature-card">
+          <div class="feature-icon">📝</div>
+          <h3>Understand every question</h3>
+          <p>Each field gets a short, clear explanation and an example. Numbered badges show you where to look, so you always know what to do next.</p>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="feature-card">
+          <div class="feature-icon">📄</div>
+          <h3>Works with PDFs, photos, and scans</h3>
+          <p>Open a visa or embassy PDF in Chrome and Telmy guides you right away. No need to upload it again. You can also use a photo or scan of a document. Telmy can read handwriting too, and it will tell you when something is hard to read so you can double-check.</p>
+        </div>
+
+        <!-- Feature 3: Traffic Light -->
+        <div class="feature-card">
+          <div class="feature-icon">✅</div>
+          <h3>Check before you submit</h3>
+          <p>Telmy looks over your answers and shows a simple traffic-light report before you submit:</p>
+          <div class="traffic-light-box">
+            <div>🟢 <strong>Looks good.</strong> Your name matches your passport.</div>
+            <div>🟡 <strong>Please review.</strong> There may be a title in the wrong box.</div>
+            <div>🔴 <strong>Needs attention.</strong> Your passport expires in &lt;6 months.</div>
           </div>
         </div>
 
-        <!-- Bento 2: Interactive Talking Companion -->
-        <div class="bento-box bento-col-4">
-          <div class="bento-badge-top">🤖 Interactive Companion</div>
-          <h3 class="bento-title">Natural Voice Guidance & Talking Mascot</h3>
-          <p class="bento-desc">
-            Prefer listening over reading complex legal text? Telmy speaks explanations aloud with friendly, natural voices in your preferred language to make form-filling completely effortless.
-          </p>
-          <div class="bento-graphic" style="text-align: center; padding: 20px 10px;">
-            <img src="telmy_icon.png" style="width: 54px; height: 54px; border-radius: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);" alt="Avatar">
-            <div style="font-size: 12px; font-weight: 700; color: #1d1d1f; margin-top: 8px;">Spoken Explanations</div>
-            <small style="color: #059669; font-size: 10.5px; font-weight: 600;">Natural Multilingual Voices</small>
-          </div>
+        <!-- Feature 4 -->
+        <div class="feature-card">
+          <div class="feature-icon">🔐</div>
+          <h3>Save your details once</h3>
+          <p>Sync your profile details securely with Google Sign-In. Next time you fill an application, Telmy knows your verified preferences with one click.</p>
         </div>
 
-        <!-- Bento 3: Scholarship & Visa Suite -->
-        <div class="bento-box bento-col-6">
-          <div class="bento-badge-top">🛡️ Review & Security</div>
-          <h3 class="bento-title">Pre-Submission Form Auditor & Secure Vault</h3>
-          <p class="bento-desc">
-            Save verified personal details safely in your private on-device vault for instant 1-click filling. Before submitting, run the Form Auditor to detect common mistakes or expired papers to prevent costly rejections.
-          </p>
-          <div class="bento-graphic" style="display: flex; flex-direction: column; gap: 8px;">
-            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12px;">
-              <span>🟢 Name Matching Passport</span>
-              <strong style="color: #059669;">Valid Format</strong>
-            </div>
-            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12px;">
-              <span>🟡 Suffix / Degree Check</span>
-              <strong style="color: #d97706;">Review Needed</strong>
-            </div>
-            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12px;">
-              <span>🔴 Passport Validity Alert</span>
-              <strong style="color: #dc2626;">Must Be >6 Months</strong>
-            </div>
-          </div>
+        <!-- Feature 5 -->
+        <div class="feature-card">
+          <div class="feature-icon">🌍</div>
+          <h3>Official terms stay correct</h3>
+          <p>Telmy keeps important words like Apostille, NIK, and TIN the way they should be. It works in 11 languages, so you can read guidance in the one you're most comfortable with.</p>
         </div>
 
-        <!-- Bento 4: Instant Answers & Term Glossary -->
-        <div class="bento-box bento-col-6">
-          <div class="bento-badge-top">⚡ Instant Answers</div>
-          <h3 class="bento-title">Instant Help & Official Term Glossary</h3>
-          <p class="bento-desc">
-            Get instant answers to tricky form questions. Official terminology like Apostille, Tax ID, and civil certificates are explained clearly and translated accurately without confusing errors.
-          </p>
-          <div class="bento-graphic" style="display: flex; align-items: center; justify-content: space-around; font-size: 12px;">
-            <div style="text-align: center;">
-              <div style="font-weight: 700; color: #1e293b;">⚡ Instant Speed</div>
-              <small style="color: #64748b;">Zero wait times</small>
-            </div>
-            <div style="text-align: center;">
-              <div style="font-weight: 700; color: #059669;">✓ Accurate Terms</div>
-              <small style="color: #64748b;">Protected official names</small>
-            </div>
-            <div style="text-align: center;">
-              <div style="font-weight: 700; color: var(--accent);">🌐 11 Languages</div>
-              <small style="color: #64748b;">Context-aware translation</small>
-            </div>
-          </div>
+        <!-- Feature 6 -->
+        <div class="feature-card">
+          <div class="feature-icon">🤖</div>
+          <h3>A friendly voice guide</h3>
+          <p>Prefer to listen? Our companion reads the answers aloud in a natural voice. It makes long, intimidating paperwork feel simple and conversational.</p>
+        </div>
+
+        <!-- Feature 7 -->
+        <div class="feature-card">
+          <div class="feature-icon">💾</div>
+          <h3>Save your finished PDF</h3>
+          <p>When you're done completing a PDF document, download your completed, official paperwork directly to your computer ready to print or email.</p>
+        </div>
+
+        <!-- Feature 8 -->
+        <div class="feature-card">
+          <div class="feature-icon">📷</div>
+          <h3>Photos made to fit</h3>
+          <p>Telmy shrinks large document photos and passport pictures automatically, so they fit within the upload limits on official forms.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Transparent Pricing & Monetization Section (Priority 8) -->
-  <section class="pricing-section" id="pricing">
+  <!-- 6. Privacy and Safety Section -->
+  <section id="privacy" style="background: #ffffff; border-top: 1px solid var(--card-border); border-bottom: 1px solid var(--card-border);">
     <div class="container">
-      <div style="text-align: center;">
-        <span class="section-badge">Usage Quota & Plans</span>
-        <h2 class="section-title">Transparent, Flexible Pricing for Everyone</h2>
-        <p class="section-subtitle" style="margin: 0 auto;">No hidden fees. Start free, buy permanent credits for seasonal visas, or subscribe for high-volume advising.</p>
+      <div class="section-header">
+        <span class="section-badge">Built For Trust</span>
+        <h2 class="section-title">Your personal information stays yours</h2>
+        <p class="section-subtitle">Passports and ID numbers are private. We built Telmy to protect them.</p>
+      </div>
+
+      <div class="privacy-card">
+        <div class="privacy-commitments">
+          <div class="privacy-item">
+            <span class="icon">🔒</span>
+            <div>
+              <strong>We never read or save your passwords.</strong>
+              <span>Password and sensitive credential inputs are strictly ignored and never captured.</span>
+            </div>
+          </div>
+
+          <div class="privacy-item">
+            <span class="icon">🛡️</span>
+            <div>
+              <strong>Your personal details are protected.</strong>
+              <span>Form field values are inspected on-demand only when you request guidance; no background keylogging.</span>
+            </div>
+          </div>
+
+          <div class="privacy-item">
+            <span class="icon">🗝️</span>
+            <div>
+              <strong>Encrypted session storage.</strong>
+              <span>Your profile session is linked to your Google sign-in and encrypted via Cloud Firestore.</span>
+            </div>
+          </div>
+
+          <div class="privacy-item">
+            <span class="icon">🚫</span>
+            <div>
+              <strong>We don't sell your data.</strong>
+              <span>We never sell your personal information or share it with third-party advertisers. Ever.</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 24px;">
+          <a href="/privacy" style="font-weight: 600; color: var(--accent); font-size: 14px;">Read our full Privacy Policy →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. Pricing Section -->
+  <section id="pricing">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-badge">Honest Pricing</span>
+        <h2 class="section-title">Simple pricing. No hidden fees.</h2>
+        <p class="section-subtitle">Start free. Pay only when you need more.</p>
       </div>
 
       <div class="pricing-grid">
-        <!-- Tier 1: Free Tier -->
+        <!-- Tier 1: Free -->
         <div class="pricing-card">
-          <div class="pricing-plan-title">Free Starter</div>
+          <div class="pricing-name">Free</div>
           <div class="pricing-price">$0</div>
-          <div class="pricing-sub">5 Free Form Analyses &bull; No card required</div>
-          <ul class="pricing-features">
-            <li>✓ 5 Form Guidance Credits</li>
-            <li>✓ Interactive Step-by-Step Badges</li>
-            <li>✓ Client-Side PII Privacy Shield</li>
-            <li>✓ 11 Global & Regional Languages</li>
-            <li>✓ Basic Web Form Guidance</li>
+          <div class="pricing-desc">Try it with 5 forms. No credit card needed.</div>
+          <ul class="pricing-list">
+            <li>✓ 5 forms included</li>
+            <li>✓ Step-by-step guidance on every field</li>
+            <li>✓ Your personal details stay protected</li>
+            <li>✓ 11 languages supported</li>
+            <li>✓ Works on regular website forms</li>
           </ul>
-          <a href="/download.html" class="btn-pricing btn-pricing-secondary">Get Started Free</a>
+          <a href="/download" class="btn-pricing btn-pricing-sec">Get Started Free</a>
         </div>
 
-        <!-- Tier 2: Pay-as-you-Go (Recommended for Applicants) -->
-        <div class="pricing-card recommended">
-          <div class="pricing-badge-pill">Most Flexible</div>
-          <div class="pricing-plan-title" style="color: var(--accent);">Pay-as-you-Go</div>
-          <div class="pricing-price">$5 <span style="font-size: 16px; font-weight: 500; color: #86868b;">/ 10 Forms</span></div>
-          <div class="pricing-sub">$0.50 per form &bull; <strong>Credits Never Expire</strong></div>
-          <ul class="pricing-features">
-            <li>✓ 10 Interactive Form Guidance Credits</li>
-            <li>✓ <strong>No Expiration Date — Use Anytime</strong></li>
-            <li>✓ Full Universal PDF & Scan Guidance</li>
-            <li>✓ Pre-Submission Form Auditor</li>
-            <li>✓ 1-Click Profile Vault Smart Fill</li>
+        <!-- Tier 2: Pay-as-you-Go (Recommended) -->
+        <div class="pricing-card featured">
+          <div class="pricing-pill-badge">Best Value</div>
+          <div class="pricing-name">Pay as You Go</div>
+          <div class="pricing-price">$5 <span>/ 10 forms</span></div>
+          <div class="pricing-desc">Just $0.50 per form. Credits never expire. Best for one-time needs like a visa or scholarship.</div>
+          <ul class="pricing-list">
+            <li>✓ 10 forms included</li>
+            <li>✓ Use them any time, even months later</li>
+            <li>✓ Works with PDFs and scanned documents</li>
+            <li>✓ Check before you submit</li>
+            <li>✓ Save your details for one-click filling</li>
           </ul>
-          <a href="/dashboard#pricing" class="btn-pricing btn-pricing-primary">Buy 10 Credits ($5)</a>
+          <a href="/dashboard#package-section" class="btn-pricing btn-pricing-pri">Buy 10 Forms ($5)</a>
         </div>
 
-        <!-- Tier 3: Pro Subscription -->
+        <!-- Tier 3: Pro -->
         <div class="pricing-card">
-          <div class="pricing-plan-title">Pro Subscription</div>
-          <div class="pricing-price">$14.99 <span style="font-size: 16px; font-weight: 500; color: #86868b;">/ Month</span></div>
-          <div class="pricing-sub">50 Forms / month &bull; Automatic Refresh</div>
-          <ul class="pricing-features">
-            <li>✓ 50 Form Guidance Credits per month</li>
-            <li>✓ High-Speed Priority Processing</li>
-            <li>✓ Unlimited Natural Voice Assistance</li>
-            <li>✓ Pre-Submission Form Verification</li>
-            <li>✓ Priority Support & Consultant Tools</li>
+          <div class="pricing-name">Pro Subscription</div>
+          <div class="pricing-price">$14.99 <span>/ month</span></div>
+          <div class="pricing-desc">For people who fill out forms often or advise applicants.</div>
+          <ul class="pricing-list">
+            <li>✓ 50 forms every month</li>
+            <li>✓ Faster response times</li>
+            <li>✓ Unlimited natural voice guide</li>
+            <li>✓ Faster help on forms we've seen before</li>
+            <li>✓ Priority support</li>
           </ul>
-          <a href="/dashboard" class="btn-pricing btn-pricing-secondary">Subscribe Pro ($14.99/mo)</a>
+          <a href="/dashboard#package-section" class="btn-pricing btn-pricing-sec">Subscribe ($14.99/mo)</a>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Video Demo / Interactive Playground Section -->
-  <section class="video-section" id="video">
+  <!-- 8. Practice Demo Section -->
+  <section id="demo" style="background: #ffffff; border-top: 1px solid var(--card-border); border-bottom: 1px solid var(--card-border);">
     <div class="container">
-      <span class="section-badge" id="badge-video">Interactive Playground</span>
-      <h2 class="section-title" id="title-video">Experience Telmy.ai Live in Your Browser</h2>
-      <p class="section-subtitle" style="margin: 0 auto;" id="subtitle-video">Test government legalization forms, e-Visas, and multimodal documents in real time.</p>
+      <div class="practice-card">
+        <span class="section-badge">Risk-Free Practice</span>
+        <h2 style="font-size: 32px; font-weight: 800; color: #1d1d1f; margin: 12px 0 10px;">Try Telmy right now</h2>
+        <p style="font-size: 15.5px; color: #515154; max-width: 600px; margin: 0 auto 28px; line-height: 1.5;">
+          Open our practice form and see how Telmy works. It explains confusing questions, gives you sample answers, and guides you step by step. Nothing you type is real, so there's no risk.
+        </p>
+        <a href="/demo" class="btn-hero-primary" style="padding: 14px 32px;">Open the Practice Form →</a>
+      </div>
+    </div>
+  </section>
 
-      <div class="video-frame-container" style="border-radius: 20px;">
-        <div class="video-placeholder-content">
-          <a href="/demo.html" class="play-circle" title="Launch Interactive Simulator" style="background: var(--accent);">▶</a>
-          <h3 style="font-size: 22px; font-weight: 800; margin-bottom: 8px;" id="video-card-title">Launch Interactive Form Playground</h3>
-          <p style="font-size: 13.5px; opacity: 0.85; max-width: 500px; margin: 0 auto 18px;" id="video-card-desc">
-            Explore how Telmy identifies ambiguous inputs, provides realistic dummy data, and guides applicants step-by-step with natural speech.
-          </p>
-          <a href="/demo.html" style="color: #60a5fa; font-weight: 700; font-size: 13.5px;" id="video-card-link">Open Live Simulation Portal →</a>
+  <!-- 9. FAQ Section -->
+  <section id="faq">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-badge">Common Questions</span>
+        <h2 class="section-title">Frequently Asked Questions</h2>
+        <p class="section-subtitle">Everything you need to know about Telmy and how it works.</p>
+      </div>
+
+      <div class="faq-container">
+        <!-- Q1 -->
+        <div class="faq-item open">
+          <button class="faq-question">
+            <span>What is Telmy?</span>
+            <span class="faq-chevron">▾</span>
+          </button>
+          <div class="faq-answer">
+            Telmy is a Chrome extension that helps you fill out complicated forms. It explains each question in simple words and checks your answers before you submit.
+          </div>
+        </div>
+
+        <!-- Q2 -->
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>What kinds of forms does it help with?</span>
+            <span class="faq-chevron">▾</span>
+          </button>
+          <div class="faq-answer">
+            Visa applications, scholarship applications, government portals, civil registry paperwork, and official PDF documents.
+          </div>
+        </div>
+
+        <!-- Q3 -->
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>Is my personal information safe?</span>
+            <span class="faq-chevron">▾</span>
+          </button>
+          <div class="faq-answer">
+            We never read or save your passwords. Your saved details are kept in an encrypted, secure database. See our Privacy Policy for full details.
+          </div>
+        </div>
+
+        <!-- Q4 -->
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>Does Telmy fill out the form for me?</span>
+            <span class="faq-chevron">▾</span>
+          </button>
+          <div class="faq-answer">
+            Telmy guides you and can suggest values from your saved preferences. You stay in full control and review everything before you submit.
+          </div>
+        </div>
+
+        <!-- Q5 -->
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>Can Telmy guarantee my application will be accepted?</span>
+            <span class="faq-chevron">▾</span>
+          </button>
+          <div class="faq-answer">
+            No one can promise that. Telmy helps you avoid common mistakes and formatting errors, but the final decision is always made by the office that receives your form.
+          </div>
+        </div>
+
+        <!-- Q6 -->
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>Which languages are supported?</span>
+            <span class="faq-chevron">▾</span>
+          </button>
+          <div class="faq-answer">
+            11 languages: English, Indonesian (Bahasa Indonesia), Japanese (日本語), Korean (한국어), Simplified Chinese (简体中文), Traditional Chinese (繁體中文), Vietnamese (Tiếng Việt), Thai (ไทย), Hindi (हिन्दी), Filipino, and Malay (Bahasa Melayu).
+          </div>
+        </div>
+
+        <!-- Q7 -->
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>Do I have to pay?</span>
+            <span class="faq-chevron">▾</span>
+          </button>
+          <div class="faq-answer">
+            No. You can start free with 5 forms. After that, you can buy flexible credits or subscribe if you need higher volume.
+          </div>
+        </div>
+
+        <!-- Q8 -->
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>Do my credits expire?</span>
+            <span class="faq-chevron">▾</span>
+          </button>
+          <div class="faq-answer">
+            Pay-as-you-go credits never expire. Use them whenever you have an upcoming visa or paperwork. Pro subscription credits refresh every month.
+          </div>
+        </div>
+
+        <!-- Q9 -->
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>Does it work on my phone?</span>
+            <span class="faq-chevron">▾</span>
+          </button>
+          <div class="faq-answer">
+            Telmy currently works as a Chrome extension on desktop and laptop computers (Windows, Mac, Linux, and Chromebooks) where side panels are natively supported.
+          </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- CTA Banner -->
-  <section class="container">
-    <div class="cta-banner" style="border-radius: 24px; background: linear-gradient(135deg, #0071e3 0%, #1e40af 100%);">
-      <h2 id="cta-title">Ready to Fill Any Form with Total Confidence?</h2>
-      <p id="cta-desc">Install Telmy.ai for Google Chrome now or explore our interactive web platform.</p>
-      <div style="display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;">
-        <a href="/demo.html" style="background: white; color: #0071e3; font-weight: 700; padding: 14px 28px; border-radius: 999px;" id="cta-btn-demo">Try Live Playground</a>
-        <a href="/download.html" style="background: rgba(255,255,255,0.18); color: white; font-weight: 700; padding: 14px 28px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.3);" id="cta-btn-dl">Download Chrome Extension</a>
+  <!-- 10. Final Call to Action -->
+  <section style="padding: 20px 0 60px;">
+    <div class="container">
+      <div class="final-cta">
+        <h2>Ready to fill out your form with confidence?</h2>
+        <p>Add Telmy to Chrome and let it guide you from the first field to the last.</p>
+        <div style="display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;">
+          <a href="/download" style="background: white; color: #0071e3; font-weight: 700; padding: 14px 28px; border-radius: var(--radius-full); text-decoration: none;">Add to Chrome (Free)</a>
+          <a href="/demo" style="background: rgba(255,255,255,0.18); color: white; font-weight: 700; padding: 14px 28px; border-radius: var(--radius-full); border: 1px solid rgba(255,255,255,0.3); text-decoration: none;">Try the Demo</a>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- Footer -->
+  <!-- 11. Footer -->
   <footer class="footer">
     <div class="container">
       <div class="footer-content">
         <div class="brand">
-          <img src="telmy_icon.png" alt="Telmy.ai" class="brand-logo" style="border-radius: 8px;">
+          <img src="telmy_icon.png" alt="Telmy logo" class="brand-logo">
           <span class="brand-name">Telmy.ai</span>
         </div>
         <ul class="footer-links">
-          <li><a href="/demo.html" id="foot-demo">Live Demo</a></li>
-          <li><a href="/dashboard" id="foot-dashboard">Dashboard</a></li>
-          <li><a href="/download.html" id="foot-dl">Download Extension</a></li>
-          <li><a href="/privacy" id="foot-privacy">Privacy Policy</a></li>
+          <li><a href="/demo">Live Demo</a></li>
+          <li><a href="/dashboard">Dashboard</a></li>
+          <li><a href="/download">Add to Chrome</a></li>
+          <li><a href="/privacy">Privacy Policy</a></li>
         </ul>
       </div>
-      <div class="footer-copy" id="foot-copy">
-        Crafted with ❤️ for the World. Powered by Google Gemini & Google Cloud TTS.
+      <div class="footer-copy">
+        Crafted with ❤️ for the World. Powered by Google Gemini, Google Cloud TTS, and Firebase.
       </div>
     </div>
   </footer>
 
   <script>
-    // 11 JAPAC & Global Languages
+    // FAQ Accordion Interaction
+    document.querySelectorAll('.faq-question').forEach(button => {
+      button.addEventListener('click', () => {
+        const item = button.parentElement;
+        item.classList.toggle('open');
+      });
+    });
+
+    // Multi-Language Support (English Default)
     const LANDING_TRANSLATIONS = {
       en: {
-        metaTitle: "Telmy.ai — The Friendly AI Form-Filling Companion & Co-Pilot",
-        navFeatures: "Superpowers",
+        metaTitle: "Telmy.ai — Fill out any official form with confidence",
+        navHome: "Home",
+        navHow: "How It Works",
+        navFeatures: "Features",
         navPricing: "Pricing",
-        navDashboard: "Dashboard",
-        navDemo: "Live Demo",
-        navDownload: "Download Extension",
-        navCta: "Try Now 🚀",
-        heroPillLeft: "Powered by Google Gemini & Google Cloud TTS",
-        heroPillRight: "100% Chrome Side Panel Native",
-        heroTitle: "The Intelligent Co-Pilot for <span class='gradient-text'>Complex Online Forms</span>",
-        heroSubtitle: "Transform intimidating visas, scholarship applications, government portals, and official PDF documents into an intuitive, guided conversation. Step-by-step guidance, plain-language answers, and talking mascot voice assistance right in your browser.",
-        heroDemo: "Try Live Playground Demo",
-        heroDownload: "Install Chrome Extension (Free)",
-        footCopy: "Crafted with ❤️ for the World. Powered by Google Gemini & Google Cloud TTS."
+        navFaq: "FAQ",
+        navDemo: "Try the Demo",
+        navCta: "Add to Chrome (Free)",
+        heroBadge: "Free to start • Works right inside Chrome",
+        heroTitle: "Fill out any official form with confidence.",
+        heroSubtitle: "Telmy is a friendly helper that appears beside your browser. It explains every question on your visa, scholarship, or government form in plain words, one field at a time.",
+        heroAdd: "Add to Chrome (Free)",
+        heroDemo: "Try the Demo",
+        heroFootnote: "No credit card needed. Your passwords are never read or saved."
       },
       id: {
-        metaTitle: "Telmy.ai — Asisten Pengisian Formulir & Dokumen Berbasis AI",
-        navFeatures: "Fitur Unggulan",
+        metaTitle: "Telmy.ai — Isi formulir resmi apa pun dengan percaya diri",
+        navHome: "Beranda",
+        navHow: "Cara Kerja",
+        navFeatures: "Fitur",
         navPricing: "Harga",
-        navDashboard: "Dasbor",
-        navDemo: "Demo Langsung",
-        navDownload: "Unduh Ekstensi",
-        navCta: "Coba Sekarang 🚀",
-        heroPillLeft: "Ditenagai Google Gemini & Google Cloud TTS",
-        heroPillRight: "100% Native Chrome Side Panel",
-        heroTitle: "Asisten Cerdas Pengisian <span class='gradient-text'>Formulir & Dokumen Digital</span>",
-        heroSubtitle: "Ubah pengisian visa kedutaan, beasiswa, perizinan, dan dokumen PDF resmi yang rumit menjadi percakapan hangat yang mudah dipahami langkah demi langkah dengan panduan suara interaktif.",
-        heroDemo: "Coba Demo Interaktif",
-        heroDownload: "Pasang di Chrome (Gratis)",
-        footCopy: "Dibuat dengan ❤️ untuk Dunia. Ditenagai Google Gemini & Google Cloud TTS."
+        navFaq: "Tanya Jawab",
+        navDemo: "Coba Demo",
+        navCta: "Pasang di Chrome (Gratis)",
+        heroBadge: "Mulai gratis • Bekerja langsung di dalam Chrome",
+        heroTitle: "Isi formulir resmi apa pun dengan percaya diri.",
+        heroSubtitle: "Telmy adalah pendamping ramah yang hadir di samping peramban Anda. Menjelaskan setiap pertanyaan pada formulir visa, beasiswa, atau layanan publik dengan bahasa sederhana, kolom demi kolom.",
+        heroAdd: "Pasang di Chrome (Gratis)",
+        heroDemo: "Coba Demo",
+        heroFootnote: "Tanpa kartu kredit. Kata sandi Anda tidak pernah dibaca atau disimpan."
       }
     };
 
@@ -742,35 +1457,35 @@
         const el = document.getElementById(id);
         if (el && val) el.textContent = val;
       };
-      const setHTML = (id, val) => {
-        const el = document.getElementById(id);
-        if (el && val) el.innerHTML = val;
-      };
 
       if (data.metaTitle) document.title = data.metaTitle;
-      setText('nav-home', data.navHome || 'Home');
+      setText('nav-home', data.navHome);
+      setText('nav-how', data.navHow);
       setText('nav-features', data.navFeatures);
       setText('nav-pricing', data.navPricing);
+      setText('nav-faq', data.navFaq);
       setText('nav-demo', data.navDemo);
-      setText('nav-download', data.navDownload);
       setText('nav-cta', data.navCta);
 
-      setText('hero-pill-left', data.heroPillLeft);
-      setText('hero-pill-right', data.heroPillRight);
-      setHTML('hero-title', data.heroTitle);
+      setText('hero-badge', data.heroBadge);
+      setText('hero-title', data.heroTitle);
       setText('hero-subtitle', data.heroSubtitle);
+      setText('txt-hero-add', data.heroAdd);
       setText('txt-hero-demo', data.heroDemo);
-      setText('txt-hero-download', data.heroDownload);
-      setText('foot-copy', data.footCopy);
+      setText('hero-footnote', data.heroFootnote);
 
       localStorage.setItem('telmy_landing_lang', lang);
     }
 
-    // Expose for navbar.js
     window.setLandingLanguage = setLandingLanguage;
 
     document.addEventListener('DOMContentLoaded', () => {
+      const langSelect = document.getElementById('landing-lang-select');
       const savedLang = localStorage.getItem('telmy_landing_lang') || 'en';
+      if (langSelect) {
+        langSelect.value = savedLang;
+        langSelect.addEventListener('change', (e) => setLandingLanguage(e.target.value));
+      }
       setLandingLanguage(savedLang);
     });
   </script>
