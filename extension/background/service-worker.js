@@ -85,6 +85,53 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
+  if (message.type === 'GET_USER_QUOTA') {
+    chrome.storage.local.get(['user', 'settings']).then(async (res) => {
+      const user = res.user;
+      const settings = res.settings || DEFAULT_SETTINGS;
+      const apiUrl = settings.apiUrl || DEFAULT_SETTINGS.apiUrl;
+
+      if (!user || !user.uid) {
+        sendResponse({
+          success: true,
+          data: {
+            plan: 'free',
+            totalRemaining: 5,
+            quota: { freeRemaining: 5, purchasedCreditsRemaining: 0, subscriptionQuotaRemaining: 0 }
+          }
+        });
+        return;
+      }
+
+      // Try fetching fresh quota from backend
+      try {
+        const resp = await fetchWithTimeout(`${apiUrl}/user/quota/${user.uid}`, {}, 5000);
+        if (resp.ok) {
+          const json = await resp.json();
+          if (json.success && json.data) {
+            sendResponse({ success: true, data: json.data });
+            return;
+          }
+        }
+      } catch (e) {}
+
+      // Fallback to local user credits
+      const credits = user.credits !== undefined ? Number(user.credits) : 5;
+      sendResponse({
+        success: true,
+        data: {
+          plan: user.plan || 'free',
+          totalRemaining: credits,
+          quota: {
+            freeRemaining: (!user.plan || user.plan === 'free') ? credits : 0,
+            purchasedCreditsRemaining: (user.plan && user.plan !== 'free') ? credits : 0
+          }
+        }
+      });
+    });
+    return true;
+  }
+
   if (message.type === 'LOGOUT_USER') {
     chrome.storage.local.remove(['user']).then(() => {
       sendResponse({ success: true });

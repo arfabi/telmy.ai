@@ -430,3 +430,55 @@ window.GMTScanner = (function () {
     maskPiiLocally
   };
 })();
+
+// Listen for session sync broadcasts from Telmy web app (/connect & /dashboard)
+window.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'TELMY_USER_SESSION_SYNC' && event.data.user) {
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
+      chrome.runtime.sendMessage({
+        type: 'SET_USER_SESSION',
+        user: event.data.user
+      }, () => {});
+    }
+  }
+});
+
+// Auto-detect Telmy session from localStorage on Telmy web domains
+try {
+  const host = window.location.hostname || '';
+  const isTelmyDomain = host.includes('telmy') || 
+                        host.includes('guidemeto') ||
+                        host.includes('firebaseapp.com') ||
+                        host.includes('localhost') ||
+                        host === '127.0.0.1';
+  if (isTelmyDomain) {
+    const syncLocalSession = () => {
+      try {
+        const raw = localStorage.getItem('telmy_user');
+        if (raw) {
+          const user = JSON.parse(raw);
+          if (user && (user.uid || user.email)) {
+            if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
+              chrome.runtime.sendMessage({
+                type: 'SET_USER_SESSION',
+                user: user
+              }, () => {});
+            }
+          }
+        }
+      } catch (e) {}
+    };
+
+    // Auto-sync on page execution
+    syncLocalSession();
+
+    // Listen for storage events across tabs
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'telmy_user') {
+        syncLocalSession();
+      }
+    });
+  }
+} catch (e) {}
+
+

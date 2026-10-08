@@ -875,12 +875,12 @@
           <div class="kpi-grid">
             <div class="kpi-card">
               <span class="kpi-label">Form Credits Remaining</span>
-              <div class="kpi-val" id="kpi-credits-val">8 <span style="font-size: 14px; font-weight: 500; color: var(--text-secondary);">/ 10</span></div>
+              <div class="kpi-val" id="kpi-credits-val">5 <span style="font-size: 14px; font-weight: 500; color: var(--text-secondary);">/ 5</span></div>
               <p class="kpi-desc">Permanent non-expiring balance</p>
             </div>
             <div class="kpi-card">
               <span class="kpi-label">Forms Completed</span>
-              <div class="kpi-val" id="kpi-completed-val">12</div>
+              <div class="kpi-val" id="kpi-completed-val">0</div>
               <p class="kpi-desc">Across visa, civil & scholarship sites</p>
             </div>
             <div class="kpi-card">
@@ -1045,36 +1045,18 @@
                   <th>Action</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody id="forms-history-tbody">
                 <tr>
-                  <td>
-                    <strong>Apostille Legalization Certificate</strong>
-                    <div style="font-size: 11.5px; color: var(--text-secondary);">Ministry of Law and Human Rights (Kemenkumham)</div>
+                  <td colspan="5" style="text-align: center; padding: 48px 20px;">
+                    <div style="font-size: 32px; margin-bottom: 8px;">📋</div>
+                    <strong style="font-size: 15px; color: var(--text-main); display: block;">No Form Guidance History Yet</strong>
+                    <p style="font-size: 13px; color: var(--text-secondary); max-width: 440px; margin: 6px auto 16px; line-height: 1.5;">
+                      When you navigate to any online visa, embassy, or government portal with the Telmy Chrome extension, or upload a PDF above, your sessions will be safely recorded here.
+                    </p>
+                    <a href="/demo" class="btn-apple-secondary" style="display: inline-flex; font-size: 12.5px; padding: 8px 18px;">
+                      Try Live Demo Simulator
+                    </a>
                   </td>
-                  <td><span style="background: #e0f2fe; color: #0369a1; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px;">Web Portal</span></td>
-                  <td>Oct 8, 2026</td>
-                  <td><span class="status-badge-paid">✓ Completed</span></td>
-                  <td><a href="/demo" style="color: var(--accent); font-weight: 600;">Re-Open Simulator</a></td>
-                </tr>
-                <tr>
-                  <td>
-                    <strong>e-VoA Tourism Visa Application</strong>
-                    <div style="font-size: 11.5px; color: var(--text-secondary);">Directorate General of Immigration (Molina)</div>
-                  </td>
-                  <td><span style="background: #e0f2fe; color: #0369a1; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px;">Web Portal</span></td>
-                  <td>Oct 7, 2026</td>
-                  <td><span class="status-badge-paid">✓ Completed</span></td>
-                  <td><a href="/demo" style="color: var(--accent); font-weight: 600;">Re-Open Simulator</a></td>
-                </tr>
-                <tr>
-                  <td>
-                    <strong>Consular Affidavit Declaration (Form DS-11)</strong>
-                    <div style="font-size: 11.5px; color: var(--text-secondary);">Official PDF Attachment Form</div>
-                  </td>
-                  <td><span style="background: #fef3c7; color: #b45309; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px;">PDF Document</span></td>
-                  <td>Oct 5, 2026</td>
-                  <td><span class="status-badge-paid">✓ Completed</span></td>
-                  <td><span style="color: var(--text-secondary);">Archived</span></td>
                 </tr>
               </tbody>
             </table>
@@ -1164,11 +1146,11 @@
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
               <div>
                 <span class="kpi-label">Current Plan & Balance</span>
-                <h3 style="font-size: 24px; font-weight: 800; color: #0f172a; margin: 4px 0;">8 Forms Remaining</h3>
+                <h3 style="font-size: 24px; font-weight: 800; color: #0f172a; margin: 4px 0;" id="usage-credits-title">5 Forms Remaining</h3>
                 <p style="font-size: 13px; color: var(--text-secondary);">Pay-as-you-go balance never expires. Use anytime for official form checks.</p>
               </div>
               <button class="btn-apple-primary" onclick="document.getElementById('dash-pricing-block').scrollIntoView({ behavior: 'smooth' })">
-                + Add More Forms
+                Add Credits
               </button>
             </div>
           </div>
@@ -1348,7 +1330,7 @@
       { code: 'ms', name: 'Melayu', flag: '🇲🇾' }
     ];
 
-    // Current User State
+    // Current User State (Default 5 credits for new Free tier user)
     let currentUser = {
       uid: 'guest_' + Math.random().toString(36).substring(2, 8),
       displayName: 'Telmy Member',
@@ -1356,20 +1338,12 @@
       email: '',
       photoURL: 'telmy_icon.png',
       language: localStorage.getItem('telmy_landing_lang') || 'en',
-      credits: 8,
+      credits: 5,
       provider: 'google.com'
     };
 
-    // Invoices Store
-    let userInvoices = [
-      {
-        id: 'INV-2026-0849',
-        date: '8 Oct 2026',
-        item: 'Pay-as-you-Go (10 Forms)',
-        amount: '$5.00',
-        status: 'PAID'
-      }
-    ];
+    // Invoices Store (Loaded from purchases)
+    let userInvoices = [];
 
     function showToast(message) {
       const toast = document.getElementById('apple-toast');
@@ -1449,6 +1423,18 @@
       const kpiLang = document.getElementById('kpi-lang-val');
       if (kpiLang) kpiLang.textContent = `${langObj.flag} ${langObj.name}`;
 
+      // Live Credits KPIs & Usage Balance
+      const kpiCredits = document.getElementById('kpi-credits-val');
+      if (kpiCredits) {
+        const val = currentUser.credits !== undefined ? currentUser.credits : 5;
+        kpiCredits.innerHTML = `${val} <span style="font-size: 14px; font-weight: 500; color: var(--text-secondary);">/ 5</span>`;
+      }
+      const usageCreditsTitle = document.getElementById('usage-credits-title');
+      if (usageCreditsTitle) {
+        const val = currentUser.credits !== undefined ? currentUser.credits : 5;
+        usageCreditsTitle.textContent = `${val} Forms Remaining`;
+      }
+
       renderLanguageGrid();
     }
 
@@ -1477,10 +1463,76 @@
       });
     }
 
+    async function loadFormHistory() {
+      const tbody = document.getElementById('forms-history-tbody');
+      if (!tbody) return;
+
+      try {
+        let forms = [];
+        if (currentUser.uid && !currentUser.uid.startsWith('guest_')) {
+          const res = await fetch(`/api/user/saved-forms/${currentUser.uid}`).then(r => r.json());
+          if (res && res.success && Array.isArray(res.data)) {
+            forms = res.data;
+          }
+        }
+
+        const kpiComp = document.getElementById('kpi-completed-val');
+        if (kpiComp) kpiComp.textContent = forms.length;
+
+        if (forms.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="5" style="text-align: center; padding: 48px 20px;">
+                <div style="font-size: 32px; margin-bottom: 8px;">📋</div>
+                <strong style="font-size: 15px; color: var(--text-main); display: block;">No Form Guidance History Yet</strong>
+                <p style="font-size: 13px; color: var(--text-secondary); max-width: 440px; margin: 6px auto 16px; line-height: 1.5;">
+                  When you navigate to any online visa, embassy, or government portal with the Telmy Chrome extension, or upload a PDF above, your sessions will be safely recorded here.
+                </p>
+                <a href="/demo" class="btn-apple-secondary" style="display: inline-flex; font-size: 12.5px; padding: 8px 18px;">
+                  Try Live Demo Simulator
+                </a>
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        tbody.innerHTML = '';
+        forms.forEach(f => {
+          const tr = document.createElement('tr');
+          const dateStr = f.updatedAt ? new Date(f.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Recently';
+          tr.innerHTML = `
+            <td>
+              <strong>${f.title || f.formTitle || 'Guided Form'}</strong>
+              <div style="font-size: 11.5px; color: var(--text-secondary);">${f.authority || f.domain || 'Web Form'}</div>
+            </td>
+            <td><span style="background: #e0f2fe; color: #0369a1; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px;">${f.type || 'Web Portal'}</span></td>
+            <td>${dateStr}</td>
+            <td><span class="status-badge-paid">✓ ${f.status || 'Active'}</span></td>
+            <td><a href="${f.url || '/demo'}" target="_blank" style="color: var(--accent); font-weight: 600;">Open Form</a></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (e) {
+        console.warn('Form history load error:', e);
+      }
+    }
+
     function renderInvoices() {
       const tbody = document.getElementById('invoice-table-body');
       if (!tbody) return;
       tbody.innerHTML = '';
+
+      if (!userInvoices || userInvoices.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" style="text-align: center; padding: 36px 20px; color: var(--text-secondary); font-size: 13px;">
+              No invoices yet. Your credit purchases and receipts will appear here.
+            </td>
+          </tr>
+        `;
+        return;
+      }
 
       userInvoices.forEach(inv => {
         const tr = document.createElement('tr');
@@ -1518,6 +1570,8 @@
 
     function syncWithCloudAndExtension() {
       localStorage.setItem('telmy_user', JSON.stringify(currentUser));
+      // Broadcast to extension content script via postMessage
+      window.postMessage({ type: 'TELMY_USER_SESSION_SYNC', user: currentUser }, '*');
       if (window.chrome && chrome.runtime && chrome.runtime.sendMessage) {
         try {
           chrome.runtime.sendMessage({
@@ -1688,6 +1742,8 @@
                 localStorage.setItem('telmy_user_invoices', JSON.stringify(userInvoices));
                 renderInvoices();
               }
+              renderUserData();
+              syncWithCloudAndExtension();
               showToast(`🎉 Purchase successful! +10 Form credits added.`);
             } else {
               alert('Purchase failed: ' + (data.error || 'Server error'));
@@ -1695,7 +1751,8 @@
           } catch (err) {
             // Local fallback simulation
             currentUser.credits += 10;
-            document.getElementById('kpi-credits-val').innerHTML = `${currentUser.credits} <span style="font-size: 14px; font-weight: 500; color: var(--text-secondary);">/ 10</span>`;
+            renderUserData();
+            syncWithCloudAndExtension();
             const newInv = {
               id: 'INV-2026-' + Math.floor(1000 + Math.random() * 9000),
               date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
@@ -1735,13 +1792,15 @@
 
       renderUserData();
       renderInvoices();
+      loadFormHistory();
       setupAutoFill();
       setupPdfDropzone();
       setupPurchases();
+      syncWithCloudAndExtension();
 
       // 2. Real Google Auth Listener
       if (typeof firebase !== 'undefined' && firebase.auth) {
-        firebase.auth().onAuthStateChanged((fbUser) => {
+        firebase.auth().onAuthStateChanged(async (fbUser) => {
           if (fbUser) {
             currentUser.uid = fbUser.uid;
             currentUser.displayName = fbUser.displayName || currentUser.displayName || 'Google User';
@@ -1749,8 +1808,23 @@
             currentUser.email = fbUser.email || currentUser.email || '';
             currentUser.photoURL = fbUser.photoURL || currentUser.photoURL || 'telmy_icon.png';
             currentUser.provider = 'google.com';
+
+            // Query live quota / credits from backend
+            try {
+              const qRes = await fetch(`/api/user/quota/${fbUser.uid}`).then(r => r.json());
+              if (qRes && qRes.success && qRes.data) {
+                if (qRes.data.totalRemaining !== undefined) {
+                  currentUser.credits = qRes.data.totalRemaining;
+                }
+                if (qRes.data.plan) {
+                  currentUser.plan = qRes.data.plan;
+                }
+              }
+            } catch (qErr) {}
+
             localStorage.setItem('telmy_user', JSON.stringify(currentUser));
             renderUserData();
+            loadFormHistory();
             syncWithCloudAndExtension();
           }
         });

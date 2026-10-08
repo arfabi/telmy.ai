@@ -9,7 +9,7 @@ const router = express.Router();
  */
 router.post('/user/sync', async (req, res) => {
   try {
-    const { uid, displayName, email, photoURL, language = 'en', preferences = {} } = req.body;
+    const { uid, displayName, email, photoURL, language = 'en', preferences = {}, credits = 5 } = req.body;
 
     if (!uid) {
       return res.status(400).json({ success: false, error: 'User UID is required' });
@@ -21,6 +21,7 @@ router.post('/user/sync', async (req, res) => {
       email: email || '',
       photoURL: photoURL || '',
       language,
+      credits: Number(credits) || 5,
       preferences,
       updatedAt: new Date().toISOString()
     };
@@ -46,6 +47,45 @@ router.post('/user/sync', async (req, res) => {
 });
 
 /**
+ * GET /api/user/quota/:uid
+ * Retrieve user's actual credits and quota balance
+ */
+router.get('/user/quota/:uid', async (req, res) => {
+  try {
+    const { uid } = req.params;
+    const { db, isFirebaseConnected } = getFirestore();
+    let credits = 5;
+    let plan = 'free';
+
+    if (isFirebaseConnected && db) {
+      const doc = await db.collection('users').doc(uid).get();
+      if (doc.exists) {
+        const d = doc.data();
+        if (d.credits !== undefined) credits = Number(d.credits);
+        if (d.plan) plan = d.plan;
+      }
+    }
+
+    return res.json({
+      success: true,
+      data: {
+        plan,
+        totalRemaining: credits,
+        quota: {
+          freeRemaining: plan === 'free' ? credits : 0,
+          purchasedCreditsRemaining: plan !== 'free' ? credits : 0
+        }
+      }
+    });
+  } catch (err) {
+    return res.json({
+      success: true,
+      data: { plan: 'free', totalRemaining: 5, quota: { freeRemaining: 5 } }
+    });
+  }
+});
+
+/**
  * GET /api/user/:uid
  * Retrieve user profile
  */
@@ -67,6 +107,7 @@ router.get('/user/:uid', async (req, res) => {
         uid,
         displayName: 'Telmy User',
         language: 'en',
+        credits: 5,
         preferences: {}
       }
     });
@@ -139,42 +180,6 @@ router.get('/user/saved-forms/:uid', async (req, res) => {
     }
 
     savedForms.sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0));
-
-    // Fallback default sample forms if none exist
-    if (savedForms.length === 0) {
-      savedForms.push(
-        {
-          id: 'draft_apostille',
-          uid,
-          title: 'Apostille Legalization & Verification Portal',
-          icon: '🏛️',
-          category: 'Civil Registry & Certificates',
-          fieldsCount: 12,
-          progress: 85,
-          updatedAt: new Date().toISOString()
-        },
-        {
-          id: 'draft_evoa',
-          uid,
-          title: 'Electronic Visa on Arrival (e-VoA) Portal',
-          icon: '✈️',
-          category: 'Passport & Travel Clearance',
-          fieldsCount: 8,
-          progress: 100,
-          updatedAt: new Date().toISOString()
-        },
-        {
-          id: 'draft_scholarship',
-          uid,
-          title: 'International Scholarship Application Form',
-          icon: '🎓',
-          category: 'Academic Transcripts & Diplomas',
-          fieldsCount: 16,
-          progress: 60,
-          updatedAt: new Date().toISOString()
-        }
-      );
-    }
 
     return res.json({ success: true, data: savedForms });
   } catch (error) {

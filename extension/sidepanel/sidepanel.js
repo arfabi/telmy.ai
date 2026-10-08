@@ -448,6 +448,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     });
 
+    // Auto-refresh session & quota when sidepanel regains window focus (e.g. returning from web login)
+    window.addEventListener('focus', async () => {
+      const stored = await chrome.storage.local.get(['user', 'settings']);
+      if (stored.user) {
+        currentUser = stored.user;
+        renderUserUI();
+        refreshUserQuota();
+        if (onboardingModal) closeOnboardingModal();
+      }
+    });
+
     // Handle tab switching in browser
     if (chrome.tabs && chrome.tabs.onActivated) {
       chrome.tabs.onActivated.addListener(async (activeInfo) => {
@@ -644,6 +655,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (areaName === 'local' && changes.user) {
       currentUser = changes.user.newValue;
       renderUserUI();
+      refreshUserQuota();
       if (currentUser && onboardingModal) {
         closeOnboardingModal();
       }
@@ -822,22 +834,49 @@ document.addEventListener('DOMContentLoaded', async () => {
         m.text.includes('your AI form-filling assistant') ||
         m.text.includes('asisten pengisian formulir') ||
         m.text.includes('AI 양식 도우미') ||
-        m.text.includes('AI フォームアシスタント')
+        m.text.includes('AI フォームアシスタント') ||
+        m.text.includes('Hello! I am Telmy')
       );
       return !isWelcome;
     });
 
     if (chatHistory.length === 0) {
-      // Ephemeral welcome message: render directly to DOM without polluting chatHistory or storage
-      appendChatMessageDOM({
-        role: 'assistant',
-        text: t('welcome_msg'),
-        actions: [
-          { type: 'TAB_FIELDS', label: '📋 ' + t('tab_fields') },
-          { type: 'TAB_SUMMARY', label: '📌 ' + t('tab_summary') }
-        ],
-        time: formatTime(new Date())
+      const robotIconSrc = (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL)
+        ? chrome.runtime.getURL('assets/telmy_icon.png')
+        : '../assets/telmy_icon.png';
+
+      const hero = document.createElement('div');
+      hero.className = 'welcome-hero-card';
+      hero.innerHTML = `
+        <div class="welcome-avatar-wrap">
+          <img src="${robotIconSrc}" class="welcome-robot-icon" alt="Telmy Robot">
+        </div>
+        <h3 class="welcome-title">Hello! I am Telmy 👋</h3>
+        <p class="welcome-subtitle">Your friendly AI form-filling companion. Ask me anything about this form using text or speech, or choose an option below:</p>
+        <div class="welcome-chips-grid">
+          <button type="button" class="welcome-action-chip" data-action="ABOUT_FORM">
+            <span class="chip-icon">📄</span>
+            <span class="chip-label">Tell me About this form</span>
+          </button>
+          <button type="button" class="welcome-action-chip" data-action="GUIDE_FIELDS">
+            <span class="chip-icon">📝</span>
+            <span class="chip-label">Guide me Fields by Fields</span>
+          </button>
+          <button type="button" class="welcome-action-chip" data-action="TRANSLATE_PAGE">
+            <span class="chip-icon">🌐</span>
+            <span class="chip-label">Translate this Page</span>
+          </button>
+        </div>
+      `;
+
+      hero.querySelectorAll('.welcome-action-chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const act = btn.getAttribute('data-action');
+          handleActionChip({ type: act });
+        });
       });
+
+      chatStream.appendChild(hero);
     } else {
       chatHistory.forEach(appendChatMessageDOM);
     }
@@ -847,6 +886,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!text || !text.trim()) return;
     const cleanText = text.trim();
     chatInput.value = '';
+    chatInput.style.height = '';
 
     const userMsg = {
       role: 'user',
@@ -915,7 +955,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   btnSend.addEventListener('click', () => handleSendMessage(chatInput.value));
   chatInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') handleSendMessage(chatInput.value);
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage(chatInput.value);
+    }
+  });
+
+  // Auto-grow textarea up to 140px
+  chatInput.addEventListener('input', () => {
+    chatInput.style.height = 'auto';
+    chatInput.style.height = Math.max(58, Math.min(chatInput.scrollHeight, 140)) + 'px';
   });
 
   function appendChatMessage(msg) {
@@ -969,15 +1018,23 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function handleActionChip(act) {
-    if (act.type === 'TAB_FIELDS') {
+    if (act.type === 'ABOUT_FORM') {
+      handleSendMessage(currentLanguage === 'id' ? 'Tolong jelaskan ringkasan formulir ini dan apa saja yang diperlukan.' : 'Tell me what this form is about and what documents are required.');
+    } else if (act.type === 'GUIDE_FIELDS') {
+      const tabFields = document.getElementById('tab-btn-fields');
+      if (tabFields) tabFields.click();
+      if (detectedFields && detectedFields.length > 0) {
+        selectFieldByIndex(0, true);
+      }
+    } else if (act.type === 'TRANSLATE_PAGE' || act.type === 'REVERT_PAGE') {
+      handleTogglePageTranslation();
+    } else if (act.type === 'TAB_FIELDS') {
       document.getElementById('tab-btn-fields').click();
     } else if (act.type === 'TAB_SUMMARY') {
       document.getElementById('tab-btn-summary').click();
     } else if (act.type === 'FOCUS_FIELD' && act.index !== undefined) {
       selectFieldByIndex(act.index, true);
       document.getElementById('tab-btn-fields').click();
-    } else if (act.type === 'REVERT_PAGE' || act.type === 'TRANSLATE_PAGE') {
-      handleTogglePageTranslation();
     }
   }
 

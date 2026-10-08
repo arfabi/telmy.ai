@@ -306,7 +306,10 @@
       authContainer.style.display = 'none';
       successBox.style.display = 'block';
 
-      // 1. Broadcast to extension via externally_connectable
+      // 1. Post window message so extension content script can immediately forward to background
+      window.postMessage({ type: 'TELMY_USER_SESSION_SYNC', user: user }, '*');
+
+      // 2. Broadcast to extension via externally_connectable if available
       if (window.chrome && chrome.runtime && chrome.runtime.sendMessage) {
         try {
           chrome.runtime.sendMessage({
