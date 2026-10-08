@@ -1,0 +1,272 @@
+/**
+ * Telmy Backend — Context-Aware Full Page Translation Service
+ * Powered by Google Gemini 3.5 Flash-Lite (with fallback to OpenAI-compatible)
+ * 
+ * Implements 4-layer prompt engineering:
+ * 1. Domain & Context Awareness (bureaucracy, civil registry, visa, public service)
+ * 2. Glossary Rules (Preserve official abbreviations e.g. NIK, KTP, NPWP, KITAS, SKCK)
+ * 3. UI/UX Standards (Industry conventions: "Daftar" -> "Sign Up", "Kirim" -> "Submit", etc.)
+ * 4. Deterministic Key-Value Structured Output matching DOM extraction tokens.
+ */
+
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
+// Common Indonesian bureaucratic & civil glossary terms to protect/enrich
+const OFFICIAL_GLOSSARY_RULES = `
+OFFICIAL GLOSSARY & ACRONYM RULES (Preserve or append helpful context):
+- "NIK" -> Keep "NIK" or "NIK (National ID Number)"
+- "KTP" / "KTP-el" -> Keep "KTP" or "KTP (Identity Card)"
+- "KK" / "Kartu Keluarga" -> "Family Card (KK)"
+- "NPWP" -> Keep "NPWP" or "NPWP (Tax ID)"
+- "KITAS" / "KITAP" -> Keep "KITAS" / "KITAP (Residence Permit)"
+- "SKCK" -> "SKCK (Police Clearance Certificate)"
+- "Apostille" -> "Apostille Legalization"
+- "Kemenkumham" -> "Ministry of Law and Human Rights (Kemenkumham)"
+- "Kelurahan" / "Kecamatan" -> "Sub-district / District"
+- "RT/RW" -> Keep "RT/RW (Neighborhood/Hamlet Unit)"
+- "Paspor" -> "Passport"
+- "Akta Kelahiran" -> "Birth Certificate"
+`;
+
+// Standard UI/UX conventions mapping
+const UI_UX_CONVENTIONS = `
+UI/UX INDUSTRY WEB CONVENTIONS (Do NOT translate literally):
+- "Daftar" -> "Sign Up" or "Register" (NEVER translate to "List")
+- "Masuk" -> "Log In" or "Sign In" (NEVER translate to "Enter")
+- "Keluar" -> "Log Out" or "Sign Out"
+- "Simpan" -> "Save"
+- "Batal" -> "Cancel"
+- "Kembali" -> "Back"
+- "Lanjut" / "Selanjutnya" -> "Next" or "Continue"
+- "Kirim" / "Ajukan" -> "Submit" or "Apply"
+- "Unggah" / "Upload Berkas" -> "Upload Document"
+- "Unduh" -> "Download"
+- "Cari" -> "Search"
+- "Ubah" / "Edit" -> "Edit"
+- "Hapus" -> "Delete"
+- "Pilih" -> "Select"
+`;
+
+/**
+ * Build the 4-layer system prompt for page translation
+ */
+function buildTranslationPrompt(pageContext, targetLanguage, texts) {
+  const langUpper = (targetLanguage || 'en').toUpperCase();
+  const domain = pageContext.domain || 'Public Service Portal';
+  const title = pageContext.title || 'Digital Government Form';
+
+  return `You are Telmy.ai, an expert multilingual web localization and UI/UX translation engine specialized in public service, bureaucratic, and legal forms.
+
+TASK:
+Translate the provided UI text tokens into ${langUpper}.
+
+CONTEXT STATEMENT:
+- Website Domain: "${domain}"
+- Page Title: "${title}"
+- Target Language: ${langUpper}
+
+${OFFICIAL_GLOSSARY_RULES}
+
+${UI_UX_CONVENTIONS}
+
+STRICT REQUIREMENTS:
+1. Maintain exact JSON keys matching the input tokens.
+2. Provide natural, professional UI terminology suitable for modern web applications.
+3. Keep concise button labels short (1-3 words) to prevent breaking website layouts.
+4. Output ONLY a valid JSON object where every key maps to its translated string. Do not wrap in markdown or add explanations.
+
+INPUT TOKENS JSON:
+${JSON.stringify(texts, null, 2)}
+`;
+}
+
+/**
+ * Call Gemini 3.5 Flash-Lite (Google AI Native)
+ */
+async function callGeminiTranslation(pageContext, targetLanguage, texts) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error('GEMINI_API_KEY is not configured');
+  }
+
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const modelName = process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite';
+  const model = genAI.getGenerativeModel({
+    model: modelName,
+    generationConfig: {
+      responseMimeType: 'application/json',
+      temperature: 0.2
+    }
+  });
+
+  const prompt = buildTranslationPrompt(pageContext, targetLanguage, texts);
+  const result = await model.generateContent(prompt);
+  const response = await result.response;
+  const rawText = response.text() ? response.text().trim() : '{}';
+  
+  const translations = JSON.parse(rawText);
+  return {
+    translations,
+    provider: `gemini (${modelName})`,
+    source: 'ai_gemini'
+  };
+}
+
+/**
+ * Call OpenAI-compatible endpoint (fallback)
+ */
+async function callOpenAiTranslation(pageContext, targetLanguage, texts) {
+  const baseUrl = (process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1').replace(/\/+$/, '');
+  const apiKey = process.env.OPENAI_API_KEY;
+  const modelName = process.env.OPENAI_MODEL || 'glm-5.3-flash';
+
+  if (!apiKey) {
+    throw new Error('OPENAI_API_KEY is not configured');
+  }
+
+  const prompt = buildTranslationPrompt(pageContext, targetLanguage, texts);
+
+  const response = await fetch(`${baseUrl}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model: modelName,
+      messages: [
+        {
+          role: 'system',
+          content: 'You are Telmy.ai, an expert UI/UX web translator. Return only valid JSON key-value pairs matching input keys.'
+        },
+        {
+          role: 'user',
+          content: prompt
+        }
+      ],
+      temperature: 0.2,
+      response_format: { type: 'json_object' }
+    })
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new Error(`OpenAI error HTTP ${response.status}: ${errorBody}`);
+  }
+
+  const json = await response.json();
+  const content = json.choices?.[0]?.message?.content?.trim();
+  const translations = JSON.parse(content);
+  return {
+    translations,
+    provider: `openai-compat (${modelName})`,
+    source: 'ai_openai'
+  };
+}
+
+/**
+ * Smart Local Heuristic Fallback
+ * Translates known common Indonesian bureaucratic and UI words if AI endpoints are unreachable.
+ */
+function createHeuristicTranslation(texts, targetLanguage) {
+  const isEn = targetLanguage === 'en';
+  const dictionary = {
+    'daftar': isEn ? 'Register' : 'Daftar',
+    'masuk': isEn ? 'Log In' : 'Masuk',
+    'keluar': isEn ? 'Log Out' : 'Keluar',
+    'simpan': isEn ? 'Save' : 'Simpan',
+    'batal': isEn ? 'Cancel' : 'Batal',
+    'kembali': isEn ? 'Back' : 'Kembali',
+    'lanjut': isEn ? 'Continue' : 'Lanjut',
+    'selanjutnya': isEn ? 'Next' : 'Selanjutnya',
+    'kirim': isEn ? 'Submit' : 'Kirim',
+    'unggah': isEn ? 'Upload' : 'Unggah',
+    'unduh': isEn ? 'Download' : 'Unduh',
+    'nama lengkap': isEn ? 'Full Name' : 'Nama Lengkap',
+    'tempat lahir': isEn ? 'Place of Birth' : 'Tempat Lahir',
+    'tanggal lahir': isEn ? 'Date of Birth' : 'Tanggal Lahir',
+    'nomor induk kependudukan': isEn ? 'National ID Number (NIK)' : 'Nomor Induk Kependudukan (NIK)',
+    'nik': isEn ? 'NIK (National ID Number)' : 'NIK',
+    'ktp': isEn ? 'Identity Card (KTP)' : 'KTP',
+    'paspor': isEn ? 'Passport' : 'Paspor',
+    'alamat': isEn ? 'Address' : 'Alamat',
+    'email': 'Email',
+    'nomor telepon': isEn ? 'Phone Number' : 'Nomor Telepon',
+    'unggah berkas': isEn ? 'Upload Document' : 'Unggah Berkas',
+    'permohonan': isEn ? 'Application / Request' : 'Permohonan'
+  };
+
+  const translations = {};
+  for (const [key, val] of Object.entries(texts)) {
+    const lower = String(val).toLowerCase().trim();
+    let replaced = val;
+    for (const [dictWord, transWord] of Object.entries(dictionary)) {
+      if (lower === dictWord) {
+        replaced = transWord;
+        break;
+      }
+    }
+    translations[key] = replaced;
+  }
+
+  return {
+    translations,
+    provider: 'local_heuristic_fallback',
+    source: 'heuristic'
+  };
+}
+
+/**
+ * Main Translate Page Handler
+ * Prioritizes Gemini (Google AI Native) -> OpenAI fallback -> Smart Heuristic
+ */
+export async function translatePageTexts({ pageContext = {}, targetLanguage = 'en', texts = {} }) {
+  const tokenCount = Object.keys(texts).length;
+  if (tokenCount === 0) {
+    return { translations: {}, count: 0, provider: 'none' };
+  }
+
+  console.log(`[Translate Service] Translating ${tokenCount} DOM tokens to ${targetLanguage} for domain "${pageContext.domain || 'N/A'}"...`);
+
+  // 1. Try Gemini (Google AI Native for Hackathon compliance)
+  if (process.env.GEMINI_API_KEY) {
+    try {
+      const result = await callGeminiTranslation(pageContext, targetLanguage, texts);
+      console.log(`[Translate Service] Successfully translated with Gemini 3.5 Flash-Lite`);
+      return {
+        ...result,
+        count: Object.keys(result.translations).length,
+        targetLanguage,
+        generatedAt: new Date().toISOString()
+      };
+    } catch (err) {
+      console.warn(`[Translate Service] Gemini translation error: ${err.message}. Trying secondary provider...`);
+    }
+  }
+
+  // 2. Try OpenAI-compatible endpoint
+  if (process.env.OPENAI_API_KEY) {
+    try {
+      const result = await callOpenAiTranslation(pageContext, targetLanguage, texts);
+      console.log(`[Translate Service] Successfully translated with OpenAI-compatible endpoint`);
+      return {
+        ...result,
+        count: Object.keys(result.translations).length,
+        targetLanguage,
+        generatedAt: new Date().toISOString()
+      };
+    } catch (err) {
+      console.warn(`[Translate Service] OpenAI fallback error: ${err.message}`);
+    }
+  }
+
+  // 3. Fallback to smart local heuristic dictionary
+  console.log(`[Translate Service] Using smart heuristic fallback dictionary`);
+  const heuristic = createHeuristicTranslation(texts, targetLanguage);
+  return {
+    ...heuristic,
+    count: Object.keys(heuristic.translations).length,
+    targetLanguage,
+    generatedAt: new Date().toISOString()
+  };
+}

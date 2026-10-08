@@ -55,6 +55,7 @@
       "js": [
         "content/scanner.js",
         "content/highlighter.js",
+        "content/translator.js",
         "content/content-main.js"
       ],
       "css": [

@@ -273,6 +273,36 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
+  // Context-Aware Full Page Translation (Priority 3)
+  if (message.type === 'TRANSLATE_PAGE') {
+    chrome.storage.local.get(['settings']).then(async (res) => {
+      const settings = res.settings || DEFAULT_SETTINGS;
+      const apiUrl = settings.apiUrl || DEFAULT_SETTINGS.apiUrl;
+      const { pageContext, targetLanguage, texts } = message.payload;
+
+      try {
+        const response = await fetchWithTimeout(`${apiUrl}/translate-page`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pageContext, targetLanguage, texts })
+        }, 40000);
+
+        if (response.ok) {
+          const json = await response.json();
+          if (json.success && json.data) {
+            sendResponse({ success: true, data: json.data });
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn('[Telmy SW] Translate API error:', err.message);
+      }
+
+      sendResponse({ success: false, error: 'Translation backend unavailable' });
+    });
+    return true;
+  }
+
   // Chat History Storage
   if (message.type === 'GET_CHAT_HISTORY') {
     const key = `telmy_chat_${message.domain || 'global'}`;

@@ -88,17 +88,17 @@
 ### 🥉 PRIORITAS 3: Fitur Ekstra "Context-Aware Full Page Translation" di Chatbot
 *Target: Melengkapi kemampuan core Form Explainer dengan fitur terjemahan halaman utuh berbasis konteks UI/UX profesional.*
 
-- [ ] **3.1. Penegasan Core vs Fitur Tambahan:**
+- [x] **3.1. Penegasan Core vs Fitur Tambahan:**
   - **Fungsi Utama Tetap:** AI Form Explainer per kolom (deteksi field, panduan step-by-step, contoh isian fiktif realistis, tips untuk WNA).
-  - **Fitur Tambahan di Chatbot:** Terdapat tombol/penawaran aksi *"Translate Full Page (Context-Aware)"*.
-- [ ] **3.2. Efficient DOM Batch Extraction & JSON Payload:**
+  - **Fitur Tambahan di Chatbot:** Terdapat tombol/penawaran aksi *"Translate Full Page (Context-Aware)"* & quick chip di Side Panel.
+- [x] **3.2. Efficient DOM Batch Extraction & JSON Payload:**
   - Mengumpulkan seluruh teks label UI, navigasi, dan tombol ke dalam 1 struktur JSON ringkas (*key-value pairs*) untuk efisiensi token ekstrem.
-- [ ] **3.3. Hierarki Prompt Engineering Gemini (Context & UI/UX Preservation):**
+- [x] **3.3. Hierarki Prompt Engineering Gemini (Context & UI/UX Preservation):**
   - Mengirim prompt dengan 4 lapis aturan ke `gemini-3.5-flash-lite`:
     1. *Context Statement:* Analisis domain dan topik utama halaman.
-    2. *Glossary Rules Injection:* Terapkan kata `DO_NOT_TRANSLATE` dan `FORCE_TRANSLATE`.
-    3. *UI/UX Standard Enforcement:* Pastikan elemen tombol/navigasi diterjemahkan sesuai standar industri (*"Daftar"* $\rightarrow$ *"Sign Up"*, bukan *"List"*).
-    4. *Structured Output:* Mengembalikan JSON berpasangan untuk penggantian teks DOM langsung di halaman secara mulus.
+    2. *Glossary Rules Injection:* Terapkan kata `DO_NOT_TRANSLATE` dan `FORCE_TRANSLATE` (menjaga singkatan resmi NIK, KTP, NPWP, SKCK, Apostille).
+    3. *UI/UX Standard Enforcement:* Pastikan elemen tombol/navigasi diterjemahkan sesuai standar industri (*"Daftar"* $\rightarrow$ *"Register / Sign Up"*, bukan *"List"*).
+    4. *Structured Output:* Mengembalikan JSON berpasangan untuk penggantian teks DOM langsung di halaman secara mulus + tombol Revert ("Show Original").
 
 ---
 

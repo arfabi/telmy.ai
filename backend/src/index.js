@@ -10,6 +10,7 @@ import feedbackRoutes from './routes/feedback.js';
 import dictionaryRoutes from './routes/dictionary.js';
 import voiceRoutes from './routes/voice.js';
 import chatRoutes from './routes/chat.js';
+import translateRoutes from './routes/translate.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -77,6 +78,7 @@ app.use('/api', feedbackRoutes);
 app.use('/api', dictionaryRoutes);
 app.use('/api', voiceRoutes);
 app.use('/api', chatRoutes);
+app.use('/api', translateRoutes);
 
 // Fallback 404
 app.use((req, res) => {

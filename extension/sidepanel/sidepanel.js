@@ -21,6 +21,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   const micBanner = document.getElementById('mic-status-banner');
   const micText = document.getElementById('mic-status-text');
 
+  // Translation Banner & Quick Chips Elements (Priority 3)
+  const spTranslateBanner = document.getElementById('sp-translate-banner');
+  const lblTranslateStatus = document.getElementById('lbl-translate-status');
+  const lblTranslateSubtitle = document.getElementById('lbl-translate-subtitle');
+  const btnToggleTranslate = document.getElementById('btn-toggle-translate');
+  const btnTranslateIcon = document.getElementById('btn-translate-icon');
+  const btnTranslateLabel = document.getElementById('btn-translate-label');
+  const chipTranslatePage = document.getElementById('chip-translate-page');
+  const chipWhatIsThis = document.getElementById('chip-what-is-this');
+  const chipRequiredDocs = document.getElementById('chip-required-docs');
+  const lblChipTranslate = document.getElementById('lbl-chip-translate');
+  const lblChipWhat = document.getElementById('lbl-chip-what');
+  const lblChipDocs = document.getElementById('lbl-chip-docs');
+
   // Fields Elements
   const fieldsEmptyState = document.getElementById('fields-empty-state');
   const fieldDetailContent = document.getElementById('field-detail-content');
@@ -81,6 +95,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   let cachedPageSummary = null;
   let currentUser = null;
   let isScannerRunning = true;
+  let isPageTranslated = false;
+  let isTranslating = false;
+  let translatedElementCount = 0;
 
   // Complete JAPAC Multi-Language Matrix (English default)
   const I18N = {
@@ -219,6 +236,46 @@ document.addEventListener('DOMContentLoaded', async () => {
       en: 'Fields', id: 'Kolom', ja: '項目', ko: '개',
       zh: '项', 'zh-TW': '項', vi: 'trường', th: 'ช่อง',
       hi: 'फ़ील्ड्स', fil: 'Kolum', ms: 'Ruangan'
+    },
+    translate_banner_title: {
+      en: 'Full Page Translation', id: 'Terjemahan Halaman Penuh', ja: '全ページ翻訳', ko: '전체 페이지 번역',
+      zh: '全页面翻译', 'zh-TW': '全頁面翻譯', vi: 'Dịch toàn bộ trang', th: 'แปลทั้งหน้า',
+      hi: 'पूरे पृष्ठ का अनुवाद', fil: 'Pagsasalin ng Buong Pahina', ms: 'Terjemahan Penuh Halaman'
+    },
+    translate_banner_sub: {
+      en: 'Context-Aware & UI/UX Standards', id: 'Berbasis Konteks & Standar UI/UX', ja: '文脈重視・UI標準保持', ko: '문맥 맞춤 및 UI 표준 유지',
+      zh: '上下文感知与UI标准', 'zh-TW': '語境感知與UI標準', vi: 'Nhận biết ngữ cảnh & chuẩn UI', th: 'เข้าใจบริบทและมาตรฐาน UI',
+      hi: 'संदर्भ-सचेत और UI मानक', fil: 'May kamalayan sa konteksto', ms: 'Peka konteks & standard UI'
+    },
+    btn_translate_page: {
+      en: 'Translate Page', id: 'Terjemahkan', ja: '翻訳する', ko: '페이지 번역',
+      zh: '翻译页面', 'zh-TW': '翻譯頁面', vi: 'Dịch trang', th: 'แปลหน้าเว็บ',
+      hi: 'अनुवाद करें', fil: 'Isalin', ms: 'Terjemah'
+    },
+    btn_revert_page: {
+      en: 'Show Original', id: 'Kembalikan Asli', ja: '原文に戻す', ko: '원문 보기',
+      zh: '显示原文', 'zh-TW': '顯示原文', vi: 'Hiện bản gốc', th: 'แสดงต้นฉบับ',
+      hi: 'मूल दिखाएं', fil: 'Ipakita ang Orihinal', ms: 'Tunjuk Asal'
+    },
+    translating_status: {
+      en: 'Translating with Gemini...', id: 'Menerjemahkan dengan Gemini...', ja: 'Gemini で翻訳中...', ko: 'Gemini로 번역 중...',
+      zh: '正在使用 Gemini 翻译...', 'zh-TW': '正在使用 Gemini 翻譯...', vi: 'Đang dịch bằng Gemini...', th: 'กำลังแปลด้วย Gemini...',
+      hi: 'Gemini से अनुवाद हो रहा है...', fil: 'Isinasalin gamit ang Gemini...', ms: 'Menterjemah dengan Gemini...'
+    },
+    chip_translate: {
+      en: 'Translate Page', id: 'Terjemahkan Halaman', ja: 'ページを翻訳', ko: '페이지 번역',
+      zh: '翻译页面', 'zh-TW': '翻譯頁面', vi: 'Dịch trang', th: 'แปลหน้าเว็บ',
+      hi: 'पृष्ठ का अनुवाद', fil: 'Isalin ang Pahina', ms: 'Terjemah Halaman'
+    },
+    chip_what: {
+      en: 'What is this form?', id: 'Formulir apa ini?', ja: 'このフォームは何？', ko: '이 양식은 무엇인가요?',
+      zh: '这是什么表单？', 'zh-TW': '這是什麼表單？', vi: 'Đây là biểu mẫu gì?', th: 'แบบฟอร์มนี้คืออะไร?',
+      hi: 'यह क्या फ़ॉर्म है?', fil: 'Anong form ito?', ms: 'Apakah borang ini?'
+    },
+    chip_docs: {
+      en: 'Required Docs', id: 'Syarat Dokumen', ja: '必要書類', ko: '필요 서류',
+      zh: '所需证件', 'zh-TW': '所需證件', vi: 'Giấy tờ cần có', th: 'เอกสารที่ต้องใช้',
+      hi: 'आवश्यक दस्तावेज़', fil: 'Mga Dokumento', ms: 'Dokumen Diperlukan'
     }
   };
 
@@ -272,6 +329,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (isScannerRunning) {
         activateScannerOnTab(tab.id);
       }
+      checkPageTranslationStatus(tab.id);
     }
 
     setupSpeechRecognition();
@@ -298,6 +356,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (isScannerRunning) {
           activateScannerOnTab(currentTabId);
         }
+        checkPageTranslationStatus(currentTabId);
       });
     }
   }
@@ -529,6 +588,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         files: [
           'content/scanner.js',
           'content/highlighter.js',
+          'content/translator.js',
           'content/content-main.js'
         ]
       });
@@ -614,6 +674,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const elTips = document.getElementById('lbl-tips-title');
     if (elTips) elTips.textContent = t('tips_title');
     if (fieldsCountPill) fieldsCountPill.textContent = `${detectedFields.length} ${t('fields_unit')}`;
+
+    // Translation Banner & Chips
+    if (lblChipTranslate) lblChipTranslate.textContent = t('chip_translate');
+    if (lblChipWhat) lblChipWhat.textContent = t('chip_what');
+    if (lblChipDocs) lblChipDocs.textContent = t('chip_docs');
+    updateTranslateBannerUI();
   }
 
   // Rescan Button
@@ -652,6 +718,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       time: formatTime(new Date())
     };
     appendChatMessage(userMsg);
+
+    // Direct Intent: Context-Aware Page Translation
+    if (/(terjemah.*halaman|translate.*page|translate this page|terjemahkan web|terjemahkan situs)/i.test(cleanText)) {
+      handleTogglePageTranslation();
+      return;
+    }
 
     // Call Backend Gateway / Chat API
     try {
@@ -763,7 +835,199 @@ document.addEventListener('DOMContentLoaded', async () => {
     } else if (act.type === 'FOCUS_FIELD' && act.index !== undefined) {
       selectFieldByIndex(act.index, true);
       document.getElementById('tab-btn-fields').click();
+    } else if (act.type === 'REVERT_PAGE' || act.type === 'TRANSLATE_PAGE') {
+      handleTogglePageTranslation();
     }
+  }
+
+  // =========================================================
+  // Context-Aware Page Translation Workflow (Priority 3)
+  // =========================================================
+  function updateTranslateBannerUI() {
+    if (!spTranslateBanner) return;
+
+    if (isTranslating) {
+      spTranslateBanner.className = 'sp-translate-banner translating';
+      lblTranslateStatus.textContent = t('translating_status');
+      lblTranslateSubtitle.textContent = 'Gemini 3.5 Flash-Lite • Preserving UI/UX & Glossary...';
+      btnToggleTranslate.className = 'btn-translate-action loading';
+      btnTranslateIcon.textContent = '⏳';
+      btnTranslateLabel.textContent = 'Translating...';
+      btnToggleTranslate.disabled = true;
+    } else if (isPageTranslated) {
+      spTranslateBanner.className = 'sp-translate-banner translated';
+      lblTranslateStatus.textContent = `🌐 ${t('translate_banner_title')} (${translatedElementCount})`;
+      lblTranslateSubtitle.textContent = `Context-Aware to ${currentLanguage.toUpperCase()}`;
+      btnToggleTranslate.className = 'btn-translate-action active-revert';
+      btnTranslateIcon.textContent = '🔙';
+      btnTranslateLabel.textContent = t('btn_revert_page');
+      btnToggleTranslate.disabled = false;
+    } else {
+      spTranslateBanner.className = 'sp-translate-banner';
+      lblTranslateStatus.textContent = t('translate_banner_title');
+      lblTranslateSubtitle.textContent = t('translate_banner_sub');
+      btnToggleTranslate.className = 'btn-translate-action';
+      btnTranslateIcon.textContent = '🌐';
+      btnTranslateLabel.textContent = t('btn_translate_page');
+      btnToggleTranslate.disabled = false;
+    }
+  }
+
+  async function checkPageTranslationStatus(tabId) {
+    if (!tabId) return;
+    chrome.tabs.sendMessage(tabId, { type: 'TRANSLATOR_GET_STATUS' }, (res) => {
+      if (!chrome.runtime.lastError && res) {
+        isPageTranslated = Boolean(res.isTranslated);
+        translatedElementCount = res.elementCount || 0;
+        updateTranslateBannerUI();
+      }
+    });
+  }
+
+  async function handleTogglePageTranslation() {
+    if (isTranslating) return;
+
+    if (!currentTabId) {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (tab && tab.id) currentTabId = tab.id;
+    }
+    if (!currentTabId) return;
+
+    // 1. Revert mode
+    if (isPageTranslated) {
+      chrome.tabs.sendMessage(currentTabId, { type: 'TRANSLATOR_REVERT_TRANSLATIONS' }, (res) => {
+        isPageTranslated = false;
+        translatedElementCount = 0;
+        updateTranslateBannerUI();
+
+        appendChatMessage({
+          role: 'assistant',
+          text: currentLanguage === 'en'
+            ? '🔙 The webpage has been restored to its original text.'
+            : '🔙 Halaman web telah dikembalikan ke bahasa aslinya.',
+          actions: [
+            { type: 'TRANSLATE_PAGE', label: '🌐 ' + t('btn_translate_page') },
+            { type: 'TAB_FIELDS', label: '📋 ' + t('tab_fields') }
+          ],
+          time: formatTime(new Date())
+        });
+      });
+      return;
+    }
+
+    // 2. Translate mode
+    isTranslating = true;
+    updateTranslateBannerUI();
+
+    // Extract texts from active tab
+    chrome.tabs.sendMessage(currentTabId, { type: 'TRANSLATOR_EXTRACT_TEXTS' }, async (extractRes) => {
+      // If error (e.g. content script not injected yet), inject & retry
+      if (chrome.runtime.lastError || !extractRes || !extractRes.texts) {
+        await injectContentScript(currentTabId, () => {
+          chrome.tabs.sendMessage(currentTabId, { type: 'TRANSLATOR_EXTRACT_TEXTS' }, (retryRes) => {
+            if (retryRes && retryRes.texts) {
+              executeTranslationPayload(retryRes);
+            } else {
+              isTranslating = false;
+              updateTranslateBannerUI();
+              alert('Unable to extract webpage text. Please refresh the page and try again.');
+            }
+          });
+        });
+        return;
+      }
+
+      executeTranslationPayload(extractRes);
+    });
+  }
+
+  async function executeTranslationPayload(extractData) {
+    const { texts, pageContext } = extractData;
+    const count = Object.keys(texts || {}).length;
+
+    if (count === 0) {
+      isTranslating = false;
+      updateTranslateBannerUI();
+      appendChatMessage({
+        role: 'assistant',
+        text: currentLanguage === 'en'
+          ? 'No translatable elements detected on this webpage.'
+          : 'Tidak ada elemen teks yang dapat diterjemahkan pada halaman ini.',
+        time: formatTime(new Date())
+      });
+      return;
+    }
+
+    try {
+      const response = await new Promise((resolve) => {
+        chrome.runtime.sendMessage({
+          type: 'TRANSLATE_PAGE',
+          payload: {
+            pageContext,
+            targetLanguage: currentLanguage,
+            texts
+          }
+        }, (res) => {
+          if (chrome.runtime.lastError) resolve(null);
+          else resolve(res);
+        });
+      });
+
+      if (response && response.success && response.data && response.data.translations) {
+        // Send translation mapping back to content script
+        chrome.tabs.sendMessage(currentTabId, {
+          type: 'TRANSLATOR_APPLY_TRANSLATIONS',
+          translations: response.data.translations,
+          targetLanguage: currentLanguage
+        }, (applyRes) => {
+          isTranslating = false;
+          isPageTranslated = true;
+          translatedElementCount = applyRes?.appliedCount || Object.keys(response.data.translations).length;
+          updateTranslateBannerUI();
+
+          const langUpper = currentLanguage.toUpperCase();
+          appendChatMessage({
+            role: 'assistant',
+            text: currentLanguage === 'en'
+              ? `🌐 **Full Page Translated (${translatedElementCount} elements)**\n\nThe webpage has been translated into **English** using **Gemini 3.5 Flash-Lite**.\n\n✓ **Official Bureaucracy Terms Preserved** (e.g., NIK, KTP, NPWP, SKCK)\n✓ **UI/UX Standards Applied** (Button & navigation actions mapped professionally)\n\nYou can click **Show Original** at any time to revert.`
+              : `🌐 **Halaman Berhasil Diterjemahkan (${translatedElementCount} elemen)**\n\nSeluruh teks UI halaman telah diterjemahkan ke bahasa **${langUpper}** menggunakan **Gemini 3.5 Flash-Lite**.\n\n✓ **Istilah Birokrasi Baku Terjaga** (NIK, KTP, KK, SKCK)\n✓ **Standar UI/UX Profesional** (Tombol navigasi disesuaikan secara natural)\n\nKlik **Kembalikan Asli** kapan saja jika ingin membaca versi asli.`,
+            actions: [
+              { type: 'REVERT_PAGE', label: '🔙 ' + t('btn_revert_page') },
+              { type: 'TAB_FIELDS', label: '📋 ' + t('tab_fields') }
+            ],
+            time: formatTime(new Date())
+          });
+        });
+      } else {
+        throw new Error(response?.error || 'Backend translation failed');
+      }
+    } catch (err) {
+      console.warn('[Translate Error]', err);
+      isTranslating = false;
+      updateTranslateBannerUI();
+
+      appendChatMessage({
+        role: 'assistant',
+        text: currentLanguage === 'en'
+          ? '⚠️ Translation service encountered an issue. Please ensure the Telmy backend is active.'
+          : '⚠️ Layanan terjemahan mengalami kendala. Pastikan server backend Telmy aktif di port 8080.',
+        time: formatTime(new Date())
+      });
+    }
+  }
+
+  // Translation & Quick Action Listeners
+  if (btnToggleTranslate) btnToggleTranslate.addEventListener('click', handleTogglePageTranslation);
+  if (chipTranslatePage) chipTranslatePage.addEventListener('click', handleTogglePageTranslation);
+  if (chipWhatIsThis) {
+    chipWhatIsThis.addEventListener('click', () => {
+      handleSendMessage(currentLanguage === 'en' ? 'What is this form about and what should I know?' : 'Jelaskan formulir ini tentang apa dan apa yang perlu saya ketahui?');
+    });
+  }
+  if (chipRequiredDocs) {
+    chipRequiredDocs.addEventListener('click', () => {
+      handleSendMessage(currentLanguage === 'en' ? 'What documents and requirements do I need to prepare for this form?' : 'Apa saja berkas dan dokumen yang harus saya siapkan untuk mengisi formulir ini?');
+    });
   }
 
   // 6. Push-to-Talk Voice Engine
