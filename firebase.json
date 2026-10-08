@@ -40,6 +40,20 @@
       ],
       "rewrites": [
         {
+          "source": "/api/**",
+          "run": {
+            "serviceId": "telmy-ai-git",
+            "region": "asia-northeast1"
+          }
+        },
+        {
+          "source": "/health",
+          "run": {
+            "serviceId": "telmy-ai-git",
+            "region": "asia-northeast1"
+          }
+        },
+        {
           "source": "/privacy",
           "destination": "/privacy.html"
         },
