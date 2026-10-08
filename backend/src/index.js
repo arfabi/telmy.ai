@@ -11,6 +11,7 @@ import dictionaryRoutes from './routes/dictionary.js';
 import voiceRoutes from './routes/voice.js';
 import chatRoutes from './routes/chat.js';
 import translateRoutes from './routes/translate.js';
+import userRoutes from './routes/user.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -71,6 +72,7 @@ app.get('/privacy', (req, res) => res.sendFile(path.join(publicDir, 'privacy.htm
 app.get('/demo', (req, res) => res.sendFile(path.join(publicDir, 'demo.html')));
 app.get('/download', (req, res) => res.sendFile(path.join(publicDir, 'download.html')));
 app.get('/connect', (req, res) => res.sendFile(path.join(publicDir, 'connect.html')));
+app.get('/dashboard', (req, res) => res.sendFile(path.join(publicDir, 'dashboard.html')));
 
 // API Routes
 app.use('/api', explainRoutes);
@@ -79,6 +81,7 @@ app.use('/api', dictionaryRoutes);
 app.use('/api', voiceRoutes);
 app.use('/api', chatRoutes);
 app.use('/api', translateRoutes);
+app.use('/api', userRoutes);
 
 // Fallback 404
 app.use((req, res) => {

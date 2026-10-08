@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Telmy.ai: Your AI Form Filling Assistant",
+  "name": "Telmy.ai: Form Filling Assistant",
   "version": "1.0.0",
   "description": "Your AI Form Filling Assistant to help you understand and complete web forms with ease.",
   "minimum_chrome_version": "114",
@@ -16,15 +16,12 @@
     "scripting",
     "sidePanel"
   ],
-  "host_permissions": [
-    "<all_urls>"
-  ],
   "action": {
     "default_icon": {
       "16": "assets/icons/icon16.png",
       "48": "assets/icons/icon48.png"
     },
-    "default_title": "Buka Telmy.ai Side Panel"
+    "default_title": "Open Telmy.ai Side Panel"
   },
   "side_panel": {
     "default_path": "sidepanel/sidepanel.html"
@@ -37,20 +34,24 @@
       "suggested_key": {
         "default": "Alt+G"
       },
-      "description": "Buka Telmy.ai Side Panel"
+      "description": "Open Telmy.ai Side Panel"
     }
   },
   "externally_connectable": {
     "matches": [
       "https://telmy.id/*",
-      "https://telmyai.com/*",
+      "https://*.telmy.id/*",
+      "http://localhost:8080/*",
       "http://localhost/*",
-      "http://127.0.0.1/*"
+      "http://127.0.0.1:8080/*"
     ]
   },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
+      "matches": [
+        "https://*/*",
+        "http://*/*"
+      ],
       "all_frames": false,
       "js": [
         "content/scanner.js",
@@ -67,11 +68,18 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "mock/*",
-        "assets/*",
-        "assets/icons/*"
+        "assets/icons/icon16.png",
+        "assets/icons/icon32.png",
+        "assets/icons/icon48.png",
+        "assets/icons/icon128.png",
+        "assets/telmy-avatar.svg",
+        "assets/telmy_icon.png",
+        "assets/telmy_text.png"
       ],
-      "matches": ["<all_urls>"]
+      "matches": [
+        "https://*/*",
+        "http://*/*"
+      ]
     }
   ]
 }

@@ -266,6 +266,29 @@ window.GMTScanner = (function () {
     return false;
   }
 
+  // Strict Privacy: Exclude sensitive fields (password, credit card, CVV, OTP, PIN)
+  function isSensitiveField(el, label) {
+    const type = (el.type || '').toLowerCase();
+    if (type === 'password') return true;
+
+    const autocomplete = (el.getAttribute('autocomplete') || '').toLowerCase();
+    if (autocomplete.includes('password') || autocomplete.includes('cc-') || autocomplete.includes('cvv') || autocomplete.includes('csc')) {
+      return true;
+    }
+
+    const haystack = [
+      el.id || '',
+      el.name || '',
+      el.getAttribute('placeholder') || '',
+      el.getAttribute('aria-label') || '',
+      typeof el.className === 'string' ? el.className : '',
+      label || ''
+    ].join(' ').toLowerCase();
+
+    const sensitivePattern = /(password|pin\b|kata[_\s-]?sandi|cvv|cvc|credit[_\s-]?card|kartu[_\s-]?kredit|card[_\s-]?number|kode[_\s-]?keamanan|otp\b|token[_\s-]?auth)/i;
+    return sensitivePattern.test(haystack);
+  }
+
   function isSecurityOrCaptchaField(el, label) {
     const haystack = [
       el.id || '',
@@ -282,7 +305,7 @@ window.GMTScanner = (function () {
 
   function scanForms(dictionaryFields) {
     const rawCandidates = document.querySelectorAll(`
-      input:not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"]),
+      input:not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="password"]),
       select,
       textarea,
       div[role="radiogroup"],
@@ -321,6 +344,11 @@ window.GMTScanner = (function () {
       }
 
       const label = findAssociatedLabel(el);
+
+      // Exclude sensitive fields (password, credit card, CVV, OTP, PIN)
+      if (isSensitiveField(el, label)) {
+        return;
+      }
 
       // Exclude captcha, security code, bot tokens
       if (isSecurityOrCaptchaField(el, label)) {

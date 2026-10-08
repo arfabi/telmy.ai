@@ -24,16 +24,22 @@
 
 ---
 
-## 🏆 Matriks Prioritas Kerja (Urutan Eksekusi Baru)
+## 🏆 Matriks Prioritas Kerja (Urutan Eksekusi Baru: Full AI First)
 
 ```
-[Prioritas 1: Aktivasi On-Demand & Onboarding] ──► [Prioritas 2: Interactive Talking Avatar]
-                       │                                                    │
-                       ▼                                                    ▼
-[Prioritas 3: Translate Full Page (Feature)]  ──► [Prioritas 4: Domain Glossary & Dashboard]
-                       │                                                    │
-                       ▼                                                    ▼
-[Prioritas 5: Final Packaging CWS & Submit]   ──► [Prioritas 6: Materi Hackathon & Demo]
+[Prioritas 1: Aktivasi On-Demand & Onboarding] (✅ Selesai)
+                       │
+                       ▼
+[Prioritas 3: Translate Full Page Context-Aware] (✅ Selesai)
+                       │
+                       ▼
+[Prioritas 2: Talking Avatar Robot & Brand UI/UX] (✅ Selesai)
+                       │
+                       ▼
+[Prioritas 5: User Dashboard & Web Platform] ──► [Prioritas 6: Final Packaging CWS & Submit]
+                                                               │
+                                                               ▼
+                                                [Prioritas 4: Glossary Firestore] (Di Akhir)
 ```
 
 ---
@@ -62,26 +68,26 @@
 ### 🥈 PRIORITAS 2: Interactive Talking Avatar Companion (Master SVG + WaveNet Lip-Sync)
 *Target: Menghadirkan asisten visual beranimasi mulut natural yang tersinkronisasi audio TTS secara real-time.*
 
-- [ ] **2.1. Master SVG Asset & Viseme Layer Architecture:**
-  - 1 File Master SVG murni (ringan, performa tinggi, scalable) dengan layer/group terpisah:
-    * `<g id="mouth-idle">` : Mulut tertutup santai (saat hening/jeda).
-    * `<g id="mouth-aei">` : Terbuka lebar (vokal A, E, I / amplitudo tinggi).
-    * `<g id="mouth-ou">` : Membulat ke depan (vokal O, U / amplitudo menengah).
-    * `<g id="mouth-mbp">` : Terkatup rapat (konsonan M, B, P).
-    * `<g id="mouth-fv">` : Sedikit terbuka ke bibir bawah (konsonan F, V).
-    * `<g id="eyes-blink">` : Kedipan mata independen dengan timer acak (tiap 3–6 detik).
-- [ ] **2.2. Audio-Driven Lip-Sync via Web Audio API:**
+- [x] **2.1. Master SVG Asset & Viseme Layer Architecture:**
+  - File Master SVG vector murni (`telmy-avatar.svg`) berbasis maskot robot `telmy_icon.png` dengan layer terpisah:
+    * `<g id="av-viseme-idle">` : Mulut tersenyum ramah santai (saat hening/jeda).
+    * `<g id="av-viseme-aei">` : Terbuka lebar (vokal A, E, I / amplitudo tinggi).
+    * `<g id="av-viseme-ou">` : Membulat ke depan (vokal O, U / amplitudo menengah).
+    * `<g id="av-viseme-mbp">` : Terkatup rapat (konsonan M, B, P).
+    * `<g id="av-viseme-wide">` : Terbuka lebar saat nada tinggi / tertawa.
+    * `<g id="av-eyes-blink">` : Kedipan mata independen dengan timer acak (tiap 3–5.5 detik).
+- [x] **2.2. Audio-Driven Lip-Sync via Web Audio API:**
   - Menerima audio stream MP3 dari endpoint Google Cloud TTS WaveNet.
-  - Menggunakan `AudioContext` dan `AnalyserNode` (FFT) di frontend untuk membaca data frekuensi & amplitudo audio per frame (`requestAnimationFrame`).
-  - Memetakan amplitudo langsung ke viseme layer SVG secara dinamis dan mulus.
-- [ ] **2.3. Avatar State Machine & Tampilan UX:**
+  - Menggunakan `AudioContext` dan `AnalyserNode` (FFT) di frontend (`avatar-controller.js`) untuk membaca data frekuensi & amplitudo audio per frame (`requestAnimationFrame`).
+  - Memetakan amplitudo langsung ke viseme layer SVG secara dinamis dan mulus (dengan fallback cadence synthesizer untuk browser SpeechSynthesis).
+- [x] **2.3. Avatar State Machine & Tampilan UX:**
   - Tiga Status Avatar:
     * **Idle:** Ekspresi ramah netral, mata berkedip santai.
-    * **Thinking:** Gestur berpikir + gelembung pemrosesan (*loading bubble*) saat Gemini memproses respons.
-    * **Speaking:** Animasi viseme mulut aktif mengikuti audio WaveNet.
-  - Mode Tampilan:
-    * **Active Mode:** Menampilkan avatar interaktif secara utuh di header Side Panel atau companion widget.
-    * **Compact Mode:** Mode hemat ruang berupa micro-avatar / indikator waveform animasi.
+    * **Thinking:** Gestur berpikir + antena berdenyut (*pulse*) saat Gemini memproses respons chat/form.
+    * **Speaking:** Animasi viseme mulut aktif mengikuti audio WaveNet TTS.
+  - Integrasi UX & Branding Baru:
+    * Slot avatar interaktif di header Side Panel dengan micro-interaction klik (bisa diklik untuk sapaan ramah).
+    * Aset resmi `telmy_icon.png` dan `telmy_text.png` diintegrasikan ke Header, Onboarding, Chat Bubble, dan icon ekstensi (16, 32, 48, 128 px).
 
 ---
 
@@ -118,23 +124,55 @@
 ### 🏅 PRIORITAS 5: User Dashboard & Firebase Web Platform
 *Target: Web platform terintegrasi di `telmy.id` dengan akun pengguna dan manajemen aset.*
 
-- [ ] **5.1. Firebase Authentication & Storage:**
+- [x] **5.1. Firebase Authentication & Storage:**
   - Login 1-klik dengan Google Sign-In & Email.
-  - Upload & kompresi foto profil pengguna ke Firebase Storage.
-- [ ] **5.2. Web Dashboard (`/dashboard`):**
-  - Mengelola preferensi bahasa bawaan, riwayat form, dan daftar glosarium yang disarankan.
-  - Tombol *"Connect to Extension"* via `externally_connectable`.
+  - Upload & kompresi foto profil pengguna ke Firebase Storage (dengan format WebP otomatis).
+  - API sync `/api/user/sync` dan `/api/user/avatar`.
+- [x] **5.2. Web Dashboard (`/dashboard`) Berfilosofi Desain Apple:**
+  - Desain Human Interface ala Apple Cupertino (Bento Grid, frosted glass navbar, ambient radial lighting, SF Pro / Inter typography).
+  - Mengelola preferensi bahasa bawaan 11 negara JAPAC secara interaktif.
+  - Riwayat sesi form terpandu (Apostille Kemenkumham, e-VoA Visa) dan simulator langsung.
+  - Tombol *"Sync Profile to Extension"* via `externally_connectable` & `SET_USER_SESSION`.
 
 ---
 
-### 🏁 PRIORITAS 6: Final Packaging & Submission (Chrome Web Store & Hackathon)
-*Target: Lolos review Chrome Web Store dan materi presentasi juri lengkap.*
+### 🏁 PRIORITAS 6: Chrome Web Store Submission Checklist & Verification
+*Target: Ekstensi 100% patuh regulasi Chrome Web Store (CWS Policy 2026), lolos review otomatis tanpa memicu Manual Review.*
 
-- [ ] **6.1. Pembersihan Manifest V3 (Minimal Permissions):**
-  - Hanya menggunakan `["storage", "activeTab", "scripting", "sidePanel"]`.
-  - Hapus file mock, konsolidasi resource.
-- [ ] **6.2. Video Demonstrasi (3 Menit) & Pitch Deck:**
-  - Menampilkan live form explaining, talking avatar SVG audio-driven, dan translate full page context-aware.
+#### 1. File manifest.json & Hak Akses (Permissions)
+- [x] **Terapkan Least Privilege Principle:** HANYA menggunakan izin yang benar-benar dipakai saat itu juga: `["storage", "activeTab", "scripting", "sidePanel"]`.
+- [x] **Andalkan activeTab:** Menghindari izin luas seperti `<all_urls>`, `*://*/*`, atau `tabs`. Akses DOM hanya terjadi saat pengguna mengaktifkan ekstensi.
+- [x] **Kosongkan host_permissions:** Array `host_permissions` **dikosongkan total (dihapus)**. Tidak ada host wildcard, meminimalkan skor risiko bot peninjau Google.
+- [x] **Hindari Izin Berisiko Tinggi:** Nol izin berisiko tinggi (tidak ada `cookies`, `webRequest`, `declarativeNetRequest`, `management`, `desktopCapture`).
+- [x] **Restriksi web_accessible_resources:** Tidak ada wildcard `matches: ["<all_urls>"]`. Dibatasi hanya untuk aset grafis spesifik (`assets/icons/*.png`, `assets/telmy-avatar.svg`, `assets/telmy_icon.png`, `assets/telmy_text.png`) pada target `["https://*/*", "http://*/*"]`.
+- [x] **Jangan Ubah CSP Default:** Tidak ada modifikasi `content_security_policy`, tidak ada `unsafe-eval`, dan tidak ada izin domain eksternal.
+
+#### 2. Kode & Arsitektur (Code Hygiene)
+- [x] **Bundling 100% Berkas Lokal:** Seluruh pustaka, script, stylesheet, dan aset ikon berada 100% lokal di dalam folder ekstensi. Dilarang memuat script dari CDN (`https://...` di tag script: **0 temuan**).
+- [x] **Nol Eksekusi Kode Dinamis:** Bebas 100% dari `eval()`, `new Function()`, atau `setTimeout("string_code")` (**0 temuan** di seluruh codebase).
+- [x] **Jangan Menggunakan Obfuscator:** Kode ditulis dalam JavaScript bersih (un-obfuscated), mudah dibaca dan diaudit langsung oleh bot peninjau otomatis Google.
+- [x] **Registrasi Event Synchronous:** Di `background/service-worker.js`, listener `chrome.runtime.onInstalled.addListener` dan `chrome.runtime.onMessage.addListener` terdaftar secara langsung di top-level (bukan di dalam fungsi async/callback).
+- [x] **Bebas Unhandled Error:** Seluruh promise ditangani dengan `.catch()` atau `try/catch`. Tidak ada `Uncaught TypeError` saat ikon diklik.
+
+#### 3. Interaksi DOM & Privasi Data
+- [x] **Abaikan Bidang Input Sensitif:** Di `content/scanner.js`, selector secara eksplisit mengecualikan `:not([type="password"])` dan menerapkan fungsi filter `isSensitiveField` yang memblokir nomor kartu kredit (`cc-*`), kode CVV/CVC, OTP, token sandi, dan PIN.
+- [x] **Gunakan Manipulasi DOM Standar:** Menggunakan penyuntingan CSS lokal (outline ring `.gmt-highlighted-field` dan badge numerik `.gmt-field-badge`), bukan mengubah struktur dasar HTML situs target secara destruktif.
+
+#### 4. Panduan Pengisian Dashboard Developer Chrome
+- [x] **URL Privacy Policy yang Aktif:** URL aktif di `https://telmy.id/privacy` (dan lokal `/privacy.html`) dengan penjelasan transparan mengenai data sesi pengguna.
+- [x] **Permissions Justification yang Spesifik:**
+  * `activeTab` & `scripting`: *"Used strictly to inject form field highlight badges and guide the user through web forms step-by-step only when the user explicitly opens the extension."*
+  * `storage`: *"Used to persist user interface language preference and form guidance settings locally on the device."*
+  * `sidePanel`: *"Used to provide an accessible, non-intrusive side-by-side co-pilot interface while the user fills out web forms."*
+- [x] **Jujur di Formulir Privacy Practices:** Kategori data dicentang sesuai fungsi (Website Content untuk analisis field formulir; tidak mengumpulkan histori penjelajahan / web browsing history di luar tab aktif).
+- [x] **Fokus Single Purpose Policy:** Ekstensi konsisten berfokus pada 1 tujuan tunggal: *"AI Form Filling Assistant & Conversational Co-pilot"*.
+
+#### 5. Aset Visual & Branding
+- [x] **Ukuran Ikon Sesuai:** Ikon PNG transparan tersedia lengkap di `assets/icons/` dalam ukuran `16x16 px`, `32x32 px`, `48x48 px`, dan `128x128 px`.
+- [x] **Screenshot Jelas:** Halaman uji coba `test-page/demo_apostille.html` dan `dashboard.html` siap diambil screenshot resolusi 1280x800 px.
+- [x] **Kepatuhan Merek Dagang:** Nama ekstensi adalah `"Telmy.ai: Form Filling Assistant"` (TIDAK diawali kata "Chrome", dan tidak menggunakan logo resmi Google/Chrome).
+
+*(Catatan: Paket ZIP siap submit `telmy-cws-clean.zip` (2.1 MB) telah dibundle di root).*
 
 ---
 

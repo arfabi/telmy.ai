@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Telmy.ai Dashboard — Apple Human Interface Experience</title>
+  <link rel="icon" type="image/png" href="telmy_icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* =========================================================
+       Apple Human Interface Guidelines & Cupertino Aesthetics
+       Clean, fluid, generous whitespace, refined micro-interactions
+       ========================================================= */
+    :root {
+      --bg: #f5f5f7;
+      --card-bg: rgba(255, 255, 255, 0.85);
+      --card-border: rgba(0, 0, 0, 0.07);
+      --text-main: #1d1d1f;
+      --text-secondary: #86868b;
+      --text-tertiary: #a1a1a6;
+      --accent: #0071e3;
+      --accent-hover: #0077ed;
+      --accent-light: #e8f2fc;
+      --success: #34c759;
+      --success-light: #eafaf1;
+      --radius-sm: 10px;
+      --radius-md: 18px;
+      --radius-lg: 24px;
+      --radius-full: 999px;
+      --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.04);
+      --shadow-hover: 0 12px 30px rgba(0, 0, 0, 0.08);
+      --blur-glass: saturate(180%) blur(20px);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Plus Jakarta Sans", sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      line-height: 1.47;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Ambient Background Light */
+    .ambient-bg {
+      position: fixed;
+      top: -120px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 900px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(0, 113, 227, 0.08) 0%, rgba(245, 245, 247, 0) 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Apple-Style Frosted Glass Navigation Bar */
+    .apple-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(245, 245, 247, 0.8);
+      backdrop-filter: var(--blur-glass);
+      -webkit-backdrop-filter: var(--blur-glass);
+      border-bottom: 1px solid var(--card-border);
+      height: 60px;
+      display: flex;
+      align-items: center;
+      transition: background 0.3s;
+    }
+
+    .nav-container {
+      max-width: 1120px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text-main);
+    }
+
+    .nav-mascot {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      object-fit: contain;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .nav-logo-text {
+      height: 20px;
+      width: auto;
+      object-fit: contain;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+    }
+
+    .nav-link {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      transition: color 0.15s;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      color: var(--text-main);
+    }
+
+    .nav-user-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 12px 4px 4px;
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-full);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .nav-user-pill:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .nav-avatar-img {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: var(--accent-light);
+    }
+
+    .nav-user-name {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .nav-sync-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 0 2px var(--success-light);
+    }
+
+    /* Main Container */
+    .main-wrapper {
+      position: relative;
+      z-index: 1;
+      max-width: 1120px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+      flex: 1;
+    }
+
+    /* Header Hero Section */
+    .hero-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 36px;
+    }
+
+    .hero-text h1 {
+      font-size: 34px;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+
+    .hero-text p {
+      font-size: 15px;
+      color: var(--text-secondary);
+      font-weight: 400;
+    }
+
+    .hero-mascot-card {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: var(--card-bg);
+      backdrop-filter: var(--blur-glass);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 14px 20px;
+      box-shadow: var(--shadow-subtle);
+    }
+
+    .mascot-avatar-wrap {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      overflow: hidden;
+      animation: floatMascot 3.5s ease-in-out infinite alternate;
+    }
+
+    @keyframes floatMascot {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-4px); }
+    }
+
+    .mascot-avatar-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .mascot-talk {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .mascot-talk strong {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .mascot-talk span {
+      font-size: 11.5px;
+      color: var(--text-secondary);
+    }
+
+    /* Bento Box Grid */
+    .bento-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 20px;
+    }
+
+    .bento-card {
+      background: var(--card-bg);
+      backdrop-filter: var(--blur-glass);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 26px;
+      box-shadow: var(--shadow-subtle);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .bento-card:hover {
+      box-shadow: var(--shadow-hover);
+    }
+
+    /* Card Spans */
+    .col-span-8 { grid-column: span 8; }
+    .col-span-4 { grid-column: span 4; }
+    .col-span-6 { grid-column: span 6; }
+    .col-span-12 { grid-column: span 12; }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .card-title-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-icon {
+      font-size: 20px;
+    }
+
+    .card-title {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.015em;
+      color: var(--text-main);
+    }
+
+    .card-subtitle {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    /* Card 1: Profile & Photo Management */
+    .profile-content {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .profile-photo-uploader {
+      position: relative;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .profile-photo-img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #ffffff;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .photo-overlay-btn {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      background: var(--accent);
+      color: white;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      box-shadow: 0 2px 6px rgba(0, 113, 227, 0.4);
+      transition: transform 0.15s;
+    }
+
+    .photo-overlay-btn:hover {
+      transform: scale(1.1);
+    }
+
+    .profile-fields {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1;
+    }
+
+    .profile-input-row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .apple-input {
+      width: 100%;
+      background: rgba(245, 245, 247, 0.7);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-size: 13.5px;
+      color: var(--text-main);
+      outline: none;
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+
+    .apple-input:focus {
+      background: #ffffff;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.15);
+    }
+
+    .btn-apple-primary {
+      align-self: flex-start;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: var(--radius-full);
+      padding: 9px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      box-shadow: 0 2px 8px rgba(0, 113, 227, 0.25);
+    }
+
+    .btn-apple-primary:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    /* Card 2: Language Matrix Selector */
+    .language-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 10px;
+    }
+
+    .lang-item-card {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      background: rgba(245, 245, 247, 0.6);
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+      user-select: none;
+    }
+
+    .lang-item-card:hover {
+      background: #ffffff;
+      border-color: rgba(0, 113, 227, 0.3);
+      transform: translateY(-1px);
+    }
+
+    .lang-item-card.active {
+      background: var(--accent-light);
+      border-color: var(--accent);
+      color: var(--accent);
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(0, 113, 227, 0.12);
+    }
+
+    .lang-flag {
+      font-size: 16px;
+    }
+
+    .lang-name {
+      font-size: 12.5px;
+    }
+
+    /* Card 3: Extension Connection Live Status */
+    .ext-status-box {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #ffffff;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+      margin-bottom: 16px;
+    }
+
+    .ext-status-info {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .ext-badge-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: var(--accent-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .ext-status-details strong {
+      font-size: 14px;
+      color: var(--text-main);
+      display: block;
+    }
+
+    .ext-status-details small {
+      font-size: 12px;
+      color: var(--success);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .ext-status-details small::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      background: var(--success);
+      border-radius: 50%;
+    }
+
+    .btn-sync-ext {
+      background: rgba(245, 245, 247, 0.9);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: var(--radius-full);
+      padding: 8px 16px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-main);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-sync-ext:hover {
+      background: #ffffff;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      transform: translateY(-1px);
+    }
+
+    /* Card 4: AI Engine Stack */
+    .ai-tech-pills {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .ai-tech-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: rgba(245, 245, 247, 0.6);
+      border-radius: var(--radius-sm);
+    }
+
+    .ai-tech-item strong {
+      font-size: 13px;
+      color: var(--text-main);
+    }
+
+    .ai-tech-item span {
+      font-size: 11.5px;
+      color: var(--text-secondary);
+      background: #ffffff;
+      padding: 3px 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .btn-admin-toggle {
+      margin-top: 14px;
+      background: none;
+      border: none;
+      color: var(--text-tertiary);
+      font-size: 11.5px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 6px 4px;
+      transition: color 0.15s;
+      font-family: inherit;
+    }
+
+    .btn-admin-toggle:hover {
+      color: var(--text-secondary);
+    }
+
+    .admin-specs-panel {
+      margin-top: 8px;
+      padding: 10px 12px;
+      background: rgba(245, 245, 247, 0.8);
+      border-radius: var(--radius-sm);
+      border: 1px dashed rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .admin-spec-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+    }
+
+    .admin-spec-row span {
+      color: var(--text-secondary);
+    }
+
+    .admin-spec-row strong {
+      color: var(--text-main);
+      font-weight: 600;
+    }
+
+    /* Card 5: Recent Form Sessions */
+    .form-history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .form-history-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      background: #ffffff;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      border-radius: var(--radius-md);
+      transition: all 0.15s;
+    }
+
+    .form-history-item:hover {
+      border-color: rgba(0, 113, 227, 0.3);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    }
+
+    .form-item-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .form-item-icon {
+      font-size: 24px;
+    }
+
+    .form-item-info h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 2px;
+    }
+
+    .form-item-info p {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .btn-resume-form {
+      text-decoration: none;
+      background: var(--accent-light);
+      color: var(--accent);
+      border-radius: var(--radius-full);
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      transition: all 0.15s;
+    }
+
+    .btn-resume-form:hover {
+      background: var(--accent);
+      color: white;
+    }
+
+    /* Apple-Style Toast */
+    .apple-toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: rgba(29, 29, 31, 0.92);
+      backdrop-filter: var(--blur-glass);
+      -webkit-backdrop-filter: var(--blur-glass);
+      color: white;
+      padding: 12px 24px;
+      border-radius: var(--radius-full);
+      font-size: 13.5px;
+      font-weight: 500;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .apple-toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .apple-toast .toast-check {
+      width: 18px;
+      height: 18px;
+      background: var(--success);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    /* SVG Flag Icon Badges for Cross-Platform Elegance */
+    .flag-badge {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      overflow: hidden;
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    .flag-badge svg {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .hero-mascot-card {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: var(--card-bg);
+      backdrop-filter: var(--blur-glass);
+      -webkit-backdrop-filter: var(--blur-glass);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 14px 20px;
+      box-shadow: var(--shadow-subtle);
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .hero-mascot-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-hover);
+      border-color: rgba(0, 113, 227, 0.25);
+    }
+
+    .hero-mascot-card:active {
+      transform: scale(0.98);
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .col-span-8, .col-span-4, .col-span-6 { grid-column: span 12; }
+      .hero-banner { flex-direction: column; align-items: flex-start; gap: 16px; }
+      .profile-input-row { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <div class="ambient-bg"></div>
+
+  <!-- Apple Frosted Glass Navigation Bar -->
+  <header class="apple-nav">
+    <div class="nav-container">
+      <a href="/" class="nav-brand">
+        <img src="telmy_icon.png" alt="Telmy" class="nav-mascot">
+        <img src="telmy_text.png" alt="Telmy.ai" class="nav-logo-text">
+      </a>
+
+      <nav class="nav-links">
+        <a href="/dashboard" class="nav-link active">Dashboard</a>
+        <a href="/demo" class="nav-link">Simulator</a>
+        <a href="/download" class="nav-link">Extension</a>
+        <a href="/privacy" class="nav-link">Privacy</a>
+      </nav>
+
+      <div class="nav-user-pill" id="btn-user-pill" title="Synced Profile">
+        <img src="telmy_icon.png" id="nav-user-avatar" class="nav-avatar-img" alt="User">
+        <span id="nav-user-name" class="nav-user-name">Telmy User</span>
+        <span class="nav-sync-dot" title="Live Synced"></span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="main-wrapper">
+    <!-- Hero Banner with Talking Mascot -->
+    <section class="hero-banner">
+      <div class="hero-text">
+        <h1 id="greeting-title">Welcome back, Friend</h1>
+        <p>Seamlessly control your language preferences, cloud profile, and live AI assistant settings.</p>
+      </div>
+
+      <div class="hero-mascot-card">
+        <div class="mascot-avatar-wrap">
+          <img src="telmy_icon.png" alt="Telmy Mascot">
+        </div>
+        <div class="mascot-talk">
+          <strong>Telmy is ready to assist</strong>
+          <span>WaveNet TTS & Gemini 3.5 Active</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bento Grid (Apple Cupertino Style) -->
+    <div class="bento-grid">
+      <!-- Bento 1: Profile & Photo Management -->
+      <div class="bento-card col-span-8">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="card-icon">👤</span>
+            <div>
+              <h3 class="card-title">User Account & Profile</h3>
+              <p class="card-subtitle">Syncs automatically with your Chrome Extension</p>
+            </div>
+          </div>
+          <button id="btn-save-profile" class="btn-apple-primary">Save Changes</button>
+        </div>
+
+        <div class="profile-content">
+          <div class="profile-photo-uploader" id="photo-upload-trigger" title="Click to upload profile photo">
+            <img src="telmy_icon.png" id="profile-display-img" class="profile-photo-img" alt="Profile">
+            <div class="photo-overlay-btn">📷</div>
+            <input type="file" id="file-avatar-input" accept="image/*" style="display: none;">
+          </div>
+
+          <div class="profile-fields">
+            <div class="profile-input-row">
+              <input type="text" id="input-display-name" class="apple-input" placeholder="Display Name (e.g. Alex Pratama)">
+              <input type="email" id="input-user-email" class="apple-input" placeholder="Email Address">
+            </div>
+            <p style="font-size: 11.5px; color: var(--text-secondary);">
+              Tip: Photos are automatically optimized in WebP format and saved securely to Firebase.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bento 2: Extension Live Bridge -->
+      <div class="bento-card col-span-4">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="card-icon">🧩</span>
+            <div>
+              <h3 class="card-title">Extension Sync</h3>
+              <p class="card-subtitle">Live Connection Bridge</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="ext-status-box">
+          <div class="ext-status-info">
+            <div class="ext-badge-icon">⚡</div>
+            <div class="ext-status-details">
+              <strong>Telmy Chrome Extension</strong>
+              <small id="ext-connection-status">Connected & Synced</small>
+            </div>
+          </div>
+        </div>
+
+        <button id="btn-sync-now" class="btn-sync-ext" style="width: 100%; justify-content: center; display: flex;">
+          Sync Profile to Extension Now →
+        </button>
+      </div>
+
+      <!-- Bento 3: JAPAC Multilingual Preference Matrix -->
+      <div class="bento-card col-span-8">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="card-icon">🌐</span>
+            <div>
+              <h3 class="card-title">Default Language Preference</h3>
+              <p class="card-subtitle">Choose your primary language across 11 Asian-Pacific regions</p>
+            </div>
+          </div>
+          <span style="font-size: 12px; font-weight: 700; color: var(--accent);" id="active-lang-badge">EN (English)</span>
+        </div>
+
+        <div class="language-grid" id="language-grid-container">
+          <!-- Populated by JavaScript -->
+        </div>
+      </div>
+
+      <!-- Bento 4: Smart Assistant Capabilities (User-Facing & Non-Tech Friendly) -->
+      <div class="bento-card col-span-4">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="card-icon">✨</span>
+            <div>
+              <h3 class="card-title">Assistant Features</h3>
+              <p class="card-subtitle">Ready to guide your forms</p>
+            </div>
+          </div>
+          <span style="font-size: 11.5px; font-weight: 700; color: var(--success); background: var(--success-light); padding: 3px 8px; border-radius: 6px;">All Active</span>
+        </div>
+
+        <div class="ai-tech-pills">
+          <div class="ai-tech-item">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span>🎯</span>
+              <div>
+                <strong>Field Explainer</strong>
+                <div style="font-size: 11px; color: var(--text-secondary);">Clear hints & practical examples</div>
+              </div>
+            </div>
+            <span style="color: var(--success); font-weight: 600;">Active</span>
+          </div>
+
+          <div class="ai-tech-item">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span>🔊</span>
+              <div>
+                <strong>Voice Companion</strong>
+                <div style="font-size: 11px; color: var(--text-secondary);">Natural speech & talking mascot</div>
+              </div>
+            </div>
+            <span style="color: var(--accent); font-weight: 600;">Ready</span>
+          </div>
+
+          <div class="ai-tech-item">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span>🌐</span>
+              <div>
+                <strong>Smart Translation</strong>
+                <div style="font-size: 11px; color: var(--text-secondary);">Preserves official document terms</div>
+              </div>
+            </div>
+            <span style="color: #8b5cf6; font-weight: 600;">Enabled</span>
+          </div>
+
+          <div class="ai-tech-item">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span>🛡️</span>
+              <div>
+                <strong>Privacy Shield</strong>
+                <div style="font-size: 11px; color: var(--text-secondary);">Runs on-demand, no background snooping</div>
+              </div>
+            </div>
+            <span style="color: var(--success); font-weight: 600;">Secured</span>
+          </div>
+        </div>
+
+        <!-- Hidden Developer / Admin Details (Tucked away neatly) -->
+        <button id="btn-toggle-admin" class="btn-admin-toggle" type="button">
+          <span>⚙️ System Details (Admin)</span>
+          <span id="admin-arrow">▾</span>
+        </button>
+
+        <div id="admin-specs-panel" class="admin-specs-panel" style="display: none;">
+          <div class="admin-spec-row">
+            <span>Primary AI:</span>
+            <strong>Gemini 3.5 Flash-Lite</strong>
+          </div>
+          <div class="admin-spec-row">
+            <span>Voice Synthesis:</span>
+            <strong>Google Cloud WaveNet TTS</strong>
+          </div>
+          <div class="admin-spec-row">
+            <span>Cloud Database:</span>
+            <strong>Firebase Firestore</strong>
+          </div>
+          <div class="admin-spec-row">
+            <span>Platform:</span>
+            <strong>Google Cloud Run</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bento 5: Recent Form Sessions & Saved History -->
+      <div class="bento-card col-span-12">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="card-icon">📋</span>
+            <div>
+              <h3 class="card-title">Recent Form Guidance Sessions</h3>
+              <p class="card-subtitle">Forms detected and explained by Telmy across web portals</p>
+            </div>
+          </div>
+          <a href="/demo" class="btn-resume-form" style="font-size: 13px; padding: 8px 18px;">Open Demo Simulator →</a>
+        </div>
+
+        <div class="form-history-list">
+          <div class="form-history-item">
+            <div class="form-item-left">
+              <span class="form-item-icon">🏛️</span>
+              <div class="form-item-info">
+                <h4>Portal Pengajuan Legalisasi Apostille — Kemenkumham RI</h4>
+                <p>12 Kolom Terdeteksi • NIK, KTP, dan Akta Lahir • Terakhir dibuka hari ini</p>
+              </div>
+            </div>
+            <a href="/demo" class="btn-resume-form">Lanjutkan Panduan →</a>
+          </div>
+
+          <div class="form-history-item">
+            <div class="form-item-left">
+              <span class="form-item-icon">✈️</span>
+              <div class="form-item-info">
+                <h4>Indonesia Electronic Visa on Arrival (e-VoA) Portal</h4>
+                <p>8 Fields Guided • Passport & KITAS Validation • Ready</p>
+              </div>
+            </div>
+            <a href="/demo" class="btn-resume-form">Review Form →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Apple Toast Notification -->
+  <div id="apple-toast" class="apple-toast">
+    <div class="toast-check">✓</div>
+    <span id="toast-message">Settings successfully synced</span>
+  </div>
+
+  <script>
+    // 11 JAPAC Languages with crisp vector circular flag SVGs
+    const LANGUAGES = [
+      {
+        code: 'en',
+        name: 'English (Default)',
+        svg: `<svg viewBox="0 0 32 32"><clipPath id="c-en"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#c-en)"><rect width="32" height="32" fill="#012169"/><path d="M0 0 L32 32 M32 0 L0 32" stroke="#fff" stroke-width="6"/><path d="M0 0 L32 32 M32 0 L0 32" stroke="#C8102E" stroke-width="3"/><path d="M16 0 V32 M0 16 H32" stroke="#fff" stroke-width="8"/><path d="M16 0 V32 M0 16 H32" stroke="#C8102E" stroke-width="4.5"/></g></svg>`
+      },
+      {
+        code: 'id',
+        name: 'Indonesia',
+        svg: `<svg viewBox="0 0 32 32"><clipPath id="c-id"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#c-id)"><rect width="32" height="16" fill="#E70011"/><rect y="16" width="32" height="16" fill="#FFFFFF"/></g></svg>`
+      },
+      {
+        code: 'ja',
+        name: '日本語 (Japanese)',
+        svg: `<svg viewBox="0 0 32 32"><clipPath id="c-ja"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#c-ja)"><rect width="32" height="32" fill="#FFFFFF"/><circle cx="16" cy="16" r="9" fill="#BC002D"/></g></svg>`
+      },
+      {
+        code: 'ko',
+        name: '한국어 (Korean)',
+        svg: `<svg viewBox="0 0 32 32"><clipPath id="c-ko"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#c-ko)"><rect width="32" height="32" fill="#FFFFFF"/><circle cx="16" cy="16" r="8" fill="#CD2E3A"/><path d="M8 16 A8 8 0 0 0 24 16 Z" fill="#0047A0"/></g></svg>`
+      },
+      {
+        code: 'zh',
+        name: '简体中文 (Chinese)',
+        svg: `<svg viewBox="0 0 32 32"><clipPath id="c-zh"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#c-zh)"><rect width="32" height="32" fill="#DE2910"/><polygon points="9,6 10.5,10.5 15,10.5 11.5,13 13,17.5 9,14.5 5,17.5 6.5,13 3,10.5 7.5,10.5" fill="#FFDE00"/></g></svg>`
+      },
+      {
+        code: 'zh-TW',
+        name: '繁體中文 (Taiwan)',
+        svg: `<svg viewBox="0 0 32 32"><clipPath id="c-tw"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#c-tw)"><rect width="32" height="32" fill="#FE0000"/><rect width="16" height="16" fill="#000095"/><circle cx="8" cy="8" r="4.5" fill="#FFFFFF"/></g></svg>`
+      },
+      {
+        code: 'vi',
+        name: 'Tiếng Việt',
+        svg: `<svg viewBox="0 0 32 32"><clipPath id="c-vi"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#c-vi)"><rect width="32" height="32" fill="#DA251D"/><polygon points="16,8 18.5,15.5 26,15.5 20,20 22,27.5 16,23 10,27.5 12,20 6,15.5 13.5,15.5" fill="#FFFF00"/></g></svg>`
+      },
+      {
+        code: 'th',
+        name: 'ไทย (Thai)',
+        svg: `<svg viewBox="0 0 32 32"><clipPath id="c-th"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#c-th)"><rect width="32" height="32" fill="#A51931"/><rect y="5.3" width="32" height="21.4" fill="#F4F5F8"/><rect y="10.7" width="32" height="10.6" fill="#2D2A4A"/></g></svg>`
+      },
+      {
+        code: 'hi',
+        name: 'हिन्दी (Hindi)',
+        svg: `<svg viewBox="0 0 32 32"><clipPath id="c-hi"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#c-hi)"><rect width="32" height="10.7" fill="#FF9933"/><rect y="10.7" width="32" height="10.7" fill="#FFFFFF"/><rect y="21.4" width="32" height="10.7" fill="#138808"/><circle cx="16" cy="16" r="3.5" fill="none" stroke="#000088" stroke-width="1"/></g></svg>`
+      },
+      {
+        code: 'fil',
+        name: 'Filipino',
+        svg: `<svg viewBox="0 0 32 32"><clipPath id="c-fil"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#c-fil)"><rect width="32" height="16" fill="#0038A8"/><rect y="16" width="32" height="16" fill="#CE1126"/><polygon points="0,0 16,16 0,32" fill="#FFFFFF"/></g></svg>`
+      },
+      {
+        code: 'ms',
+        name: 'Bahasa Melayu',
+        svg: `<svg viewBox="0 0 32 32"><clipPath id="c-ms"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#c-ms)"><rect width="32" height="32" fill="#CC0000"/><rect y="4" width="32" height="4" fill="#FFFFFF"/><rect y="12" width="32" height="4" fill="#FFFFFF"/><rect y="20" width="32" height="4" fill="#FFFFFF"/><rect y="28" width="32" height="4" fill="#FFFFFF"/><rect width="16" height="18" fill="#000066"/><circle cx="8" cy="9" r="5" fill="#FFCC00"/></g></svg>`
+      }
+    ];
+
+    // State
+    let currentUser = {
+      uid: 'usr_guest',
+      displayName: 'Telmy User',
+      email: 'user@telmy.id',
+      photoURL: 'telmy_icon.png',
+      language: 'en'
+    };
+
+    // DOM Elements
+    const greetingTitle = document.getElementById('greeting-title');
+    const inputName = document.getElementById('input-display-name');
+    const inputEmail = document.getElementById('input-user-email');
+    const displayImg = document.getElementById('profile-display-img');
+    const navAvatar = document.getElementById('nav-user-avatar');
+    const navUserName = document.getElementById('nav-user-name');
+    const fileInput = document.getElementById('file-avatar-input');
+    const uploadTrigger = document.getElementById('photo-upload-trigger');
+    const btnSave = document.getElementById('btn-save-profile');
+    const btnSyncNow = document.getElementById('btn-sync-now');
+    const langGrid = document.getElementById('language-grid-container');
+    const activeLangBadge = document.getElementById('active-lang-badge');
+    const appleToast = document.getElementById('apple-toast');
+    const toastMessage = document.getElementById('toast-message');
+    const heroMascotCard = document.querySelector('.hero-mascot-card');
+
+    // Dynamic Time Greeting
+    function getAppleGreeting() {
+      const hour = new Date().getHours();
+      if (hour < 12) return 'Good morning';
+      if (hour < 18) return 'Good afternoon';
+      return 'Good evening';
+    }
+
+    // Initialize Dashboard
+    function initDashboard() {
+      // Load from localStorage or mock
+      const saved = localStorage.getItem('telmy_user');
+      if (saved) {
+        try {
+          currentUser = { ...currentUser, ...JSON.parse(saved) };
+        } catch (e) {}
+      }
+
+      renderUserFields();
+      renderLanguageGrid();
+      setupAvatarUpload();
+      setupMascotInteractions();
+
+      greetingTitle.textContent = `${getAppleGreeting()}, ${currentUser.displayName || 'Friend'}`;
+    }
+
+    function renderUserFields() {
+      inputName.value = currentUser.displayName || '';
+      inputEmail.value = currentUser.email || '';
+      const photo = currentUser.photoURL || 'telmy_icon.png';
+      displayImg.src = photo;
+      navAvatar.src = photo;
+      navUserName.textContent = currentUser.displayName || 'Telmy User';
+    }
+
+    function renderLanguageGrid() {
+      langGrid.innerHTML = '';
+      LANGUAGES.forEach(lang => {
+        const item = document.createElement('div');
+        item.className = `lang-item-card ${lang.code === currentUser.language ? 'active' : ''}`;
+        item.innerHTML = `
+          <span class="flag-badge">${lang.svg}</span>
+          <span class="lang-name">${lang.name}</span>
+        `;
+        item.addEventListener('click', () => {
+          currentUser.language = lang.code;
+          renderLanguageGrid();
+          updateActiveBadge(lang);
+          showToast(`Language set to ${lang.name}`);
+          syncWithCloudAndExtension();
+        });
+        langGrid.appendChild(item);
+      });
+
+      const active = LANGUAGES.find(l => l.code === currentUser.language) || LANGUAGES[0];
+      updateActiveBadge(active);
+    }
+
+    function updateActiveBadge(lang) {
+      activeLangBadge.innerHTML = `
+        <span class="flag-badge" style="width:16px;height:16px;display:inline-flex;vertical-align:middle;margin-right:4px;">${lang.svg}</span>
+        <span>${lang.name}</span>
+      `;
+    }
+
+    function setupMascotInteractions() {
+      if (!heroMascotCard) return;
+
+      const greetings = [
+        "Hi! I'm Telmy, your form assistant. Everything is in sync!",
+        "Tip: Choose your language below to have forms auto-explained.",
+        "Apostille & Visa portals are ready to guide with one click!",
+        "All systems operational: Gemini 3.5 & WaveNet lip-sync ready."
+      ];
+      let greetIdx = 0;
+
+      heroMascotCard.addEventListener('click', () => {
+        const talkStrong = heroMascotCard.querySelector('.mascot-talk strong');
+        const talkSpan = heroMascotCard.querySelector('.mascot-talk span');
+        const mascotWrap = heroMascotCard.querySelector('.mascot-avatar-wrap');
+
+        // Play subtle bounce
+        mascotWrap.style.transform = 'scale(1.2) translateY(-4px)';
+        setTimeout(() => mascotWrap.style.transform = '', 300);
+
+        greetIdx = (greetIdx + 1) % greetings.length;
+        if (talkStrong) talkStrong.textContent = "Telmy Assistant";
+        if (talkSpan) talkSpan.textContent = greetings[greetIdx];
+
+        showToast(greetings[greetIdx]);
+
+        // Speak aloud via Web Speech API if supported
+        if ('speechSynthesis' in window) {
+          try {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(greetings[greetIdx]);
+            utterance.rate = 1.05;
+            utterance.pitch = 1.1;
+            window.speechSynthesis.speak(utterance);
+          } catch (e) {}
+        }
+      });
+    }
+
+    function setupAvatarUpload() {
+      uploadTrigger.addEventListener('click', () => fileInput.click());
+
+      fileInput.addEventListener('change', (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          const img = new Image();
+          img.onload = function() {
+            // Client-side WebP compression via Canvas
+            const canvas = document.createElement('canvas');
+            const size = 160;
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, size, size);
+
+            const webpDataUrl = canvas.toDataURL('image/webp', 0.85);
+            currentUser.photoURL = webpDataUrl;
+            displayImg.src = webpDataUrl;
+            navAvatar.src = webpDataUrl;
+
+            showToast('Profile photo updated & compressed in WebP');
+            syncWithCloudAndExtension();
+          };
+          img.src = evt.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function syncWithCloudAndExtension() {
+      localStorage.setItem('telmy_user', JSON.stringify(currentUser));
+
+      // 1. Send to Backend API
+      fetch('/api/user/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(currentUser)
+      }).catch(() => {});
+
+      // 2. Broadcast to Chrome Extension if connected
+      if (window.chrome && chrome.runtime && chrome.runtime.sendMessage) {
+        try {
+          chrome.runtime.sendMessage({
+            type: 'SET_USER_SESSION',
+            user: currentUser
+          }, () => { if (chrome.runtime.lastError) {} });
+        } catch (e) {}
+      }
+    }
+
+    let toastTimer = null;
+    function showToast(msg) {
+      toastMessage.textContent = msg;
+      appleToast.classList.add('show');
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        appleToast.classList.remove('show');
+      }, 2500);
+    }
+
+    // Save Profile Button
+    btnSave.addEventListener('click', () => {
+      currentUser.displayName = inputName.value.trim() || 'Telmy User';
+      currentUser.email = inputEmail.value.trim() || 'user@telmy.id';
+      greetingTitle.textContent = `${getAppleGreeting()}, ${currentUser.displayName}`;
+      navUserName.textContent = currentUser.displayName;
+
+      syncWithCloudAndExtension();
+      showToast('Profile saved & synced with extension');
+    });
+
+    btnSyncNow.addEventListener('click', () => {
+      syncWithCloudAndExtension();
+      showToast('Live connection signal sent to Telmy Extension');
+    });
+
+    // Admin Specs Collapsible Toggle
+    const btnToggleAdmin = document.getElementById('btn-toggle-admin');
+    const adminSpecsPanel = document.getElementById('admin-specs-panel');
+    const adminArrow = document.getElementById('admin-arrow');
+    if (btnToggleAdmin && adminSpecsPanel) {
+      btnToggleAdmin.addEventListener('click', () => {
+        const isHidden = adminSpecsPanel.style.display === 'none';
+        adminSpecsPanel.style.display = isHidden ? 'flex' : 'none';
+        adminArrow.textContent = isHidden ? '▴' : '▾';
+      });
+    }
+
+    // Boot
+    initDashboard();
+  </script>
+</body>
+</html>
