@@ -93,24 +93,39 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   if (message.type === 'EXPLAIN_FIELD') {
-    chrome.storage.local.get(['settings']).then(async (res) => {
+    chrome.storage.local.get(['settings', 'user']).then(async (res) => {
       const settings = res.settings || DEFAULT_SETTINGS;
+      const user = res.user || null;
       const apiUrl = settings.apiUrl || DEFAULT_SETTINGS.apiUrl;
       const { metadata, language, pageContext } = message.payload;
+      const userId = user?.uid || 'guest_user';
 
       try {
         const response = await fetchWithTimeout(`${apiUrl}/explain`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ metadata, language, pageContext })
+          headers: { 
+            'Content-Type': 'application/json',
+            'x-user-id': userId
+          },
+          body: JSON.stringify({ metadata, language, pageContext, userId })
         }, 30000);
 
         if (response.ok) {
           const json = await response.json();
           if (json.success && json.data) {
-            sendResponse({ success: true, fromBackend: true, data: json.data });
+            sendResponse({ success: true, fromBackend: true, data: json.data, quota: json.quota });
             return;
           }
+        } else if (response.status === 402) {
+          const errJson = await response.json().catch(() => ({}));
+          sendResponse({
+            success: false,
+            quotaExhausted: true,
+            quota: errJson.quota,
+            pricingTiers: errJson.pricingTiers,
+            error: errJson.message || 'Form analysis quota exhausted'
+          });
+          return;
         }
       } catch (err) {
         // Backend offline or timeout
@@ -305,24 +320,39 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   // Multimodal Universal PDF Guidance (Priority 7)
   if (message.type === 'EXPLAIN_PDF') {
-    chrome.storage.local.get(['settings']).then(async (res) => {
+    chrome.storage.local.get(['settings', 'user']).then(async (res) => {
       const settings = res.settings || DEFAULT_SETTINGS;
+      const user = res.user || null;
       const apiUrl = settings.apiUrl || DEFAULT_SETTINGS.apiUrl;
       const { pdfBase64, filename, language, mimeType = 'application/pdf' } = message.payload;
+      const userId = user?.uid || 'guest_user';
 
       try {
         const response = await fetchWithTimeout(`${apiUrl}/explain-pdf`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ pdfBase64, filename, language, mimeType })
+          headers: { 
+            'Content-Type': 'application/json',
+            'x-user-id': userId
+          },
+          body: JSON.stringify({ pdfBase64, filename, language, mimeType, userId })
         }, 60000);
 
         if (response.ok) {
           const json = await response.json();
           if (json.success && json.data) {
-            sendResponse({ success: true, data: json.data });
+            sendResponse({ success: true, data: json.data, quota: json.quota });
             return;
           }
+        } else if (response.status === 402) {
+          const errJson = await response.json().catch(() => ({}));
+          sendResponse({
+            success: false,
+            quotaExhausted: true,
+            quota: errJson.quota,
+            pricingTiers: errJson.pricingTiers,
+            error: errJson.message || 'Form analysis quota exhausted'
+          });
+          return;
         } else {
           const errJson = await response.json().catch(() => ({}));
           sendResponse({ success: false, error: errJson.error || 'Server rejected document payload' });
@@ -333,6 +363,55 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       }
 
       sendResponse({ success: false, error: 'Failed to analyze document form' });
+    });
+    return true;
+  }
+
+  // Priority 8: Get User Quota
+  if (message.type === 'GET_USER_QUOTA') {
+    chrome.storage.local.get(['settings', 'user']).then(async (res) => {
+      const settings = res.settings || DEFAULT_SETTINGS;
+      const user = res.user || null;
+      const apiUrl = settings.apiUrl || DEFAULT_SETTINGS.apiUrl;
+      const userId = user?.uid || 'guest_user';
+      try {
+        const response = await fetchWithTimeout(`${apiUrl}/payment/quota/${userId}`, {}, 10000);
+        if (response.ok) {
+          const json = await response.json();
+          sendResponse({ success: true, data: json.data });
+          return;
+        }
+      } catch (e) {
+        console.warn('[Telmy SW] Failed to fetch quota:', e.message);
+      }
+      sendResponse({ success: false, fallback: true });
+    });
+    return true;
+  }
+
+  // Priority 8: Simulate Lemon Squeezy Purchase
+  if (message.type === 'SIMULATE_PURCHASE') {
+    chrome.storage.local.get(['settings', 'user']).then(async (res) => {
+      const settings = res.settings || DEFAULT_SETTINGS;
+      const user = res.user || null;
+      const apiUrl = settings.apiUrl || DEFAULT_SETTINGS.apiUrl;
+      const userId = user?.uid || 'guest_user';
+      const planId = message.planId || 'payg_10';
+      try {
+        const response = await fetchWithTimeout(`${apiUrl}/payment/simulate-purchase`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ uid: userId, planId })
+        }, 15000);
+        if (response.ok) {
+          const json = await response.json();
+          sendResponse({ success: true, ...json });
+          return;
+        }
+      } catch (e) {
+        console.warn('[Telmy SW] Failed to simulate purchase:', e.message);
+      }
+      sendResponse({ success: false, error: 'Simulation purchase failed' });
     });
     return true;
   }

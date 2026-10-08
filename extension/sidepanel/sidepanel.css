@@ -2507,3 +2507,328 @@ body {
   background: #0077ed;
 }
 
+/* ==========================================================================
+   Priority 8: Quota Live Badge & Paywall Modal (Apple Cupertino Aesthetic)
+   ========================================================================== */
+
+.sp-quota-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #1e293b;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+.sp-quota-badge:hover {
+  background: #e2e8f0;
+  border-color: #94a3b8;
+  transform: translateY(-1px);
+}
+
+.sp-quota-badge.quota-high {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #065f46;
+}
+
+.sp-quota-badge.quota-warning {
+  background: #fffbeb;
+  border-color: #fde68a;
+  color: #92400e;
+}
+
+.sp-quota-badge.quota-empty {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #991b1b;
+  animation: pulseQuota 2s infinite ease-in-out;
+}
+
+@keyframes pulseQuota {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+
+.sp-paywall-modal-content {
+  max-width: 440px;
+  width: 95%;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18);
+}
+
+.sp-paywall-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sp-paywall-badge-icon {
+  font-size: 24px;
+}
+
+.sp-paywall-subtitle {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 400;
+}
+
+.sp-paywall-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-height: 78vh;
+  overflow-y: auto;
+}
+
+.sp-quota-summary-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.quota-summary-metric {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 75px;
+  border-right: 1px solid #e2e8f0;
+  padding-right: 12px;
+}
+
+.quota-sum-num {
+  font-size: 26px;
+  font-weight: 800;
+  color: #0071e3;
+  line-height: 1;
+}
+
+.quota-sum-label {
+  font-size: 10.5px;
+  color: #64748b;
+  margin-top: 4px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.quota-summary-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.quota-row {
+  font-size: 11.5px;
+  color: #475569;
+  display: flex;
+  justify-content: space-between;
+}
+
+.quota-row strong, .quota-row span:last-child {
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.sp-paywall-tiers {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.paywall-tier-card {
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.paywall-tier-card:hover {
+  border-color: #0071e3;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 113, 227, 0.08);
+}
+
+.paywall-tier-card.recommended {
+  border-color: #0071e3;
+  background: #fbfdff;
+  box-shadow: 0 4px 12px rgba(0, 113, 227, 0.08);
+}
+
+.tier-badge-pill {
+  position: absolute;
+  top: -9px;
+  left: 12px;
+  font-size: 9.5px;
+  font-weight: 700;
+  background: #f1f5f9;
+  color: #475569;
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid #cbd5e1;
+}
+
+.tier-badge-pill.highlight {
+  background: #0071e3;
+  color: white;
+  border-color: #0071e3;
+}
+
+.tier-header h4 {
+  margin: 6px 0 4px;
+  font-size: 13.5px;
+  color: #0f172a;
+}
+
+.tier-price {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.tier-price .currency {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.tier-price .amount {
+  font-size: 22px;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1;
+}
+
+.tier-price .unit {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 500;
+  margin-left: 2px;
+}
+
+.tier-subtext {
+  font-size: 10px;
+  color: #64748b;
+  margin-top: 3px;
+  margin-bottom: 8px;
+}
+
+.tier-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px;
+  font-size: 10.5px;
+  color: #334155;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+}
+
+.tier-features li {
+  line-height: 1.3;
+}
+
+.btn-tier-purchase {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
+}
+
+.btn-tier-payg {
+  background: #f1f5f9;
+  color: #0f172a;
+  border: 1px solid #cbd5e1;
+}
+
+.btn-tier-payg:hover {
+  background: #e2e8f0;
+}
+
+.btn-tier-pro {
+  background: #0071e3;
+  color: #ffffff;
+}
+
+.btn-tier-pro:hover {
+  background: #0077ed;
+}
+
+.sp-simulation-box {
+  background: #fffbeb;
+  border: 1px dashed #f59e0b;
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sim-badge {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #b45309;
+}
+
+.sim-info {
+  margin: 0;
+  font-size: 11px;
+  color: #78350f;
+  line-height: 1.3;
+}
+
+.sim-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.btn-sim-instant {
+  flex: 1;
+  background: #f59e0b;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 10.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-sim-instant:hover {
+  background: #d97706;
+}
+
+.btn-sim-instant.secondary {
+  background: #0284c7;
+}
+
+.btn-sim-instant.secondary:hover {
+  background: #0369a1;
+}
+
+

@@ -1,5 +1,6 @@
 import express from 'express';
 import { explainPdfForm } from '../services/pdfService.js';
+import { verifyAndDeductQuota } from '../middleware/quotaMiddleware.js';
 
 const router = express.Router();
 
@@ -7,7 +8,7 @@ const router = express.Router();
  * POST /api/explain-pdf
  * Ingest and decode a downloaded / online PDF form via Gemini Multimodal API
  */
-router.post('/explain-pdf', async (req, res) => {
+router.post('/explain-pdf', verifyAndDeductQuota, async (req, res) => {
   try {
     const {
       pdfBase64,
@@ -31,7 +32,7 @@ router.post('/explain-pdf', async (req, res) => {
     }
 
     const result = await explainPdfForm(finalBase64, finalFileName, finalLang, mimeType);
-    return res.json(result);
+    return res.json({ ...result, quota: req.userQuota });
   } catch (error) {
     console.error('[PDF Route] Error analyzing document form:', error);
     return res.status(500).json({

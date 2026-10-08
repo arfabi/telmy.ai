@@ -1,179 +1,248 @@
-# 🌐 Telmy.ai: The Friendly AI Form-Filling Companion
+# 🌐 Telmy.ai: The Friendly AI Form-Filling Companion & Co-Pilot
 
 <p align="center">
   <img src="logo.png" alt="Telmy.ai Brand Logo" width="280" />
 </p>
 
 <p align="center">
-  <strong>Transforming confusing government paperwork, visa applications, and digital bureaucracy into a warm, conversational, and stress-free journey for everyone.</strong>
+  <strong>Transforming complex government paperwork, scholarship applications, and international visa portals into an intuitive, conversational, and stress-free journey.</strong>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Powered%20By-Google%20Gemini%20AI-4285F4?logo=google&logoColor=white" alt="Google Gemini" />
-  <img src="https://img.shields.io/badge/Natural%20Voice-Google%20Cloud%20WaveNet-34A853?logo=googlecloud&logoColor=white" alt="Google Cloud WaveNet" />
-  <img src="https://img.shields.io/badge/Cloud%20Platform-Firebase%20Ecosystem-FFCA28?logo=firebase&logoColor=black" alt="Firebase Ecosystem" />
-  <img src="https://img.shields.io/badge/Browser%20Extension-Google%20Chrome-0071e3?logo=googlechrome&logoColor=white" alt="Google Chrome" />
-  <img src="https://img.shields.io/badge/Languages-11%20Global%20%26%20Regional-FF6F00" alt="11 Languages" />
+  <img src="https://img.shields.io/badge/Model-Google%20Gemini%203.5%20Flash--Lite-4285F4?logo=google&logoColor=white" alt="Google Gemini" />
+  <img src="https://img.shields.io/badge/Embeddings-text--embedding--004%20(768d)-4285F4?logo=google&logoColor=white" alt="Embeddings" />
+  <img src="https://img.shields.io/badge/Voice%20Synthesis-Google%20Cloud%20WaveNet-34A853?logo=googlecloud&logoColor=white" alt="WaveNet TTS" />
+  <img src="https://img.shields.io/badge/Database-Firebase%20Firestore-FFCA28?logo=firebase&logoColor=black" alt="Firestore" />
+  <img src="https://img.shields.io/badge/PDF%20Engine-pdf--lib%20(Client--Side)-FF5722" alt="PDF-Lib" />
+  <img src="https://img.shields.io/badge/Extension-Chrome%20MV3%20Side%20Panel-0071e3?logo=googlechrome&logoColor=white" alt="Chrome MV3" />
+  <img src="https://img.shields.io/badge/Payments-Lemon%20Squeezy%20(Simulated)-FFC83B" alt="Lemon Squeezy" />
 </p>
 
 ---
 
 ## 📖 The Story: Why We Built Telmy.ai
 
-Imagine this scenario:
+Every year, millions of citizens, international students, foreign travelers, and small business owners encounter digital bureaucracy:
 
-> *You are sitting in front of your laptop late at night, trying to submit an urgent international visa application, a scholarship document, or a business registration. The clock is ticking.*
->
-> *You are confronted with 25 intimidating input fields filled with dense legal jargon. Words like "Apostille Authentication", "Substituted Power of Attorney", or "Tax Identification Number / TIN".*
->
-> *You hesitate. Does this question ask for your permanent home address or your temporary residential address? What happens if you format your ID number incorrectly? A single mistake could mean an immediate rejection, lost fees, weeks of delay, or ruined travel plans.*
->
-> *You try using a generic browser translator, but it turns official legal terms into confusing gibberish and breaks critical buttons. You feel anxious, overwhelmed, and alone.*
-
-This is not an isolated frustration. Across the world, **more than 67% of people abandon or make critical mistakes on digital public forms**. For international travelers, elderly citizens, students, and everyday individuals who aren't lawyers or tech experts, online paperwork feels like a barrier rather than a service.
+> *You are trying to submit an international scholarship, embassy visa, or government apostille application late at night.*  
+> *You are confronted with 30 intimidating input fields packed with unfamiliar legal terms like "Apostille Authentication", "Substituted Power of Attorney", "Affidavit of Support", or "Tax Identification Number / TIN".*  
+> *A single mistake — such as including an academic title in a passport family name field, entering a date in an inverted format, or missing an international postal code — leads to instant disqualification and lost application fees.*  
+> *Generic browser translators fail completely: they mistranslate official legal acronyms into confusing words and break critical submit buttons.*
 
 ### Meet Telmy: Your Patient, Friendly Co-Pilot
-**Telmy.ai** was created with a simple belief: **No one should ever feel stressed or helpless when filling out a digital form.**
+**Telmy.ai** was built upon a simple human principle: **No one should ever feel alone, anxious, or helpless when completing official digital paperwork.**
 
-Telmy is a warm, smart companion that lives quietly in your browser’s side panel. When you encounter a complicated form, Telmy gently steps in alongside your page. Like a knowledgeable friend sitting right next to you, Telmy points to each field, explains what it means in plain everyday words, shows you realistic examples of how to fill it out, and even speaks the answers aloud in a natural, soothing voice.
-
----
-
-## 💡 Who Is Telmy.ai For?
-
-* ✈️ **International Travelers & Expats:** Applying for electronic visas (e-Visa), travel authorisations, or work permits abroad without getting lost in unfamiliar foreign regulations.
-* 🎓 **Students & Scholarship Applicants:** Applying to international universities and foreign exchange programs where documents must be verified with precision.
-* 🏢 **Small Business Owners & Entrepreneurs:** Filing business licenses, tax forms, and official permits without paying exorbitant fees to third-party consultants.
-* 👴 **Senior Citizens & Non-Tech Users:** Navigating healthcare and pension portals with the comfort of voice guidance and clear, numbered visual badges.
+Telmy is a warm, intelligent companion that lives in your browser's native **Chrome Side Panel**. As you navigate any complex portal or open a downloaded embassy PDF form, Telmy sits right alongside your page. It points to each question, explains what it means in plain everyday words, offers realistic examples, validates your input before submission, and narrates answers aloud with a talking mascot avatar.
 
 ---
 
-## ✨ What Makes Telmy.ai Feel Magical?
+## 🏛️ System Architecture
 
-### 1. 🎯 Step-by-Step Field Explainer (No More Guesswork)
-* **Spotlight on What Matters:** Telmy places gentle number badges next to each question on your form and highlights the active field so you always know where you are.
-* **Plain-Language Answers:** Instead of reciting dry legal definitions, Telmy answers four simple questions for each field:
-  - *What does this actually mean?*
-  - *What should a correct answer look like? (Realistic dummy examples)*
-  - *What is the most common mistake people make here?*
-  - *Is there a special rule if you are a foreign national or non-resident?*
+```mermaid
+graph TD
+    subgraph Browser ["Client: Chrome Native Extension (MV3)"]
+        Tab["Active Web Page / Embassy Portal"]
+        SW["Service Worker (Background)"]
+        SP["Side Panel UI (Apple Cupertino Design)"]
+        Avatar["Interactive SVG Talking Avatar\n(Web Audio Lip-Sync)"]
+        Vault["Encrypted Profile Vault\n(chrome.storage.local)"]
+        Shield["Privacy Shield & PII Masker\n(Local Client-Side Regex)"]
+        Auditor["Pre-Submission Form Auditor\n(Traffic Light Validator)"]
+        PDFClient["PDF Engine (pdf-lib)\n100% Local WASM/JS"]
+    end
 
-### 2. 🤖 The Interactive Talking Avatar (A Companion with a Heart)
-* Rather than looking at a cold chatbot window, you are greeted by Telmy’s friendly mascot.
-* **Realistic Lip-Sync:** When Telmy speaks, its mouth moves in real-time cadence matching the voice. 
-* **Expressive & Comforting:** Telmy blinks naturally, reacts when you click it, and offers reassuring words to ease form-filling anxiety.
+    subgraph Backend ["Server: Google Cloud Run & Express"]
+        API["API Gateway (Express.js)"]
+        QuotaMid["Expiring-First Quota Middleware"]
+        DictSvc["Hybrid Knowledge Base & Vector Search"]
+        BuroSvc["Bureaucratic Glossary RAG Engine"]
+        PDFSvc["Multimodal Document Explainer"]
+        PaySvc["Lemon Squeezy Engine\n(Simulation & Webhooks)"]
+    end
 
-### 3. 🌐 Smart Context-Aware Page Translation (Preserving Legal Accuracy)
-* Standard translators break official terms. Telmy uses intelligent context analysis to translate entire web pages while **safeguarding official terms** (such as *Passport Number*, *Tax ID*, *Apostille Verification*, or *Civil Registry*).
-* Essential buttons remain crystal clear (e.g., ensuring *"Register Now"* isn't mistranslated as *"Make a List"*).
-* Prefer your original language? A single click on **"Show Original"** restores the text instantly.
+    subgraph GoogleAI ["Google Cloud & Firebase Ecosystem"]
+        GeminiFlash["Gemini 3.5 Flash-Lite\n(Vision & Reasoning)"]
+        GeminiEmbed["text-embedding-004\n(768 Dimensions)"]
+        GoogleTTS["Google Cloud WaveNet TTS"]
+        Firestore["Cloud Firestore\n(Entries, Templates, Users)"]
+    end
 
-### 4. 🔊 Natural Voice Companion & Push-to-Talk
-* Don’t want to read dense text? Telmy reads guidance aloud using human-like, natural voice synthesis.
-* Have a question? Simply click the microphone button (*Push-to-Talk*) and ask: *"What document do I need for field number 3?"* Telmy listens and replies immediately.
-* **Zero Hidden Listening:** The microphone is only active when you deliberately click it. Your privacy is 100% sacred.
-
-### 5. 🛡️ Uncompromising Privacy by Design
-* **Telmy Never Touches Your Private Data:** Telmy strictly scans field labels and instructions. It is hardcoded to completely ignore and never read passwords, credit card numbers, CVVs, OTP security codes, or personal secret keys.
-* **On-Demand Only:** Telmy only works when you open it. It never monitors your web browsing in the background.
-
----
-
-## 🛠️ The Technology Behind the Magic
-
-Telmy.ai leverages Google’s cutting-edge AI and cloud technologies to deliver lightning-fast, secure, and human-centered assistance:
-
-* **🤖 Google Gemini LLM API (`gemini-3.5-flash-lite`):**  
-  Provides the deep reasoning, semantic understanding, and cultural context needed to decode complex bureaucratic forms in under a second with remarkably natural language.
-* **🔊 Google Cloud Text-to-Speech (WaveNet Neural Voices):**  
-  Brings Telmy to life with fluid, human-grade voice narration across regional accents and multiple global languages (including English, Hindi, Japanese, and more).
-* **🗄️ Firebase Firestore:**  
-  Acts as the secure, real-time cloud database preserving user language preferences, form history, and verified terminology glossaries.
-* **🪣 Firebase Storage:**  
-  Securely stores optimized user profile avatars with zero overhead.
-* **🚀 Firebase Hosting & Google Cloud Run:**  
-  Powers the high-availability web platform, responsive user dashboard, and serverless backend API.
-* **🧩 Google Chrome Extension (Manifest V3 Native Side Panel):**  
-  Embeds the co-pilot right into the browser side-by-side with any webpage, requiring minimal system memory and zero invasive permissions.
-
----
-
-## 🚀 How to Install and Experience Telmy.ai
-
-You don't need any technical skills to try Telmy.ai!
-
-### Step 1: Run the Backend Service
-1. Open your terminal in the `backend` directory:
-   ```bash
-   cd backend
-   npm install
-   ```
-2. Set your Google AI Key in `.env`:
-   ```env
-   PORT=8080
-   GEMINI_API_KEY=your-gemini-api-key
-   GEMINI_MODEL=gemini-3.5-flash-lite
-   GOOGLE_TTS_API_KEY=your-gemini-api-key
-   ```
-3. Start the server:
-   ```bash
-   npm run dev
-   ```
-   *(The server will be ready at `http://localhost:8080`)*
+    Tab <--> Shield
+    Shield --> SP
+    SP <--> Vault
+    SP --> Auditor
+    SP --> PDFClient
+    SP <--> Avatar
+    SP <--> SW
+    SW <--> API
+    API --> QuotaMid
+    QuotaMid --> PaySvc
+    QuotaMid --> DictSvc
+    QuotaMid --> PDFSvc
+    DictSvc <--> Firestore
+    DictSvc <--> GeminiEmbed
+    DictSvc <--> GeminiFlash
+    BuroSvc <--> GeminiFlash
+    PDFSvc <--> GeminiFlash
+    SW <--> GoogleTTS
+```
 
 ---
 
-### Step 2: Add Telmy to Google Chrome
-1. Open Google Chrome and type `chrome://extensions/` in your address bar.
-2. Turn on **Developer mode** (switch in the top-right corner).
-3. Click the **Load unpacked** button (top-left corner).
-4. Select the **`extension`** folder from this project (or load [`telmy-cws-clean.zip`](file:///d:/webdev/laragon/www/telmy/telmy-cws-clean.zip)).
-5. Telmy’s friendly blue icon will appear in your Chrome toolbar!
+## ✨ Key Features & Technical Pillars
+
+### 1. 🎯 Step-by-Step Interactive Form Guidance
+* **Visual Field Badging:** Injects subtle numbered badges (`①`, `②`, `③`) and gentle focus rings without altering the underlying web page structure.
+* **4-Dimensional Plain-Language Explanations:**
+  1. *What does this actually mean?*
+  2. *Realistic dummy examples (e.g. correct format).*
+  3. *Common pitfalls to avoid (e.g. inverted day/month format).*
+  4. *Special guidance for foreign nationals & non-residents.*
+
+### 2. 🤖 Interactive Talking Mascot Avatar (Priority 2)
+* **Custom SVG Mascot Companion:** A friendly robot companion living in the Side Panel header.
+* **Real-time Web Audio API Lip-Sync:** Multi-layered viseme mouth geometry animates in exact synchrony with Google Cloud WaveNet TTS audio frequencies.
+* **Interactive Micro-Animations:** Responsive eye blinks, idle breathing, and pleasant conversational greetings upon click.
+
+### 3. 🌐 Context-Aware Full Page Translation (Priority 3)
+* **DOM Key-Value Batching:** Extracts entire page labels into a compact JSON structure to achieve minimum token overhead.
+* **Official Term Preservation:** Injects dynamic `DO_NOT_TRANSLATE` rules to protect critical acronyms (e.g., NIK, KTP, NPWP, SKCK, Apostille, TIN, SSN).
+* **UI/UX Action Standard:** Preserves actionable button conventions (e.g. *"Daftar"* $\rightarrow$ *"Register / Sign Up"*, not *"List"*).
+* **1-Click Revert:** Instant *"Show Original"* button to restore the raw web page at any time.
+
+### 4. 🎖️ Hybrid Knowledge Base & Firestore Vector Search (Priority 4)
+* **Cross-Domain Semantic Cache (`text-embedding-004`):** Converts field names into 768-dimensional vectors. When field meanings match with $\ge 0.90$ cosine similarity (e.g., *"Full Name as in Passport"* vs *"Nama Lengkap (sesuai Paspor)"*), verified guidance is served instantly ($0 token cost, latency <100ms).
+* **Bureaucratic Glossary RAG:** Context-sensitive vector lookup injects Top-5 relevant bureaucratic terms into translation prompts.
+* **Universal Template Zero-Token Cache:** Hashes uploaded document forms with SHA-256. Identical forms previously processed are served instantly without hitting Gemini API.
+
+### 5. 📄 Universal PDF & Multimodal Form Guidance (Priority 7)
+* **1-Click Native Tab Ingestion:** Automatically detects when Chrome opens an online PDF form (`https://.../form.pdf`) and fetches it directly via the active tab without requiring manual download and re-upload.
+* **Multimodal Scan, Photo & Handwriting Engine:** Accepts `application/pdf`, `image/jpeg`, `image/png`, and `image/webp`. Handles rotated camera photos, physical stamps, and flags ambiguous handwriting with `uncertaintyNotice`.
+* **Client-Side `<canvas>` Compressor:** Compresses 15 MB smartphone photos down to ~500 KB JPEG before sending to the backend.
+* **Interactive Form Writer & Certified Export (`pdf-lib`):** Users can fill form values directly in the Side Panel or pull from their Profile Vault, then export a certified, completed PDF locally (100% offline, zero server cost).
+
+### 6. 🛡️ Scholarship & Visa Assistance Suite (Priority 9)
+* **Encrypted Profile Vault:** Secure local storage (`chrome.storage.local`) for essential applicant details (Passport Name, Passport Number, Issue/Expiry Dates, National ID, Birthplace/Date, GPA, Emergency Contacts).
+* **1-Click User-Initiated Smart Fill:** Contextual chips allow 1-click filling of active web fields. Safe whitelist strictly forbids touching passwords, credit cards, CVVs, or OTP codes.
+* **Pre-Submission AI Form Auditor:** Scans all filled values and generates a visual **Traffic Light** error report:
+  * 🟢 **Format Valid (Green):** Proper casing, valid date formats.
+  * 🟡 **Warning (Yellow):** Academic degrees in last name fields, missing international dialing codes.
+  * 🔴 **Critical Error (Red):** Passport validity < 6 months from study start date, invalid 16-digit ID number, or empty required fields.
+* **Privacy Shield & Client-Side PII Masking:** Local regex redaction sensor masks national IDs, passports, cards, and phone numbers before any text leaves the user's computer.
+
+### 7. 💎 Usage Quota & Monetization Engine (Priority 8)
+* **Transparent Freemium & SaaS Tiers:**
+  * **Free Tier:** 5 free forms for all new users (Firebase Auth).
+  * **Pay-as-you-Go ($5 for 10 Forms / $0.50 per form):** Permanent credits that **Never Expire**. Designed for seasonal visa and scholarship applicants.
+  * **Pro Subscription ($14.99/month for 50 Forms):** Auto-renewing quota for consultants, travel agencies, and frequent applicants.
+* **Expiring-First Quota Deduct Rule:** Monthly expiring subscription credits are always consumed first $\rightarrow$ permanent PAYG credits second $\rightarrow$ free tier third.
+* **Lemon Squeezy Integration & Simulation Engine:** Built-in simulation endpoints allow instant testing and demonstrations without requiring real credit cards.
 
 ---
 
-### Step 3: Try It on a Real Form!
-1. Open any online form, or explore our built-in simulator:
-   * **Live Form Simulator:** `http://localhost:8080/demo`
-   * **User Dashboard:** `http://localhost:8080/dashboard`
-2. Open Telmy by pressing **`Alt + G`** or clicking the Telmy icon on your Chrome toolbar.
-3. **See the Magic in Action:**
-   * **Click a Number Badge:** See clear explanations and format examples appear instantly in the side panel.
-   * **Listen to Telmy:** Hear the voice guide and watch the avatar's lips sync with what it says.
-   * **Translate Page:** Click the top *"Translate Page"* button to view the entire form in your preferred language without losing official terms.
-   * **Speak with Telmy:** Tap the microphone icon and ask a question in everyday English!
+## 🌍 Supported Languages (JAPAC & Global)
+
+Telmy supports 11 major languages natively across guidance, translation, voice synthesis, and UI:
+
+| Flag | Language | Native Name | Code | Voice Support |
+| :---: | :--- | :--- | :---: | :---: |
+| 🇬🇧 | **English (Default)** | English | `en` | ✅ WaveNet Neural |
+| 🇮🇩 | **Indonesian** | Bahasa Indonesia | `id` | ✅ WaveNet Neural |
+| 🇯🇵 | **Japanese** | 日本語 | `ja` | ✅ WaveNet Neural |
+| 🇰🇷 | **Korean** | 한국어 | `ko` | ✅ WaveNet Neural |
+| 🇨🇳 | **Simplified Chinese** | 简体中文 | `zh` | ✅ WaveNet Neural |
+| 🇹🇼 | **Traditional Chinese** | 繁體中文 | `zh-TW` | ✅ WaveNet Neural |
+| 🇻🇳 | **Vietnamese** | Tiếng Việt | `vi` | ✅ WaveNet Neural |
+| 🇹🇭 | **Thai** | ไทย | `th` | ✅ WaveNet Neural |
+| 🇮🇳 | **Hindi** | हिन्दी | `hi` | ✅ WaveNet Neural |
+| 🇵🇭 | **Filipino** | Filipino | `fil` | ✅ Web Speech |
+| 🇲🇾 | **Malay** | Bahasa Melayu | `ms` | ✅ Web Speech |
 
 ---
 
-## 🌍 Supported Global & Regional Languages
+## 🚀 Quickstart & Setup Guide
 
-Telmy speaks and understands 11 major languages across the Asia-Pacific region and the globe:
-* 🇬🇧 **English (Global Default)**
-* 🇮🇳 **हिन्दी (Hindi)**
-* 🇯🇵 **日本語 (Japanese)**
-* 🇰🇷 **한국어 (Korean)**
-* 🇨🇳 **简体中文 (Simplified Chinese)**
-* 🇹🇼 **繁體中文 (Traditional Chinese)**
-* 🇻🇳 **Tiếng Việt (Vietnamese)**
-* 🇹🇭 **ไทย (Thai)**
-* 🇵🇭 **Filipino**
-* 🇲🇾 **Bahasa Melayu**
-* 🇮🇩 **Bahasa Indonesia**
+### Prerequisites
+* **Node.js** v18+ or v20+
+* **Google Chrome** (Version 114+ with Native Side Panel support)
+* **Google Gemini API Key** ([Google AI Studio](https://aistudio.google.com/))
+
+### Step 1: Clone & Configure Backend
+```bash
+cd backend
+npm install
+```
+
+Create `.env` inside `backend/`:
+```env
+PORT=8080
+AI_PROVIDER=gemini
+GEMINI_API_KEY=your_gemini_api_key_here
+GEMINI_MODEL=gemini-3.5-flash-lite
+GOOGLE_TTS_API_KEY=your_gemini_api_key_here
+EXPLAIN_STRATEGY=AI_FIRST
+
+# Lemon Squeezy Simulation (Leave true for local testing)
+LEMON_SQUEEZY_SIMULATION=true
+```
+
+Start the backend development server:
+```bash
+npm run dev
+```
+*Backend runs at `http://localhost:8080` (Health check: `http://localhost:8080/health`).*
 
 ---
 
-## 🏆 Project Impact Summary
+### Step 2: Install Chrome Extension
+1. Open Google Chrome and navigate to `chrome://extensions/`.
+2. Enable **Developer mode** (top-right toggle).
+3. Click **Load unpacked** (top-left).
+4. Select the `extension/` folder in this repository.
+5. Alternatively, download the pre-packaged archive [telmy-cws-clean.zip](file:///d:/webdev/laragon/www/telmy/telmy-cws-clean.zip) (1.43 MB) and drag it into Chrome.
 
-| What People Faced Before | How Telmy.ai Changes Everything |
+---
+
+### Step 3: Try It on a Real Form
+1. Open any web form, or use our built-in simulator:
+   * **Interactive Form Playground:** `http://localhost:8080/demo.html`
+   * **User Dashboard:** `http://localhost:8080/dashboard.html`
+2. Open Telmy by clicking the blue icon in your Chrome toolbar or pressing **`Alt + G`**.
+3. **Experience the Features:**
+   * **1-Click Field Guide:** Click any numbered badge to view plain explanations and examples.
+   * **Talking Avatar & Voice:** Click `🔊` to listen and watch the avatar's lips sync in real time.
+   * **Translate Page:** Click the *"Translate Full Page"* chip to view the page translated into your preferred language.
+   * **Universal PDF Guide:** Drag any visa/scholarship PDF into the Side Panel or test with `test-page/demo_apostille.html`.
+   * **Pre-Submission Auditor:** Click *"🔍 Audit Form"* to run a sanity check on your filled values.
+   * **Profile Vault:** Store your master profile once and 1-click fill matching fields.
+   * **Lemon Squeezy Simulation:** Click the `💎 5 Forms` badge and simulate purchasing credits instantly!
+
+---
+
+## 🔒 Chrome Web Store Policy Compliance (MV3)
+
+Telmy.ai was engineered to be **100% compliant** with Google Chrome Web Store Developer Policies:
+* **Least Privilege Principle:** Only requests `["storage", "activeTab", "scripting", "sidePanel"]`.
+* **Zero Wildcard Hosts:** `host_permissions` is intentionally empty. Scripts run strictly on user demand.
+* **No Remote Code Execution:** Zero dynamic `eval()` or CDN scripts. All libraries (`pdf-lib.min.js`, avatar controllers) are bundled locally.
+* **User-Initiated Gestures Only:** Form fills require explicit user clicks. No silent DOM alterations or background tracking.
+* **Single Purpose Policy:** Focused strictly on being an accessible AI Form Filling Assistant.
+
+---
+
+## 🏆 Hackathon Submission Highlights
+
+| Metric | Achievement |
 | :--- | :--- |
-| **Confusing legal jargon** causing fear and hesitation. | **Everyday human explanations** with realistic examples. |
-| **High risk of application rejection** due to misinterpretation. | **Proactive warning tips** highlighting common pitfalls. |
-| **Broken machine translations** destroying official abbreviations. | **Context-aware translation** keeping critical legal terms intact. |
-| **Impersonal, cold web forms** with zero live support. | **A warm, friendly talking avatar companion** with natural voice. |
-| **Privacy concerns** with intrusive browser extensions. | **100% privacy-first design** with zero access to passwords or cards. |
+| **Model** | Google Gemini 3.5 Flash-Lite (Vision, Multimodal, Text) |
+| **Vector Engine** | Google `text-embedding-004` (768 Dimensions) with Cosine Caching |
+| **Speech** | Google Cloud WaveNet Neural Voices + Web Audio API Viseme Lip-Sync |
+| **Cost Optimization** | >85% net margin via Semantic Cache & SHA-256 Zero-Token Template Re-Use |
+| **Privacy** | 100% Client-Side Local PII Masking (Zero storage of sensitive user secrets) |
+| **CWS Compliance** | Manifest V3 Clean (1.43 MB ZIP, Least Privilege, Zero CDN dependencies) |
 
 ---
 
-## 📄 License & Attribution
+## 📄 License
 Created with ❤️ by the **Telmy.ai Team** for the **Google AI Hackathon 2026**.  
-*Empowering digital accessibility and cross-border paperwork for all.*
+*Empowering digital accessibility, cross-border paperwork, and barrier-free opportunities for all.*

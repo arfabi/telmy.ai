@@ -277,27 +277,27 @@
 ---
 
 ### 💎 PRIORITAS 8: Monetization & Usage Quota Engine (Freemium, Pay-as-you-Go, & Subscription)
-*Target: Menyiapkan model bisnis SaaS yang berkelanjutan dengan unit economics tinggi (>85% net margin) melalui skema 5 form gratis awal, Pay-as-you-Go $5 (5 form tanpa batas waktu), serta Pro Subscription $9.99/bulan (50 form/bulan) dengan aturan pemotongan kuota berbatas waktu terlebih dahulu.*
+*Target: Menyiapkan model bisnis SaaS yang berkelanjutan dengan unit economics tinggi (>85% net margin) melalui skema 5 form gratis awal, Pay-as-you-Go $5 (10 form tanpa batas waktu), serta Pro Subscription $14.99/bulan (50 form/bulan) dengan aturan pemotongan kuota berbatas waktu terlebih dahulu.*
 
 #### 8.1. Skema Tingkatan Harga & Kuota (Pricing Tiers)
-- [ ] **Free Tier (Gratis 5 Form Awal):**
+- [x] **Free Tier (Gratis 5 Form Awal):**
   - Setiap pengguna baru (terautentikasi via Firebase Auth) otomatis mendapatkan kuota 5 kali analisis form gratis (*no credit card required*).
   - Cukup untuk menyelesaikan dan menguji coba pendaftaran beasiswa, visa, atau formulir portal pemerintah tanpa friksi awal.
-- [ ] **Pay-as-you-Go ($5 untuk 10 Form / $0.5 per Form - Tanpa Kadaluwarsa):**
+- [x] **Pay-as-you-Go ($5 untuk 10 Form / $0.5 per Form - Tanpa Kadaluwarsa):**
   - Pembelian kredit fleksibel setelah kuota gratis habis ($5 untuk 10 form).
   - **Tanpa batas waktu / tidak pernah kedaluwarsa (No Expiration).**
   - Opsi paling ramah dan ideal bagi pengguna musiman (pendaftar beasiswa luar negeri, pelancong visa, pengurus birokrasi pemerintah) yang menghindari beban komitmen langganan bulanan.
-- [ ] **Pro Subscription ($14.99 per Bulan untuk Kuota 50 Form per Bulan):**
+- [x] **Pro Subscription ($14.99 per Bulan untuk Kuota 50 Form per Bulan):**
   - Kuota 50 formulir per bulan yang diperbarui (*reset/refreshed*) setiap siklus tagihan bulanan.
   - Ditargetkan untuk pengguna rutin, konsultan beasiswa/studi luar negeri, agen visa/travel, dan profesional legal.
 
 #### 8.2. Arsitektur Data Firestore & Logika Konsumsi Kuota (Expiring-First Priority)
-- [ ] **Aturan Prioritas Pemotongan Kuota (Subscription First, then PAYG):**
+- [x] **Aturan Prioritas Pemotongan Kuota (Subscription First, then PAYG):**
   - Jika pengguna memiliki kombinasi kuota (misal: pernah membeli paket PAYG lalu kemudian berlangganan Pro):
     1. **Prioritas 1 (Habiskan Kuota Berbatas Waktu):** Sistem WAJIB memotong kuota langganan Pro terlebih dahulu (`subscriptionQuotaRemaining`) karena memiliki batas waktu aktif bulanan.
     2. **Prioritas 2 (Kredit Permanen):** Kuota PAYG (`purchasedCreditsRemaining`) baru dipotong setelah kuota Pro pada bulan berjalan telah habis (0).
     3. **Prioritas 3 (Free Tier Awal):** Kuota gratis (`freeRemaining`) hanya dikonsumsi di awal bagi pengguna baru sebelum bertransaksi.
-- [ ] **Skema Dokumen `users/{uid}` di Firestore:**
+- [x] **Skema Dokumen `users/{uid}` di Firestore:**
   - Menyimpan status kuota pengguna:
     ```json
     {
@@ -315,7 +315,7 @@
       }
     }
     ```
-- [ ] **Backend Quota Verification Middleware (`backend/src/middleware/quotaMiddleware.js`):**
+- [x] **Backend Quota Verification Middleware (`backend/src/middleware/quotaMiddleware.js`):**
   - Memverifikasi kuota pengguna sebelum mengeksekusi analisis form (Web Form & PDF/Image):
     1. Periksa apakah `subscriptionQuotaRemaining > 0` dan langganan aktif: potong kuota Pro secara atomik (`FieldValue.increment(-1)`).
     2. Jika kuota Pro kosong (0) atau tidak berlangganan: periksa apakah `purchasedCreditsRemaining > 0`, lalu potong kuota PAYG (`FieldValue.increment(-1)`).
@@ -323,14 +323,15 @@
     4. Jika seluruh kuota habis (0): Kembalikan HTTP `402 Payment Required` dengan payload status kuota dan URL checkout.
 
 #### 8.3. Antarmuka Paywall & Integrasi Payment Gateway
-- [ ] **Paywall Modal di Side Panel & Web Dashboard:**
+- [x] **Paywall Modal di Side Panel & Web Dashboard:**
   - Saat sisa kuota menipis (sisa 1 form) atau habis (0 form), tampilkan modal penawaran yang elegan:
-    * *"Pay-as-you-Go: $5 / 5 Forms ($1/form, Tanpa Batas Waktu)"*
-    * *"Pro Subscription: $9.99 / Bulan (50 Forms/bulan, Refresh Otomatis)"*
+    * *"Pay-as-you-Go: $5 / 10 Forms ($0.5/form, Tanpa Batas Waktu)"*
+    * *"Pro Subscription: $14.99 / Bulan (50 Forms/bulan, Refresh Otomatis)"*
   - Badge kuota live di header Side Panel menampilkan sisa kuota aktif secara transparan.
-- [ ] **Payment Gateway Integration (Stripe / Lemon Squeezy):**
-  - Integrasi Checkout Webhook untuk update kuota otomatis di Firestore saat pembayaran berhasil (tambah kredit PAYG atau aktivasi Pro 50 form).
-  - Mendukung kartu kredit global, Apple Pay, dan Google Pay.
+- [x] **Payment Gateway Integration (Lemon Squeezy Simulation & Webhook Engine):**
+  - Mode Simulasi terintegrasi (`POST /api/payment/simulate-purchase`) untuk pengujian instan tanpa kartu kredit riil.
+  - Integrasi Checkout Webhook (`POST /api/payment/webhook`) untuk update kuota otomatis di Firestore saat pembayaran Lemon Squeezy berhasil.
+  - Mendukung peralihan mulus ke mode live Lemon Squeezy API saat kunci API produksi dikonfigurasi.
 
 ---
 

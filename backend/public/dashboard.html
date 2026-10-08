@@ -1066,6 +1066,78 @@
         </div>
       </div>
 
+      <!-- Bento: Form Analysis Quota & Pricing (Priority 8 - Lemon Squeezy Simulation) -->
+      <div class="bento-card col-span-12" id="pricing">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="card-icon">💎</span>
+            <div>
+              <h3 class="card-title">Form Analysis Quota & Pricing</h3>
+              <p class="card-subtitle">Freemium, Pay-as-you-Go ($5 / 10 Forms), and Pro Subscription ($14.99/mo)</p>
+            </div>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <span id="dash-quota-pill" style="font-size: 12px; font-weight: 700; background: var(--accent-light); color: var(--accent); padding: 5px 12px; border-radius: 999px;">
+              💎 5 Forms Left
+            </span>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 10px;">
+          <!-- Free Tier -->
+          <div style="background: white; border: 1px solid var(--card-border); border-radius: 16px; padding: 20px; display: flex; flex-direction: column;">
+            <div style="font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">Free Tier</div>
+            <div style="font-size: 28px; font-weight: 800; color: var(--text-main); margin: 6px 0 2px;">$0 <span style="font-size: 14px; font-weight: 500; color: var(--text-secondary);">/ 5 Forms</span></div>
+            <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 14px;">Included for all new registered users. No credit card required.</p>
+            <ul style="list-style: none; padding: 0; margin: 0 0 16px; font-size: 12.5px; color: var(--text-main); display: flex; flex-direction: column; gap: 6px; flex: 1;">
+              <li>✓ 5 Form Guidance Credits</li>
+              <li>✓ Interactive Step-by-Step Explainer</li>
+              <li>✓ Local PII Redaction</li>
+            </ul>
+            <button class="btn-apple-secondary" disabled style="opacity: 0.7;">Active by Default</button>
+          </div>
+
+          <!-- Pay-as-you-Go -->
+          <div style="background: white; border: 1.5px solid #cbd5e1; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; position: relative;">
+            <div style="position: absolute; top: -10px; left: 20px; background: #f1f5f9; color: #475569; font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 999px; border: 1px solid #cbd5e1;">Seasonal Applicants</div>
+            <div style="font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-top: 4px;">Pay-as-you-Go</div>
+            <div style="font-size: 28px; font-weight: 800; color: var(--text-main); margin: 6px 0 2px;">$5 <span style="font-size: 14px; font-weight: 500; color: var(--text-secondary);">/ 10 Forms</span></div>
+            <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 14px;">$0.50/form &bull; <strong>Never Expires (Permanent)</strong>. Zero subscription stress.</p>
+            <ul style="list-style: none; padding: 0; margin: 0 0 16px; font-size: 12.5px; color: var(--text-main); display: flex; flex-direction: column; gap: 6px; flex: 1;">
+              <li>✓ 10 Interactive Form Credits</li>
+              <li>✓ No expiration date</li>
+              <li>✓ Pre-Submission Form Auditor</li>
+              <li>✓ 1-Click Vault Smart Fill</li>
+            </ul>
+            <button class="btn-apple-primary btn-dash-buy" data-plan="payg_10">⚡ Beli 10 Form ($5) [Simulasi]</button>
+          </div>
+
+          <!-- Pro Subscription -->
+          <div style="background: #fbfdff; border: 2px solid var(--accent); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; position: relative; box-shadow: 0 4px 16px rgba(0, 113, 227, 0.1);">
+            <div style="position: absolute; top: -10px; left: 20px; background: var(--accent); color: white; font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 999px;">Best Value</div>
+            <div style="font-size: 12px; font-weight: 700; color: var(--accent); text-transform: uppercase; margin-top: 4px;">Pro Subscription</div>
+            <div style="font-size: 28px; font-weight: 800; color: var(--text-main); margin: 6px 0 2px;">$14.99 <span style="font-size: 14px; font-weight: 500; color: var(--text-secondary);">/ Bulan</span></div>
+            <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 14px;">50 Forms/month ($0.30/form) &bull; Auto-refresh every month.</p>
+            <ul style="list-style: none; padding: 0; margin: 0 0 16px; font-size: 12.5px; color: var(--text-main); display: flex; flex-direction: column; gap: 6px; flex: 1;">
+              <li>✓ 50 Form Guidance Credits / bulan</li>
+              <li>✓ Gemini 3.5 Priority Processing</li>
+              <li>✓ Unlimited Voice Narration</li>
+              <li>✓ Zero-Token Document Cache</li>
+            </ul>
+            <button class="btn-apple-primary btn-dash-buy" data-plan="pro_monthly" style="background: var(--accent);">✨ Langganan Pro $14.99/bln [Simulasi]</button>
+          </div>
+        </div>
+
+        <!-- Simulation Banner -->
+        <div style="margin-top: 14px; background: #fffbeb; border: 1px dashed #f59e0b; border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <strong style="font-size: 12.5px; color: #b45309;">🍋 Lemon Squeezy Simulation Mode Active</strong>
+            <div style="font-size: 11.5px; color: #78350f;">Uji coba transaksi pembayaran instan tanpa kartu kredit riil.</div>
+          </div>
+          <button id="btn-dash-reset-quota" class="btn-apple-secondary" style="font-size: 11.5px; padding: 5px 12px;">🔄 Reset ke 5 Form</button>
+        </div>
+      </div>
+
       <!-- Bento 5: Universal PDF Form Guidance Hub (Priority 7) -->
       <div class="bento-card col-span-12" id="pdf-hub-card">
         <div class="card-header">
@@ -1288,8 +1360,101 @@
       renderLanguageGrid();
       setupAvatarUpload();
       setupMascotInteractions();
+      loadDashQuota();
+      setupDashPayment();
 
       greetingTitle.textContent = `${getAppleGreeting()}, ${currentUser.displayName || 'Friend'}`;
+    }
+
+    // Priority 8: Dashboard Quota & Lemon Squeezy Simulation
+    async function loadDashQuota() {
+      try {
+        const uid = currentUser?.uid || 'guest_user';
+        const res = await fetch(`/api/payment/quota/${encodeURIComponent(uid)}`);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.data) {
+            updateDashQuotaUI(json.data);
+          }
+        }
+      } catch (e) {
+        console.warn('Could not load quota on dashboard:', e.message);
+      }
+    }
+
+    function updateDashQuotaUI(data) {
+      const quotaPill = document.getElementById('dash-quota-pill');
+      if (!quotaPill) return;
+      const q = data.quota || {};
+      const remaining = data.totalRemaining !== undefined ? data.totalRemaining :
+        ((q.subscriptionQuotaRemaining || 0) + (q.purchasedCreditsRemaining || 0) + (q.freeRemaining || 0));
+
+      quotaPill.textContent = `💎 ${remaining} Form${remaining === 1 ? '' : 's'} Left`;
+      if (remaining > 2) {
+        quotaPill.style.background = 'var(--accent-light)';
+        quotaPill.style.color = 'var(--accent)';
+      } else if (remaining > 0) {
+        quotaPill.style.background = '#fef3c7';
+        quotaPill.style.color = '#b45309';
+      } else {
+        quotaPill.style.background = '#fee2e2';
+        quotaPill.style.color = '#dc2626';
+      }
+    }
+
+    function setupDashPayment() {
+      const buyBtns = document.querySelectorAll('.btn-dash-buy');
+      buyBtns.forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const planId = btn.getAttribute('data-plan') || 'payg_10';
+          const originalText = btn.textContent;
+          btn.textContent = '⏳ Processing...';
+          btn.disabled = true;
+
+          try {
+            const uid = currentUser?.uid || 'guest_user';
+            const res = await fetch('/api/payment/simulate-purchase', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ uid, planId })
+            });
+
+            const json = await res.json();
+            if (json.success && json.user) {
+              updateDashQuotaUI(json.user);
+              showToast(`🎉 Pembayaran disimulasikan! Paket ${json.plan?.name || planId} aktif.`);
+            } else {
+              alert('Simulasi pembelian gagal: ' + (json.error || 'Server error'));
+            }
+          } catch (err) {
+            alert('Gagal menghubungi backend: ' + err.message);
+          } finally {
+            btn.textContent = originalText;
+            btn.disabled = false;
+          }
+        });
+      });
+
+      const resetBtn = document.getElementById('btn-dash-reset-quota');
+      if (resetBtn) {
+        resetBtn.addEventListener('click', async () => {
+          const uid = currentUser?.uid || 'guest_user';
+          const res = await fetch('/api/payment/reset-quota', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ uid })
+          });
+          const json = await res.json();
+          if (json.success) {
+            updateDashQuotaUI({
+              plan: 'free',
+              totalRemaining: 5,
+              quota: json.data?.quota || { freeRemaining: 5 }
+            });
+            showToast('Quota reset to 5 free forms');
+          }
+        });
+      }
     }
 
     function renderUserFields() {

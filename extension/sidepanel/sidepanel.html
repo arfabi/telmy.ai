@@ -17,6 +17,10 @@
         </div>
       </div>
       <div class="sp-controls">
+        <div id="sp-quota-badge" class="sp-quota-badge" title="Form Analysis Quota (Click to view/upgrade)">
+          <span class="quota-icon">💎</span>
+          <span id="sp-quota-text">5 Forms</span>
+        </div>
         <select id="sp-lang-select" class="sp-select" title="Select Language">
           <option value="en" selected>🇬🇧 EN (English)</option>
           <option value="id">🇮🇩 ID (Indonesia)</option>
@@ -501,6 +505,86 @@
       </div>
       <div class="vault-footer">
         <button type="button" id="btn-save-vault" class="btn-vault-save">💾 Simpan ke Profile Vault</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Priority 8: Paywall & Quota Upgrade Modal (Lemon Squeezy Simulation) -->
+  <div id="sp-paywall-modal" class="sp-modal" style="display: none;">
+    <div class="sp-modal-content sp-paywall-modal-content">
+      <div class="sp-modal-header">
+        <div class="sp-paywall-title-row">
+          <span class="sp-paywall-badge-icon">💎</span>
+          <div>
+            <h3>Form Analysis Quota</h3>
+            <p class="sp-paywall-subtitle" id="paywall-status-subtitle">Kelola kuota panduan formulir Telmy</p>
+          </div>
+        </div>
+        <button id="btn-close-paywall" class="sp-modal-close" title="Tutup">&times;</button>
+      </div>
+      <div class="sp-paywall-body">
+        <!-- Live Quota Summary Card -->
+        <div class="sp-quota-summary-card">
+          <div class="quota-summary-metric">
+            <span class="quota-sum-num" id="paywall-sum-remaining">5</span>
+            <span class="quota-sum-label">Form Tersisa</span>
+          </div>
+          <div class="quota-summary-details">
+            <div class="quota-row"><span class="q-label">Plan Aktif:</span> <strong id="paywall-sum-plan">Free Tier</strong></div>
+            <div class="quota-row"><span class="q-label">Kredit Permanen (PAYG):</span> <span id="paywall-sum-payg">0 Form</span></div>
+            <div class="quota-row"><span class="q-label">Langganan Pro (Bulanan):</span> <span id="paywall-sum-pro">0 Form</span></div>
+          </div>
+        </div>
+
+        <div class="sp-paywall-tiers">
+          <!-- Tier 1: PAYG -->
+          <div class="paywall-tier-card" id="card-tier-payg">
+            <div class="tier-badge-pill">Populer & Fleksibel</div>
+            <div class="tier-header">
+              <h4>Pay-as-you-Go</h4>
+              <div class="tier-price"><span class="currency">$</span><span class="amount">5</span> <span class="unit">/ 10 Form</span></div>
+              <div class="tier-subtext">$0.50 / form &bull; <strong>Tanpa Batas Waktu</strong></div>
+            </div>
+            <ul class="tier-features">
+              <li>✓ 10 kredit analisis form web & PDF</li>
+              <li>✓ Tidak pernah kedaluwarsa (No expiration)</li>
+              <li>✓ AI Pre-Submission Form Auditor</li>
+              <li>✓ 1-Click Vault Smart Fill</li>
+            </ul>
+            <button class="btn-tier-purchase btn-tier-payg" data-plan="payg_10">
+              ⚡ Beli Kredit $5
+            </button>
+          </div>
+
+          <!-- Tier 2: Pro Subscription -->
+          <div class="paywall-tier-card recommended" id="card-tier-pro">
+            <div class="tier-badge-pill highlight">Nilai Terbaik</div>
+            <div class="tier-header">
+              <h4>Pro Subscription</h4>
+              <div class="tier-price"><span class="currency">$</span><span class="amount">14.99</span> <span class="unit">/ Bulan</span></div>
+              <div class="tier-subtext">50 Form/bulan &bull; Refresh Otomatis</div>
+            </div>
+            <ul class="tier-features">
+              <li>✓ 50 formulir per bulan ($0.30/form)</li>
+              <li>✓ Prioritas antrean Gemini 3.5 Flash-Lite</li>
+              <li>✓ Zero-Token Document Template Cache</li>
+              <li>✓ Narasi suara WaveNet tak terbatas</li>
+            </ul>
+            <button class="btn-tier-purchase btn-tier-pro" data-plan="pro_monthly">
+              ✨ Langganan Pro $14.99/bln
+            </button>
+          </div>
+        </div>
+
+        <!-- Lemon Squeezy Simulation Notice / Quick Simulator -->
+        <div class="sp-simulation-box">
+          <div class="sim-badge">🍋 Lemon Squeezy Test Mode</div>
+          <p class="sim-info">Mode simulasi aktif. Anda dapat menguji transaksi instan tanpa kartu kredit nyata.</p>
+          <div class="sim-actions">
+            <button class="btn-sim-instant" data-plan="payg_10">⚡ Simulasi Beli PAYG (10 Form)</button>
+            <button class="btn-sim-instant secondary" data-plan="pro_monthly">✨ Simulasi Aktifkan Pro (50 Form)</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>

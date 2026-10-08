@@ -1,5 +1,6 @@
 import express from 'express';
 import { explainField } from '../services/dictionaryService.js';
+import { verifyAndDeductQuota } from '../middleware/quotaMiddleware.js';
 
 const router = express.Router();
 
@@ -8,7 +9,7 @@ const router = express.Router();
  * Body: { metadata: {...}, language: 'id', pageContext: '...' }
  * Or batch: { fields: [{metadata:...}], language: 'id' }
  */
-router.post('/explain', async (req, res) => {
+router.post('/explain', verifyAndDeductQuota, async (req, res) => {
   try {
     const { metadata, fields, language = 'en', pageContext = '' } = req.body;
 
@@ -21,7 +22,7 @@ router.post('/explain', async (req, res) => {
           pageContext
         }))
       );
-      return res.json({ success: true, count: results.length, data: results });
+      return res.json({ success: true, count: results.length, data: results, quota: req.userQuota });
     }
 
     // Single field explanation
@@ -30,7 +31,7 @@ router.post('/explain', async (req, res) => {
     }
 
     const explanation = await explainField({ metadata, language, pageContext });
-    return res.json({ success: true, data: explanation });
+    return res.json({ success: true, data: explanation, quota: req.userQuota });
   } catch (error) {
     console.error('Error in /api/explain:', error);
     return res.status(500).json({ success: false, error: error.message });

@@ -120,6 +120,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   const onboardingUserAvatarText = document.getElementById('onboarding-user-avatar-text');
   const onboardingUserAvatarImg = document.getElementById('onboarding-user-avatar-img');
 
+  // Priority 8: Quota & Paywall Elements
+  const spQuotaBadge = document.getElementById('sp-quota-badge');
+  const spQuotaText = document.getElementById('sp-quota-text');
+  const spPaywallModal = document.getElementById('sp-paywall-modal');
+  const btnClosePaywall = document.getElementById('btn-close-paywall');
+  const paywallStatusSubtitle = document.getElementById('paywall-status-subtitle');
+  const paywallSumRemaining = document.getElementById('paywall-sum-remaining');
+  const paywallSumPlan = document.getElementById('paywall-sum-plan');
+  const paywallSumPayg = document.getElementById('paywall-sum-payg');
+  const paywallSumPro = document.getElementById('paywall-sum-pro');
+  const btnTierPurchases = document.querySelectorAll('.btn-tier-purchase');
+  const btnSimInstants = document.querySelectorAll('.btn-sim-instant');
+
   // State
   let currentLanguage = 'en';
   let isMuted = false;
@@ -142,6 +155,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   let currentPdfData = null;
   let activePdfSectionIndex = 0;
   let pdfChecklistState = {};
+  let currentQuotaData = null;
 
   // Priority 7 & 9 States
   let currentPdfRawBytes = null;
@@ -386,6 +400,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     setupUserControlsAndOnboarding();
     setupPdfMode();
+    setupQuotaAndPaywall();
+    refreshUserQuota();
 
     // Determine current active tab
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -1621,6 +1637,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
           }, (expRes) => {
             if (spPdfAnalyzing) spPdfAnalyzing.style.display = 'none';
+            if (expRes && expRes.quotaExhausted) {
+              if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
+              if (telmyAvatar) telmyAvatar.setState('IDLE');
+              openPaywallModal('Sisa kuota gratis Anda telah habis. Beli kredit atau upgrade ke Pro untuk melanjutkan.');
+              return;
+            }
+            if (expRes && expRes.quota) {
+              refreshUserQuota(expRes.quota);
+            }
             if (chrome.runtime.lastError || !expRes || !expRes.success || !expRes.data) {
               if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
               if (telmyAvatar) telmyAvatar.setState('IDLE');
@@ -1744,6 +1769,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
       }, (res) => {
         if (spPdfAnalyzing) spPdfAnalyzing.style.display = 'none';
+        if (res && res.quotaExhausted) {
+          if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
+          if (telmyAvatar) telmyAvatar.setState('IDLE');
+          openPaywallModal('Sisa kuota gratis Anda telah habis. Beli kredit atau upgrade ke Pro untuk melanjutkan.');
+          return;
+        }
+        if (res && res.quota) {
+          refreshUserQuota(res.quota);
+        }
         if (chrome.runtime.lastError || !res || !res.success || !res.data) {
           if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
           if (telmyAvatar) telmyAvatar.setState('IDLE');
@@ -2419,6 +2453,136 @@ document.addEventListener('DOMContentLoaded', async () => {
       binary += String.fromCharCode(bytes[i]);
     }
     return `data:${mimeType};base64,` + btoa(binary);
+  }
+
+  // =========================================================================
+  // Priority 8: Quota & Paywall Engine (Lemon Squeezy Simulation)
+  // =========================================================================
+  async function refreshUserQuota(quotaOverride) {
+    if (quotaOverride) {
+      currentQuotaData = quotaOverride;
+      updateQuotaUI(quotaOverride);
+      await chrome.storage.local.set({ telmy_quota: quotaOverride });
+      return;
+    }
+
+    // Read cached quota first for instant UI response
+    const stored = await chrome.storage.local.get(['telmy_quota']);
+    if (stored.telmy_quota) {
+      currentQuotaData = stored.telmy_quota;
+      updateQuotaUI(stored.telmy_quota);
+    }
+
+    // Fetch fresh from backend via service worker
+    chrome.runtime.sendMessage({ type: 'GET_USER_QUOTA' }, (res) => {
+      if (chrome.runtime.lastError || !res || !res.success) return;
+      if (res.data) {
+        currentQuotaData = res.data;
+        updateQuotaUI(res.data);
+        chrome.storage.local.set({ telmy_quota: res.data });
+      }
+    });
+  }
+
+  function updateQuotaUI(data) {
+    if (!spQuotaBadge || !spQuotaText) return;
+    const q = data.quota || {};
+    const remaining = data.totalRemaining !== undefined ? data.totalRemaining : 
+      ((q.subscriptionQuotaRemaining || 0) + (q.purchasedCreditsRemaining || 0) + (q.freeRemaining || 0));
+
+    spQuotaText.textContent = `${remaining} Form${remaining === 1 ? '' : 's'}`;
+
+    spQuotaBadge.classList.remove('quota-high', 'quota-warning', 'quota-empty');
+    if (remaining > 2) {
+      spQuotaBadge.classList.add('quota-high');
+    } else if (remaining > 0) {
+      spQuotaBadge.classList.add('quota-warning');
+    } else {
+      spQuotaBadge.classList.add('quota-empty');
+    }
+
+    // Update modal metrics if elements exist
+    if (paywallSumRemaining) paywallSumRemaining.textContent = remaining;
+    if (paywallSumPlan) {
+      const planName = data.plan === 'pro' ? 'Pro Subscription ($14.99/bln)' :
+                       data.plan === 'payg' ? 'Pay-as-you-Go' : 'Free Tier (Gratis)';
+      paywallSumPlan.textContent = planName;
+    }
+    if (paywallSumPayg) paywallSumPayg.textContent = `${q.purchasedCreditsRemaining || 0} Form`;
+    if (paywallSumPro) paywallSumPro.textContent = `${q.subscriptionQuotaRemaining || 0} Form`;
+  }
+
+  function openPaywallModal(reasonSubtitle) {
+    if (!spPaywallModal) return;
+    if (reasonSubtitle && paywallStatusSubtitle) {
+      paywallStatusSubtitle.textContent = reasonSubtitle;
+    }
+    if (currentQuotaData) {
+      updateQuotaUI(currentQuotaData);
+    }
+    spPaywallModal.style.display = 'flex';
+  }
+
+  function closePaywallModal() {
+    if (spPaywallModal) {
+      spPaywallModal.style.display = 'none';
+    }
+  }
+
+  function setupQuotaAndPaywall() {
+    if (spQuotaBadge) {
+      spQuotaBadge.addEventListener('click', () => {
+        openPaywallModal('Tingkatkan kuota formulir untuk analisis tanpa batas');
+      });
+    }
+
+    if (btnClosePaywall) {
+      btnClosePaywall.addEventListener('click', closePaywallModal);
+    }
+
+    if (spPaywallModal) {
+      spPaywallModal.addEventListener('click', (e) => {
+        if (e.target === spPaywallModal) closePaywallModal();
+      });
+    }
+
+    const triggerPurchase = (planId, btn) => {
+      const originalText = btn.textContent;
+      btn.textContent = '⏳ Memproses...';
+      btn.disabled = true;
+
+      chrome.runtime.sendMessage({ type: 'SIMULATE_PURCHASE', planId }, (res) => {
+        btn.textContent = originalText;
+        btn.disabled = false;
+
+        if (res && res.success) {
+          const quotaData = res.user || {
+            plan: res.plan?.type === 'subscription' ? 'pro' : 'payg',
+            quota: res.user?.quota || {},
+            totalRemaining: res.user?.totalRemaining || 10
+          };
+          refreshUserQuota(quotaData);
+          alert(`🎉 Pembayaran Berhasil Disimulasikan!\n\nPaket: ${res.plan?.name || planId}\nSisa Kuota: ${res.user?.totalRemaining || 'Bertambah'}\n\nTerima kasih telah menggunakan Telmy!`);
+          closePaywallModal();
+        } else {
+          alert('Simulasi pembayaran gagal atau server offline. Pastikan backend aktif di localhost:8080.');
+        }
+      });
+    };
+
+    btnTierPurchases.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const planId = btn.getAttribute('data-plan') || 'payg_10';
+        triggerPurchase(planId, btn);
+      });
+    });
+
+    btnSimInstants.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const planId = btn.getAttribute('data-plan') || 'payg_10';
+        triggerPurchase(planId, btn);
+      });
+    });
   }
 
   // Boot

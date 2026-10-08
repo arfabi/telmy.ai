@@ -13,6 +13,7 @@ import chatRoutes from './routes/chat.js';
 import translateRoutes from './routes/translate.js';
 import userRoutes from './routes/user.js';
 import pdfRoutes from './routes/pdf.js';
+import paymentRoutes from './routes/payment.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -85,6 +86,7 @@ app.use('/api', chatRoutes);
 app.use('/api', translateRoutes);
 app.use('/api', userRoutes);
 app.use('/api', pdfRoutes);
+app.use('/api', paymentRoutes);
 
 // Fallback 404
 app.use((req, res) => {
