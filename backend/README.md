@@ -66,21 +66,22 @@ Cek kesehatan server di: `http://localhost:8080/health`
 
 ---
 
-## 🚀 Deployment ke Google Cloud Run
+## ☁️ Production URL di Google Cloud Run
+Backend ini saat ini telah aktif di Google Cloud Run:
+* **Production Endpoint:** `https://telmy-ai.cloud.run`
+* **Health Check:** `https://telmy-ai.cloud.run/health`
+* **Region:** `asia-northeast1` (Tokyo)
 
-Karena backend ini sudah memiliki [Dockerfile](Dockerfile) standar:
+---
 
-1. Pastikan gcloud CLI terpasang dan login:
-   ```bash
-   gcloud auth login
-   gcloud config set project [PROJECT_ID_ANDA]
-   ```
-2. Deploy langsung dari folder `backend/`:
-   ```bash
-   gcloud run deploy guidemeto-api \
-     --source . \
-     --region asia-southeast2 \
-     --allow-unauthenticated \
-     --set-env-vars GEMINI_API_KEY="[API_KEY_ANDA]"
-   ```
-3. Cloud Run secara otomatis menggunakan **Application Default Credentials (ADC)** untuk Firestore, sehingga file `serviceAccountKey.json` tidak perlu diunggah ke image production.
+## 🛠️ Google Technology Stack (100% Google AI & Cloud Native)
+1. **Google Gemini API (`gemini-3.1-flash-lite`)**: Core LLM untuk analisis formulir, chat, dan translasi.
+2. **Google Gemini Embedding (`gemini-embedding-001`)**: Vektor semantik 3.072 dimensi untuk zero-token cache matching.
+3. **Google Cloud Text-to-Speech (TTS WaveNet)**: Sintesis suara alami multibahasa.
+4. **Google Cloud Run**: Serverless container host produksi (`https://telmy-ai.cloud.run`).
+5. **Google Cloud Build**: Otomatisasi CI/CD dari repositori GitHub.
+6. **Firebase Cloud Firestore**: Basis data NoSQL real-time.
+7. **Firebase Vector Search**: Pencarian kemiripan vektor cosine similarity $\ge 0.90$.
+8. **Firebase Authentication**: Google Identity / OAuth 2.0.
+9. **Firebase Storage / Google Cloud Storage**: Penyimpanan blob dokumen form & scan.
+10. **Chrome Extensions API (Manifest V3)**: Google Chrome Native Side Panel (`chrome.sidePanel`).

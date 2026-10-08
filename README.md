@@ -9,13 +9,13 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Model-Google%20Gemini%203.5%20Flash--Lite-4285F4?logo=google&logoColor=white" alt="Google Gemini" />
-  <img src="https://img.shields.io/badge/Embeddings-text--embedding--004%20(768d)-4285F4?logo=google&logoColor=white" alt="Embeddings" />
+  <img src="https://img.shields.io/badge/Model-Google%20Gemini%203.1%20Flash--Lite-4285F4?logo=google&logoColor=white" alt="Google Gemini" />
+  <img src="https://img.shields.io/badge/Embeddings-gemini--embedding--001%20(3072d)-4285F4?logo=google&logoColor=white" alt="Gemini Embeddings" />
   <img src="https://img.shields.io/badge/Voice%20Synthesis-Google%20Cloud%20WaveNet-34A853?logo=googlecloud&logoColor=white" alt="WaveNet TTS" />
   <img src="https://img.shields.io/badge/Database-Firebase%20Firestore-FFCA28?logo=firebase&logoColor=black" alt="Firestore" />
-  <img src="https://img.shields.io/badge/PDF%20Engine-pdf--lib%20(Client--Side)-FF5722" alt="PDF-Lib" />
+  <img src="https://img.shields.io/badge/Hosting-Google%20Cloud%20Run-4285F4?logo=googlecloud&logoColor=white" alt="Cloud Run" />
   <img src="https://img.shields.io/badge/Extension-Chrome%20MV3%20Side%20Panel-0071e3?logo=googlechrome&logoColor=white" alt="Chrome MV3" />
-  <img src="https://img.shields.io/badge/Payments-Lemon%20Squeezy%20(Simulated)-FFC83B" alt="Lemon Squeezy" />
+  <img src="https://img.shields.io/badge/Domain-telmy--ai.cloud.run-34A853" alt="Domain" />
 </p>
 
 ---
@@ -61,8 +61,8 @@ graph TD
     end
 
     subgraph GoogleAI ["Google Cloud & Firebase Ecosystem"]
-        GeminiFlash["Gemini 3.5 Flash-Lite\n(Vision & Reasoning)"]
-        GeminiEmbed["text-embedding-004\n(768 Dimensions)"]
+        GeminiFlash["Gemini 3.1 Flash-Lite\n(Vision & Reasoning)"]
+        GeminiEmbed["gemini-embedding-001\n(3,072 Dimensions)"]
         GoogleTTS["Google Cloud WaveNet TTS"]
         Firestore["Cloud Firestore\n(Entries, Templates, Users)"]
     end
@@ -86,6 +86,27 @@ graph TD
     PDFSvc <--> GeminiFlash
     SW <--> GoogleTTS
 ```
+
+---
+
+## 🛠️ Complete Google Technology Stack (100% Google AI & Cloud Native)
+
+Telmy.ai is architected natively around the Google Cloud & Google AI ecosystem:
+
+| Layer | Google Technology | Model / Service Version | Implementation Role in Telmy.ai |
+| :--- | :--- | :--- | :--- |
+| **Generative Intelligence (LLM)** | **Google Gemini API** | `gemini-3.1-flash-lite` | Multimodal core engine for field semantic analysis, plain-language legal simplification, conversational copilot chat, multimodal document guidance, and JAPAC translation matrix. |
+| **Vector Embeddings (RAG)** | **Google Gemini Embedding** | `gemini-embedding-001` (3,072 dimensions) | Generates high-fidelity semantic vectors for form field labels and legal terms to power Zero-Token cosine similarity caching. |
+| **Voice Synthesis (TTS)** | **Google Cloud Text-to-Speech** | WaveNet Neural Synthesis (`id-ID-Wavenet-A`, `en-US-Wavenet-F`, etc.) | High-performance natural voice generation reading form field explanations aloud, dynamically driving the SVG talking mascot lip-sync. |
+| **Database & Realtime Sync** | **Firebase Cloud Firestore** | Google Cloud Firestore (Native Mode) | Stores verified legal dictionaries, field schemas, user profiles, form draft states, and unmatched field logs. |
+| **Semantic Vector Cache** | **Firestore Vector Search** | Cosine Similarity ($\ge 0.90$) | Cross-domain semantic matching across stored Firestore entries, serving cached explanations instantly with zero LLM token costs. |
+| **User Identity & Auth** | **Firebase Authentication** | Google Identity & OAuth 2.0 | Seamless 1-Click "Sign in with Google" bridging the Web Platform, Member Dashboard, and Chrome Side Panel. |
+| **Document Storage** | **Firebase Storage / Cloud Storage** | Google Cloud Storage Buckets | Secure blob storage for uploaded official PDF forms, smartphone paperwork photo scans, and certified form exports. |
+| **Production Cloud Hosting** | **Google Cloud Run** | Fully Managed Serverless (`asia-northeast1`) | Docker container host serving both the Express.js Backend API and the Web Platform with custom domain mapping (`https://telmy-ai.cloud.run`). |
+| **Automated CI/CD** | **Google Cloud Build** | Continuous Deployment Pipeline | Automatically triggers Docker container build and zero-downtime deployment on push to GitHub repository. |
+| **Client Platform** | **Google Chrome Extensions API** | Manifest V3 (MV3) | Chrome Native Side Panel (`chrome.sidePanel`), Service Worker background lifecycle, Chrome Storage (`chrome.storage.local`), and DOM MutationObserver. |
+| **Speech Fallback** | **Google Web Speech API** | Client-Side Speech Synthesis & Recognition | Offline fallback voice synthesis and microphone voice-to-text input. |
+| **Design Typography** | **Google Fonts** | Inter, Outfit, Roboto | Modern, accessible typography system for web and sidepanel interfaces. |
 
 ---
 
@@ -178,7 +199,7 @@ Create `.env` inside `backend/`:
 PORT=8080
 AI_PROVIDER=gemini
 GEMINI_API_KEY=your_gemini_api_key_here
-GEMINI_MODEL=gemini-3.5-flash-lite
+GEMINI_MODEL=gemini-3.1-flash-lite
 GOOGLE_TTS_API_KEY=your_gemini_api_key_here
 EXPLAIN_STRATEGY=AI_FIRST
 
