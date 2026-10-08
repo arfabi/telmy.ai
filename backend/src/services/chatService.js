@@ -1,36 +1,25 @@
 /**
  * Telmy Backend — Conversational Copilot Chat Service
- * Orchestrates multi-turn conversation with LLM (GLM-5.3-Flash / Gemini)
- * and extracts actionable form chips (highlight, click, copy, navigate).
+ * 100% Powered by Google Gemini (Google AI Native)
+ * Multi-turn conversational co-pilot that extracts actionable form chips.
  */
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 /**
- * Handle conversational copilot chat
+ * Handle conversational copilot chat using Google Gemini
  */
 export async function handleCopilotChat({ message, history = [], language = 'en', formContext = {} }) {
-  const provider = (process.env.AI_PROVIDER || 'openai').toLowerCase();
-
-  // Try OpenAI compatible (GLM-5.3-Flash / Sumopod / OpenAI)
-  if (provider === 'openai' || process.env.OPENAI_API_KEY) {
-    try {
-      return await callChatOpenAi({ message, history, language, formContext });
-    } catch (err) {
-      console.warn(`[Chat Service] OpenAI compatible failed (${err.message}), trying fallback...`);
-    }
-  }
-
-  // Try Gemini fallback
+  // Call Google Gemini directly
   if (process.env.GEMINI_API_KEY) {
     try {
       return await callChatGemini({ message, history, language, formContext });
     } catch (err) {
-      console.warn(`[Chat Service] Gemini chat failed: ${err.message}`);
+      console.warn(`[Chat Service] Gemini chat error: ${err.message}. Using smart fallback...`);
     }
   }
 
-  // Local rule-based fallback
+  // Local rule-based fallback if offline or API key is not ready
   return createSmartChatFallback({ message, language, formContext });
 }
 
@@ -39,7 +28,7 @@ function buildSystemPrompt(language, formContext) {
   const fields = Array.isArray(formContext.fields) ? formContext.fields : [];
   const fieldListPreview = fields.slice(0, 15).map((f, i) => `${i + 1}. ${f.label || f.name || 'Field'} (${f.type || 'text'})`).join('\n');
 
-  return `You are Telmy, a friendly, ultra-helpful, and professional AI Form Explainer and Conversational Co-Pilot for web and government forms.
+  return `You are Telmy, a friendly, ultra-helpful, and professional AI Form Explainer and Conversational Co-Pilot for web and official forms.
 You speak naturally to the user in their requested language: ${language.toUpperCase()} (options: EN, ID, JA, KO, ZH, ZH-TW, VI, TH, HI, FIL, MS).
 
 CURRENT FORM CONTEXT:
@@ -47,7 +36,7 @@ CURRENT FORM CONTEXT:
 - URL / Domain: "${formContext.url || formContext.domain || 'N/A'}"
 - Total Fields Detected: ${fields.length}
 - Detected Form Fields:
-${fieldListPreview || '(Belum ada kolom terdeteksi)'}
+${fieldListPreview || '(No fields detected yet)'}
 
 YOUR GOALS:
 1. Explain form requirements clearly, concisely, and empathetically.
@@ -56,63 +45,13 @@ YOUR GOALS:
 4. If appropriate to take an action, attach an actions array at the end inside an <actions>[...]</actions> tag.
 
 Supported Action Types:
-- {"type": "HIGHLIGHT_FIELD", "index": 0, "label": "Nama Kolom"}
-- {"type": "COPY_EXAMPLE", "text": "Contoh Teks Isian"}
-- {"type": "CLICK_ELEMENT", "label": "Lanjut / Simpan", "selector": "button"}
+- {"type": "HIGHLIGHT_FIELD", "index": 0, "label": "Field Label"}
+- {"type": "COPY_EXAMPLE", "text": "Sample Text Entry"}
+- {"type": "CLICK_ELEMENT", "label": "Next / Continue", "selector": "button"}
 
 Example response format:
-Halo! Untuk kolom NIK, silakan masukkan 16 digit nomor induk kependudukan yang tertera pada KTP-el Anda. Pastikan tidak ada spasi atau tanda baca.
-<actions>[{"type": "HIGHLIGHT_FIELD", "index": 0, "label": "NIK"}, {"type": "COPY_EXAMPLE", "text": "3171012304900001"}]</actions>`;
-}
-
-async function callChatOpenAi({ message, history, language, formContext }) {
-  const baseUrl = (process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1').replace(/\/+$/, '');
-  const apiKey = process.env.OPENAI_API_KEY;
-  const model = process.env.OPENAI_MODEL || 'glm-5.3-flash';
-
-  const systemPrompt = buildSystemPrompt(language, formContext);
-
-  // Format messages
-  const messages = [
-    { role: 'system', content: systemPrompt }
-  ];
-
-  // Include recent history (max 6 messages for context)
-  if (Array.isArray(history) && history.length > 0) {
-    history.slice(-6).forEach(h => {
-      if (h.role && h.content) {
-        messages.push({
-          role: h.role === 'user' ? 'user' : 'assistant',
-          content: String(h.content)
-        });
-      }
-    });
-  }
-
-  messages.push({ role: 'user', content: message });
-
-  const response = await fetch(`${baseUrl}/chat/completions`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
-    },
-    body: JSON.stringify({
-      model,
-      messages,
-      temperature: 0.4,
-      max_tokens: 600
-    })
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text().catch(() => '');
-    throw new Error(`OpenAI-compatible error HTTP ${response.status}: ${errorText}`);
-  }
-
-  const json = await response.json();
-  const rawContent = json.choices?.[0]?.message?.content || '';
-  return parseReplyAndActions(rawContent, language);
+For the ID Number field, please enter your 16-digit official national identification number without spaces or punctuation.
+<actions>[{"type": "HIGHLIGHT_FIELD", "index": 0, "label": "National ID"}, {"type": "COPY_EXAMPLE", "text": "3171012304900001"}]</actions>`;
 }
 
 async function callChatGemini({ message, history, language, formContext }) {
@@ -121,9 +60,21 @@ async function callChatGemini({ message, history, language, formContext }) {
   const model = genAI.getGenerativeModel({ model: modelName });
 
   const systemPrompt = buildSystemPrompt(language, formContext);
-  const prompt = `${systemPrompt}\n\nUser Question: ${message}`;
 
-  const result = await model.generateContent(prompt);
+  // Build conversational context
+  let conversationText = `${systemPrompt}\n\n`;
+  if (Array.isArray(history) && history.length > 0) {
+    conversationText += `RECENT CONVERSATION HISTORY:\n`;
+    history.slice(-6).forEach(h => {
+      if (h.role && h.content) {
+        conversationText += `${h.role === 'user' ? 'User' : 'Telmy'}: ${String(h.content)}\n`;
+      }
+    });
+    conversationText += `\n`;
+  }
+  conversationText += `User Question: ${message}\nTelmy:`;
+
+  const result = await model.generateContent(conversationText);
   const response = await result.response;
   const rawContent = response.text() || '';
 
@@ -159,16 +110,15 @@ function createSmartChatFallback({ message, language, formContext }) {
   let reply = '';
   let actions = [];
 
-  if (lower.includes('halo') || lower.includes('hello') || lower.includes('hai')) {
+  if (lower.includes('halo') || lower.includes('hello') || lower.includes('hai') || lower.includes('hi')) {
     reply = language === 'en'
       ? `Hello! I'm Telmy, your form co-pilot. I can explain any field on "${formContext.title || 'this form'}", show examples, or guide you through the steps.`
       : `Halo! Saya Telmy, asisten formulir Anda. Anda dapat menanyakan arti kolom apa pun pada formulir ini, meminta contoh isian, atau meminta panduan langkah demi langkah.`;
-  } else if (lower.includes('dokumen') || lower.includes('syarat') || lower.includes('siap')) {
+  } else if (lower.includes('dokumen') || lower.includes('syarat') || lower.includes('doc') || lower.includes('require')) {
     reply = language === 'en'
-      ? `For this form, please make sure you have your identity card (KTP/Passport) and supporting documents ready.`
+      ? `For this form, please make sure you have your identity card (Passport/National ID) and supporting documents ready.`
       : `Untuk mengisi formulir ini dengan lancar, pastikan Anda menyiapkan KTP/Paspor, nomor kontak aktif, dan dokumen pendukung terkait.`;
   } else if (fields.length > 0) {
-    // Try matching field
     const matchedIdx = fields.findIndex(f => {
       const label = (f.label || f.name || '').toLowerCase();
       return lower.includes(label);
@@ -186,8 +136,8 @@ function createSmartChatFallback({ message, language, formContext }) {
       });
     } else {
       reply = language === 'en'
-        ? `I detected ${fields.length} fields on this page. Click on any field or ask me specifically (e.g., "What does NIK mean?") for detailed guidance.`
-        : `Saya mendeteksi ${fields.length} kolom pada halaman ini. Anda bisa mengeklik kolom mana saja di formulir atau bertanya langsung kepada saya (misal: "Apa arti kolom NIK?").`;
+        ? `I detected ${fields.length} fields on this page. Click on any field or ask me specifically for detailed guidance.`
+        : `Saya mendeteksi ${fields.length} kolom pada halaman ini. Anda bisa mengeklik kolom mana saja di formulir atau bertanya langsung kepada saya.`;
     }
   } else {
     reply = language === 'en'

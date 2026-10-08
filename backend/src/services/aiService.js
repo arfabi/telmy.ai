@@ -102,88 +102,7 @@ const KNOWN_SEMANTIC_FIELDS = {
 };
 
 /**
- * Call OpenAI-Compatible API (OpenAI, Groq, OpenRouter, DeepSeek, Ollama, etc.)
- */
-async function callOpenAiCompatible(fieldMetadata, targetLanguage, pageContext) {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    throw new Error('OPENAI_API_KEY is not configured');
-  }
-
-  let baseUrl = process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1';
-  baseUrl = baseUrl.replace(/\/+$/, ''); // remove trailing slash
-  const modelName = process.env.OPENAI_MODEL || 'gpt-4o-mini';
-
-  const systemPrompt = `You are Telmy.ai, an expert AI form-filling assistant for government, civil, and public online forms.
-Your mission is to explain form fields to general citizens and foreign applicants with utmost clarity, empathy, and professional precision.
-
-You MUST translate the Indonesian label to the target language (e.g. "Tempat Lahir" -> "Place of Birth" in English, or "出生地点" in Chinese).
-Provide realistic, culturally appropriate fictional examples (e.g. "New York, USA" or "Jakarta, Indonesia", never generic placeholders).
-
-Format: You must output ONLY a valid JSON object matching this schema:
-{
-  "label": "Translated field name in target language (e.g., 'Place of Birth')",
-  "meaning": "Clear 1-2 sentence explanation of what this field is and why government asks for it.",
-  "howToFill": "Step-by-step instructions on how to fill it and what document to check.",
-  "example": "Realistic fictional example (e.g., 'New York, USA' or '15-08-1990')",
-  "commonMistakes": [
-    "First common mistake (e.g. hospital name instead of city)",
-    "Second common mistake (e.g. spelling mismatch with passport)"
-  ],
-  "tipsForForeigners": "Special notes for foreign applicants or passport holders.",
-  "confidence": 0.95
-}`;
-
-  const userPrompt = `Explain this form field:
-- Original Label: "${fieldMetadata.label || fieldMetadata.name || 'Kolom Isian'}"
-- Input Type: "${fieldMetadata.type || 'text'}"
-- Available Options: ${fieldMetadata.options && fieldMetadata.options.length ? JSON.stringify(fieldMetadata.options) : 'None'}
-- Placeholder / Hint: "${fieldMetadata.placeholder || '-'}"
-- Domain / Page: "${fieldMetadata.domain || 'Layanan Administrasi'}" (${pageContext || ''})
-- Target Language: ${targetLanguage.toUpperCase()} (options: en, zh, id, ja, ko)
-
-Output JSON only:`;
-
-  const url = `${baseUrl}/chat/completions`;
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
-    },
-    body: JSON.stringify({
-      model: modelName,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt }
-      ],
-      temperature: 0.2,
-      response_format: { type: 'json_object' }
-    })
-  });
-
-  if (!response.ok) {
-    const errorBody = await response.text();
-    throw new Error(`OpenAI API error (${response.status}): ${errorBody}`);
-  }
-
-  const json = await response.json();
-  const content = json.choices?.[0]?.message?.content?.trim();
-  if (!content) {
-    throw new Error('Empty response from OpenAI-compatible API');
-  }
-
-  const parsed = JSON.parse(content);
-  return {
-    ...parsed,
-    source: 'ai_draft',
-    provider: `openai-compat (${modelName})`,
-    generatedAt: new Date().toISOString()
-  };
-}
-
-/**
- * Call Google Gemini API as secondary option
+ * Call Google Gemini API (Primary AI Engine)
  */
 async function callGemini(fieldMetadata, targetLanguage, pageContext) {
   const apiKey = process.env.GEMINI_API_KEY;
@@ -203,10 +122,14 @@ async function callGemini(fieldMetadata, targetLanguage, pageContext) {
 
   const prompt = `
 You are Telmy.ai, an AI form-filling assistant for public and government forms.
-Task: Explain this field for foreign applicants and general public.
+Task: Explain this field for applicants and the general public.
 
 Field info:
 - Original Label: "${fieldMetadata.label || fieldMetadata.name || 'Kolom Isian'}"
+- Input Type: "${fieldMetadata.type || 'text'}"
+- Available Options: ${fieldMetadata.options && fieldMetadata.options.length ? JSON.stringify(fieldMetadata.options) : 'None'}
+- Placeholder / Hint: "${fieldMetadata.placeholder || '-'}"
+- Domain / Page: "${fieldMetadata.domain || 'Layanan Administrasi'}" (${pageContext || ''})
 - Target Language: ${targetLanguage.toUpperCase()}
 
 Return valid JSON:
@@ -235,9 +158,8 @@ Return valid JSON:
 /**
  * Main AI Explanation Router:
  * 1. Checks known semantic dictionary first (instant & 100% accurate)
- * 2. Tries OpenAI-compatible API (primary via env)
- * 3. Tries Gemini API (secondary fallback)
- * 4. Gracefully falls back to localized template
+ * 2. Calls Google Gemini (primary AI provider)
+ * 3. Gracefully falls back to localized template
  */
 export async function generateFieldExplanation(fieldMetadata, targetLanguage = 'en', pageContext = '') {
   const rawLabel = (fieldMetadata.label || fieldMetadata.name || '').toLowerCase().trim();
@@ -262,25 +184,13 @@ export async function generateFieldExplanation(fieldMetadata, targetLanguage = '
     }
   }
 
-  const provider = (process.env.AI_PROVIDER || 'openai').toLowerCase();
-
-  // 2. Try OpenAI Compatible first (if configured or default)
-  if (provider === 'openai' || process.env.OPENAI_API_KEY) {
-    try {
-      console.log(`[AI Service] Calling OpenAI-compatible API (${process.env.OPENAI_MODEL || 'gpt-4o-mini'})...`);
-      return await callOpenAiCompatible(fieldMetadata, targetLanguage, pageContext);
-    } catch (err) {
-      console.warn(`[AI Service] OpenAI-compatible call failed: ${err.message}. Trying fallback...`);
-    }
-  }
-
-  // 3. Try Gemini as secondary
+  // 2. Call Google Gemini (100% Google AI Native)
   if (process.env.GEMINI_API_KEY) {
     try {
-      console.log('[AI Service] Calling Gemini API fallback...');
+      console.log(`[AI Service] Calling Google Gemini API (${process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite'})...`);
       return await callGemini(fieldMetadata, targetLanguage, pageContext);
     } catch (err) {
-      console.warn(`[AI Service] Gemini fallback failed: ${err.message}`);
+      console.warn(`[AI Service] Gemini call notice: ${err.message}. Using localized fallback...`);
     }
   }
 

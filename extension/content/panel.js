@@ -599,7 +599,7 @@ window.GMTPanel = (function () {
       saveChatHistory();
       renderChatMessagesOnly();
 
-      // Automatically speak AI answer via ElevenLabs backend gateway / browser TTS
+      // Automatically speak AI answer via Google Cloud TTS backend gateway / browser TTS
       if (window.TelmyVoice && !window.TelmyVoice.isMuted()) {
         window.TelmyVoice.speak(reply, currentLanguage);
       }

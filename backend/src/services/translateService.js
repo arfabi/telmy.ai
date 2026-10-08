@@ -1,6 +1,6 @@
 /**
  * Telmy Backend — Context-Aware Full Page Translation Service
- * Powered by Google Gemini 3.5 Flash-Lite (with fallback to OpenAI-compatible)
+ * 100% Powered by Google Gemini (Google AI Native)
  * 
  * Implements 4-layer prompt engineering:
  * 1. Domain & Context Awareness (bureaucracy, civil registry, visa, public service)
@@ -100,58 +100,6 @@ async function callGeminiTranslation(pageContext, targetLanguage, texts) {
 }
 
 /**
- * Call OpenAI-compatible endpoint (fallback)
- */
-async function callOpenAiTranslation(pageContext, targetLanguage, texts) {
-  const baseUrl = (process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1').replace(/\/+$/, '');
-  const apiKey = process.env.OPENAI_API_KEY;
-  const modelName = process.env.OPENAI_MODEL || 'glm-5.3-flash';
-
-  if (!apiKey) {
-    throw new Error('OPENAI_API_KEY is not configured');
-  }
-
-  const prompt = buildTranslationPrompt(pageContext, targetLanguage, texts);
-
-  const response = await fetch(`${baseUrl}/chat/completions`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
-    },
-    body: JSON.stringify({
-      model: modelName,
-      messages: [
-        {
-          role: 'system',
-          content: 'You are Telmy.ai, an expert UI/UX web translator. Return only valid JSON key-value pairs matching input keys.'
-        },
-        {
-          role: 'user',
-          content: prompt
-        }
-      ],
-      temperature: 0.2,
-      response_format: { type: 'json_object' }
-    })
-  });
-
-  if (!response.ok) {
-    const errorBody = await response.text();
-    throw new Error(`OpenAI error HTTP ${response.status}: ${errorBody}`);
-  }
-
-  const json = await response.json();
-  const content = json.choices?.[0]?.message?.content?.trim();
-  const translations = JSON.parse(content);
-  return {
-    translations,
-    provider: `openai-compat (${modelName})`,
-    source: 'ai_openai'
-  };
-}
-
-/**
  * Smart Local Heuristic Fallback
  * Translates known common Indonesian bureaucratic and UI words if AI endpoints are unreachable.
  */
@@ -205,7 +153,7 @@ function createHeuristicTranslation(texts, targetLanguage) {
 
 /**
  * Main Translate Page Handler
- * Prioritizes Gemini (Google AI Native) -> OpenAI fallback -> Smart Heuristic
+ * 100% Google Gemini (Google AI Native) with Smart Local Heuristic Fallback
  */
 export async function translatePageTexts({ pageContext = {}, targetLanguage = 'en', texts = {} }) {
   const tokenCount = Object.keys(texts).length;
@@ -215,11 +163,11 @@ export async function translatePageTexts({ pageContext = {}, targetLanguage = 'e
 
   console.log(`[Translate Service] Translating ${tokenCount} DOM tokens to ${targetLanguage} for domain "${pageContext.domain || 'N/A'}"...`);
 
-  // 1. Try Gemini (Google AI Native for Hackathon compliance)
+  // 1. Try Gemini (Google AI Native)
   if (process.env.GEMINI_API_KEY) {
     try {
       const result = await callGeminiTranslation(pageContext, targetLanguage, texts);
-      console.log(`[Translate Service] Successfully translated with Gemini 3.5 Flash-Lite`);
+      console.log(`[Translate Service] Successfully translated with Google Gemini`);
       return {
         ...result,
         count: Object.keys(result.translations).length,
@@ -227,27 +175,11 @@ export async function translatePageTexts({ pageContext = {}, targetLanguage = 'e
         generatedAt: new Date().toISOString()
       };
     } catch (err) {
-      console.warn(`[Translate Service] Gemini translation error: ${err.message}. Trying secondary provider...`);
+      console.warn(`[Translate Service] Gemini translation notice: ${err.message}. Using heuristic fallback...`);
     }
   }
 
-  // 2. Try OpenAI-compatible endpoint
-  if (process.env.OPENAI_API_KEY) {
-    try {
-      const result = await callOpenAiTranslation(pageContext, targetLanguage, texts);
-      console.log(`[Translate Service] Successfully translated with OpenAI-compatible endpoint`);
-      return {
-        ...result,
-        count: Object.keys(result.translations).length,
-        targetLanguage,
-        generatedAt: new Date().toISOString()
-      };
-    } catch (err) {
-      console.warn(`[Translate Service] OpenAI fallback error: ${err.message}`);
-    }
-  }
-
-  // 3. Fallback to smart local heuristic dictionary
+  // 2. Fallback to smart local heuristic dictionary
   console.log(`[Translate Service] Using smart heuristic fallback dictionary`);
   const heuristic = createHeuristicTranslation(texts, targetLanguage);
   return {

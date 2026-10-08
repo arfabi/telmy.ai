@@ -54,14 +54,10 @@ app.get('/health', (req, res) => {
     uptime: process.uptime(),
     timestamp: new Date().toISOString(),
     firebaseConnected: isFirebaseConnected,
-    aiProvider: process.env.AI_PROVIDER || (process.env.OPENAI_API_KEY ? 'openai' : 'gemini'),
-    openAiConfigured: Boolean(process.env.OPENAI_API_KEY),
-    openAiModel: process.env.OPENAI_MODEL || 'gpt-4o-mini',
-    openAiBaseUrl: process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1',
+    aiProvider: 'gemini',
     geminiConfigured: Boolean(process.env.GEMINI_API_KEY),
     geminiModel: process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite',
-    googleTtsConfigured: Boolean(process.env.GOOGLE_TTS_API_KEY || process.env.GEMINI_API_KEY),
-    elevenLabsConfigured: Boolean(process.env.ELEVENLABS_API_KEY)
+    googleTtsConfigured: Boolean(process.env.GOOGLE_TTS_API_KEY || process.env.GEMINI_API_KEY)
   });
 });
 
@@ -95,16 +91,9 @@ app.use((req, res) => {
 
 // Start Server
 app.listen(PORT, () => {
-  const provider = (process.env.AI_PROVIDER || (process.env.OPENAI_API_KEY ? 'openai' : 'gemini')).toUpperCase();
   console.log(`🚀 [Telmy.ai Server] Running on http://localhost:${PORT}`);
   console.log(`📡 Cloud Run Ready | Health check: http://localhost:${PORT}/health`);
   console.log(`🔥 Firebase Firestore Status: ${isFirebaseConnected ? 'CONNECTED' : 'DISCONNECTED / OFFLINE MODE'}`);
-  console.log(`🤖 Active AI Provider: ${provider}`);
-  if (process.env.OPENAI_API_KEY) {
-    console.log(`✨ OpenAI-Compat Endpoint: ${process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1'} (Model: ${process.env.OPENAI_MODEL || 'gpt-4o-mini'})`);
-  }
-  if (process.env.GEMINI_API_KEY) {
-    console.log(`✨ Gemini AI Key (Fallback): CONFIGURED`);
-  }
-  console.log(`🎙️ ElevenLabs Voice Engine: ${process.env.ELEVENLABS_API_KEY ? 'CONFIGURED (Backend Gateway)' : 'NOT CONFIGURED (Browser TTS Fallback Mode)'}`);
+  console.log(`🤖 Primary AI Provider: Google Gemini (${process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite'})`);
+  console.log(`🎙️ Voice Engine: Google Cloud TTS WaveNet`);
 });

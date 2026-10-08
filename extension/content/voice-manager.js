@@ -1,7 +1,7 @@
 /**
  * Telmy — Voice Engine & Speech Recognition Manager (Content Script)
  * Handles:
- * 1. ElevenLabs TTS via Telmy Backend Gateway (with Browser SpeechSynthesis fallback)
+ * 1. Google Cloud TTS WaveNet via Telmy Backend Gateway (with Browser SpeechSynthesis fallback)
  * 2. Web Speech API Speech-to-Text (STT) for 2-way conversation
  */
 window.TelmyVoice = (function () {
@@ -37,7 +37,7 @@ window.TelmyVoice = (function () {
   };
 
   /**
-   * Speak text using Backend ElevenLabs Gateway, fallback to Web Speech
+   * Speak text using Backend Google Cloud TTS Gateway, fallback to Web Speech
    */
   async function speak(text, lang = 'id') {
     if (!text || isMutedState) return;
@@ -46,7 +46,7 @@ window.TelmyVoice = (function () {
     isSpeakingState = true;
     emit('speakStart', { text, lang });
 
-    // 1. Try ElevenLabs via Telmy Backend Gateway
+    // 1. Try Google Cloud TTS via Telmy Backend Gateway
     try {
       const response = await new Promise((resolve) => {
         chrome.runtime.sendMessage({
@@ -76,7 +76,7 @@ window.TelmyVoice = (function () {
         return;
       }
     } catch (err) {
-      console.warn('[TelmyVoice] ElevenLabs backend gateway failed:', err.message);
+      console.warn('[TelmyVoice] Google Cloud TTS backend gateway notice:', err.message);
     }
 
     // 2. Seamless Fallback: Native Browser SpeechSynthesis

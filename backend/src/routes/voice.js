@@ -1,12 +1,11 @@
 import express from 'express';
-import { Readable } from 'node:stream';
 import { synthesizeSpeechStream, getVoiceStatus } from '../services/voiceService.js';
 
 const router = express.Router();
 
 /**
  * GET /api/voice/status
- * Check if ElevenLabs is configured and get voice settings
+ * Check if Google Cloud TTS is configured and get voice settings
  */
 router.get('/voice/status', (req, res) => {
   try {
@@ -19,12 +18,12 @@ router.get('/voice/status', (req, res) => {
 
 /**
  * POST /api/voice/tts
- * Body: { text: "...", language: "id", voiceId: "...", modelId: "..." }
- * Streams audio/mpeg directly from ElevenLabs or returns fallback signal
+ * Body: { text: "...", language: "en" }
+ * Returns audio/mpeg synthesized via Google Cloud TTS WaveNet
  */
 router.post('/voice/tts', async (req, res) => {
   try {
-    const { text, language = 'id', voiceId, modelId } = req.body;
+    const { text, language = 'en' } = req.body;
 
     if (!text || typeof text !== 'string' || text.trim() === '') {
       return res.status(400).json({ success: false, error: 'Text is required for TTS' });
@@ -32,36 +31,21 @@ router.post('/voice/tts', async (req, res) => {
 
     const ttsResult = await synthesizeSpeechStream({
       text: text.trim(),
-      language,
-      voiceId,
-      modelId
+      language
     });
 
     // Set audio headers
     res.setHeader('Content-Type', 'audio/mpeg');
     res.setHeader('Cache-Control', 'public, max-age=3600');
 
-    // Handle Google TTS Buffer response
     if (ttsResult.isBuffer && ttsResult.buffer) {
       return res.send(ttsResult.buffer);
     }
 
-    // Pipe Web ReadableStream to Node.js HTTP response
-    if (ttsResult.body) {
-      const nodeStream = Readable.fromWeb(ttsResult.body);
-      nodeStream.pipe(res);
-      nodeStream.on('error', (err) => {
-        console.error('[Voice Route] Stream error:', err);
-        if (!res.headersSent) {
-          res.status(500).json({ success: false, fallback: true, error: err.message });
-        }
-      });
-    } else {
-      const buffer = Buffer.from(await ttsResult.arrayBuffer());
-      return res.send(buffer);
-    }
+    const buffer = Buffer.from(await ttsResult.arrayBuffer());
+    return res.send(buffer);
   } catch (error) {
-    console.warn('[Voice Route] TTS synthesis notice:', error.message);
+    console.warn('[Voice Route] Google TTS synthesis notice:', error.message);
     const status = error.code === 'NO_API_KEY' ? 503 : 500;
     return res.status(status).json({
       success: false,
