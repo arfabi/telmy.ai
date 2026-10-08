@@ -1505,3 +1505,536 @@ body {
   transform: translateY(-1px);
 }
 
+/* =========================================================
+   Priority 7: Universal PDF Form Guidance (Apple Human Interface)
+   ========================================================= */
+
+/* 1. PDF Detected Top Banner */
+.sp-pdf-alert-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background: #f0f7ff;
+  border-bottom: 1px solid #c7e0f9;
+  animation: fadeInDown 0.25s ease;
+  flex-shrink: 0;
+}
+
+.sp-pdf-alert-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sp-pdf-alert-icon {
+  font-size: 18px;
+}
+
+.sp-pdf-alert-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.sp-pdf-alert-info strong {
+  font-size: 12px;
+  font-weight: 600;
+  color: #0071e3;
+}
+
+.sp-pdf-alert-info small {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.btn-pdf-banner-btn {
+  background: #0071e3;
+  color: #ffffff;
+  border: none;
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 6px rgba(0, 113, 227, 0.25);
+}
+
+.btn-pdf-banner-btn:hover {
+  background: #0077ed;
+  transform: translateY(-1px);
+}
+
+/* 2. Apple Segmented Control: Web vs PDF */
+.sp-source-toggle {
+  display: flex;
+  background: rgba(0, 0, 0, 0.05);
+  padding: 3px;
+  border-radius: 10px;
+  margin: 10px 14px 6px;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.source-toggle-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: inherit;
+}
+
+.source-toggle-btn.active {
+  background: #ffffff;
+  color: #1d1d1f;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+/* 3. Containers */
+.web-mode-view, .pdf-mode-view {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  height: 100%;
+}
+
+.pdf-mode-view {
+  padding: 0 14px 14px;
+  overflow-y: auto;
+  gap: 12px;
+}
+
+/* 4. Dropzone */
+.sp-pdf-dropzone {
+  border: 2px dashed #cbd5e1;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 24px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  margin-top: 6px;
+}
+
+.sp-pdf-dropzone:hover, .sp-pdf-dropzone.dragover {
+  border-color: #0071e3;
+  background: rgba(232, 242, 252, 0.6);
+  transform: scale(0.99);
+}
+
+.sp-pdf-drop-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.sp-pdf-drop-icon {
+  font-size: 34px;
+  margin-bottom: 2px;
+}
+
+.sp-pdf-drop-content strong {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1d1d1f;
+}
+
+.sp-pdf-drop-content p {
+  font-size: 11.5px;
+  color: #86868b;
+  max-width: 240px;
+}
+
+.btn-browse-pdf {
+  margin-top: 8px;
+  background: #0071e3;
+  color: white;
+  border: none;
+  border-radius: 999px;
+  padding: 6px 18px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  box-shadow: 0 2px 8px rgba(0, 113, 227, 0.25);
+}
+
+.btn-browse-pdf:hover {
+  background: #0077ed;
+}
+
+/* Analyzing State */
+.sp-pdf-analyzing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 0;
+}
+
+.sp-pdf-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid rgba(0, 113, 227, 0.15);
+  border-top-color: #0071e3;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.sp-pdf-analyzing strong {
+  font-size: 13px;
+  color: #0071e3;
+  font-weight: 700;
+}
+
+.sp-pdf-analyzing p {
+  font-size: 11px;
+  color: #86868b;
+}
+
+/* 5. PDF Result Header Card */
+.pdf-doc-header-card {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.pdf-doc-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.pdf-badge-tag {
+  background: #e8f2fc;
+  color: #0071e3;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.btn-reset-pdf-action {
+  background: none;
+  border: none;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #86868b;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.btn-reset-pdf-action:hover {
+  color: #1d1d1f;
+}
+
+.pdf-doc-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1d1d1f;
+  line-height: 1.3;
+  margin-bottom: 4px;
+}
+
+.pdf-doc-summary {
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.45;
+}
+
+/* 6. Attachments Checklist Card */
+.pdf-checklist-card {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 14px;
+  padding: 12px 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.pdf-checklist-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.pdf-checklist-title-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: #1d1d1f;
+}
+
+.pdf-checklist-pill {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  background: #f1f5f9;
+  color: #475569;
+  border-radius: 999px;
+  transition: all 0.2s;
+}
+
+.pdf-checklist-pill.completed {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.pdf-checklist-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pdf-check-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 6px 8px;
+  background: rgba(245, 245, 247, 0.6);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.pdf-check-item:hover {
+  background: #f1f5f9;
+}
+
+.pdf-check-item.done {
+  text-decoration: line-through;
+  opacity: 0.65;
+}
+
+.pdf-checkbox {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1.5px solid #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  flex-shrink: 0;
+  margin-top: 1px;
+  background: white;
+  transition: all 0.15s;
+}
+
+.pdf-check-item.done .pdf-checkbox {
+  background: #34c759;
+  border-color: #34c759;
+  color: white;
+}
+
+.pdf-check-text {
+  font-size: 11.5px;
+  color: #334155;
+  line-height: 1.35;
+}
+
+/* 7. Sections Selector */
+.pdf-sections-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pdf-sections-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 700;
+  color: #1d1d1f;
+}
+
+.pdf-sections-tabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+}
+
+.pdf-sections-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.pdf-sec-tab {
+  padding: 6px 12px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #64748b;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.pdf-sec-tab:hover {
+  background: #f8fafc;
+  color: #1d1d1f;
+}
+
+.pdf-sec-tab.active {
+  background: #0071e3;
+  color: white;
+  border-color: #0071e3;
+  box-shadow: 0 2px 6px rgba(0, 113, 227, 0.25);
+}
+
+/* 8. Field Guidance Cards in Section */
+.pdf-active-section-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pdf-field-card {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  border-radius: 12px;
+  padding: 12px 14px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.pdf-field-card:hover {
+  border-color: rgba(0, 113, 227, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.pdf-field-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pdf-field-title-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pdf-field-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  background: #f1f5f9;
+  color: #64748b;
+  border-radius: 4px;
+}
+
+.pdf-field-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1d1d1f;
+}
+
+.pdf-field-listen-btn {
+  background: none;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 3px;
+  border-radius: 6px;
+  transition: transform 0.15s;
+  color: #0071e3;
+}
+
+.pdf-field-listen-btn:hover {
+  transform: scale(1.2);
+}
+
+.pdf-field-desc {
+  font-size: 12px;
+  color: #475569;
+  line-height: 1.45;
+}
+
+.pdf-field-example-box {
+  background: #f8fafc;
+  border-left: 3px solid #0071e3;
+  padding: 6px 10px;
+  border-radius: 0 6px 6px 0;
+  font-size: 11.5px;
+  color: #334155;
+}
+
+.pdf-field-example-box strong {
+  color: #0071e3;
+  font-weight: 600;
+}
+
+.pdf-field-pitfall-box {
+  background: #fffbeb;
+  border-left: 3px solid #f59e0b;
+  padding: 6px 10px;
+  border-radius: 0 6px 6px 0;
+  font-size: 11.5px;
+  color: #92400e;
+}
+
+.pdf-field-pitfall-box strong {
+  font-weight: 600;
+}
+
+.pdf-field-card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.btn-field-ask-chip {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-field-ask-chip:hover {
+  background: #0071e3;
+  color: white;
+  border-color: #0071e3;
+}
+

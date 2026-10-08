@@ -12,6 +12,7 @@ import voiceRoutes from './routes/voice.js';
 import chatRoutes from './routes/chat.js';
 import translateRoutes from './routes/translate.js';
 import userRoutes from './routes/user.js';
+import pdfRoutes from './routes/pdf.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -31,7 +32,8 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
-app.use(express.json());
+app.use(express.json({ limit: '25mb' }));
+app.use(express.urlencoded({ limit: '25mb', extended: true }));
 
 // Request logging in development
 app.use((req, res, next) => {
@@ -82,6 +84,7 @@ app.use('/api', voiceRoutes);
 app.use('/api', chatRoutes);
 app.use('/api', translateRoutes);
 app.use('/api', userRoutes);
+app.use('/api', pdfRoutes);
 
 // Fallback 404
 app.use((req, res) => {

@@ -52,6 +52,18 @@
       <button id="sp-btn-resume" class="btn-resume-scan">Resume ▶</button>
     </div>
 
+    <!-- PDF Form Detected Alert Banner (Priority 7) -->
+    <div id="sp-pdf-alert-banner" class="sp-pdf-alert-banner" style="display: none;">
+      <div class="sp-pdf-alert-content">
+        <span class="sp-pdf-alert-icon">📄</span>
+        <div class="sp-pdf-alert-info">
+          <strong id="lbl-pdf-banner-title">PDF Document Detected</strong>
+          <small id="lbl-pdf-banner-sub">Open side-by-side Gemini guidance</small>
+        </div>
+      </div>
+      <button id="btn-pdf-banner-action" class="btn-pdf-banner-btn">Guide Form ▶</button>
+    </div>
+
     <!-- User Profile Popover Dropdown -->
     <div id="sp-profile-popover" class="sp-profile-popover" style="display: none;">
       <div class="popover-user-info">
@@ -131,6 +143,9 @@
           <button type="button" class="sp-quick-chip" id="chip-required-docs">
             <span>📑</span> <span id="lbl-chip-docs">Required Docs</span>
           </button>
+          <button type="button" class="sp-quick-chip" id="chip-pdf-guide">
+            <span>📄</span> <span id="lbl-chip-pdf">Guide PDF Form</span>
+          </button>
         </div>
 
         <!-- Live Speech Recognition Transcript Status -->
@@ -159,41 +174,110 @@
       </div>
     </section>
 
-    <!-- TAB 2: Fields List & Inspection -->
+    <!-- TAB 2: Fields List & Inspection (Web & PDF Dual Mode) -->
     <section id="pane-fields" class="sp-pane">
-      <div class="sp-fields-container">
-        <!-- Active Field Card -->
-        <div id="active-field-card" class="sp-active-card">
-          <div class="sp-card-empty" id="fields-empty-state">
-            <div class="sp-empty-icon">📋</div>
-            <h3 id="lbl-empty-fields-title">Select a Form Field</h3>
-            <p id="lbl-empty-fields-desc">Hover or click any field badge on the page to view detailed guidelines, requirements, and examples.</p>
-          </div>
-          <div id="field-detail-content" style="display: none;"></div>
-        </div>
-
-        <!-- Detected Fields Accordion / Quick List -->
-        <div class="sp-fields-list-box">
-          <div class="sp-section-heading">
-            <span id="lbl-detected-fields-header">Detected Form Fields</span>
-            <span id="fields-count-pill" class="sp-pill">0 Fields</span>
-          </div>
-          <div id="fields-quick-list" class="sp-quick-list"></div>
-        </div>
+      <!-- Mode Segment Switcher -->
+      <div class="sp-source-toggle" id="sp-source-toggle">
+        <button type="button" class="source-toggle-btn active" id="btn-mode-web">
+          <span>🌐</span> <span id="lbl-mode-web">Web Page</span>
+        </button>
+        <button type="button" class="source-toggle-btn" id="btn-mode-pdf">
+          <span>📄</span> <span id="lbl-mode-pdf">PDF Document</span>
+        </button>
       </div>
 
-      <!-- Footer Stepper -->
-      <footer class="sp-stepper-footer">
-        <button id="btn-stepper-prev" class="sp-stepper-btn" disabled>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
-          <span id="lbl-stepper-prev">Previous</span>
-        </button>
-        <span id="stepper-indicator" class="sp-stepper-indicator">0 / 0</span>
-        <button id="btn-stepper-next" class="sp-stepper-btn" disabled>
-          <span id="lbl-stepper-next">Next</span>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
-        </button>
-      </footer>
+      <!-- VIEW A: Web Form Container -->
+      <div id="web-mode-container" class="web-mode-view">
+        <div class="sp-fields-container">
+          <!-- Active Field Card -->
+          <div id="active-field-card" class="sp-active-card">
+            <div class="sp-card-empty" id="fields-empty-state">
+              <div class="sp-empty-icon">📋</div>
+              <h3 id="lbl-empty-fields-title">Select a Form Field</h3>
+              <p id="lbl-empty-fields-desc">Hover or click any field badge on the page to view detailed guidelines, requirements, and examples.</p>
+            </div>
+            <div id="field-detail-content" style="display: none;"></div>
+          </div>
+
+          <!-- Detected Fields Accordion / Quick List -->
+          <div class="sp-fields-list-box">
+            <div class="sp-section-heading">
+              <span id="lbl-detected-fields-header">Detected Form Fields</span>
+              <span id="fields-count-pill" class="sp-pill">0 Fields</span>
+            </div>
+            <div id="fields-quick-list" class="sp-quick-list"></div>
+          </div>
+        </div>
+
+        <!-- Footer Stepper for Web Fields -->
+        <footer class="sp-stepper-footer">
+          <button id="btn-stepper-prev" class="sp-stepper-btn" disabled>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
+            <span id="lbl-stepper-prev">Previous</span>
+          </button>
+          <span id="stepper-indicator" class="sp-stepper-indicator">0 / 0</span>
+          <button id="btn-stepper-next" class="sp-stepper-btn" disabled>
+            <span id="lbl-stepper-next">Next</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
+          </button>
+        </footer>
+      </div>
+
+      <!-- VIEW B: PDF Document Guidance Container (Priority 7) -->
+      <div id="pdf-mode-container" class="pdf-mode-view" style="display: none;">
+        <!-- PDF Dropzone Card -->
+        <div id="sp-pdf-dropzone" class="sp-pdf-dropzone">
+          <input type="file" id="sp-pdf-file-input" accept="application/pdf" style="display: none;">
+          <div class="sp-pdf-drop-content" id="sp-pdf-drop-content">
+            <div class="sp-pdf-drop-icon">📑</div>
+            <strong id="lbl-pdf-drop-title">Drop PDF Form Here</strong>
+            <p id="lbl-pdf-drop-sub">Drag official visa, tax, or legal form (PDF) or click to browse</p>
+            <button type="button" class="btn-browse-pdf" id="btn-browse-pdf">Choose PDF File</button>
+          </div>
+          <!-- Scanning / Gemini Multimodal Processing State -->
+          <div class="sp-pdf-analyzing" id="sp-pdf-analyzing" style="display: none;">
+            <div class="sp-pdf-spinner"></div>
+            <strong id="lbl-pdf-analyzing-title">Analyzing PDF with Gemini...</strong>
+            <p id="lbl-pdf-analyzing-sub">Extracting sections, official rules & checklist</p>
+          </div>
+        </div>
+
+        <!-- PDF Analysis Result Card -->
+        <div id="sp-pdf-result-card" class="sp-pdf-result-card" style="display: none;">
+          <div class="pdf-doc-header-card">
+            <div class="pdf-doc-meta">
+              <span class="pdf-badge-tag">📄 PDF Copilot</span>
+              <button id="btn-reset-pdf" class="btn-reset-pdf-action" title="Analyze another document">New Form</button>
+            </div>
+            <h3 id="pdf-doc-title" class="pdf-doc-title">Document Title</h3>
+            <p id="pdf-doc-summary" class="pdf-doc-summary"></p>
+          </div>
+
+          <!-- Required Attachments Checklist Card -->
+          <div class="pdf-checklist-card" id="pdf-checklist-card">
+            <div class="pdf-checklist-header">
+              <div class="pdf-checklist-title-group">
+                <span>📎</span>
+                <strong id="lbl-pdf-checklist-title">Required Attachments Checklist</strong>
+              </div>
+              <span id="pdf-checklist-badge" class="pdf-checklist-pill">0/0 Ready</span>
+            </div>
+            <div id="pdf-checklist-items" class="pdf-checklist-items"></div>
+          </div>
+
+          <!-- Section Stepper / Selector -->
+          <div class="pdf-sections-bar">
+            <div class="pdf-sections-label-row">
+              <span id="lbl-pdf-sections-title">Sections & Pages</span>
+              <span id="pdf-section-indicator" class="sp-pill">Section 1</span>
+            </div>
+            <div id="pdf-sections-tabs" class="pdf-sections-tabs"></div>
+          </div>
+
+          <!-- Field Breakdown for Selected Section -->
+          <div id="pdf-active-section-fields" class="pdf-active-section-fields"></div>
+        </div>
+      </div>
     </section>
 
     <!-- TAB 3: Summary Overview -->

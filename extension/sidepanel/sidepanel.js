@@ -44,6 +44,30 @@ document.addEventListener('DOMContentLoaded', async () => {
   const btnStepperNext = document.getElementById('btn-stepper-next');
   const stepperIndicator = document.getElementById('stepper-indicator');
 
+  // PDF Mode Elements (Priority 7)
+  const spPdfAlertBanner = document.getElementById('sp-pdf-alert-banner');
+  const btnPdfBannerAction = document.getElementById('btn-pdf-banner-action');
+  const btnModeWeb = document.getElementById('btn-mode-web');
+  const btnModePdf = document.getElementById('btn-mode-pdf');
+  const webModeContainer = document.getElementById('web-mode-container');
+  const pdfModeContainer = document.getElementById('pdf-mode-container');
+  const spPdfDropzone = document.getElementById('sp-pdf-dropzone');
+  const spPdfFileInput = document.getElementById('sp-pdf-file-input');
+  const btnBrowsePdf = document.getElementById('btn-browse-pdf');
+  const spPdfDropContent = document.getElementById('sp-pdf-drop-content');
+  const spPdfAnalyzing = document.getElementById('sp-pdf-analyzing');
+  const spPdfResultCard = document.getElementById('sp-pdf-result-card');
+  const btnResetPdf = document.getElementById('btn-reset-pdf');
+  const pdfDocTitle = document.getElementById('pdf-doc-title');
+  const pdfDocSummary = document.getElementById('pdf-doc-summary');
+  const pdfChecklistCard = document.getElementById('pdf-checklist-card');
+  const pdfChecklistBadge = document.getElementById('pdf-checklist-badge');
+  const pdfChecklistItems = document.getElementById('pdf-checklist-items');
+  const pdfSectionsTabs = document.getElementById('pdf-sections-tabs');
+  const pdfActiveSectionFields = document.getElementById('pdf-active-section-fields');
+  const pdfSectionIndicator = document.getElementById('pdf-section-indicator');
+  const chipPdfGuide = document.getElementById('chip-pdf-guide');
+
   // Summary Elements
   const progressPercent = document.getElementById('progress-percent');
   const progressBarFill = document.getElementById('progress-bar-fill');
@@ -99,6 +123,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   let isTranslating = false;
   let translatedElementCount = 0;
   let telmyAvatar = null;
+  let activeSourceMode = 'web';
+  let currentPdfData = null;
+  let activePdfSectionIndex = 0;
+  let pdfChecklistState = {};
 
   // Complete JAPAC Multi-Language Matrix (English default)
   const I18N = {
@@ -321,12 +349,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     setupUserControlsAndOnboarding();
+    setupPdfMode();
 
     // Determine current active tab
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (tab && tab.id) {
       currentTabId = tab.id;
       loadSessionChat(tab.url);
+      checkPdfTab(tab.url);
       if (isScannerRunning) {
         activateScannerOnTab(tab.id);
       }
@@ -362,6 +392,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const [newTab] = await chrome.tabs.query({ active: true, currentWindow: true });
         if (newTab) {
           loadSessionChat(newTab.url);
+          checkPdfTab(newTab.url);
         }
         if (isScannerRunning) {
           activateScannerOnTab(currentTabId);
@@ -1388,6 +1419,334 @@ document.addEventListener('DOMContentLoaded', async () => {
         await chrome.storage.local.set({ [key]: chatHistory.slice(-30) });
       }
     } catch (e) {}
+  }
+
+  // =========================================================
+  // Priority 7: Universal PDF Guidance Logic
+  // =========================================================
+  function checkPdfTab(url) {
+    if (!spPdfAlertBanner) return;
+    if (!url) {
+      spPdfAlertBanner.style.display = 'none';
+      return;
+    }
+    const isPdf = url.toLowerCase().endsWith('.pdf') ||
+                  url.toLowerCase().includes('.pdf?') ||
+                  (url.startsWith('chrome-extension://') && url.includes('.pdf'));
+    if (isPdf) {
+      spPdfAlertBanner.style.display = 'flex';
+      const filename = url.split('/').pop().split('?')[0] || 'document.pdf';
+      const elSub = document.getElementById('lbl-pdf-banner-sub');
+      if (elSub) elSub.textContent = filename;
+    } else {
+      spPdfAlertBanner.style.display = 'none';
+    }
+  }
+
+  function switchSourceMode(mode) {
+    activeSourceMode = mode;
+    if (btnModeWeb && btnModePdf) {
+      btnModeWeb.classList.toggle('active', mode === 'web');
+      btnModePdf.classList.toggle('active', mode === 'pdf');
+    }
+    if (webModeContainer && pdfModeContainer) {
+      webModeContainer.style.display = mode === 'web' ? 'flex' : 'none';
+      pdfModeContainer.style.display = mode === 'pdf' ? 'flex' : 'none';
+    }
+    // Switch to fields tab to view it
+    const tabFields = document.querySelector('.sp-tab-btn[data-tab="fields"]');
+    if (tabFields) tabFields.click();
+  }
+
+  function setupPdfMode() {
+    if (btnModeWeb) btnModeWeb.addEventListener('click', () => switchSourceMode('web'));
+    if (btnModePdf) btnModePdf.addEventListener('click', () => switchSourceMode('pdf'));
+
+    if (btnPdfBannerAction) {
+      btnPdfBannerAction.addEventListener('click', () => {
+        switchSourceMode('pdf');
+      });
+    }
+
+    if (chipPdfGuide) {
+      chipPdfGuide.addEventListener('click', () => {
+        switchSourceMode('pdf');
+      });
+    }
+
+    if (btnBrowsePdf && spPdfFileInput) {
+      btnBrowsePdf.addEventListener('click', (e) => {
+        e.stopPropagation();
+        spPdfFileInput.click();
+      });
+    }
+
+    if (spPdfDropzone && spPdfFileInput) {
+      spPdfDropzone.addEventListener('click', () => {
+        if (!currentPdfData) spPdfFileInput.click();
+      });
+
+      spPdfDropzone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        spPdfDropzone.classList.add('dragover');
+      });
+
+      spPdfDropzone.addEventListener('dragleave', () => {
+        spPdfDropzone.classList.remove('dragover');
+      });
+
+      spPdfDropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        spPdfDropzone.classList.remove('dragover');
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+          const file = e.dataTransfer.files[0];
+          handlePdfUpload(file);
+        }
+      });
+
+      spPdfFileInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files.length > 0) {
+          handlePdfUpload(e.target.files[0]);
+        }
+      });
+    }
+
+    if (btnResetPdf) {
+      btnResetPdf.addEventListener('click', () => {
+        currentPdfData = null;
+        pdfChecklistState = {};
+        if (spPdfResultCard) spPdfResultCard.style.display = 'none';
+        if (spPdfDropzone) spPdfDropzone.style.display = 'block';
+        if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
+        if (spPdfAnalyzing) spPdfAnalyzing.style.display = 'none';
+        if (spPdfFileInput) spPdfFileInput.value = '';
+      });
+    }
+  }
+
+  async function handlePdfUpload(file) {
+    if (!file || (!file.name.toLowerCase().endsWith('.pdf') && file.type !== 'application/pdf')) {
+      alert('Please select a valid PDF file.');
+      return;
+    }
+
+    // Show analyzing state
+    if (spPdfDropContent) spPdfDropContent.style.display = 'none';
+    if (spPdfAnalyzing) spPdfAnalyzing.style.display = 'flex';
+    if (telmyAvatar) telmyAvatar.setState('THINKING');
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64Data = reader.result;
+
+      chrome.runtime.sendMessage({
+        type: 'EXPLAIN_PDF',
+        payload: {
+          pdfBase64: base64Data,
+          filename: file.name,
+          language: currentLanguage
+        }
+      }, (res) => {
+        if (spPdfAnalyzing) spPdfAnalyzing.style.display = 'none';
+        if (chrome.runtime.lastError || !res || !res.success || !res.data) {
+          if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
+          if (telmyAvatar) telmyAvatar.setState('IDLE');
+          alert('Failed to analyze PDF document. Please make sure backend is reachable.');
+          return;
+        }
+
+        currentPdfData = res.data;
+        activePdfSectionIndex = 0;
+        pdfChecklistState = {};
+
+        // Hide dropzone, show result card
+        if (spPdfDropzone) spPdfDropzone.style.display = 'none';
+        if (spPdfResultCard) spPdfResultCard.style.display = 'block';
+
+        renderPdfData(currentPdfData);
+
+        if (telmyAvatar) telmyAvatar.setState('EXPLAINING');
+        const intro = currentLanguage === 'en'
+          ? `I've analyzed ${currentPdfData.documentTitle || 'your PDF form'}. You can check the required attachments and review each section step by step.`
+          : `Saya telah menganalisis dokumen ${currentPdfData.documentTitle || 'PDF Anda'}. Silakan cek lampiran yang diperlukan dan pelajari setiap kolomnya.`;
+        speakResponse(intro);
+      });
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function renderPdfData(data) {
+    if (!data) return;
+    if (pdfDocTitle) pdfDocTitle.textContent = data.documentTitle || 'Official PDF Form';
+    if (pdfDocSummary) pdfDocSummary.textContent = data.summary || 'PDF document parsed by Gemini Multimodal assistant.';
+
+    // Render Required Attachments Checklist
+    renderPdfChecklist(data.requiredAttachments || []);
+
+    // Render Section Navigation Tabs
+    renderPdfSections(data.sections || []);
+  }
+
+  function renderPdfChecklist(items) {
+    if (!pdfChecklistItems) return;
+    pdfChecklistItems.innerHTML = '';
+
+    if (!items || items.length === 0) {
+      if (pdfChecklistCard) pdfChecklistCard.style.display = 'none';
+      return;
+    }
+
+    if (pdfChecklistCard) pdfChecklistCard.style.display = 'block';
+
+    const updateChecklistBadge = () => {
+      const total = items.length;
+      let checkedCount = 0;
+      items.forEach((it) => {
+        if (pdfChecklistState[it]) checkedCount++;
+      });
+      if (pdfChecklistBadge) {
+        pdfChecklistBadge.textContent = `${checkedCount}/${total} Ready`;
+        pdfChecklistBadge.classList.toggle('completed', checkedCount === total && total > 0);
+      }
+    };
+
+    items.forEach((itemText) => {
+      const itemEl = document.createElement('div');
+      itemEl.className = 'pdf-check-item' + (pdfChecklistState[itemText] ? ' done' : '');
+
+      itemEl.innerHTML = `
+        <div class="pdf-checkbox">${pdfChecklistState[itemText] ? '✓' : ''}</div>
+        <span class="pdf-check-text">${escapeHTML(itemText)}</span>
+      `;
+
+      itemEl.addEventListener('click', () => {
+        pdfChecklistState[itemText] = !pdfChecklistState[itemText];
+        itemEl.classList.toggle('done', pdfChecklistState[itemText]);
+        const box = itemEl.querySelector('.pdf-checkbox');
+        if (box) box.textContent = pdfChecklistState[itemText] ? '✓' : '';
+        updateChecklistBadge();
+      });
+
+      pdfChecklistItems.appendChild(itemEl);
+    });
+
+    updateChecklistBadge();
+  }
+
+  function renderPdfSections(sections) {
+    if (!pdfSectionsTabs) return;
+    pdfSectionsTabs.innerHTML = '';
+
+    if (!sections || sections.length === 0) {
+      if (pdfActiveSectionFields) {
+        pdfActiveSectionFields.innerHTML = '<p style="color: #64748b; font-size: 12px; text-align: center; padding: 20px;">No form sections detected in this document.</p>';
+      }
+      return;
+    }
+
+    sections.forEach((sec, idx) => {
+      const tabBtn = document.createElement('button');
+      tabBtn.type = 'button';
+      tabBtn.className = 'pdf-sec-tab' + (idx === activePdfSectionIndex ? ' active' : '');
+      tabBtn.textContent = sec.sectionName || `Section ${idx + 1}`;
+
+      tabBtn.addEventListener('click', () => {
+        activePdfSectionIndex = idx;
+        const allTabs = pdfSectionsTabs.querySelectorAll('.pdf-sec-tab');
+        allTabs.forEach((b, i) => b.classList.toggle('active', i === idx));
+        if (pdfSectionIndicator) pdfSectionIndicator.textContent = sec.sectionName || `Section ${idx + 1}`;
+        renderPdfSectionFields(sec);
+      });
+
+      pdfSectionsTabs.appendChild(tabBtn);
+    });
+
+    if (sections[activePdfSectionIndex]) {
+      if (pdfSectionIndicator) pdfSectionIndicator.textContent = sections[activePdfSectionIndex].sectionName || `Section ${activePdfSectionIndex + 1}`;
+      renderPdfSectionFields(sections[activePdfSectionIndex]);
+    }
+  }
+
+  function renderPdfSectionFields(section) {
+    if (!pdfActiveSectionFields) return;
+    pdfActiveSectionFields.innerHTML = '';
+
+    const fields = section.fields || [];
+    if (fields.length === 0) {
+      pdfActiveSectionFields.innerHTML = '<p style="color: #86868b; font-size: 12px; padding: 10px;">No fields listed for this section.</p>';
+      return;
+    }
+
+    fields.forEach((f) => {
+      const card = document.createElement('div');
+      card.className = 'pdf-field-card';
+
+      let inner = `
+        <div class="pdf-field-top">
+          <div class="pdf-field-title-group">
+            <span class="pdf-field-badge">Page ${f.page || 1}</span>
+            <strong class="pdf-field-name">${escapeHTML(f.fieldName || 'Field')}</strong>
+          </div>
+          <button type="button" class="pdf-field-listen-btn" title="Listen to explanation" data-field-name="${escapeHTML(f.fieldName)}">🔊</button>
+        </div>
+        <p class="pdf-field-desc">${escapeHTML(f.explanation || '')}</p>
+      `;
+
+      if (f.example) {
+        inner += `
+          <div class="pdf-field-example-box">
+            <strong>Example:</strong> ${escapeHTML(f.example)}
+          </div>
+        `;
+      }
+
+      if (f.commonPitfall) {
+        inner += `
+          <div class="pdf-field-pitfall-box">
+            <strong>⚠️ Watch Out:</strong> ${escapeHTML(f.commonPitfall)}
+          </div>
+        `;
+      }
+
+      if (f.foreignerNote) {
+        inner += `
+          <div class="pdf-field-example-box" style="border-left-color: #8b5cf6;">
+            <strong style="color: #8b5cf6;">🌍 International Note:</strong> ${escapeHTML(f.foreignerNote)}
+          </div>
+        `;
+      }
+
+      inner += `
+        <div class="pdf-field-card-actions">
+          <button type="button" class="btn-field-ask-chip" data-field="${escapeHTML(f.fieldName)}">💬 Ask Telmy</button>
+        </div>
+      `;
+
+      card.innerHTML = inner;
+
+      // Listen audio button
+      const listenBtn = card.querySelector('.pdf-field-listen-btn');
+      if (listenBtn) {
+        listenBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const speechText = `${f.fieldName}. ${f.explanation || ''} ${f.example ? 'For example: ' + f.example : ''} ${f.commonPitfall ? 'Avoid: ' + f.commonPitfall : ''}`;
+          speakResponse(speechText);
+        });
+      }
+
+      // Ask button
+      const askBtn = card.querySelector('.btn-field-ask-chip');
+      if (askBtn) {
+        askBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const tabChat = document.querySelector('.sp-tab-btn[data-tab="chat"]');
+          if (tabChat) tabChat.click();
+          handleSendMessage(`How should I fill out "${f.fieldName}" on this PDF form?`);
+        });
+      }
+
+      pdfActiveSectionFields.appendChild(card);
+    });
   }
 
   // Boot

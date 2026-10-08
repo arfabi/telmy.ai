@@ -654,6 +654,111 @@
       color: white;
     }
 
+    /* PDF Form Guidance Hub Bento Card */
+    .pdf-drop-zone-dash {
+      border: 2px dashed rgba(0, 113, 227, 0.3);
+      background: rgba(245, 245, 247, 0.5);
+      border-radius: var(--radius-md);
+      padding: 36px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .pdf-drop-zone-dash:hover, .pdf-drop-zone-dash.dragover {
+      border-color: var(--accent);
+      background: var(--accent-light);
+      transform: scale(0.998);
+    }
+    .pdf-drop-icon-dash {
+      font-size: 42px;
+    }
+    .pdf-dash-results {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .pdf-meta-box {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 16px 20px;
+      background: white;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-md);
+    }
+    .pdf-checklist-dash-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .pdf-check-dash-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      background: white;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .pdf-check-dash-item:hover {
+      border-color: var(--accent);
+    }
+    .pdf-check-dash-item.done {
+      text-decoration: line-through;
+      background: var(--success-light);
+      border-color: rgba(52, 199, 89, 0.3);
+      color: var(--text-secondary);
+    }
+    .pdf-sec-dash-pills {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+    }
+    .pdf-sec-dash-btn {
+      padding: 8px 16px;
+      background: white;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-full);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .pdf-sec-dash-btn.active {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+    .pdf-fields-dash-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 14px;
+    }
+    .pdf-field-dash-card {
+      background: white;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .pdf-field-dash-card:hover {
+      box-shadow: var(--shadow-hover);
+      transform: translateY(-2px);
+    }
+
     /* Apple-Style Toast */
     .apple-toast {
       position: fixed;
@@ -961,7 +1066,75 @@
         </div>
       </div>
 
-      <!-- Bento 5: Recent Form Sessions & Saved History -->
+      <!-- Bento 5: Universal PDF Form Guidance Hub (Priority 7) -->
+      <div class="bento-card col-span-12" id="pdf-hub-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="card-icon">📑</span>
+            <div>
+              <h3 class="card-title">Universal PDF Form Guidance Hub</h3>
+              <p class="card-subtitle">Drop downloaded visa, tax, or legal PDF forms for Gemini multimodal analysis and attachment checklists</p>
+            </div>
+          </div>
+          <span style="font-size: 11.5px; font-weight: 700; color: var(--accent); background: var(--accent-light); padding: 4px 10px; border-radius: var(--radius-full);">
+            Gemini 3.5 Multimodal
+          </span>
+        </div>
+
+        <!-- PDF Dropzone on Dashboard -->
+        <div class="pdf-drop-zone-dash" id="pdf-dash-dropzone">
+          <input type="file" id="pdf-dash-file-input" accept="application/pdf" style="display: none;">
+          <span class="pdf-drop-icon-dash">📄</span>
+          <div>
+            <strong style="font-size: 15px; color: var(--text-main);">Drop your PDF form here</strong>
+            <p style="font-size: 12.5px; color: var(--text-secondary); margin-top: 2px;">Supports official visa applications, tax forms, consular papers (up to 25MB)</p>
+          </div>
+          <button type="button" class="btn-apple-primary" id="btn-dash-browse-pdf" style="margin-top: 4px;">Select PDF File</button>
+        </div>
+
+        <!-- Analyzing Indicator -->
+        <div id="pdf-dash-analyzing" style="display: none; padding: 30px; text-align: center;">
+          <div style="display: inline-block; width: 32px; height: 32px; border: 3px solid rgba(0,113,227,0.2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 12px;"></div>
+          <h4 style="font-size: 15px; color: var(--text-main);">Analyzing PDF Structure with Gemini...</h4>
+          <p style="font-size: 12.5px; color: var(--text-secondary); margin-top: 4px;">Extracting sections, official prerequisites, and page-by-page instructions</p>
+        </div>
+
+        <!-- Results Display -->
+        <div id="pdf-dash-results" class="pdf-dash-results" style="display: none;">
+          <div class="pdf-meta-box">
+            <div>
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                <span style="background: var(--accent-light); color: var(--accent); font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px;">PARSED FORM</span>
+                <h4 id="dash-pdf-title" style="font-size: 16px; color: var(--text-main); font-weight: 700;">Document Title</h4>
+              </div>
+              <p id="dash-pdf-summary" style="font-size: 13px; color: var(--text-secondary); max-width: 780px;"></p>
+            </div>
+            <button id="btn-dash-pdf-reset" class="btn-sync-ext" type="button">Upload New Form</button>
+          </div>
+
+          <!-- Attachments Checklist -->
+          <div style="background: rgba(245, 245, 247, 0.6); padding: 18px 20px; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+              <strong style="font-size: 13.5px; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
+                <span>📎</span> Required Document Checklist
+              </strong>
+              <span id="dash-pdf-checklist-count" style="font-size: 12px; font-weight: 700; color: var(--text-secondary); background: white; padding: 2px 8px; border-radius: 999px;">0 Ready</span>
+            </div>
+            <div id="dash-pdf-checklist-container" class="pdf-checklist-dash-grid"></div>
+          </div>
+
+          <!-- Section Pills -->
+          <div>
+            <div style="font-size: 12.5px; font-weight: 700; color: var(--text-main); margin-bottom: 8px;">Sections & Pages</div>
+            <div id="dash-pdf-sections-pills" class="pdf-sec-dash-pills"></div>
+          </div>
+
+          <!-- Fields Grid for Active Section -->
+          <div id="dash-pdf-fields-grid" class="pdf-fields-dash-grid"></div>
+        </div>
+      </div>
+
+      <!-- Bento 6: Recent Form Sessions & Saved History -->
       <div class="bento-card col-span-12">
         <div class="card-header">
           <div class="card-title-group">
@@ -1289,7 +1462,215 @@
       });
     }
 
+    // =========================================================
+    // Universal PDF Guidance Hub Controller (Priority 7)
+    // =========================================================
+    const pdfDashDropzone = document.getElementById('pdf-dash-dropzone');
+    const pdfDashFileInput = document.getElementById('pdf-dash-file-input');
+    const btnDashBrowsePdf = document.getElementById('btn-dash-browse-pdf');
+    const pdfDashAnalyzing = document.getElementById('pdf-dash-analyzing');
+    const pdfDashResults = document.getElementById('pdf-dash-results');
+    const btnDashPdfReset = document.getElementById('btn-dash-pdf-reset');
+    const dashPdfTitle = document.getElementById('dash-pdf-title');
+    const dashPdfSummary = document.getElementById('dash-pdf-summary');
+    const dashPdfChecklistCount = document.getElementById('dash-pdf-checklist-count');
+    const dashPdfChecklistContainer = document.getElementById('dash-pdf-checklist-container');
+    const dashPdfSectionsPills = document.getElementById('dash-pdf-sections-pills');
+    const dashPdfFieldsGrid = document.getElementById('dash-pdf-fields-grid');
+
+    let currentDashPdfData = null;
+    let dashPdfChecklistState = {};
+    let activeDashSectionIdx = 0;
+
+    function setupPdfDashHub() {
+      if (!pdfDashDropzone) return;
+
+      btnDashBrowsePdf.addEventListener('click', (e) => {
+        e.stopPropagation();
+        pdfDashFileInput.click();
+      });
+
+      pdfDashDropzone.addEventListener('click', () => {
+        pdfDashFileInput.click();
+      });
+
+      pdfDashDropzone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        pdfDashDropzone.classList.add('dragover');
+      });
+
+      pdfDashDropzone.addEventListener('dragleave', () => {
+        pdfDashDropzone.classList.remove('dragover');
+      });
+
+      pdfDashDropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        pdfDashDropzone.classList.remove('dragover');
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+          handleDashPdfUpload(e.dataTransfer.files[0]);
+        }
+      });
+
+      pdfDashFileInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files.length > 0) {
+          handleDashPdfUpload(e.target.files[0]);
+        }
+      });
+
+      if (btnDashPdfReset) {
+        btnDashPdfReset.addEventListener('click', () => {
+          currentDashPdfData = null;
+          dashPdfChecklistState = {};
+          pdfDashResults.style.display = 'none';
+          pdfDashDropzone.style.display = 'flex';
+          pdfDashAnalyzing.style.display = 'none';
+          pdfDashFileInput.value = '';
+        });
+      }
+    }
+
+    async function handleDashPdfUpload(file) {
+      if (!file || (!file.name.toLowerCase().endsWith('.pdf') && file.type !== 'application/pdf')) {
+        showToast('Please select a valid PDF file');
+        return;
+      }
+
+      pdfDashDropzone.style.display = 'none';
+      pdfDashAnalyzing.style.display = 'block';
+
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64Data = reader.result;
+
+        try {
+          const res = await fetch('/api/explain-pdf', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              pdfBase64: base64Data,
+              filename: file.name,
+              language: currentUser.language || 'en'
+            })
+          });
+
+          const json = await res.json();
+          pdfDashAnalyzing.style.display = 'none';
+
+          if (json.success && json.data) {
+            currentDashPdfData = json.data;
+            dashPdfChecklistState = {};
+            activeDashSectionIdx = 0;
+            pdfDashResults.style.display = 'flex';
+            renderDashPdfData(currentDashPdfData);
+            showToast('PDF Form parsed successfully with Gemini 3.5');
+          } else {
+            pdfDashDropzone.style.display = 'flex';
+            showToast(json.error || 'Failed to analyze PDF');
+          }
+        } catch (err) {
+          pdfDashAnalyzing.style.display = 'none';
+          pdfDashDropzone.style.display = 'flex';
+          showToast('Network error analyzing PDF form');
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function renderDashPdfData(data) {
+      dashPdfTitle.textContent = data.documentTitle || 'Official Form';
+      dashPdfSummary.textContent = data.summary || 'Multimodal document analysis provided by Gemini.';
+
+      // Render Checklist
+      dashPdfChecklistContainer.innerHTML = '';
+      const atts = data.requiredAttachments || [];
+      const updateChecklistCount = () => {
+        let done = 0;
+        atts.forEach(a => { if (dashPdfChecklistState[a]) done++; });
+        dashPdfChecklistCount.textContent = `${done} of ${atts.length} Ready`;
+      };
+
+      atts.forEach(itemText => {
+        const item = document.createElement('div');
+        item.className = 'pdf-check-dash-item' + (dashPdfChecklistState[itemText] ? ' done' : '');
+        item.innerHTML = `
+          <span style="width: 16px; height: 16px; border: 1.5px solid #94a3b8; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px;">
+            ${dashPdfChecklistState[itemText] ? '✓' : ''}
+          </span>
+          <span style="font-size: 13px;">${escapeHtml(itemText)}</span>
+        `;
+        item.addEventListener('click', () => {
+          dashPdfChecklistState[itemText] = !dashPdfChecklistState[itemText];
+          item.classList.toggle('done', dashPdfChecklistState[itemText]);
+          item.querySelector('span').textContent = dashPdfChecklistState[itemText] ? '✓' : '';
+          updateChecklistCount();
+        });
+        dashPdfChecklistContainer.appendChild(item);
+      });
+      updateChecklistCount();
+
+      // Render Section Pills
+      dashPdfSectionsPills.innerHTML = '';
+      const sections = data.sections || [];
+      sections.forEach((sec, idx) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'pdf-sec-dash-btn' + (idx === activeDashSectionIdx ? ' active' : '');
+        btn.textContent = sec.sectionName || `Section ${idx + 1}`;
+        btn.addEventListener('click', () => {
+          activeDashSectionIdx = idx;
+          const all = dashPdfSectionsPills.querySelectorAll('.pdf-sec-dash-btn');
+          all.forEach((b, i) => b.classList.toggle('active', i === idx));
+          renderDashPdfFields(sec);
+        });
+        dashPdfSectionsPills.appendChild(btn);
+      });
+
+      if (sections[activeDashSectionIdx]) {
+        renderDashPdfFields(sections[activeDashSectionIdx]);
+      }
+    }
+
+    function renderDashPdfFields(sec) {
+      dashPdfFieldsGrid.innerHTML = '';
+      const fields = sec.fields || [];
+      fields.forEach(f => {
+        const card = document.createElement('div');
+        card.className = 'pdf-field-dash-card';
+        card.innerHTML = `
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 11px; font-weight: 700; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; color: var(--text-secondary);">Page ${f.page || 1}</span>
+              <strong style="font-size: 14px; color: var(--text-main);">${escapeHtml(f.fieldName || 'Field')}</strong>
+            </div>
+            <button type="button" class="btn-dash-listen" style="background: none; border: none; font-size: 15px; cursor: pointer;" title="Listen">🔊</button>
+          </div>
+          <p style="font-size: 12.5px; color: var(--text-secondary); line-height: 1.4;">${escapeHtml(f.explanation || '')}</p>
+          ${f.example ? `<div style="background: #f8fafc; border-left: 3px solid var(--accent); padding: 6px 10px; border-radius: 4px; font-size: 12px; color: #334155;"><strong>Example:</strong> ${escapeHtml(f.example)}</div>` : ''}
+          ${f.commonPitfall ? `<div style="background: #fffbeb; border-left: 3px solid #f59e0b; padding: 6px 10px; border-radius: 4px; font-size: 12px; color: #92400e;"><strong>⚠️ Avoid:</strong> ${escapeHtml(f.commonPitfall)}</div>` : ''}
+        `;
+
+        const listenBtn = card.querySelector('.btn-dash-listen');
+        if (listenBtn) {
+          listenBtn.addEventListener('click', () => {
+            if ('speechSynthesis' in window) {
+              window.speechSynthesis.cancel();
+              const u = new SpeechSynthesisUtterance(`${f.fieldName}. ${f.explanation || ''} ${f.example ? 'For example: ' + f.example : ''}`);
+              window.speechSynthesis.speak(u);
+            }
+          });
+        }
+
+        dashPdfFieldsGrid.appendChild(card);
+      });
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
     // Boot
+    setupPdfDashHub();
     initDashboard();
   </script>
 </body>

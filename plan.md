@@ -9,18 +9,20 @@
 ## 🎯 Ringkasan Eksekutif & Kepatuhan Arsitektur
 
 1. **Stack Resmi Firebase (Google Cloud Native):**
-   * **Firebase Hosting:** Menyajikan Landing Page, Kebijakan Privasi, Demo, dan Download dari folder `/backend/public` via Global CDN + SSL otomatis di `telmy.id`.
-   * **Firebase Functions (2nd Gen):** Backend API serverless Express.js di region `asia-southeast2` (Jakarta) dengan kuota gratis 2 juta request/bulan.
+   * **Firebase Hosting:** Menyajikan Landing Page, Kebijakan Privasi, Demo, dan Download dari folder `/backend/public` via Global CDN + SSL otomatis gratis di `https://telmy.web.app` (dan `https://telmy.firebaseapp.com`). Bebas biaya pembelian domain kustom.
+   * **Firebase Functions (2nd Gen) / Cloud Run:** Backend API serverless Express.js di region `asia-southeast2` (Jakarta) dengan kuota gratis 2 juta request/bulan.
    * **Cloud Firestore:** Database penyimpanan kamus istilah resmi birokrasi, prompt cache, dan umpan balik pengguna.
    * **Firebase Storage:** Object storage penyimpanan foto profil pengguna (5 GB free tier, kompresi otomatis WebP).
    * **Firebase Authentication:** Login 1-klik dengan Google Sign-In & Email/Password.
 2. **API Eksternal (Google AI & Voice Engine):**
    * **Gemini 3.5 Flash-Lite:** Model Gemini **paling murah & efisien** ($0.30 input / $2.50 output per 1M token) untuk analisis form instan dan chat co-pilot dengan latensi kilat (<800ms).
    * **Google Cloud TTS (WaveNet):** Sintesis suara berkualitas tinggi dengan jatah **Free Tier 4.000.000 (4 Juta) Karakter/Bulan GRATIS** yang mencakup 11 bahasa area JAPAC.
-   * **Estimasi Biaya Operasional (< 50 Pengguna/Hari):** Hanya **~$0.30 – $1.20 / bulan** (~Rp 5.000 – Rp 20.000 / bulan), karena TTS, Functions, Storage, Firestore, dan Hosting 100% berada dalam kuota gratis.
-3. **Strategi Dual-Build Ekstensi:**
-   * **Build Lite (Chrome Web Store):** Izin minimal (`activeTab`, `scripting`, `sidePanel`, `storage`), host permission sempit ke domain sendiri, tanpa otomasi klik berbahaya, submit di Hari ke-4 dengan mode *Unlisted*.
-   * **Build Full (Hackathon Demo & Juri):** Disediakan via file `.zip` (Load Unpacked) di `telmy.id/download` dan didemokan di video 3 menit jika review CWS belum selesai pada hari H.
+   * **Estimasi Biaya Operasional:** **Rp 0 / 100% GRATIS** dengan memanfaatkan domain bawaan Firebase (`*.web.app`) serta kuota gratis Firebase & Google Cloud.
+3. **Strategi Fast-Track Menuju Rilis (Online Testing First):**
+   * **Tahap 1 (Deploy Online Cepat):** Deploy ke domain gratis `telmy.web.app` agar backend dan landing page segera online di internet global.
+   * **Tahap 2 (Sinkronisasi & Akses Ekstensi):** Sambungkan ekstensi Chrome ke endpoint API online `https://telmy.web.app/api`.
+   * **Tahap 3 (Uji Coba Menyeluruh):** Lakukan testing end-to-end (form scanner, PDF guidance, voice TTS, translasi) secara langsung di internet.
+   * **Tahap 4 (Submit Chrome Web Store):** Setelah seluruh pengujian online terbukti lancar dan stabil, baru fokus submit berkas `telmy-cws-clean.zip` ke Chrome Developer Dashboard.
 
 ---
 
@@ -176,6 +178,41 @@
 
 ---
 
+### 📄 PRIORITAS 7: Universal PDF Form Guidance (Gemini Multimodal Document Processing)
+*Target: Mengubah berkas formulir PDF pasif (unduhan visa kedutaan, beasiswa, perizinan, imigrasi) menjadi panduan interaktif step-by-step yang hangat, berdampingan (side-by-side), dan mudah dipahami.*
+
+#### 7.1. Deteksi Ganda PDF (Tab Viewer Detection & Local Drop Zone)
+- [x] **Deteksi Tab PDF Otomatis di Chrome:**
+  - Saat tab Chrome aktif membuka berkas PDF (URL berakhiran `.pdf`), Side Panel Telmy otomatis memunculkan banner pemandu: *"📄 PDF Document Detected: [filename] — Open side-by-side Gemini guidance"*.
+- [x] **Drop Zone Drag-and-Drop Lokal:**
+  - Kotak drop zone intuitif di Side Panel (Tab Fields) dan di Web Dashboard (`/dashboard`) untuk file PDF unduhan.
+  - Bersifat *User-Initiated File Upload* (bebas dari izin filesystem invasif di Chrome Web Store, 100% aman dan lolos review instan).
+
+#### 7.2. Backend Gemini Multimodal Document Engine (`POST /api/explain-pdf`)
+- [x] **Endpoint Multipart / Base64 PDF Ingestion:**
+  - Terintegrasi di `backend/src/services/pdfService.js` dan route `backend/src/routes/pdf.js`.
+  - Mengirim berkas langsung ke model `gemini-3.5-flash-lite` dengan MIME type `application/pdf` memanfaatkan native multimodal document understanding Google.
+  - Body parser Express dikonfigurasi hingga 25MB untuk menangani formulir PDF beresolusi tinggi.
+- [x] **Structured Extraction JSON Schema:**
+  - Ekstraksi akurat: `documentTitle`, `summary`, `requiredAttachments`, `sections`, dan kolom terperinci (`fieldName`, `page`, `explanation`, `example`, `commonPitfall`, `foreignerNote`).
+  - Dilengkapi mekanisme fallback teruji jika dokumen tidak memiliki teks terstruktur.
+
+#### 7.3. Antarmuka Co-Pilot Berdampingan di Side Panel (Side-by-Side UX)
+- [x] **Tampilan Berdampingan (Zero-Tab Switching):**
+  - Sisi Kiri layar: Tab browser menampilkan formulir PDF aslinya.
+  - Sisi Kanan layar: Side Panel Telmy menyajikan segmented toggle `[ 🌐 Web Page ]` dan `[ 📄 PDF Document ]` dengan panduan per bagian.
+- [x] **Interactive Stepper & Voice Narration:**
+  - Stepper tombol seksi/bab formulir per halaman PDF.
+  - Tombol narasi audio `🔊` per kolom yang memicu TTS dengan sinkronisasi gerak bibir avatar robot Telmy.
+  - Tombol cepat *"💬 Ask Telmy"* yang langsung berpindah ke tab Chat untuk tanya jawab kontekstual kolom tersebut.
+  - Checklist lampiran pendukung (*#### 7.4. PDF Preparation Hub di Web Dashboard (`/dashboard`)
+- [x] **Arena Persiapan & Riwayat Dokumen:**
+  - Bento Card *"Universal PDF Form Guidance Hub"* di Web Dashboard (`/dashboard`) dengan Drag-and-Drop Drop Zone.
+  - Visualisasi checklist berkas lampiran dengan centang interaktif dan kalkulasi kesiapan.
+  - Tampilan grid responsif untuk kolom-kolom tiap seksi lengkap dengan tombol audio TTS Web Speech API.
+
+---
+
 ## 📅 Jadwal Pelaksanaan (Timeline 10 Hari Menuju Submission)
 
 | Hari | Fokus Utama | Target Luaran |
@@ -185,11 +222,11 @@
 | **Hari 3** | Rancang Master SVG Talking Avatar + Layer Viseme Mulut | File SVG ringan dengan kontrol layer viseme & kedip |
 | **Hari 4** | Web Audio API Lip-Sync (Sinkronisasi Audio WaveNet TTS Real-time) | Mulut avatar bergerak natural mengikuti frekuensi suara |
 | **Hari 5** | Fitur Tambahan di Chatbot: "Translate Full Page (Context-Aware)" | Batch JSON payload ke Gemini 3.5 Flash-Lite & DOM swap |
-| **Hari 6** | Domain-Based Glossary System di Firestore + Saran Pengguna | Koleksi Firestore `glossaries/{domain}` & role admin/user |
-| **Hari 7** | Deploy Firebase Platform (Hosting Landing Page, Functions, Storage) | `telmy.id` aktif online dengan SSL dan backend API |
-| **Hari 8** | **SUBMIT KE CHROME WEB STORE (UNLISTED)** | Paket Manifest V3 Lite masuk antrean review Google |
-| **Hari 9** | Perekaman Video Demo 3 Menit & Pitch Deck Presentasi | Video MP4 siap tayang & slide PDF kriteria juri siap |
-| **Hari 10** | **FINAL SUBMISSION HACKATHON** | Submit link live Firebase, CWS/ZIP, video, dan pitch deck |
+| **Hari 6** | Universal PDF Form Guidance (Gemini Multimodal Document Processing) | Upload PDF kedutaan/visa di Side Panel & panduan interaktif |
+| **Hari 7** | Domain-Based Glossary System di Firestore + Saran Pengguna | Koleksi Firestore `glossaries/{domain}` & role admin/user |
+| **Hari 8** | **DEPLOY FIREBASE PLATFORM (DOMAIN GRATIS `telmy.web.app`)** | Segera online publik dengan SSL otomatis tanpa biaya domain |
+| **Hari 9** | **END-TO-END TESTING ONLINE DENGAN EKSTENSI** | Uji coba fitur live form scanner, PDF explainer, dan voice TTS |
+| **Hari 10** | **SUBMIT CHROME WEB STORE & FINAL HACKATHON SUBMISSION** | Submit ZIP bersih ke Google Developer Console & submit juri |
 
 ---
 
@@ -211,8 +248,10 @@
  * **Object Storage:** Firebase Storage (Foto profil & attachment)
  * **Auth:** Firebase Authentication (Google 1-Click + Email/Password)
  
- ### Domain & Endpoints
- * **Website:** `https://telmy.id` atau `https://telmyai.com`
- * **API Gateway:** Firebase Functions HTTPS endpoint (`/api/**`)
- * **Privacy Policy URL:** `https://telmy.id/privacy`
- * **Live Demo URL:** `https://telmy.id/demo`
+ ### Domain & Endpoints (Strategi Gratis Bawaan Firebase)
+ * **Website & Hosting Primer (Subdomain Gratis Firebase):** `https://telmy.web.app` (dan `https://telmy.firebaseapp.com`) — 100% Gratis, Global CDN, SSL aktif otomatis
+ * **Domain Kustom (Opsional Masa Depan):** `https://telmy.id` atau `https://telmyai.com`
+ * **API Gateway Live:** `https://telmy.web.app/api/**` (Firebase Functions / Cloud Run)
+ * **Privacy Policy URL Live:** `https://telmy.web.app/privacy`
+ * **Live Demo URL:** `https://telmy.web.app/demo`
+ * **Dashboard URL:** `https://telmy.web.app/dashboard`

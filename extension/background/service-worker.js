@@ -303,6 +303,40 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
+  // Multimodal Universal PDF Guidance (Priority 7)
+  if (message.type === 'EXPLAIN_PDF') {
+    chrome.storage.local.get(['settings']).then(async (res) => {
+      const settings = res.settings || DEFAULT_SETTINGS;
+      const apiUrl = settings.apiUrl || DEFAULT_SETTINGS.apiUrl;
+      const { pdfBase64, filename, language } = message.payload;
+
+      try {
+        const response = await fetchWithTimeout(`${apiUrl}/explain-pdf`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pdfBase64, filename, language })
+        }, 60000);
+
+        if (response.ok) {
+          const json = await response.json();
+          if (json.success && json.data) {
+            sendResponse({ success: true, data: json.data });
+            return;
+          }
+        } else {
+          const errJson = await response.json().catch(() => ({}));
+          sendResponse({ success: false, error: errJson.error || 'Server rejected PDF payload' });
+          return;
+        }
+      } catch (err) {
+        console.warn('[Telmy SW] PDF Explain API error:', err.message);
+      }
+
+      sendResponse({ success: false, error: 'Failed to analyze PDF form' });
+    });
+    return true;
+  }
+
   // Chat History Storage
   if (message.type === 'GET_CHAT_HISTORY') {
     const key = `telmy_chat_${message.domain || 'global'}`;
