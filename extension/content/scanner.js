@@ -75,10 +75,10 @@ window.GMTScanner = (function () {
       }
     }
 
-    // 2. Google Forms & Modern Form Container Cards (Card Heading above input)
-    const card = element.closest('[role="listitem"], .Qr7Oae, .geS5n, .m7zDu, .o3Dpx, .freebirdFormviewerViewNumberedItemContainer, .form-group, .form-row, .form-item, fieldset, section');
+    // 2. Modern Form Container Cards (Next.js, React, Tailwind, Bootstrap, Google Forms)
+    const card = element.closest ? element.closest('[role="listitem"], .Qr7Oae, .geS5n, .m7zDu, .o3Dpx, .freebirdFormviewerViewNumberedItemContainer, .form-group, .form-row, .form-item, fieldset, section, [class*="form-group"], [class*="form-item"], [class*="form-field"], [class*="form-control"], [class*="field"], .col-md-6, .col-md-12, .mb-3, .mb-4, .space-y-2, .grid') : null;
     if (card) {
-      const heading = card.querySelector('[role="heading"], .M7eMe, .c2nTpf, .HoFDJf, legend, label, .form-label, .control-label, h1, h2, h3, h4, h5, h6, [data-title], .field-label');
+      const heading = card.querySelector('[role="heading"], .M7eMe, .c2nTpf, .HoFDJf, legend, label, .form-label, .control-label, h1, h2, h3, h4, h5, h6, [data-title], .field-label, dt, th');
       if (heading) {
         const clone = heading.cloneNode(true);
         // Remove asterisk spans, badge indicators, or nested inputs
@@ -100,7 +100,7 @@ window.GMTScanner = (function () {
     }
 
     // 4. Closest ancestor label
-    const parentLabel = element.closest('label');
+    const parentLabel = element.closest ? element.closest('label') : null;
     if (parentLabel) {
       const clone = parentLabel.cloneNode(true);
       clone.querySelectorAll('input, select, textarea, .gmt-field-badge').forEach(i => i.remove());
@@ -114,9 +114,9 @@ window.GMTScanner = (function () {
     while (current && current !== document.body && depth < 5) {
       let prev = current.previousElementSibling;
       while (prev) {
-        const headingInPrev = prev.matches('label, [role="heading"], h1, h2, h3, h4, h5, h6, legend')
+        const headingInPrev = prev.matches && prev.matches('label, [role="heading"], h1, h2, h3, h4, h5, h6, legend')
           ? prev
-          : prev.querySelector('label, [role="heading"], h1, h2, h3, h4, h5, h6, legend, .form-label');
+          : (prev.querySelector ? prev.querySelector('label, [role="heading"], h1, h2, h3, h4, h5, h6, legend, .form-label') : null);
         if (headingInPrev) {
           const text = cleanLabelText(headingInPrev.innerText);
           if (text && !isNoiseLabel(text)) return text;
@@ -133,16 +133,26 @@ window.GMTScanner = (function () {
     }
 
     // 6. Attributes fallback (Strictly excluding noise placeholders like 'Jawaban Anda')
-    const ariaLabel = cleanLabelText(element.getAttribute('aria-label'));
+    const ariaLabel = cleanLabelText(element.getAttribute ? element.getAttribute('aria-label') : '');
     if (ariaLabel && !isNoiseLabel(ariaLabel)) return ariaLabel;
 
-    const placeholder = cleanLabelText(element.getAttribute('placeholder'));
+    const dataLabel = cleanLabelText(element.getAttribute ? (element.getAttribute('data-label') || element.getAttribute('data-title')) : '');
+    if (dataLabel && !isNoiseLabel(dataLabel)) return dataLabel;
+
+    const placeholder = cleanLabelText(element.getAttribute ? element.getAttribute('placeholder') : '');
     if (placeholder && !isNoiseLabel(placeholder)) return placeholder;
 
-    const title = cleanLabelText(element.getAttribute('title'));
+    const title = cleanLabelText(element.getAttribute ? element.getAttribute('title') : '');
     if (title && !isNoiseLabel(title)) return title;
 
-    if (element.name && !isNoiseLabel(element.name)) return element.name;
+    if (element.name && !isNoiseLabel(element.name)) {
+      // Convert camelCase or snake_case name to readable title (e.g. "fullName" -> "Full Name")
+      const readable = element.name
+        .replace(/([A-Z])/g, ' $1')
+        .replace(/[_-]+/g, ' ')
+        .trim();
+      return readable.charAt(0).toUpperCase() + readable.slice(1);
+    }
 
     return '';
   }
@@ -304,7 +314,7 @@ window.GMTScanner = (function () {
   }
 
   function scanForms(dictionaryFields) {
-    const rawCandidates = document.querySelectorAll(`
+    const candidateSelector = `
       input:not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="password"]),
       select,
       textarea,
@@ -315,15 +325,33 @@ window.GMTScanner = (function () {
       [role="textbox"],
       [role="searchbox"],
       div[contenteditable="true"]
-    `);
+    `;
+
+    let rawCandidates = Array.from(document.querySelectorAll(candidateSelector));
+
+    // Also collect form inputs inside same-origin iframes
+    document.querySelectorAll('iframe').forEach((iframe) => {
+      try {
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+        if (iframeDoc) {
+          const iframeInputs = Array.from(iframeDoc.querySelectorAll(candidateSelector));
+          rawCandidates = rawCandidates.concat(iframeInputs);
+        }
+      } catch (e) {
+        // Cross-origin iframe restricted, handled by all_frames in manifest
+      }
+    });
 
     const matchedList = [];
     const seenRadioGroups = new Set();
     let counter = 0;
 
     rawCandidates.forEach((el) => {
+      // Must be currently attached to the DOM tree
+      if (!el.isConnected) return;
+
       // Ignore if element is inside GMT's UI
-      if (el.closest('.gmt-ui-container')) return;
+      if (el.closest && el.closest('.gmt-ui-container')) return;
 
       // Filter div[role="group"]: only keep if it contains checkboxes (e.g. Google Forms checkbox groups)
       if (el.tagName === 'DIV' && el.getAttribute('role') === 'group') {
@@ -331,11 +359,16 @@ window.GMTScanner = (function () {
         if (!hasCheckboxes) return;
       }
 
-      // Check visibility: support custom styled inputs (file upload, masked inputs) whose parent is visible
-      const hasDimensions = el.offsetWidth > 0 || el.offsetHeight > 0 || el.getClientRects().length > 0;
-      const isInput = el.tagName === 'INPUT' || el.tagName === 'SELECT' || el.tagName === 'TEXTAREA';
-      const isParentVisible = el.parentElement && (el.parentElement.offsetWidth > 0 || el.parentElement.offsetHeight > 0);
-      if (!hasDimensions && !(isInput && isParentVisible)) return;
+      // Visibility & Form Presence:
+      // Native inputs (INPUT, SELECT, TEXTAREA) are valid form fields even if styled (file dropzone, stepper wizard, modal).
+      // Only reject if it's a custom non-input div that has zero visual dimensions.
+      const isNativeInput = el.tagName === 'INPUT' || el.tagName === 'SELECT' || el.tagName === 'TEXTAREA';
+      const hasDimensions = el.offsetWidth > 0 || el.offsetHeight > 0 || (el.getClientRects && el.getClientRects().length > 0);
+
+      if (!isNativeInput && !hasDimensions) {
+        const isParentVisible = el.parentElement && (el.parentElement.offsetWidth > 0 || el.parentElement.offsetHeight > 0);
+        if (!isParentVisible) return;
+      }
 
       // Group native radio buttons by name so a question with multiple radios doesn't appear multiple times
       if (el.tagName === 'INPUT' && el.type === 'radio' && el.name) {

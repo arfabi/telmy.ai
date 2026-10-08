@@ -202,8 +202,13 @@
     }
   });
 
+  let scanLadderTimers = [];
+  let isSPAListenerAttached = false;
+
   // 2. Stop Scan Workflow (Clean cleanup on close/off)
   function stopScanWorkflow() {
+    scanLadderTimers.forEach(clearTimeout);
+    scanLadderTimers = [];
     if (domObserver) {
       domObserver.disconnect();
       domObserver = null;
@@ -214,6 +219,59 @@
     cleanupFloatingDOM();
     scannedItems = [];
     isScanning = false;
+  }
+
+  // Intercept Single-Page Application (SPA) client-side navigation (e.g. Next.js router in Apostille)
+  function setupSPARouteInterceptor() {
+    if (isSPAListenerAttached) return;
+    isSPAListenerAttached = true;
+
+    const onRoute = () => {
+      if (!isScannerActivated || gmtSettings.isActive === false) return;
+      triggerScanLadder();
+    };
+
+    window.addEventListener('popstate', onRoute);
+    window.addEventListener('hashchange', onRoute);
+
+    try {
+      const origPushState = history.pushState;
+      if (origPushState) {
+        history.pushState = function (...args) {
+          const ret = origPushState.apply(this, args);
+          onRoute();
+          return ret;
+        };
+      }
+      const origReplaceState = history.replaceState;
+      if (origReplaceState) {
+        history.replaceState = function (...args) {
+          const ret = origReplaceState.apply(this, args);
+          onRoute();
+          return ret;
+        };
+      }
+    } catch (e) {}
+  }
+
+  // Progressive Scan Ladder: Crucial for JS-rendered SPAs (React, Next.js, Vue)
+  function triggerScanLadder() {
+    scanLadderTimers.forEach(clearTimeout);
+    scanLadderTimers = [];
+
+    // Scan immediately
+    runScanAndHighlight(cachedPageSummary);
+
+    // Retries at progressive intervals as JS bundles hydrate and AJAX forms mount
+    const delays = [350, 900, 1800, 3200];
+    delays.forEach(delay => {
+      const timer = setTimeout(() => {
+        if (isScannerActivated && gmtSettings.isActive !== false) {
+          runScanAndHighlight(cachedPageSummary, true);
+        }
+      }, delay);
+      scanLadderTimers.push(timer);
+    });
   }
 
   // 3. Start Scan Workflow (On-Demand Activation)
@@ -245,15 +303,17 @@
 
         window.__TELMY_DICT__ = dictionaryData;
         cachedPageSummary = pageSummary;
-        runScanAndHighlight(pageSummary);
+
+        triggerScanLadder();
         setupMutationObserver();
+        setupSPARouteInterceptor();
 
         if (onComplete) onComplete();
       });
     });
   }
 
-  // 4. Setup MutationObserver for dynamic SPAs (Only runs when scanner active)
+  // 4. Setup MutationObserver for dynamic SPAs (Monitors DOM additions & visibility toggles)
   function setupMutationObserver() {
     if (domObserver || !window.MutationObserver || !isScannerActivated) return;
 
@@ -262,18 +322,24 @@
       let shouldRescan = false;
       for (const m of mutations) {
         if (m.target && m.target.closest && m.target.closest('.gmt-ui-container')) continue;
-        if (m.addedNodes.length > 0) {
+        if (m.type === 'childList' && m.addedNodes.length > 0) {
           for (const node of m.addedNodes) {
             if (node.nodeType === 1) {
               if (
-                node.matches && (
-                  node.matches('input, select, textarea, [role="textbox"], [role="radiogroup"], [role="group"], [role="combobox"]') ||
-                  node.querySelector('input, select, textarea, [role="textbox"]')
-                )
+                (node.matches && node.matches('input, select, textarea, [role="textbox"], [role="radiogroup"], [role="group"], [role="combobox"], [role="listbox"], form, .form-group, .card, [class*="form"], [class*="field"], [class*="step"], [class*="tab"]')) ||
+                (node.querySelector && node.querySelector('input, select, textarea, [role="textbox"], [role="combobox"]'))
               ) {
                 shouldRescan = true;
                 break;
               }
+            }
+          }
+        } else if (m.type === 'attributes') {
+          // Detect visibility change on step wizards, modals, tabs
+          if (m.target && m.target.nodeType === 1) {
+            const el = m.target;
+            if (el.matches && el.matches('input, select, textarea, form, [role="tabpanel"], .tab-pane, .fade, [class*="step"], [class*="modal"], [class*="wizard"], [class*="tab"]')) {
+              shouldRescan = true;
             }
           }
         }
@@ -286,13 +352,15 @@
           if (isScannerActivated && gmtSettings.isActive !== false) {
             runScanAndHighlight(cachedPageSummary, true);
           }
-        }, 350);
+        }, 300);
       }
     });
 
-    domObserver.observe(document.body, {
+    domObserver.observe(document.body || document.documentElement, {
       childList: true,
-      subtree: true
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['style', 'class', 'hidden', 'aria-hidden']
     });
   }
 
@@ -305,6 +373,7 @@
     try {
       cleanupFloatingDOM();
 
+      const prevCount = scannedItems ? scannedItems.length : 0;
       // Scan page
       scannedItems = window.GMTScanner.scanForms(dictionaryData);
 
@@ -316,29 +385,33 @@
             index: index
           }, () => { if (chrome.runtime.lastError) {} });
         });
-
-        // Broadcast serializable fields to Chrome Native Side Panel
-        try {
-          const serializableFields = scannedItems.map(item => ({
-            metadata: {
-              scanIndex: item.metadata.scanIndex,
-              id: item.metadata.id,
-              name: item.metadata.name,
-              type: item.metadata.type,
-              options: item.metadata.options,
-              placeholder: item.metadata.placeholder,
-              label: item.metadata.label
-            },
-            dictEntry: item.dictEntry,
-            isCustomAi: item.isCustomAi
-          }));
-          chrome.runtime.sendMessage({
-            type: 'GMT_PAGE_MAPPED',
-            fields: serializableFields,
-            summary: pageSummary || cachedPageSummary
-          }, () => { if (chrome.runtime.lastError) {} });
-        } catch (e) {}
+      } else if (window.GMTHighlighter && prevCount > 0) {
+        window.GMTHighlighter.clearBadges();
       }
+
+      // Broadcast serializable fields to Chrome Native Side Panel
+      try {
+        const serializableFields = scannedItems.map(item => ({
+          metadata: {
+            scanIndex: item.metadata.scanIndex,
+            id: item.metadata.id,
+            name: item.metadata.name,
+            type: item.metadata.type,
+            options: item.metadata.options,
+            placeholder: item.metadata.placeholder,
+            label: item.metadata.label
+          },
+          dictEntry: item.dictEntry,
+          isCustomAi: item.isCustomAi
+        }));
+
+        chrome.runtime.sendMessage({
+          type: 'GMT_PAGE_MAPPED',
+          fields: serializableFields,
+          summary: pageSummary || cachedPageSummary,
+          count: serializableFields.length
+        }, () => { if (chrome.runtime.lastError) {} });
+      } catch (e) {}
     } finally {
       isScanning = false;
     }

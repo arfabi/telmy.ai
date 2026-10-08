@@ -503,6 +503,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         checkPageTranslationStatus(currentTabId);
       });
     }
+
+    // Handle in-page navigation / page reload / SPA loading on current tab
+    if (chrome.tabs && chrome.tabs.onUpdated) {
+      chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+        if (tabId === currentTabId && (changeInfo.status === 'complete' || changeInfo.url)) {
+          if (tab && tab.url) {
+            loadSessionChat(tab.url);
+            checkPdfTab(tab.url);
+          }
+          if (isScannerRunning) {
+            activateScannerOnTab(currentTabId);
+          }
+          checkPageTranslationStatus(currentTabId);
+        }
+      });
+    }
   }
 
   // 2. Render User Profile UI in Header & Popover
@@ -740,12 +756,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       await chrome.scripting.insertCSS({
-        target: { tabId },
+        target: { tabId, allFrames: true },
         files: ['content/overlay.css']
       }).catch(() => {});
 
       await chrome.scripting.executeScript({
-        target: { tabId },
+        target: { tabId, allFrames: true },
         files: [
           'content/scanner.js',
           'content/highlighter.js',
@@ -868,11 +884,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // Rescan Button
+  // Rescan Button: Forces full scan ladder & tab rescan
   btnRescan.addEventListener('click', () => {
     btnRescan.style.transform = 'rotate(180deg)';
     setTimeout(() => { btnRescan.style.transform = ''; }, 300);
-    if (currentTabId) activateScannerOnTab(currentTabId);
+    if (currentTabId) {
+      chrome.tabs.sendMessage(currentTabId, { type: 'TRIGGER_RESCAN' }, () => {
+        const err = chrome.runtime.lastError;
+      });
+      activateScannerOnTab(currentTabId);
+    }
   });
 
   // 5. Chat & AI Interaction
@@ -1661,6 +1682,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   function renderFieldsList(fields) {
     fieldsQuickList.innerHTML = '';
     const auditCard = document.getElementById('sp-audit-trigger-card');
+    const count = fields ? fields.length : 0;
+
+    badgeFieldsCount.textContent = count;
+    fieldsCountPill.textContent = `${count} ${t('tab_fields') || 'Fields'}`;
 
     if (!fields || fields.length === 0) {
       fieldsEmptyState.style.display = 'block';

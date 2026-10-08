@@ -57,7 +57,7 @@
         "https://*/*",
         "http://*/*"
       ],
-      "all_frames": false,
+      "all_frames": true,
       "js": [
         "content/scanner.js",
         "content/highlighter.js",
