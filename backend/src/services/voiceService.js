@@ -60,11 +60,17 @@ export async function synthesizeSpeechStream({ text, language = 'en' }) {
   }
 
   const voiceConfig = GOOGLE_VOICE_MAP[language] || GOOGLE_VOICE_MAP['en'];
+  const requestHeaders = {
+    'Content-Type': 'application/json'
+  };
+  const allowedReferer = process.env.GOOGLE_TTS_REFERER || process.env.ALLOWED_REFERER || 'https://telmy.web.app/';
+  if (allowedReferer) {
+    requestHeaders['Referer'] = allowedReferer;
+  }
+
   const response = await fetch(`${GOOGLE_TTS_ENDPOINT}?key=${googleApiKey}`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
+    headers: requestHeaders,
     body: JSON.stringify({
       input: { text: cleanText },
       voice: {
