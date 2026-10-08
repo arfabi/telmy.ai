@@ -4,7 +4,7 @@ const DEFAULT_SETTINGS = {
   isActive: true,
   theme: 'light',
   highlightColor: '#2563eb',
-  apiUrl: 'https://telmy-ai-git-620239122732.asia-northeast1.run.app/api'
+  apiUrl: 'https://telmy-ai.cloud.run/api'
 };
 
 chrome.runtime.onInstalled.addListener(async (details) => {
@@ -12,8 +12,8 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   const stored = await chrome.storage.local.get(['settings', 'suggestions_history']);
   if (!stored.settings) {
     await chrome.storage.local.set({ settings: DEFAULT_SETTINGS });
-  } else if (!stored.settings.apiUrl || stored.settings.apiUrl.includes('telmy.web.app')) {
-    // Migrate to live Cloud Run endpoint
+  } else if (!stored.settings.apiUrl || stored.settings.apiUrl.includes('telmy.web.app') || stored.settings.apiUrl.includes('asia-northeast1.run.app')) {
+    // Migrate to live Cloud Run domain
     await chrome.storage.local.set({ settings: { ...stored.settings, apiUrl: DEFAULT_SETTINGS.apiUrl } });
   }
   if (!stored.suggestions_history) {
@@ -40,10 +40,10 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = 30000) {
     clearTimeout(id);
 
     // If cloud endpoint returned static HTML (Firebase hosting rewrite not deployed yet),
-    // automatically attempt live Cloud Run endpoint (telmy-ai-git in asia-northeast1)
+    // automatically attempt live Cloud Run endpoint (telmy-ai.cloud.run)
     const contentType = res.headers.get('content-type') || '';
     if (contentType.includes('text/html') && url.includes('telmy.web.app/api')) {
-      const cloudRunUrl = url.replace('https://telmy.web.app/api', 'https://telmy-ai-git-620239122732.asia-northeast1.run.app/api');
+      const cloudRunUrl = url.replace('https://telmy.web.app/api', 'https://telmy-ai.cloud.run/api');
       try {
         const cloudController = new AbortController();
         const cloudId = setTimeout(() => cloudController.abort(), 15000);
@@ -68,7 +68,7 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = 30000) {
     clearTimeout(id);
     // If cloud network failed, try Cloud Run or localhost
     if (url.includes('telmy.web.app/api')) {
-      const cloudRunUrl = url.replace('https://telmy.web.app/api', 'https://telmy-ai-git-620239122732.asia-northeast1.run.app/api');
+      const cloudRunUrl = url.replace('https://telmy.web.app/api', 'https://telmy-ai.cloud.run/api');
       try {
         const cloudController = new AbortController();
         const cloudId = setTimeout(() => cloudController.abort(), 15000);

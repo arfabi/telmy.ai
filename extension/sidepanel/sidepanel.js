@@ -642,7 +642,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Handle Firebase Google Sign-In Connect Flow
   async function handleUserAuthConnect() {
     const settings = (await chrome.storage.local.get(['settings'])).settings || {};
-    const apiUrl = settings.apiUrl || 'https://telmy-ai-git-620239122732.asia-northeast1.run.app/api';
+    const apiUrl = settings.apiUrl || 'https://telmy-ai.cloud.run/api';
     const baseUrl = apiUrl.replace(/\/api\/?$/, '');
 
     // Open live /connect tab for actual Firebase Google Sign-In
