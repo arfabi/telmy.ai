@@ -247,15 +247,17 @@
         <span>or sign in with email</span>
       </div>
 
-      <input type="text" id="input-name" class="input-field" placeholder="Display Name (e.g. Alex Pratama)">
-      <input type="email" id="input-email" class="input-field" placeholder="Email Address">
+      <input type="text" id="input-name" class="input-field" placeholder="Full Legal Name (e.g. Alex Pratama)">
+      <input type="email" id="input-email" class="input-field" placeholder="Email Address (e.g. alex@example.com)">
       <button id="btn-email-login" class="btn-email-submit">Continue to Dashboard →</button>
+      
+      <div id="auth-error" style="display: none; margin-top: 14px; padding: 10px 14px; border-radius: 10px; background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; font-size: 12.5px; text-align: left; line-height: 1.4;"></div>
     </div>
 
     <div id="success-box" class="success-box">
       <div class="success-icon">🎉</div>
-      <h3>Account Connected!</h3>
-      <p id="success-msg">Your Telmy.ai profile has been synced with your Chrome Extension. You can manage your preferences on the Dashboard or return to your form.</p>
+      <h3 id="success-title">Account Connected!</h3>
+      <p id="success-msg">Your Telmy.ai profile has been synced with your Chrome Extension. Redirecting to your personal dashboard...</p>
       <a href="/dashboard" class="btn-email-submit" style="display: inline-block; text-decoration: none; margin-top: 16px; width: 100%;">Open User Dashboard →</a>
     </div>
   </div>
@@ -283,8 +285,24 @@
     const inputEmail = document.getElementById('input-email');
     const authContainer = document.getElementById('auth-container');
     const successBox = document.getElementById('success-box');
+    const authError = document.getElementById('auth-error');
+
+    function showError(msg) {
+      if (authError) {
+        authError.textContent = msg;
+        authError.style.display = 'block';
+      }
+    }
+
+    function clearError() {
+      if (authError) {
+        authError.style.display = 'none';
+        authError.textContent = '';
+      }
+    }
 
     async function syncUserWithExtension(user) {
+      clearError();
       authContainer.style.display = 'none';
       successBox.style.display = 'block';
 
@@ -317,11 +335,12 @@
       // 4. Smooth automatic redirect to dashboard
       setTimeout(() => {
         window.location.href = '/dashboard';
-      }, 1500);
+      }, 1200);
     }
 
     // Google Sign-In with Popup
     btnGoogle.addEventListener('click', async () => {
+      clearError();
       btnGoogle.disabled = true;
       btnGoogle.style.opacity = '0.7';
       const originalContent = btnGoogle.innerHTML;
@@ -335,8 +354,8 @@
           const fbUser = result.user;
           const userData = {
             uid: fbUser.uid,
-            displayName: fbUser.displayName || 'Telmy User',
-            name: fbUser.displayName || 'Telmy User',
+            displayName: fbUser.displayName || 'Google User',
+            name: fbUser.displayName || 'Google User',
             email: fbUser.email || '',
             photoURL: fbUser.photoURL || 'telmy_icon.png',
             provider: 'google.com',
@@ -345,29 +364,44 @@
           };
           await syncUserWithExtension(userData);
         } else {
-          throw new Error('Firebase Auth unavailable');
+          throw new Error('Firebase Auth is not available. Check your internet connection.');
         }
       } catch (err) {
-        console.warn('[Google Auth]', err);
-        // Fallback for environments with strict popup policies
-        const fallbackUser = {
-          uid: 'usr_' + Date.now().toString(36),
-          displayName: 'Telmy Member',
-          name: 'Telmy Member',
-          email: 'member@telmy.id',
-          photoURL: 'telmy_icon.png',
-          provider: 'google.com',
-          language: localStorage.getItem('telmy_landing_lang') || 'en',
-          connectedAt: new Date().toISOString()
-        };
-        await syncUserWithExtension(fallbackUser);
+        console.error('[Google Auth Error]', err);
+        btnGoogle.disabled = false;
+        btnGoogle.style.opacity = '1';
+        btnGoogle.innerHTML = originalContent;
+
+        if (err.code === 'auth/popup-closed-by-user') {
+          showError('Sign-in cancelled. Please try again when ready.');
+        } else if (err.code === 'auth/popup-blocked') {
+          showError('Popup was blocked by your browser. Please allow popups for this page.');
+        } else if (err.code === 'auth/unauthorized-domain') {
+          showError('Domain is not authorized in Firebase. Please add this domain to Firebase Console > Authentication > Settings > Authorized Domains.');
+        } else {
+          showError(err.message || 'Unable to connect to Google Account.');
+        }
       }
     });
 
     // Email Sign-In
     btnEmail.addEventListener('click', async () => {
-      const name = inputName.value.trim() || 'Telmy Member';
-      const email = inputEmail.value.trim() || 'user@telmy.id';
+      clearError();
+      const name = inputName.value.trim();
+      const email = inputEmail.value.trim();
+
+      if (!name) {
+        showError('Please enter your full name.');
+        inputName.focus();
+        return;
+      }
+
+      if (!email || !email.includes('@')) {
+        showError('Please enter a valid email address.');
+        inputEmail.focus();
+        return;
+      }
+
       const user = {
         uid: 'usr_' + Date.now().toString(36),
         displayName: name,

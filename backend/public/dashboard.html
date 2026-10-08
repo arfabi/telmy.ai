@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Telmy.ai Dashboard — Apple Human Interface Experience</title>
+  <title>Member Area — Telmy.ai</title>
   <link rel="icon" type="image/png" href="telmy_icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,557 +11,553 @@
   <style>
     /* =========================================================
        Apple Human Interface Guidelines & Cupertino Aesthetics
-       Clean, fluid, generous whitespace, refined micro-interactions
+       Modern SaaS Dashboard: Left Sidebar + Right Content Area
        ========================================================= */
     :root {
-      --bg: #f5f5f7;
-      --card-bg: rgba(255, 255, 255, 0.85);
-      --card-border: rgba(0, 0, 0, 0.07);
-      --text-main: #1d1d1f;
-      --text-secondary: #86868b;
-      --text-tertiary: #a1a1a6;
+      --bg: #f8fafc;
+      --sidebar-bg: #ffffff;
+      --card-bg: #ffffff;
+      --card-border: #e2e8f0;
+      --card-border-subtle: #f1f5f9;
+      --text-main: #0f172a;
+      --text-secondary: #64748b;
+      --text-tertiary: #94a3b8;
       --accent: #0071e3;
       --accent-hover: #0077ed;
       --accent-light: #e8f2fc;
-      --success: #34c759;
-      --success-light: #eafaf1;
-      --radius-sm: 10px;
-      --radius-md: 18px;
-      --radius-lg: 24px;
+      --accent-soft: rgba(0, 113, 227, 0.08);
+      --success: #16a34a;
+      --success-light: #dcfce7;
+      --warning: #d97706;
+      --warning-light: #fef3c7;
+      --danger: #dc2626;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
       --radius-full: 999px;
-      --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.04);
-      --shadow-hover: 0 12px 30px rgba(0, 0, 0, 0.08);
-      --blur-glass: saturate(180%) blur(20px);
+      --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+      --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.04);
+      --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.08);
+      --sidebar-width: 260px;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Plus Jakarta Sans", sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Plus Jakarta Sans", sans-serif;
       background-color: var(--bg);
       color: var(--text-main);
-      line-height: 1.47;
+      line-height: 1.5;
       min-height: 100vh;
+      display: flex;
+    }
+
+    /* Layout Shell */
+    .dash-layout {
+      display: flex;
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    /* =========================================================
+       Left Sidebar Navigation
+       ========================================================= */
+    .dash-sidebar {
+      width: var(--sidebar-width);
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--card-border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 100;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .sidebar-header {
+      padding: 22px 20px 18px;
+      border-bottom: 1px solid var(--card-border-subtle);
+    }
+
+    .sidebar-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text-main);
+    }
+
+    .sidebar-logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      object-fit: contain;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+
+    .sidebar-brand-text {
       display: flex;
       flex-direction: column;
     }
 
-    /* Ambient Background Light */
-    .ambient-bg {
-      position: fixed;
-      top: -120px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 900px;
-      height: 500px;
-      background: radial-gradient(circle, rgba(0, 113, 227, 0.08) 0%, rgba(245, 245, 247, 0) 70%);
-      pointer-events: none;
-      z-index: 0;
+    .brand-title {
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      color: var(--text-main);
     }
 
-    /* Apple-Style Frosted Glass Navigation Bar */
-    .apple-nav {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: rgba(245, 245, 247, 0.8);
-      backdrop-filter: var(--blur-glass);
-      -webkit-backdrop-filter: var(--blur-glass);
-      border-bottom: 1px solid var(--card-border);
-      height: 60px;
+    .brand-tag {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent);
+      background: var(--accent-light);
+      padding: 1px 6px;
+      border-radius: var(--radius-full);
+      display: inline-block;
+      width: fit-content;
+      margin-top: 1px;
+    }
+
+    /* 5 Menu Nav Items */
+    .sidebar-nav {
+      padding: 16px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .sidebar-item {
       display: flex;
       align-items: center;
-      transition: background 0.3s;
+      gap: 12px;
+      padding: 11px 14px;
+      border-radius: var(--radius-sm);
+      text-decoration: none;
+      color: var(--text-secondary);
+      font-size: 13.5px;
+      font-weight: 600;
+      transition: all 0.15s ease;
+      cursor: pointer;
     }
 
-    .nav-container {
-      max-width: 1120px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 0 24px;
+    .sidebar-item:hover {
+      background: #f1f5f9;
+      color: var(--text-main);
+    }
+
+    .sidebar-item.active {
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .sidebar-icon {
+      font-size: 18px;
+      width: 22px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
     }
 
-    .nav-brand {
+    .sidebar-badge {
+      margin-left: auto;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #e2e8f0;
+      color: #475569;
+      font-weight: 700;
+    }
+
+    .sidebar-item.active .sidebar-badge {
+      background: var(--accent);
+      color: white;
+    }
+
+    /* Sidebar Footer: User Card */
+    .sidebar-footer {
+      padding: 16px 12px 20px;
+      border-top: 1px solid var(--card-border-subtle);
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .sidebar-user-card {
       display: flex;
       align-items: center;
       gap: 10px;
-      text-decoration: none;
-      color: var(--text-main);
+      padding: 8px 10px;
+      border-radius: var(--radius-sm);
+      background: #f8fafc;
+      border: 1px solid var(--card-border);
     }
 
-    .nav-mascot {
+    .sidebar-user-avatar {
       width: 32px;
       height: 32px;
-      border-radius: 8px;
-      object-fit: contain;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .nav-logo-text {
-      height: 20px;
-      width: auto;
-      object-fit: contain;
-    }
-
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 28px;
-    }
-
-    .nav-link {
-      color: var(--text-secondary);
-      text-decoration: none;
-      font-size: 13px;
-      font-weight: 500;
-      transition: color 0.15s;
-    }
-
-    .nav-link:hover, .nav-link.active {
-      color: var(--text-main);
-    }
-
-    .nav-user-pill {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 4px 12px 4px 4px;
-      background: rgba(255, 255, 255, 0.9);
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius-full);
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-      cursor: pointer;
-      transition: transform 0.15s, box-shadow 0.15s;
-    }
-
-    .nav-user-pill:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
-    }
-
-    .nav-avatar-img {
-      width: 26px;
-      height: 26px;
       border-radius: 50%;
       object-fit: cover;
       background: var(--accent-light);
     }
 
-    .nav-user-name {
-      font-size: 12.5px;
-      font-weight: 600;
-      color: var(--text-main);
-    }
-
-    .nav-sync-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--success);
-      box-shadow: 0 0 0 2px var(--success-light);
-    }
-
-    .nav-brand-text {
-      font-size: 17px;
-      font-weight: 800;
-      color: var(--text-main);
-      letter-spacing: -0.4px;
-    }
-
-    .nav-badge-dash {
-      font-size: 11px;
-      font-weight: 700;
-      background: rgba(0, 113, 227, 0.1);
-      color: var(--accent);
-      padding: 2px 8px;
-      border-radius: var(--radius-full);
-    }
-
-    .nav-right-controls {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .nav-quota-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 5px 12px;
-      border-radius: var(--radius-full);
-      background: rgba(0, 113, 227, 0.08);
-      border: 1px solid rgba(0, 113, 227, 0.2);
-      color: var(--accent);
-      font-size: 12px;
-      font-weight: 700;
-      text-decoration: none;
-      transition: all 0.15s;
-    }
-
-    .nav-quota-pill:hover {
-      background: rgba(0, 113, 227, 0.15);
-      transform: translateY(-1px);
-    }
-
-    .dash-lang-pill {
-      background: rgba(255, 255, 255, 0.9);
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius-full);
-      padding: 4px 10px;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-main);
-      cursor: pointer;
-      outline: none;
-      transition: all 0.15s;
-    }
-
-    .dash-lang-pill:hover {
-      border-color: var(--accent);
-    }
-
-    .user-dropdown-wrapper {
-      position: relative;
-    }
-
-    .chevron-icon {
-      color: var(--text-secondary);
-      transition: transform 0.2s;
-    }
-
-    .user-dropdown-wrapper.open .chevron-icon {
-      transform: rotate(180deg);
-    }
-
-    .user-dropdown-card {
-      display: none;
-      position: absolute;
-      top: calc(100% + 8px);
-      right: 0;
-      width: 220px;
-      background: rgba(255, 255, 255, 0.96);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(0, 0, 0, 0.08);
-      border-radius: 16px;
-      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.12);
-      padding: 8px;
-      z-index: 200;
-      animation: dropdownFade 0.2s ease;
-    }
-
-    @keyframes dropdownFade {
-      from { opacity: 0; transform: translateY(-6px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .user-dropdown-card.show {
-      display: block;
-    }
-
-    .dropdown-header {
-      padding: 8px 10px 10px;
+    .sidebar-user-info {
       display: flex;
       flex-direction: column;
-      gap: 2px;
-    }
-
-    .dropdown-header strong {
-      font-size: 13.5px;
-      color: var(--text-main);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .dropdown-header span {
-      font-size: 11.5px;
-      color: var(--text-secondary);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .dropdown-divider {
-      height: 1px;
-      background: var(--card-border);
-      margin: 4px 0;
-    }
-
-    .dropdown-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      width: 100%;
-      padding: 8px 10px;
-      font-size: 12.5px;
-      font-weight: 500;
-      color: var(--text-main);
-      text-decoration: none;
-      border-radius: 8px;
-      border: none;
-      background: transparent;
-      cursor: pointer;
-      text-align: left;
-      transition: background 0.15s;
-    }
-
-    .dropdown-item:hover {
-      background: #f5f5f7;
-    }
-
-    .dropdown-logout {
-      color: #e11d48;
-    }
-
-    .dropdown-logout:hover {
-      background: #fff1f2;
-    }
-
-    /* Main Container */
-    .main-wrapper {
-      position: relative;
-      z-index: 1;
-      max-width: 1120px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 40px 24px 80px;
+      min-width: 0;
       flex: 1;
     }
 
-    /* Header Hero Section */
-    .hero-banner {
+    .sidebar-user-name {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sidebar-user-email {
+      font-size: 11px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .btn-sidebar-logout {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 8px 12px;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: var(--radius-sm);
+      color: #475569;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-sidebar-logout:hover {
+      background: #fee2e2;
+      color: #dc2626;
+      border-color: #fca5a5;
+    }
+
+    /* =========================================================
+       Right Main Content Area
+       ========================================================= */
+    .dash-main {
+      margin-left: var(--sidebar-width);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      min-height: 100vh;
+    }
+
+    /* Topbar Header */
+    .dash-topbar {
+      position: sticky;
+      top: 0;
+      z-index: 90;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--card-border);
+      height: 64px;
+      padding: 0 28px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 36px;
     }
 
-    .hero-text h1 {
-      font-size: 34px;
-      font-weight: 700;
-      letter-spacing: -0.025em;
-      color: var(--text-main);
-      margin-bottom: 6px;
-    }
-
-    .hero-text p {
-      font-size: 15px;
-      color: var(--text-secondary);
-      font-weight: 400;
-    }
-
-    .hero-mascot-card {
+    .topbar-left {
       display: flex;
       align-items: center;
-      gap: 16px;
-      background: var(--card-bg);
-      backdrop-filter: var(--blur-glass);
+      gap: 14px;
+    }
+
+    .btn-mobile-sidebar {
+      display: none;
+      background: none;
       border: 1px solid var(--card-border);
-      border-radius: var(--radius-lg);
-      padding: 14px 20px;
-      box-shadow: var(--shadow-subtle);
-    }
-
-    .mascot-avatar-wrap {
-      width: 52px;
-      height: 52px;
-      border-radius: 14px;
-      overflow: hidden;
-      animation: floatMascot 3.5s ease-in-out infinite alternate;
-    }
-
-    @keyframes floatMascot {
-      0% { transform: translateY(0); }
-      100% { transform: translateY(-4px); }
-    }
-
-    .mascot-avatar-wrap img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .mascot-talk {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .mascot-talk strong {
-      font-size: 13.5px;
-      font-weight: 700;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 16px;
+      cursor: pointer;
       color: var(--text-main);
     }
 
-    .mascot-talk span {
-      font-size: 11.5px;
-      color: var(--text-secondary);
+    .topbar-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: -0.3px;
     }
 
-    /* Bento Box Grid */
-    .bento-grid {
-      display: grid;
-      grid-template-columns: repeat(12, 1fr);
-      gap: 20px;
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 14px;
     }
 
-    .bento-card {
+    .topbar-status-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #15803d;
+      background: #dcfce7;
+      padding: 4px 12px;
+      border-radius: var(--radius-full);
+      border: 1px solid #bbf7d0;
+    }
+
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      background: #16a34a;
+      border-radius: 50%;
+      animation: pulse 1.8s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(22, 163, 74, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
+    }
+
+    .lang-select-nav {
+      padding: 6px 12px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-main);
+      background: #ffffff;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      outline: none;
+    }
+
+    .btn-topbar-action {
+      background: var(--accent);
+      color: white;
+      text-decoration: none;
+      font-size: 12.5px;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      transition: background 0.15s;
+    }
+
+    .btn-topbar-action:hover {
+      background: var(--accent-hover);
+    }
+
+    /* Content Area & Modular Views */
+    .dash-content-container {
+      padding: 32px 36px 60px;
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .dash-view {
+      display: none;
+      animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .dash-view.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* =========================================================
+       Card Elements & Typography
+       ========================================================= */
+    .apple-card {
       background: var(--card-bg);
-      backdrop-filter: var(--blur-glass);
       border: 1px solid var(--card-border);
       border-radius: var(--radius-lg);
-      padding: 26px;
+      padding: 28px 28px;
+      margin-bottom: 24px;
       box-shadow: var(--shadow-subtle);
-      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      overflow: hidden;
     }
-
-    .bento-card:hover {
-      box-shadow: var(--shadow-hover);
-    }
-
-    /* Card Spans */
-    .col-span-8 { grid-column: span 8; }
-    .col-span-4 { grid-column: span 4; }
-    .col-span-6 { grid-column: span 6; }
-    .col-span-12 { grid-column: span 12; }
 
     .card-header {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: space-between;
       margin-bottom: 20px;
-    }
-
-    .card-title-group {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .card-icon {
-      font-size: 20px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--card-border-subtle);
     }
 
     .card-title {
       font-size: 17px;
-      font-weight: 700;
-      letter-spacing: -0.015em;
+      font-weight: 800;
       color: var(--text-main);
+      letter-spacing: -0.2px;
     }
 
     .card-subtitle {
-      font-size: 12px;
+      font-size: 13px;
       color: var(--text-secondary);
+      margin-top: 2px;
     }
 
-    /* Card 1: Profile & Photo Management */
-    .profile-content {
-      display: flex;
-      align-items: center;
-      gap: 24px;
-    }
-
-    .profile-photo-uploader {
-      position: relative;
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      cursor: pointer;
-      flex-shrink: 0;
-    }
-
-    .profile-photo-img {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 3px solid #ffffff;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-
-    .photo-overlay-btn {
-      position: absolute;
-      bottom: 0;
-      right: 0;
-      background: var(--accent);
-      color: white;
-      width: 26px;
-      height: 26px;
-      border-radius: 50%;
-      display: flex;
+    /* Buttons (Unified & Fixed CSS) */
+    .btn-apple-primary {
+      display: inline-flex;
       align-items: center;
       justify-content: center;
-      font-size: 12px;
-      box-shadow: 0 2px 6px rgba(0, 113, 227, 0.4);
-      transition: transform 0.15s;
-    }
-
-    .photo-overlay-btn:hover {
-      transform: scale(1.1);
-    }
-
-    .profile-fields {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      flex: 1;
-    }
-
-    .profile-input-row {
-      display: flex;
-      gap: 12px;
-    }
-
-    .apple-input {
-      width: 100%;
-      background: rgba(245, 245, 247, 0.7);
-      border: 1px solid rgba(0, 0, 0, 0.08);
-      border-radius: var(--radius-sm);
-      padding: 10px 14px;
-      font-size: 13.5px;
-      color: var(--text-main);
-      outline: none;
-      transition: all 0.15s ease;
-      font-family: inherit;
-    }
-
-    .apple-input:focus {
-      background: #ffffff;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.15);
-    }
-
-    .btn-apple-primary {
-      align-self: flex-start;
+      gap: 8px;
       background: var(--accent);
-      color: white;
+      color: #ffffff !important;
       border: none;
       border-radius: var(--radius-full);
-      padding: 9px 20px;
+      padding: 10px 22px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      box-shadow: 0 2px 8px rgba(0, 113, 227, 0.25);
+      text-decoration: none;
+    }
+
+    .btn-apple-primary:hover:not(:disabled) {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 113, 227, 0.35);
+    }
+
+    .btn-apple-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: #ffffff;
+      color: var(--text-main);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-full);
+      padding: 10px 20px;
       font-size: 13px;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.15s ease;
-      box-shadow: 0 2px 8px rgba(0, 113, 227, 0.25);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+      text-decoration: none;
     }
 
-    .btn-apple-primary:hover {
-      background: var(--accent-hover);
+    .btn-apple-secondary:hover:not(:disabled) {
+      background: #f8fafc;
+      border-color: #cbd5e1;
       transform: translateY(-1px);
     }
 
-    /* Card 2: Language Matrix Selector */
+    .btn-apple-secondary:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+      background: #f1f5f9;
+      border-color: #e2e8f0;
+      color: #64748b;
+    }
+
+    /* Form Fields */
+    .apple-input-group {
+      margin-bottom: 18px;
+    }
+
+    .apple-label {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+
+    .apple-input, .apple-select, .apple-textarea {
+      width: 100%;
+      padding: 10px 14px;
+      font-size: 13.5px;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-sm);
+      background: #ffffff;
+      color: var(--text-main);
+      transition: border 0.15s, box-shadow 0.15s;
+      outline: none;
+      font-family: inherit;
+    }
+
+    .apple-input:focus, .apple-select:focus, .apple-textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.15);
+    }
+
+    .form-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    /* KPI Metrics Cards (Overview & Forms) */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+
+    .kpi-card {
+      background: #ffffff;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-md);
+      padding: 20px 22px;
+      box-shadow: var(--shadow-subtle);
+    }
+
+    .kpi-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .kpi-val {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--text-main);
+      margin: 6px 0 4px;
+    }
+
+    .kpi-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    /* Language Matrix Selector */
     .language-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
       gap: 10px;
+      margin-top: 14px;
     }
 
     .lang-item-card {
@@ -569,11 +565,11 @@
       align-items: center;
       gap: 8px;
       padding: 10px 14px;
-      background: rgba(245, 245, 247, 0.6);
-      border: 1px solid rgba(0, 0, 0, 0.06);
+      background: #f8fafc;
+      border: 1px solid var(--card-border);
       border-radius: var(--radius-sm);
       cursor: pointer;
-      transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.15s;
       user-select: none;
     }
 
@@ -588,1251 +584,692 @@
       border-color: var(--accent);
       color: var(--accent);
       font-weight: 700;
-      box-shadow: 0 2px 8px rgba(0, 113, 227, 0.12);
     }
 
-    .lang-flag {
-      font-size: 16px;
-    }
-
-    .lang-name {
-      font-size: 12.5px;
-    }
-
-    /* Card 3: Extension Connection Live Status */
-    .ext-status-box {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: #ffffff;
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius-md);
-      padding: 18px 20px;
-      margin-bottom: 16px;
-    }
-
-    .ext-status-info {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-
-    .ext-badge-icon {
-      width: 42px;
-      height: 42px;
-      border-radius: 12px;
-      background: var(--accent-light);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-    }
-
-    .ext-status-details strong {
-      font-size: 14px;
-      color: var(--text-main);
-      display: block;
-    }
-
-    .ext-status-details small {
-      font-size: 12px;
-      color: var(--success);
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .ext-status-details small::before {
-      content: '';
-      display: inline-block;
-      width: 6px;
-      height: 6px;
-      background: var(--success);
-      border-radius: 50%;
-    }
-
-    .btn-sync-ext {
-      background: rgba(245, 245, 247, 0.9);
-      border: 1px solid rgba(0, 0, 0, 0.1);
-      border-radius: var(--radius-full);
-      padding: 8px 16px;
-      font-size: 12.5px;
-      font-weight: 600;
-      color: var(--text-main);
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-
-    .btn-sync-ext:hover {
-      background: #ffffff;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-      transform: translateY(-1px);
-    }
-
-    /* Card 4: AI Engine Stack */
-    .ai-tech-pills {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .ai-tech-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 14px;
-      background: rgba(245, 245, 247, 0.6);
-      border-radius: var(--radius-sm);
-    }
-
-    .ai-tech-item strong {
-      font-size: 13px;
-      color: var(--text-main);
-    }
-
-    .ai-tech-item span {
-      font-size: 11.5px;
-      color: var(--text-secondary);
-      background: #ffffff;
-      padding: 3px 8px;
-      border-radius: 6px;
-      border: 1px solid rgba(0, 0, 0, 0.05);
-    }
-
-    .btn-admin-toggle {
-      margin-top: 14px;
-      background: none;
-      border: none;
-      color: var(--text-tertiary);
-      font-size: 11.5px;
-      font-weight: 500;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-      padding: 6px 4px;
-      transition: color 0.15s;
-      font-family: inherit;
-    }
-
-    .btn-admin-toggle:hover {
-      color: var(--text-secondary);
-    }
-
-    .admin-specs-panel {
-      margin-top: 8px;
-      padding: 10px 12px;
-      background: rgba(245, 245, 247, 0.8);
-      border-radius: var(--radius-sm);
-      border: 1px dashed rgba(0, 0, 0, 0.1);
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      animation: fadeIn 0.2s ease;
-    }
-
-    .admin-spec-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 11px;
-    }
-
-    .admin-spec-row span {
-      color: var(--text-secondary);
-    }
-
-    .admin-spec-row strong {
-      color: var(--text-main);
-      font-weight: 600;
-    }
-
-    /* Card 5: Recent Form Sessions */
-    .form-history-list {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .form-history-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 14px 18px;
-      background: #ffffff;
-      border: 1px solid rgba(0, 0, 0, 0.06);
-      border-radius: var(--radius-md);
-      transition: all 0.15s;
-    }
-
-    .form-history-item:hover {
-      border-color: rgba(0, 113, 227, 0.3);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-    }
-
-    .form-item-left {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-
-    .form-item-icon {
-      font-size: 24px;
-    }
-
-    .form-item-info h4 {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--text-main);
-      margin-bottom: 2px;
-    }
-
-    .form-item-info p {
-      font-size: 12px;
-      color: var(--text-secondary);
-    }
-
-    .btn-resume-form {
-      text-decoration: none;
-      background: var(--accent-light);
-      color: var(--accent);
-      border-radius: var(--radius-full);
-      padding: 6px 14px;
-      font-size: 12px;
-      font-weight: 600;
-      transition: all 0.15s;
-    }
-
-    .btn-resume-form:hover {
-      background: var(--accent);
-      color: white;
-    }
-
-    /* PDF Form Guidance Hub Bento Card */
-    .pdf-drop-zone-dash {
-      border: 2px dashed rgba(0, 113, 227, 0.3);
-      background: rgba(245, 245, 247, 0.5);
-      border-radius: var(--radius-md);
-      padding: 36px 24px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.25s ease;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-    }
-    .pdf-drop-zone-dash:hover, .pdf-drop-zone-dash.dragover {
-      border-color: var(--accent);
-      background: var(--accent-light);
-      transform: scale(0.998);
-    }
-    .pdf-drop-icon-dash {
-      font-size: 42px;
-    }
-    .pdf-dash-results {
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-    }
-    .pdf-meta-box {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      padding: 16px 20px;
-      background: white;
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius-md);
-    }
-    .pdf-checklist-dash-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 10px;
-      margin-top: 10px;
-    }
-    .pdf-check-dash-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 14px;
-      background: white;
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius-sm);
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .pdf-check-dash-item:hover {
-      border-color: var(--accent);
-    }
-    .pdf-check-dash-item.done {
-      text-decoration: line-through;
-      background: var(--success-light);
-      border-color: rgba(52, 199, 89, 0.3);
-      color: var(--text-secondary);
-    }
-    .pdf-sec-dash-pills {
-      display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      padding-bottom: 6px;
-    }
-    .pdf-sec-dash-btn {
-      padding: 8px 16px;
-      background: white;
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius-full);
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-secondary);
-      cursor: pointer;
-      transition: all 0.15s;
-      white-space: nowrap;
-    }
-    .pdf-sec-dash-btn.active {
-      background: var(--accent);
-      color: white;
-      border-color: var(--accent);
-    }
-    .pdf-fields-dash-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 14px;
-    }
-    .pdf-field-dash-card {
-      background: white;
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius-md);
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      transition: box-shadow 0.2s, transform 0.2s;
-    }
-    .pdf-field-dash-card:hover {
-      box-shadow: var(--shadow-hover);
-      transform: translateY(-2px);
-    }
-
-    /* Apple-Style Toast */
-    .apple-toast {
-      position: fixed;
-      bottom: 28px;
-      left: 50%;
-      transform: translateX(-50%) translateY(100px);
-      background: rgba(29, 29, 31, 0.92);
-      backdrop-filter: var(--blur-glass);
-      -webkit-backdrop-filter: var(--blur-glass);
-      color: white;
-      padding: 12px 24px;
-      border-radius: var(--radius-full);
-      font-size: 13.5px;
-      font-weight: 500;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-      z-index: 1000;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      opacity: 0;
-      pointer-events: none;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .apple-toast.show {
-      transform: translateX(-50%) translateY(0);
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .apple-toast .toast-check {
-      width: 18px;
-      height: 18px;
-      background: var(--success);
-      color: white;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 11px;
-      font-weight: 800;
-    }
-
-    /* SVG Flag Icon Badges for Cross-Platform Elegance */
-    .flag-badge {
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      overflow: hidden;
-      flex-shrink: 0;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
-      border: 1px solid rgba(0, 0, 0, 0.08);
-    }
-
-    .flag-badge svg {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .hero-mascot-card {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      background: var(--card-bg);
-      backdrop-filter: var(--blur-glass);
-      -webkit-backdrop-filter: var(--blur-glass);
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius-lg);
-      padding: 14px 20px;
-      box-shadow: var(--shadow-subtle);
-      cursor: pointer;
-      user-select: none;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .hero-mascot-card:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-hover);
-      border-color: rgba(0, 113, 227, 0.25);
-    }
-
-    .hero-mascot-card:active {
-      transform: scale(0.98);
-    }
-
-    /* Member Area Segmented Navigation */
-    .apple-nav .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .apple-nav .nav-link {
-      padding: 6px 14px;
-      border-radius: var(--radius-full);
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-secondary);
-      text-decoration: none;
-      transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .apple-nav .nav-link:hover {
-      color: var(--text-main);
-      background: rgba(0, 0, 0, 0.04);
-    }
-
-    .apple-nav .nav-link.active {
-      color: var(--accent);
-      background: var(--accent-light);
-      box-shadow: 0 1px 3px rgba(0, 113, 227, 0.1);
-    }
-
-    /* Section anchors with scroll margin for sticky header */
-    .member-section {
-      scroll-margin-top: 80px;
-      margin-bottom: 32px;
-    }
-
-    /* Invoice Table */
-    .invoice-table-wrap {
-      overflow-x: auto;
-      border-radius: 14px;
-      border: 1px solid var(--card-border);
-      background: #ffffff;
-      margin-top: 14px;
-    }
-
-    .invoice-table {
+    /* Tables */
+    .dash-table {
       width: 100%;
       border-collapse: collapse;
       font-size: 13px;
+      margin-top: 10px;
+    }
+
+    .dash-table th {
       text-align: left;
-    }
-
-    .invoice-table th {
-      background: #f8fafc;
-      color: var(--text-secondary);
-      font-weight: 700;
-      padding: 12px 18px;
-      border-bottom: 1px solid var(--card-border);
+      padding: 10px 14px;
       font-size: 11.5px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      border-bottom: 1px solid var(--card-border);
       text-transform: uppercase;
-      letter-spacing: 0.5px;
     }
 
-    .invoice-table td {
-      padding: 14px 18px;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+    .dash-table td {
+      padding: 14px 14px;
+      border-bottom: 1px solid var(--card-border-subtle);
       color: var(--text-main);
       vertical-align: middle;
     }
 
-    .invoice-table tr:last-child td {
-      border-bottom: none;
+    .dash-table tr:hover td {
+      background: #f8fafc;
     }
 
-    .invoice-status-paid {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 3px 10px;
-      border-radius: 999px;
+    .status-badge-paid {
+      display: inline-block;
+      background: var(--success-light);
+      color: var(--success);
       font-size: 11px;
       font-weight: 700;
-      background: #dcfce7;
-      color: #15803d;
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
     }
 
-    .btn-view-invoice {
-      padding: 6px 14px;
-      border-radius: 8px;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--accent);
-      background: var(--accent-light);
-      border: 1px solid rgba(0, 113, 227, 0.2);
+    /* PDF Dropzone */
+    .pdf-drop-zone-dash {
+      border: 2px dashed #cbd5e1;
+      border-radius: var(--radius-md);
+      padding: 36px 24px;
+      text-align: center;
+      background: #f8fafc;
       cursor: pointer;
-      transition: all 0.15s;
-    }
-
-    .btn-view-invoice:hover {
-      background: var(--accent);
-      color: #ffffff;
-    }
-
-    /* Statistics Grid & Chart */
-    .stat-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-      margin-top: 14px;
-    }
-
-    .stat-card {
-      background: #ffffff;
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 20px;
+      transition: all 0.2s ease;
       display: flex;
       flex-direction: column;
-    }
-
-    .stat-icon {
-      font-size: 24px;
-      margin-bottom: 8px;
-    }
-
-    .stat-val {
-      font-size: 28px;
-      font-weight: 800;
-      color: var(--text-main);
-      letter-spacing: -0.5px;
-    }
-
-    .stat-label {
-      font-size: 12.5px;
-      color: var(--text-secondary);
-      font-weight: 500;
-      margin-top: 2px;
-    }
-
-    .stat-badge {
-      font-size: 11px;
-      font-weight: 700;
-      color: #15803d;
-      background: #dcfce7;
-      padding: 2px 8px;
-      border-radius: 999px;
-      width: fit-content;
-      margin-top: 8px;
-    }
-
-    .chart-box {
-      background: #ffffff;
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 20px;
-      margin-top: 16px;
-    }
-
-    .chart-bars {
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      height: 120px;
-      padding-top: 20px;
+      align-items: center;
       gap: 12px;
     }
 
-    .chart-bar-col {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      height: 100%;
-      justify-content: flex-end;
+    .pdf-drop-zone-dash:hover {
+      border-color: var(--accent);
+      background: var(--accent-light);
     }
 
-    .chart-bar-fill {
-      width: 100%;
-      max-width: 36px;
-      border-radius: 6px 6px 0 0;
-      background: linear-gradient(180deg, #0071e3 0%, #38bdf8 100%);
-      transition: height 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .chart-bar-day {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--text-secondary);
-      margin-top: 8px;
-    }
-
-    /* Saved Vault Items */
-    .vault-grid {
+    /* Pricing Cards in Usage */
+    .pricing-dash-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 14px;
-      margin-top: 14px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      margin-top: 16px;
     }
 
-    .vault-card {
+    .pricing-dash-card {
       background: #ffffff;
       border: 1px solid var(--card-border);
-      border-radius: 14px;
-      padding: 16px;
+      border-radius: var(--radius-md);
+      padding: 24px 20px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      position: relative;
     }
 
-    .vault-card-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+    .pricing-dash-card.featured {
+      border: 2px solid var(--accent);
+      background: #fbfdff;
+      box-shadow: 0 4px 18px rgba(0, 113, 227, 0.12);
     }
 
-    /* Invoice Receipt Modal */
+    .badge-featured {
+      position: absolute;
+      top: -10px;
+      left: 18px;
+      background: var(--accent);
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 10px;
+      border-radius: var(--radius-full);
+    }
+
+    /* Modal Receipt */
     .invoice-modal {
       display: none;
       position: fixed;
       inset: 0;
       background: rgba(0, 0, 0, 0.45);
       backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      z-index: 1000;
+      z-index: 200;
       align-items: center;
       justify-content: center;
       padding: 20px;
     }
 
-    .invoice-modal.show {
+    .invoice-modal.open {
       display: flex;
     }
 
     .invoice-modal-card {
-      background: white;
-      border-radius: 20px;
-      max-width: 520px;
+      background: #ffffff;
+      border-radius: var(--radius-lg);
+      max-width: 500px;
       width: 100%;
-      padding: 32px;
-      box-shadow: 0 24px 48px rgba(0,0,0,0.18);
-      position: relative;
-      animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      padding: 32px 28px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18);
+      animation: modalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     @keyframes modalPop {
-      from { opacity: 0; transform: scale(0.95) translateY(10px); }
-      to { opacity: 1; transform: scale(1) translateY(0); }
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    /* Toast */
+    .apple-toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #1e293b;
+      color: #ffffff;
+      padding: 12px 20px;
+      border-radius: var(--radius-full);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      z-index: 300;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: none;
+    }
+
+    .apple-toast.show {
+      transform: translateY(0);
+      opacity: 1;
     }
 
     /* Responsive */
-    @media (max-width: 900px) {
-      .col-span-8, .col-span-4, .col-span-6 { grid-column: span 12; }
-      .hero-banner { flex-direction: column; align-items: flex-start; gap: 16px; }
-      .profile-input-row { flex-direction: column; }
-      .stat-grid { grid-template-columns: repeat(2, 1fr); }
-      .apple-nav .nav-links { gap: 4px; overflow-x: auto; }
-    }
-    @media (max-width: 600px) {
-      .stat-grid { grid-template-columns: 1fr; }
+    @media (max-width: 860px) {
+      .dash-sidebar {
+        transform: translateX(-100%);
+      }
+      .dash-sidebar.mobile-open {
+        transform: translateX(0);
+      }
+      .dash-main {
+        margin-left: 0;
+      }
+      .btn-mobile-sidebar {
+        display: block;
+      }
+      .kpi-grid, .pricing-dash-grid, .form-grid-2 {
+        grid-template-columns: 1fr;
+      }
+      .dash-content-container {
+        padding: 20px 16px 40px;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="ambient-bg"></div>
+  <div class="dash-layout">
+    <!-- LEFT SIDEBAR -->
+    <aside class="dash-sidebar" id="dash-sidebar">
+      <div class="sidebar-header">
+        <a href="/" class="sidebar-brand">
+          <img src="telmy_icon.png" alt="Telmy logo" class="sidebar-logo">
+          <div class="sidebar-brand-text">
+            <span class="brand-title">Telmy.ai</span>
+            <span class="brand-tag">Member Area</span>
+          </div>
+        </a>
+      </div>
 
-  <!-- Apple Frosted Glass Navigation Bar (Member Area Navigation) -->
-  <header class="apple-nav">
-    <div class="nav-container">
-      <a href="/dashboard" class="nav-brand">
-        <img src="telmy_icon.png" alt="Telmy" class="nav-mascot">
-        <span class="nav-brand-text">Telmy.ai</span>
-        <span class="nav-badge-dash">Member Area</span>
-      </a>
-
-      <!-- Menu Dashboard (Fokus Member Area) -->
-      <nav class="nav-links">
-        <a href="#identity-section" class="nav-link active" id="dash-nav-identity">User Profile</a>
-        <a href="#package-section" class="nav-link" id="dash-nav-package">Plans & Quota</a>
-        <a href="#invoice-section" class="nav-link" id="dash-nav-invoice">Invoices</a>
-        <a href="#statistic-section" class="nav-link" id="dash-nav-statistic">Statistics</a>
-        <a href="#saved-section" class="nav-link" id="dash-nav-saved">Saved Forms</a>
+      <!-- 5 Menus -->
+      <nav class="sidebar-nav">
+        <a class="sidebar-item active" data-view="overview" id="nav-overview">
+          <span class="sidebar-icon">📊</span>
+          <span class="sidebar-label">Overview</span>
+        </a>
+        <a class="sidebar-item" data-view="profile" id="nav-profile">
+          <span class="sidebar-icon">👤</span>
+          <span class="sidebar-label">Profile</span>
+        </a>
+        <a class="sidebar-item" data-view="forms" id="nav-forms">
+          <span class="sidebar-icon">📁</span>
+          <span class="sidebar-label">Forms</span>
+        </a>
+        <a class="sidebar-item" data-view="autofill" id="nav-autofill">
+          <span class="sidebar-icon">⚡</span>
+          <span class="sidebar-label">AutoFill</span>
+        </a>
+        <a class="sidebar-item" data-view="usage" id="nav-usage">
+          <span class="sidebar-icon">💳</span>
+          <span class="sidebar-label">Usage & Billing</span>
+        </a>
       </nav>
 
-      <!-- Right Controls: Live Quota, Language, Profile Pill & Logout -->
-      <div class="nav-right-controls">
-        <a href="#package-section" class="nav-quota-pill" id="nav-quota-pill" title="Remaining Form Quota">
-          <span>💎</span>
-          <span id="nav-quota-count">5</span>
-          <span>Forms</span>
-        </a>
-
-        <select id="dash-lang-select" class="dash-lang-pill" aria-label="Dashboard Language">
-          <option value="en">🇬🇧 EN</option>
-          <option value="id">🇮🇩 ID</option>
-          <option value="ja">🇯🇵 JA</option>
-          <option value="ko">🇰🇷 KO</option>
-          <option value="zh">🇨🇳 ZH</option>
-          <option value="zh-TW">🇹🇼 TW</option>
-          <option value="vi">🇻🇳 VI</option>
-          <option value="th">🇹🇭 TH</option>
-          <option value="hi">🇮🇳 HI</option>
-          <option value="fil">🇵🇭 FIL</option>
-          <option value="ms">🇲🇾 MS</option>
-        </select>
-
-        <div class="user-dropdown-wrapper" id="user-dropdown-wrapper">
-          <div class="nav-user-pill" id="btn-user-pill" title="User Account Menu">
-            <img src="telmy_icon.png" id="nav-user-avatar" class="nav-avatar-img" alt="User">
-            <span id="nav-user-name" class="nav-user-name">Telmy User</span>
-            <span class="nav-sync-dot" title="Live Synced"></span>
-            <svg class="chevron-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
-          </div>
-
-          <div class="user-dropdown-card" id="user-dropdown-card">
-            <div class="dropdown-header">
-              <strong id="dropdown-user-name">Telmy User</strong>
-              <span id="dropdown-user-email">user@telmy.id</span>
-            </div>
-            <div class="dropdown-divider"></div>
-            <a href="#identity-section" class="dropdown-item">
-              <span>👤</span> User Profile
-            </a>
-            <a href="#package-section" class="dropdown-item">
-              <span>💎</span> Plans & Quota
-            </a>
-            <a href="#invoice-section" class="dropdown-item">
-              <span>🧾</span> Invoices & Receipts
-            </a>
-            <a href="#statistic-section" class="dropdown-item">
-              <span>📊</span> Usage Statistics
-            </a>
-            <a href="#saved-section" class="dropdown-item">
-              <span>💾</span> Saved Forms
-            </a>
-            <div class="dropdown-divider"></div>
-            <a href="/" class="dropdown-item">
-              <span>🏠</span> Home Website
-            </a>
-            <button id="btn-dropdown-logout" class="dropdown-item dropdown-logout">
-              <span>🚪</span> Sign Out
-            </button>
+      <!-- Sidebar User Footer -->
+      <div class="sidebar-footer">
+        <div class="sidebar-user-card" id="sidebar-user-card">
+          <img src="telmy_icon.png" alt="User avatar" class="sidebar-user-avatar" id="sidebar-avatar">
+          <div class="sidebar-user-info">
+            <strong class="sidebar-user-name" id="sidebar-user-name">Telmy User</strong>
+            <span class="sidebar-user-email" id="sidebar-user-email">Loading account...</span>
           </div>
         </div>
-      </div>
-    </div>
-  </header>
-
-  <!-- Main Content Area -->
-  <main class="main-wrapper">
-    <!-- Hero Banner with Talking Mascot -->
-    <section class="hero-banner">
-      <div class="hero-text">
-        <h1 id="greeting-title">Welcome back, Friend</h1>
-        <p>Seamlessly control your language preferences, cloud profile, and live AI assistant settings.</p>
-      </div>
-
-      <div class="hero-mascot-card">
-        <div class="mascot-avatar-wrap">
-          <img src="telmy_icon.png" alt="Telmy Mascot">
-        </div>
-        <div class="mascot-talk">
-          <strong>Telmy is ready to assist</strong>
-          <span>Voice & AI Assistant Active</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- Bento Grid (Apple Cupertino Style) -->
-    <div class="bento-grid">
-      <!-- SECTION 1: IDENTITAS USER -->
-      <div id="identity-section" class="member-section" style="display: contents;">
-        <!-- Bento 1: Profile & Photo Management -->
-        <div class="bento-card col-span-8">
-        <div class="card-header">
-          <div class="card-title-group">
-            <span class="card-icon">👤</span>
-            <div>
-              <h3 class="card-title">User Account & Profile</h3>
-              <p class="card-subtitle">Syncs automatically with your Chrome Extension</p>
-            </div>
-          </div>
-          <button id="btn-save-profile" class="btn-apple-primary">Save Changes</button>
-        </div>
-
-        <div class="profile-content">
-          <div class="profile-photo-uploader" id="photo-upload-trigger" title="Click to upload profile photo">
-            <img src="telmy_icon.png" id="profile-display-img" class="profile-photo-img" alt="Profile">
-            <div class="photo-overlay-btn">📷</div>
-            <input type="file" id="file-avatar-input" accept="image/*" style="display: none;">
-          </div>
-
-          <div class="profile-fields">
-            <div class="profile-input-row">
-              <input type="text" id="input-display-name" class="apple-input" placeholder="Display Name (e.g. Alex Pratama)">
-              <input type="email" id="input-user-email" class="apple-input" placeholder="Email Address">
-            </div>
-            <p style="font-size: 11.5px; color: var(--text-secondary);">
-              Tip: Photos are automatically optimized in WebP format and saved securely to Firebase.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Bento 2: Extension Live Bridge -->
-      <div class="bento-card col-span-4">
-        <div class="card-header">
-          <div class="card-title-group">
-            <span class="card-icon">🧩</span>
-            <div>
-              <h3 class="card-title">Extension Sync</h3>
-              <p class="card-subtitle">Live Connection Bridge</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="ext-status-box">
-          <div class="ext-status-info">
-            <div class="ext-badge-icon">⚡</div>
-            <div class="ext-status-details">
-              <strong>Telmy Chrome Extension</strong>
-              <small id="ext-connection-status">Connected & Synced</small>
-            </div>
-          </div>
-        </div>
-
-        <button id="btn-sync-now" class="btn-sync-ext" style="width: 100%; justify-content: center; display: flex;">
-          Sync Profile to Extension Now →
+        <button class="btn-sidebar-logout" id="btn-sidebar-logout">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          <span>Sign Out</span>
         </button>
       </div>
+    </aside>
 
-      <!-- Bento 3: JAPAC Multilingual Preference Matrix -->
-      <div class="bento-card col-span-8">
-        <div class="card-header">
-          <div class="card-title-group">
-            <span class="card-icon">🌐</span>
-            <div>
-              <h3 class="card-title">Default Language Preference</h3>
-              <p class="card-subtitle">Choose your primary language across 11 Asian-Pacific regions</p>
-            </div>
+    <!-- RIGHT MAIN CONTENT -->
+    <main class="dash-main">
+      <!-- Topbar Header -->
+      <header class="dash-topbar">
+        <div class="topbar-left">
+          <button class="btn-mobile-sidebar" id="btn-mobile-sidebar" aria-label="Toggle Sidebar">☰</button>
+          <h1 class="topbar-title" id="topbar-title">Dashboard Overview</h1>
+        </div>
+        <div class="topbar-right">
+          <div class="topbar-status-badge">
+            <span class="pulse-dot"></span>
+            <span id="topbar-auth-status">Google Sync Active</span>
           </div>
-          <span style="font-size: 12px; font-weight: 700; color: var(--accent);" id="active-lang-badge">EN (English)</span>
+          <select id="dash-lang-select" class="lang-select-nav" aria-label="Select Language">
+            <option value="en" selected>🇬🇧 English</option>
+            <option value="id">🇮🇩 Indonesia</option>
+            <option value="ja">🇯🇵 日本語</option>
+            <option value="ko">🇰🇷 한국어</option>
+            <option value="zh">🇨🇳 简体中文</option>
+            <option value="zh-TW">🇹🇼 繁體中文</option>
+            <option value="vi">🇻🇳 Tiếng Việt</option>
+            <option value="th">🇹🇭 ไทย</option>
+            <option value="hi">🇮🇳 हिन्दी</option>
+            <option value="fil">🇵🇭 Filipino</option>
+            <option value="ms">🇲🇾 Melayu</option>
+          </select>
+          <a href="/demo" class="btn-topbar-action">Practice Demo ↗</a>
         </div>
+      </header>
 
-        <div class="language-grid" id="language-grid-container">
-          <!-- Populated by JavaScript -->
-        </div>
-      </div>
+      <!-- Views Container -->
+      <div class="dash-content-container">
 
-      <!-- Bento 4: Smart Assistant Capabilities (User-Facing & Non-Tech Friendly) -->
-      <div class="bento-card col-span-4">
-        <div class="card-header">
-          <div class="card-title-group">
-            <span class="card-icon">✨</span>
-            <div>
-              <h3 class="card-title">Assistant Features</h3>
-              <p class="card-subtitle">Ready to guide your forms</p>
-            </div>
-          </div>
-          <span style="font-size: 11.5px; font-weight: 700; color: var(--success); background: var(--success-light); padding: 3px 8px; border-radius: 6px;">All Active</span>
-        </div>
-
-        <div class="ai-tech-pills">
-          <div class="ai-tech-item">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span>🎯</span>
+        <!-- =========================================================
+             VIEW 1: OVERVIEW
+             ========================================================= -->
+        <section id="view-overview" class="dash-view active">
+          <!-- Welcome Greeting Card -->
+          <div class="apple-card" style="background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%); border-color: rgba(0, 113, 227, 0.15);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: gap; gap: 16px;">
               <div>
-                <strong>Field Explainer</strong>
-                <div style="font-size: 11px; color: var(--text-secondary);">Clear hints & practical examples</div>
+                <span style="font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px;">Cockpit & Status</span>
+                <h2 style="font-size: 22px; font-weight: 800; margin: 4px 0 6px; color: #0f172a;">Welcome back, <span id="overview-greeting-name">Telmy Member</span> 👋</h2>
+                <p style="font-size: 13.5px; color: var(--text-secondary); max-width: 620px;">
+                  Your AI Form-Filling Companion is ready. Open any official government, visa, or scholarship form in Chrome, and Telmy will guide you step-by-step.
+                </p>
               </div>
+              <a href="/download" class="btn-apple-primary" style="white-space: nowrap;">
+                <span>Add to Chrome</span>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+              </a>
             </div>
-            <span style="color: var(--success); font-weight: 600;">Active</span>
           </div>
 
-          <div class="ai-tech-item">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span>🔊</span>
+          <!-- KPI Grid -->
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <span class="kpi-label">Form Credits Remaining</span>
+              <div class="kpi-val" id="kpi-credits-val">8 <span style="font-size: 14px; font-weight: 500; color: var(--text-secondary);">/ 10</span></div>
+              <p class="kpi-desc">Permanent non-expiring balance</p>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">Forms Completed</span>
+              <div class="kpi-val" id="kpi-completed-val">12</div>
+              <p class="kpi-desc">Across visa, civil & scholarship sites</p>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">Active Guide Language</span>
+              <div class="kpi-val" id="kpi-lang-val" style="font-size: 22px; margin-top: 10px;">🇬🇧 English</div>
+              <p class="kpi-desc">Synced with Google Chrome extension</p>
+            </div>
+          </div>
+
+          <!-- Quick Actions Grid -->
+          <div class="apple-card">
+            <div class="card-header">
               <div>
-                <strong>Voice Companion</strong>
-                <div style="font-size: 11px; color: var(--text-secondary);">Natural speech & talking mascot</div>
+                <h3 class="card-title">Quick Actions</h3>
+                <p class="card-subtitle">Launch your form tools and practice environments</p>
               </div>
             </div>
-            <span style="color: var(--accent); font-weight: 600;">Ready</span>
-          </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px;">
+              <a href="/demo" class="btn-apple-secondary" style="justify-content: flex-start; padding: 14px 16px; border-radius: var(--radius-md);">
+                <span style="font-size: 20px;">🎯</span>
+                <div style="text-align: left;">
+                  <strong style="display: block; font-size: 13px;">Test Live Demo</strong>
+                  <span style="font-size: 11.5px; color: var(--text-secondary); font-weight: normal;">Practice on official simulation</span>
+                </div>
+              </a>
 
-          <div class="ai-tech-item">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span>🌐</span>
+              <a href="#autofill" onclick="switchDashboardView('autofill')" class="btn-apple-secondary" style="justify-content: flex-start; padding: 14px 16px; border-radius: var(--radius-md);">
+                <span style="font-size: 20px;">⚡</span>
+                <div style="text-align: left;">
+                  <strong style="display: block; font-size: 13px;">1-Click AutoFill Vault</strong>
+                  <span style="font-size: 11.5px; color: var(--text-secondary); font-weight: normal;">Save legal name & passport</span>
+                </div>
+              </a>
+
+              <a href="#forms" onclick="switchDashboardView('forms')" class="btn-apple-secondary" style="justify-content: flex-start; padding: 14px 16px; border-radius: var(--radius-md);">
+                <span style="font-size: 20px;">📄</span>
+                <div style="text-align: left;">
+                  <strong style="display: block; font-size: 13px;">Upload PDF Form</strong>
+                  <span style="font-size: 11.5px; color: var(--text-secondary); font-weight: normal;">Gemini multimodal analysis</span>
+                </div>
+              </a>
+
+              <a href="#usage" onclick="switchDashboardView('usage')" class="btn-apple-secondary" style="justify-content: flex-start; padding: 14px 16px; border-radius: var(--radius-md);">
+                <span style="font-size: 20px;">💳</span>
+                <div style="text-align: left;">
+                  <strong style="display: block; font-size: 13px;">Manage Credits & Invoices</strong>
+                  <span style="font-size: 11.5px; color: var(--text-secondary); font-weight: normal;">Pay-as-you-go & receipts</span>
+                </div>
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <!-- =========================================================
+             VIEW 2: PROFILE
+             ========================================================= -->
+        <section id="view-profile" class="dash-view">
+          <div class="apple-card">
+            <div class="card-header">
               <div>
-                <strong>Smart Translation</strong>
-                <div style="font-size: 11px; color: var(--text-secondary);">Preserves official document terms</div>
+                <h3 class="card-title">Google Account Identity</h3>
+                <p class="card-subtitle">Verified user account details synced with Google Cloud & Firebase</p>
               </div>
+              <span style="font-size: 11.5px; font-weight: 700; color: var(--success); background: var(--success-light); padding: 4px 12px; border-radius: var(--radius-full);">
+                Verified Google Account
+              </span>
             </div>
-            <span style="color: #8b5cf6; font-weight: 600;">Enabled</span>
-          </div>
 
-          <div class="ai-tech-item">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span>🛡️</span>
+            <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--card-border-subtle);">
+              <img src="telmy_icon.png" alt="Profile avatar" id="profile-avatar-large" style="width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 2px solid var(--card-border);">
               <div>
-                <strong>Privacy Shield</strong>
-                <div style="font-size: 11px; color: var(--text-secondary);">Runs on-demand, no background snooping</div>
+                <h2 id="profile-display-name" style="font-size: 20px; font-weight: 800; color: var(--text-main);">Telmy Member</h2>
+                <p id="profile-display-email" style="font-size: 13.5px; color: var(--text-secondary); margin-top: 2px;">member@telmy.id</p>
+                <div style="display: flex; gap: 8px; margin-top: 8px;">
+                  <span style="font-size: 11px; background: #f1f5f9; padding: 2px 8px; border-radius: 4px; color: #475569; font-weight: 600;">Provider: Google</span>
+                  <span id="profile-uid-badge" style="font-size: 11px; background: #f1f5f9; padding: 2px 8px; border-radius: 4px; color: #475569;">UID: usr_session</span>
+                </div>
               </div>
             </div>
-            <span style="color: var(--success); font-weight: 600;">Secured</span>
-          </div>
-        </div>
-      </div>
-      <!-- END SECTION 1: IDENTITAS USER -->
 
-      <!-- SECTION 2: PAKET USER & KUOTA -->
-      <div class="bento-card col-span-12 member-section" id="package-section">
-        <div class="card-header">
-          <div class="card-title-group">
-            <span class="card-icon">💎</span>
-            <div>
-              <h3 class="card-title">Form Analysis Quota & Pricing</h3>
-              <p class="card-subtitle">Freemium, Pay-as-you-Go ($5 / 10 Forms), and Pro Subscription ($14.99/mo)</p>
-            </div>
-          </div>
-          <div style="display: flex; gap: 8px; align-items: center;">
-            <span id="dash-quota-pill" style="font-size: 12px; font-weight: 700; background: var(--accent-light); color: var(--accent); padding: 5px 12px; border-radius: 999px;">
-              💎 5 Forms Left
-            </span>
-          </div>
-        </div>
-
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 10px;">
-          <!-- Free Tier -->
-          <div style="background: white; border: 1px solid var(--card-border); border-radius: 16px; padding: 20px; display: flex; flex-direction: column;">
-            <div style="font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">Free Tier</div>
-            <div style="font-size: 28px; font-weight: 800; color: var(--text-main); margin: 6px 0 2px;">$0 <span style="font-size: 14px; font-weight: 500; color: var(--text-secondary);">/ 5 Forms</span></div>
-            <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 14px;">Included for all new registered users. No credit card required.</p>
-            <ul style="list-style: none; padding: 0; margin: 0 0 16px; font-size: 12.5px; color: var(--text-main); display: flex; flex-direction: column; gap: 6px; flex: 1;">
-              <li>✓ 5 Form Guidance Credits</li>
-              <li>✓ Interactive Step-by-Step Explainer</li>
-              <li>✓ Local PII Redaction</li>
-            </ul>
-            <button class="btn-apple-secondary" disabled style="opacity: 0.7;">Active by Default</button>
-          </div>
-
-          <!-- Pay-as-you-Go -->
-          <div style="background: white; border: 1.5px solid #cbd5e1; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; position: relative;">
-            <div style="position: absolute; top: -10px; left: 20px; background: #f1f5f9; color: #475569; font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 999px; border: 1px solid #cbd5e1;">Seasonal Applicants</div>
-            <div style="font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-top: 4px;">Pay-as-you-Go</div>
-            <div style="font-size: 28px; font-weight: 800; color: var(--text-main); margin: 6px 0 2px;">$5 <span style="font-size: 14px; font-weight: 500; color: var(--text-secondary);">/ 10 Forms</span></div>
-            <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 14px;">$0.50/form &bull; <strong>Never Expires (Permanent)</strong>. Zero subscription stress.</p>
-            <ul style="list-style: none; padding: 0; margin: 0 0 16px; font-size: 12.5px; color: var(--text-main); display: flex; flex-direction: column; gap: 6px; flex: 1;">
-              <li>✓ 10 Interactive Form Credits</li>
-              <li>✓ No expiration date</li>
-              <li>✓ Pre-Submission Form Auditor</li>
-              <li>✓ 1-Click Vault Smart Fill</li>
-            </ul>
-            <button class="btn-apple-primary btn-dash-buy" data-plan="payg_10">⚡ Get 10 Forms ($5)</button>
-          </div>
-
-          <!-- Pro Subscription -->
-          <div style="background: #fbfdff; border: 2px solid var(--accent); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; position: relative; box-shadow: 0 4px 16px rgba(0, 113, 227, 0.1);">
-            <div style="position: absolute; top: -10px; left: 20px; background: var(--accent); color: white; font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 999px;">Best Value</div>
-            <div style="font-size: 12px; font-weight: 700; color: var(--accent); text-transform: uppercase; margin-top: 4px;">Pro Subscription</div>
-            <div style="font-size: 28px; font-weight: 800; color: var(--text-main); margin: 6px 0 2px;">$14.99 <span style="font-size: 14px; font-weight: 500; color: var(--text-secondary);">/ Month</span></div>
-            <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 14px;">50 Forms/month ($0.30/form) &bull; Auto-refresh every month.</p>
-            <ul style="list-style: none; padding: 0; margin: 0 0 16px; font-size: 12.5px; color: var(--text-main); display: flex; flex-direction: column; gap: 6px; flex: 1;">
-              <li>✓ 50 Form Guidance Credits / month</li>
-              <li>✓ High-Speed Priority Processing</li>
-              <li>✓ Unlimited Voice Narration</li>
-              <li>✓ Pre-Submission Form Verification</li>
-            </ul>
-            <button class="btn-apple-primary btn-dash-buy" data-plan="pro_monthly" style="background: var(--accent);">✨ Upgrade to Pro ($14.99/mo)</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- END SECTION 2: PAKET USER & KUOTA -->
-
-      <!-- SECTION 3: INVOICE & BILLING -->
-      <div class="bento-card col-span-12 member-section" id="invoice-section">
-        <div class="card-header">
-          <div class="card-title-group">
-            <span class="card-icon">🧾</span>
-            <div>
-              <h3 class="card-title">Transaction History & Invoices</h3>
-              <p class="card-subtitle">All official credit purchases and subscription receipts</p>
-            </div>
-          </div>
-          <span style="font-size: 11.5px; font-weight: 700; background: #f1f5f9; color: #475569; padding: 4px 12px; border-radius: 999px;">
-            Verified Billing
-          </span>
-        </div>
-
-        <div class="invoice-table-wrap">
-          <table class="invoice-table">
-            <thead>
-              <tr>
-                <th>Invoice No.</th>
-                <th>Date</th>
-                <th>Plan / Item</th>
-                <th>Method</th>
-                <th>Amount</th>
-                <th>Status</th>
-                <th style="text-align: right;">Action</th>
-              </tr>
-            </thead>
-            <tbody id="invoice-table-body">
-              <!-- Populated by JavaScript and updated on simulated purchase -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <!-- END SECTION 3: INVOICE -->
-
-      <!-- SECTION 4: STATISTIC & ANALYTICS -->
-      <div class="bento-card col-span-12 member-section" id="statistic-section">
-        <div class="card-header">
-          <div class="card-title-group">
-            <span class="card-icon">📊</span>
-            <div>
-              <h3 class="card-title">Usage & Efficiency Statistics</h3>
-              <p class="card-subtitle">Productivity insights and time saved while filling online forms</p>
-            </div>
-          </div>
-          <span style="font-size: 11.5px; font-weight: 700; color: var(--success); background: var(--success-light); padding: 4px 10px; border-radius: var(--radius-full);">
-            Live Performance
-          </span>
-        </div>
-
-        <div class="stat-grid">
-          <div class="stat-card">
-            <span class="stat-icon">📝</span>
-            <div class="stat-val" id="stat-forms-guided">18</div>
-            <div class="stat-label">Forms Completed</div>
-            <span class="stat-badge">↑ +24% this week</span>
-          </div>
-
-          <div class="stat-card">
-            <span class="stat-icon">⏱️</span>
-            <div class="stat-val" id="stat-time-saved">5.8 Hours</div>
-            <div class="stat-label">Total Time Saved</div>
-            <span class="stat-badge">Avg. 19 min / form</span>
-          </div>
-
-          <div class="stat-card">
-            <span class="stat-icon">🎯</span>
-            <div class="stat-val" id="stat-accuracy">99.6%</div>
-            <div class="stat-label">Accuracy & Compliance</div>
-            <span class="stat-badge" style="background: #e0f2fe; color: #0369a1;">0 Rejections</span>
-          </div>
-
-          <div class="stat-card">
-            <span class="stat-icon">🛡️</span>
-            <div class="stat-val" id="stat-pii-masked">54</div>
-            <div class="stat-label">Fields Protected Locally</div>
-            <span class="stat-badge" style="background: #fef3c7; color: #b45309;">100% On-Device</span>
-          </div>
-        </div>
-
-        <div class="chart-box">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-            <strong style="font-size: 13.5px; color: var(--text-main);">Weekly Form Activity</strong>
-            <span style="font-size: 12px; color: var(--text-secondary);">Monday - Sunday</span>
-          </div>
-          <div class="chart-bars">
-            <div class="chart-bar-col">
-              <div class="chart-bar-fill" style="height: 45%;" title="Mon: 2 Forms"></div>
-              <span class="chart-bar-day">Mon</span>
-            </div>
-            <div class="chart-bar-col">
-              <div class="chart-bar-fill" style="height: 70%;" title="Tue: 4 Forms"></div>
-              <span class="chart-bar-day">Tue</span>
-            </div>
-            <div class="chart-bar-col">
-              <div class="chart-bar-fill" style="height: 35%;" title="Wed: 1 Form"></div>
-              <span class="chart-bar-day">Wed</span>
-            </div>
-            <div class="chart-bar-col">
-              <div class="chart-bar-fill" style="height: 85%;" title="Thu: 5 Forms"></div>
-              <span class="chart-bar-day">Thu</span>
-            </div>
-            <div class="chart-bar-col">
-              <div class="chart-bar-fill" style="height: 60%;" title="Fri: 3 Forms"></div>
-              <span class="chart-bar-day">Fri</span>
-            </div>
-            <div class="chart-bar-col">
-              <div class="chart-bar-fill" style="height: 25%;" title="Sat: 1 Form"></div>
-              <span class="chart-bar-day">Sat</span>
-            </div>
-            <div class="chart-bar-col">
-              <div class="chart-bar-fill" style="height: 40%;" title="Sun: 2 Forms"></div>
-              <span class="chart-bar-day">Sun</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- END SECTION 4: STATISTIC -->
-
-      <!-- SECTION 5: SAVED FORMS & HISTORY -->
-      <div class="bento-card col-span-12 member-section" id="saved-section">
-        <div class="card-header">
-          <div class="card-title-group">
-            <span class="card-icon">💾</span>
-            <div>
-              <h3 class="card-title">Saved Forms & History</h3>
-              <p class="card-subtitle">In-progress form drafts and verified guidance history</p>
-            </div>
-          </div>
-          <a href="/demo" class="btn-resume-form" style="font-size: 13px; padding: 8px 18px;">Open Form Simulator →</a>
-        </div>
-
-        <div style="font-size: 13px; font-weight: 700; color: var(--text-main); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
-          <span>📋</span> In-Progress Form Drafts
-        </div>
-
-        <div class="form-history-list" id="form-history-list">
-          <div class="form-history-item">
-            <div class="form-item-left">
-              <span class="form-item-icon">🏛️</span>
-              <div class="form-item-info">
-                <h4>Apostille Legalization & Verification Portal</h4>
-                <p>12 Fields Detected &bull; Civil Registry & Certificates &bull; Progress: 85% Completed</p>
+            <div class="card-header" style="border: none; padding: 0; margin-bottom: 12px;">
+              <div>
+                <h4 style="font-size: 15px; font-weight: 700; color: var(--text-main);">Default Guide Language</h4>
+                <p class="card-subtitle">Select your native language for AI field explanations and voice read-aloud</p>
               </div>
             </div>
-            <a href="/demo" class="btn-resume-form">Continue Guide →</a>
+
+            <div class="language-grid" id="profile-lang-grid">
+              <!-- Dynamically populated 11 JAPAC languages -->
+            </div>
+          </div>
+        </section>
+
+        <!-- =========================================================
+             VIEW 3: FORMS (STATISTICS, HISTORY & PDF INTELLIGENCE)
+             ========================================================= -->
+        <section id="view-forms" class="dash-view">
+          <!-- Form Stats Metric -->
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <span class="kpi-label">Pre-Submission Audit Pass Rate</span>
+              <div class="kpi-val" style="color: var(--success);">99.4%</div>
+              <p class="kpi-desc">Zero disqualification errors</p>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">Average Time Saved</span>
+              <div class="kpi-val">18.5 <span style="font-size: 14px; font-weight: 500; color: var(--text-secondary);">min / form</span></div>
+              <p class="kpi-desc">Based on 12 completed sessions</p>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">Local PII Redaction</span>
+              <div class="kpi-val" style="color: var(--accent);">Active</div>
+              <p class="kpi-desc">Shielding ID & credit data locally</p>
+            </div>
           </div>
 
-          <div class="form-history-item">
-            <div class="form-item-left">
-              <span class="form-item-icon">✈️</span>
-              <div class="form-item-info">
-                <h4>Electronic Visa on Arrival (e-VoA) Portal</h4>
-                <p>8 Fields &bull; Passport & Travel Clearance Verified &bull; Progress: 100% Ready</p>
+          <!-- Document Intelligence PDF Dropzone -->
+          <div class="apple-card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Universal PDF Form Guidance</h3>
+                <p class="card-subtitle">Drop downloaded visa, tax, or legal PDF forms for Gemini multimodal analysis</p>
               </div>
+              <span style="font-size: 11.5px; font-weight: 700; color: var(--accent); background: var(--accent-light); padding: 4px 10px; border-radius: var(--radius-full);">
+                Document Intelligence
+              </span>
             </div>
-            <a href="/demo" class="btn-resume-form">Review Form →</a>
+
+            <div class="pdf-drop-zone-dash" id="pdf-dash-dropzone">
+              <input type="file" id="pdf-dash-file-input" accept="application/pdf" style="display: none;">
+              <span style="font-size: 36px;">📄</span>
+              <div>
+                <strong style="font-size: 15px; color: var(--text-main);">Drop your PDF form here</strong>
+                <p style="font-size: 12.5px; color: var(--text-secondary); margin-top: 2px;">Supports official visa applications, scholarship forms, consular papers (up to 25MB)</p>
+              </div>
+              <button type="button" class="btn-apple-primary" id="btn-dash-browse-pdf">Select PDF File</button>
+            </div>
+
+            <div id="pdf-dash-analyzing" style="display: none; padding: 30px; text-align: center;">
+              <div style="display: inline-block; width: 32px; height: 32px; border: 3px solid rgba(0,113,227,0.2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 12px;"></div>
+              <h4 style="font-size: 15px; color: var(--text-main);">Analyzing PDF Form Structure...</h4>
+              <p style="font-size: 12.5px; color: var(--text-secondary); margin-top: 4px;">Extracting sections, official prerequisites, and page-by-page instructions with Gemini</p>
+            </div>
           </div>
 
-          <div class="form-history-item">
-            <div class="form-item-left">
-              <span class="form-item-icon">🎓</span>
-              <div class="form-item-info">
-                <h4>Scholarship Application & Document Verifier</h4>
-                <p>16 Fields &bull; Academic Transcripts & Diplomas &bull; Progress: 60%</p>
+          <!-- Guided Form History Table -->
+          <div class="apple-card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Form Guidance History</h3>
+                <p class="card-subtitle">Official forms previously assisted by Telmy.ai</p>
               </div>
             </div>
-            <a href="/demo" class="btn-resume-form">Continue Draft →</a>
+
+            <table class="dash-table">
+              <thead>
+                <tr>
+                  <th>Form Name / Authority</th>
+                  <th>Type</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <strong>Apostille Legalization Certificate</strong>
+                    <div style="font-size: 11.5px; color: var(--text-secondary);">Ministry of Law and Human Rights (Kemenkumham)</div>
+                  </td>
+                  <td><span style="background: #e0f2fe; color: #0369a1; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px;">Web Portal</span></td>
+                  <td>Oct 8, 2026</td>
+                  <td><span class="status-badge-paid">✓ Completed</span></td>
+                  <td><a href="/demo" style="color: var(--accent); font-weight: 600;">Re-Open Simulator</a></td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong>e-VoA Tourism Visa Application</strong>
+                    <div style="font-size: 11.5px; color: var(--text-secondary);">Directorate General of Immigration (Molina)</div>
+                  </td>
+                  <td><span style="background: #e0f2fe; color: #0369a1; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px;">Web Portal</span></td>
+                  <td>Oct 7, 2026</td>
+                  <td><span class="status-badge-paid">✓ Completed</span></td>
+                  <td><a href="/demo" style="color: var(--accent); font-weight: 600;">Re-Open Simulator</a></td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong>Consular Affidavit Declaration (Form DS-11)</strong>
+                    <div style="font-size: 11.5px; color: var(--text-secondary);">Official PDF Attachment Form</div>
+                  </td>
+                  <td><span style="background: #fef3c7; color: #b45309; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px;">PDF Document</span></td>
+                  <td>Oct 5, 2026</td>
+                  <td><span class="status-badge-paid">✓ Completed</span></td>
+                  <td><span style="color: var(--text-secondary);">Archived</span></td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-        </div>
+        </section>
+
+        <!-- =========================================================
+             VIEW 4: AUTOFILL (MASTER DATA VAULT FOR 1-CLICK SMART FILL)
+             ========================================================= -->
+        <section id="view-autofill" class="dash-view">
+          <div class="apple-card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">1-Click AutoFill Master Data</h3>
+                <p class="card-subtitle">Encrypted master profile for filling out official forms with 1 click in Chrome</p>
+              </div>
+              <span style="font-size: 11.5px; font-weight: 700; color: var(--accent); background: var(--accent-light); padding: 4px 10px; border-radius: var(--radius-full);">
+                🛡️ Local Encryption
+              </span>
+            </div>
+
+            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 22px; line-height: 1.5; background: #f8fafc; padding: 12px 16px; border-radius: var(--radius-sm); border: 1px solid var(--card-border);">
+              🔒 <strong>Privacy Assurance:</strong> This data is stored locally in your browser and synced to your private user account for the 1-Click Smart Fill feature. Passwords, CVVs, and credit card PINs are never requested or stored.
+            </p>
+
+            <form id="autofill-form">
+              <div class="form-grid-2">
+                <div class="apple-input-group">
+                  <label class="apple-label" for="af-name">Full Legal Name (as shown on Passport)</label>
+                  <input type="text" id="af-name" class="apple-input" placeholder="e.g. SITI NURHALIZA">
+                </div>
+
+                <div class="apple-input-group">
+                  <label class="apple-label" for="af-passport">Passport Number</label>
+                  <input type="text" id="af-passport" class="apple-input" placeholder="e.g. A12345678">
+                </div>
+              </div>
+
+              <div class="form-grid-2">
+                <div class="apple-input-group">
+                  <label class="apple-label" for="af-nik">National ID Number (NIK / Resident ID)</label>
+                  <input type="text" id="af-nik" class="apple-input" placeholder="e.g. 3171012304950001">
+                </div>
+
+                <div class="apple-input-group">
+                  <label class="apple-label" for="af-dob">Date of Birth (YYYY-MM-DD)</label>
+                  <input type="date" id="af-dob" class="apple-input">
+                </div>
+              </div>
+
+              <div class="form-grid-2">
+                <div class="apple-input-group">
+                  <label class="apple-label" for="af-nationality">Nationality / Citizenship</label>
+                  <input type="text" id="af-nationality" class="apple-input" placeholder="e.g. Indonesian">
+                </div>
+
+                <div class="apple-input-group">
+                  <label class="apple-label" for="af-phone">Active Phone Number (WhatsApp)</label>
+                  <input type="tel" id="af-phone" class="apple-input" placeholder="e.g. +62 812 3456 7890">
+                </div>
+              </div>
+
+              <div class="apple-input-group">
+                <label class="apple-label" for="af-address">Full Official Address (as per ID / Passport)</label>
+                <textarea id="af-address" class="apple-textarea" rows="2" placeholder="e.g. Jl. Sudirman No. 45, Jakarta Selatan 12190"></textarea>
+              </div>
+
+              <div class="apple-input-group">
+                <label class="apple-label" for="af-emergency">Emergency Contact (Name, Relationship, Phone)</label>
+                <input type="text" id="af-emergency" class="apple-input" placeholder="e.g. Ahmad Fauzi (Father) - +628129876543">
+              </div>
+
+              <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 10px;">
+                <button type="button" id="btn-af-clear" class="btn-apple-secondary">Clear Fields</button>
+                <button type="submit" class="btn-apple-primary">💾 Save & Sync to Extension</button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <!-- =========================================================
+             VIEW 5: USAGE & BILLING (SALDO, UPGRADE & INVOICES)
+             ========================================================= -->
+        <section id="view-usage" class="dash-view">
+          <!-- Active Credit Status -->
+          <div class="apple-card" style="background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+              <div>
+                <span class="kpi-label">Current Plan & Balance</span>
+                <h3 style="font-size: 24px; font-weight: 800; color: #0f172a; margin: 4px 0;">8 Forms Remaining</h3>
+                <p style="font-size: 13px; color: var(--text-secondary);">Pay-as-you-go balance never expires. Use anytime for official form checks.</p>
+              </div>
+              <button class="btn-apple-primary" onclick="document.getElementById('dash-pricing-block').scrollIntoView({ behavior: 'smooth' })">
+                + Add More Forms
+              </button>
+            </div>
+          </div>
+
+          <!-- Plan Options -->
+          <div class="apple-card" id="dash-pricing-block">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Choose Package or Add Form Credits</h3>
+                <p class="card-subtitle">Transparent pricing with zero hidden fees. Google Hackathon special tiers.</p>
+              </div>
+            </div>
+
+            <div class="pricing-dash-grid">
+              <!-- Free Tier -->
+              <div class="pricing-dash-card">
+                <div style="font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">Free Tier</div>
+                <div style="font-size: 26px; font-weight: 800; color: var(--text-main); margin: 6px 0 2px;">$0 <span style="font-size: 13px; font-weight: 500; color: var(--text-secondary);">/ 5 Forms</span></div>
+                <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 14px;">Included for all new registered Google accounts.</p>
+                <ul style="list-style: none; font-size: 12.5px; color: var(--text-main); display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; flex: 1;">
+                  <li>✓ 5 Form Guidance Credits</li>
+                  <li>✓ Step-by-Step AI Explainer</li>
+                  <li>✓ Local PII Shield</li>
+                </ul>
+                <button class="btn-apple-secondary" disabled>Active by Default</button>
+              </div>
+
+              <!-- Pay-as-you-Go (Recommended) -->
+              <div class="pricing-dash-card featured">
+                <span class="badge-featured">Most Flexible</span>
+                <div style="font-size: 12px; font-weight: 700; color: var(--accent); text-transform: uppercase; margin-top: 4px;">Pay-as-you-Go</div>
+                <div style="font-size: 26px; font-weight: 800; color: var(--text-main); margin: 6px 0 2px;">$5 <span style="font-size: 13px; font-weight: 500; color: var(--text-secondary);">/ 10 Forms</span></div>
+                <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 14px;">$0.50/form &bull; <strong>Never Expires (Permanent)</strong>.</p>
+                <ul style="list-style: none; font-size: 12.5px; color: var(--text-main); display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; flex: 1;">
+                  <li>✓ 10 Interactive Form Credits</li>
+                  <li>✓ No expiration date</li>
+                  <li>✓ Pre-Submission Form Auditor</li>
+                  <li>✓ 1-Click AutoFill Smart Fill</li>
+                </ul>
+                <button class="btn-apple-primary btn-dash-buy" data-plan="payg_10">⚡ Get 10 Forms ($5)</button>
+              </div>
+
+              <!-- Pro Plan -->
+              <div class="pricing-dash-card">
+                <div style="font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">Pro Monthly</div>
+                <div style="font-size: 26px; font-weight: 800; color: var(--text-main); margin: 6px 0 2px;">$14.99 <span style="font-size: 13px; font-weight: 500; color: var(--text-secondary);">/ month</span></div>
+                <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 14px;">For agencies, students & visa consultants.</p>
+                <ul style="list-style: none; font-size: 12.5px; color: var(--text-main); display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; flex: 1;">
+                  <li>✓ Unlimited Form Guidances</li>
+                  <li>✓ Multimodal PDF Deep Inspector</li>
+                  <li>✓ Priority Google Gemini 3.5 SLA</li>
+                  <li>✓ WaveNet Premium TTS Voices</li>
+                </ul>
+                <button class="btn-apple-secondary btn-dash-buy" data-plan="pro_monthly">Upgrade to Pro</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Invoices & Receipts -->
+          <div class="apple-card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Invoices & Official Receipts</h3>
+                <p class="card-subtitle">Official payment records issued for form package purchases</p>
+              </div>
+            </div>
+
+            <table class="dash-table">
+              <thead>
+                <tr>
+                  <th>Invoice ID</th>
+                  <th>Date</th>
+                  <th>Item / Description</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="invoice-table-body">
+                <!-- Dynamically populated or default sample invoice -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
       </div>
+    </main>
+  </div>
 
-      <!-- Bento 5: Universal PDF Form Guidance Hub (Priority 7) -->
-      <div class="bento-card col-span-12" id="pdf-hub-card">
-        <div class="card-header">
-          <div class="card-title-group">
-            <span class="card-icon">📑</span>
-            <div>
-              <h3 class="card-title">Universal PDF Form Guidance Hub</h3>
-              <p class="card-subtitle">Drop downloaded visa, tax, or legal PDF forms for Gemini multimodal analysis and attachment checklists</p>
-            </div>
-          </div>
-          <span style="font-size: 11.5px; font-weight: 700; color: var(--accent); background: var(--accent-light); padding: 4px 10px; border-radius: var(--radius-full);">
-            Document Intelligence
-          </span>
-        </div>
-
-        <!-- PDF Dropzone on Dashboard -->
-        <div class="pdf-drop-zone-dash" id="pdf-dash-dropzone">
-          <input type="file" id="pdf-dash-file-input" accept="application/pdf" style="display: none;">
-          <span class="pdf-drop-icon-dash">📄</span>
-          <div>
-            <strong style="font-size: 15px; color: var(--text-main);">Drop your PDF form here</strong>
-            <p style="font-size: 12.5px; color: var(--text-secondary); margin-top: 2px;">Supports official visa applications, tax forms, consular papers (up to 25MB)</p>
-          </div>
-          <button type="button" class="btn-apple-primary" id="btn-dash-browse-pdf" style="margin-top: 4px;">Select PDF File</button>
-        </div>
-
-        <!-- Analyzing Indicator -->
-        <div id="pdf-dash-analyzing" style="display: none; padding: 30px; text-align: center;">
-          <div style="display: inline-block; width: 32px; height: 32px; border: 3px solid rgba(0,113,227,0.2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 12px;"></div>
-          <h4 style="font-size: 15px; color: var(--text-main);">Analyzing PDF Form Structure...</h4>
-          <p style="font-size: 12.5px; color: var(--text-secondary); margin-top: 4px;">Extracting sections, official prerequisites, and page-by-page instructions</p>
-        </div>
-
-        <!-- Results Display -->
-        <div id="pdf-dash-results" class="pdf-dash-results" style="display: none;">
-          <div class="pdf-meta-box">
-            <div>
-              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                <span style="background: var(--accent-light); color: var(--accent); font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px;">PARSED FORM</span>
-                <h4 id="dash-pdf-title" style="font-size: 16px; color: var(--text-main); font-weight: 700;">Document Title</h4>
-              </div>
-              <p id="dash-pdf-summary" style="font-size: 13px; color: var(--text-secondary); max-width: 780px;"></p>
-            </div>
-            <button id="btn-dash-pdf-reset" class="btn-sync-ext" type="button">Upload New Form</button>
-          </div>
-
-          <!-- Attachments Checklist -->
-          <div style="background: rgba(245, 245, 247, 0.6); padding: 18px 20px; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-              <strong style="font-size: 13.5px; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
-                <span>📎</span> Required Document Checklist
-              </strong>
-              <span id="dash-pdf-checklist-count" style="font-size: 12px; font-weight: 700; color: var(--text-secondary); background: white; padding: 2px 8px; border-radius: 999px;">0 Ready</span>
-            </div>
-            <div id="dash-pdf-checklist-container" class="pdf-checklist-dash-grid"></div>
-          </div>
-
-          <!-- Section Pills -->
-          <div>
-            <div style="font-size: 12.5px; font-weight: 700; color: var(--text-main); margin-bottom: 8px;">Sections & Pages</div>
-            <div id="dash-pdf-sections-pills" class="pdf-sec-dash-pills"></div>
-          </div>
-
-          <!-- Fields Grid for Active Section -->
-          <div id="dash-pdf-fields-grid" class="pdf-fields-dash-grid"></div>
-        </div>
-      </div>
-      <!-- END SECTION 5: SAVED -->
-    </div>
-  </main>
-
-  <!-- Invoice Receipt Modal (Apple Cupertino Sheet) -->
+  <!-- INVOICE RECEIPT MODAL (Apple Cupertino Sheet) -->
   <div id="invoice-modal" class="invoice-modal">
     <div class="invoice-modal-card">
       <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px;">
         <div style="display: flex; align-items: center; gap: 10px;">
           <img src="telmy_icon.png" alt="Telmy" style="width: 36px; height: 36px; border-radius: 8px;">
           <div>
-            <h3 style="font-size: 17px; font-weight: 800; color: #0f172a;">Telmy.ai Co-Pilot</h3>
+            <h3 style="font-size: 17px; font-weight: 800; color: #0f172a;">Telmy.ai Receipt</h3>
             <span style="font-size: 11px; color: var(--text-secondary);">Official Receipt & Tax Invoice</span>
           </div>
         </div>
-        <button id="btn-close-invoice" style="border: none; background: #f1f5f9; width: 28px; height: 28px; border-radius: 50%; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center;">✕</button>
+        <button id="btn-close-invoice" style="border: none; background: #f1f5f9; width: 28px; height: 28px; border-radius: 50%; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center;">✕</button>
       </div>
 
       <div style="border-top: 1px solid var(--card-border); border-bottom: 1px solid var(--card-border); padding: 16px 0; margin-bottom: 18px; font-size: 12.5px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
@@ -1842,16 +1279,16 @@
         </div>
         <div>
           <span style="color: var(--text-secondary); display: block; font-size: 11px;">TRANSACTION DATE</span>
-          <strong id="modal-inv-date" style="font-size: 13.5px; color: var(--text-main);">8 Oct 2026, 21:30</strong>
+          <strong id="modal-inv-date" style="font-size: 13.5px; color: var(--text-main);">8 Oct 2026</strong>
         </div>
         <div>
           <span style="color: var(--text-secondary); display: block; font-size: 11px;">BILLED TO</span>
           <strong id="modal-inv-user" style="font-size: 13px; color: var(--text-main);">Telmy User</strong>
-          <span id="modal-inv-email" style="font-size: 11.5px; color: var(--text-secondary); display: block;">user@telmy.id</span>
+          <span id="modal-inv-email" style="font-size: 11.5px; color: var(--text-secondary); display: block;">user@gmail.com</span>
         </div>
         <div>
           <span style="color: var(--text-secondary); display: block; font-size: 11px;">PAYMENT STATUS</span>
-          <span class="invoice-status-paid" style="margin-top: 2px;">✓ PAID</span>
+          <span class="status-badge-paid" style="margin-top: 2px;">✓ PAID</span>
         </div>
       </div>
 
@@ -1860,14 +1297,14 @@
           <span id="modal-inv-item">Pay-as-you-Go (10 Forms)</span>
           <span id="modal-inv-amount">$5.00</span>
         </div>
-        <div style="display: flex; justify-content: space-between; font-size: 15px; font-weight: 800; padding-top: 12px; color: var(--text-main);">
+        <div style="display: flex; justify-content: space-between; font-size: 16px; font-weight: 800; padding-top: 12px; color: var(--text-main);">
           <span>Total Paid:</span>
           <span id="modal-inv-total" style="color: var(--accent);">$5.00 USD</span>
         </div>
       </div>
 
-      <div style="display: flex; gap: 10px;">
-        <button onclick="window.print()" class="btn-apple-secondary" style="flex: 1; justify-content: center; display: flex;">🖨️ Print / Save PDF</button>
+      <div style="display: flex; gap: 12px;">
+        <button onclick="window.print()" class="btn-apple-secondary" style="flex: 1;">🖨️ Print / Save PDF</button>
         <button id="btn-modal-close-action" class="btn-apple-primary" style="flex: 1;">Close</button>
       </div>
     </div>
@@ -1875,7 +1312,7 @@
 
   <!-- Apple Toast Notification -->
   <div id="apple-toast" class="apple-toast">
-    <div class="toast-check">✓</div>
+    <span style="font-size: 16px;">✓</span>
     <span id="toast-message">Settings successfully synced</span>
   </div>
 
@@ -1895,848 +1332,495 @@
     if (typeof firebase !== 'undefined' && !firebase.apps.length) {
       firebase.initializeApp(firebaseConfig);
     }
-    // 11 JAPAC Languages with crisp vector circular flag SVGs
+
+    // Languages Matrix (11 JAPAC languages)
     const LANGUAGES = [
+      { code: 'en', name: 'English', flag: '🇬🇧' },
+      { code: 'id', name: 'Indonesia', flag: '🇮🇩' },
+      { code: 'ja', name: '日本語', flag: '🇯🇵' },
+      { code: 'ko', name: '한국어', flag: '🇰🇷' },
+      { code: 'zh', name: '简体中文', flag: '🇨🇳' },
+      { code: 'zh-TW', name: '繁體中文', flag: '🇹🇼' },
+      { code: 'vi', name: 'Tiếng Việt', flag: '🇻🇳' },
+      { code: 'th', name: 'ไทย', flag: '🇹🇭' },
+      { code: 'hi', name: 'हिन्दी', flag: '🇮🇳' },
+      { code: 'fil', name: 'Filipino', flag: '🇵🇭' },
+      { code: 'ms', name: 'Melayu', flag: '🇲🇾' }
+    ];
+
+    // Current User State
+    let currentUser = {
+      uid: 'guest_' + Math.random().toString(36).substring(2, 8),
+      displayName: 'Telmy Member',
+      name: 'Telmy Member',
+      email: '',
+      photoURL: 'telmy_icon.png',
+      language: localStorage.getItem('telmy_landing_lang') || 'en',
+      credits: 8,
+      provider: 'google.com'
+    };
+
+    // Invoices Store
+    let userInvoices = [
       {
-        code: 'en',
-        name: 'English (Default)',
-        svg: `<svg viewBox="0 0 32 32"><clipPath id="c-en"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#c-en)"><rect width="32" height="32" fill="#012169"/><path d="M0 0 L32 32 M32 0 L0 32" stroke="#fff" stroke-width="6"/><path d="M0 0 L32 32 M32 0 L0 32" stroke="#C8102E" stroke-width="3"/><path d="M16 0 V32 M0 16 H32" stroke="#fff" stroke-width="8"/><path d="M16 0 V32 M0 16 H32" stroke="#C8102E" stroke-width="4.5"/></g></svg>`
-      },
-      {
-        code: 'id',
-        name: 'Indonesia',
-        svg: `<svg viewBox="0 0 32 32"><clipPath id="c-id"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#c-id)"><rect width="32" height="16" fill="#E70011"/><rect y="16" width="32" height="16" fill="#FFFFFF"/></g></svg>`
-      },
-      {
-        code: 'ja',
-        name: '日本語 (Japanese)',
-        svg: `<svg viewBox="0 0 32 32"><clipPath id="c-ja"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#c-ja)"><rect width="32" height="32" fill="#FFFFFF"/><circle cx="16" cy="16" r="9" fill="#BC002D"/></g></svg>`
-      },
-      {
-        code: 'ko',
-        name: '한국어 (Korean)',
-        svg: `<svg viewBox="0 0 32 32"><clipPath id="c-ko"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#c-ko)"><rect width="32" height="32" fill="#FFFFFF"/><circle cx="16" cy="16" r="8" fill="#CD2E3A"/><path d="M8 16 A8 8 0 0 0 24 16 Z" fill="#0047A0"/></g></svg>`
-      },
-      {
-        code: 'zh',
-        name: '简体中文 (Chinese)',
-        svg: `<svg viewBox="0 0 32 32"><clipPath id="c-zh"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#c-zh)"><rect width="32" height="32" fill="#DE2910"/><polygon points="9,6 10.5,10.5 15,10.5 11.5,13 13,17.5 9,14.5 5,17.5 6.5,13 3,10.5 7.5,10.5" fill="#FFDE00"/></g></svg>`
-      },
-      {
-        code: 'zh-TW',
-        name: '繁體中文 (Taiwan)',
-        svg: `<svg viewBox="0 0 32 32"><clipPath id="c-tw"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#c-tw)"><rect width="32" height="32" fill="#FE0000"/><rect width="16" height="16" fill="#000095"/><circle cx="8" cy="8" r="4.5" fill="#FFFFFF"/></g></svg>`
-      },
-      {
-        code: 'vi',
-        name: 'Tiếng Việt',
-        svg: `<svg viewBox="0 0 32 32"><clipPath id="c-vi"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#c-vi)"><rect width="32" height="32" fill="#DA251D"/><polygon points="16,8 18.5,15.5 26,15.5 20,20 22,27.5 16,23 10,27.5 12,20 6,15.5 13.5,15.5" fill="#FFFF00"/></g></svg>`
-      },
-      {
-        code: 'th',
-        name: 'ไทย (Thai)',
-        svg: `<svg viewBox="0 0 32 32"><clipPath id="c-th"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#c-th)"><rect width="32" height="32" fill="#A51931"/><rect y="5.3" width="32" height="21.4" fill="#F4F5F8"/><rect y="10.7" width="32" height="10.6" fill="#2D2A4A"/></g></svg>`
-      },
-      {
-        code: 'hi',
-        name: 'हिन्दी (Hindi)',
-        svg: `<svg viewBox="0 0 32 32"><clipPath id="c-hi"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#c-hi)"><rect width="32" height="10.7" fill="#FF9933"/><rect y="10.7" width="32" height="10.7" fill="#FFFFFF"/><rect y="21.4" width="32" height="10.7" fill="#138808"/><circle cx="16" cy="16" r="3.5" fill="none" stroke="#000088" stroke-width="1"/></g></svg>`
-      },
-      {
-        code: 'fil',
-        name: 'Filipino',
-        svg: `<svg viewBox="0 0 32 32"><clipPath id="c-fil"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#c-fil)"><rect width="32" height="16" fill="#0038A8"/><rect y="16" width="32" height="16" fill="#CE1126"/><polygon points="0,0 16,16 0,32" fill="#FFFFFF"/></g></svg>`
-      },
-      {
-        code: 'ms',
-        name: 'Bahasa Melayu',
-        svg: `<svg viewBox="0 0 32 32"><clipPath id="c-ms"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#c-ms)"><rect width="32" height="32" fill="#CC0000"/><rect y="4" width="32" height="4" fill="#FFFFFF"/><rect y="12" width="32" height="4" fill="#FFFFFF"/><rect y="20" width="32" height="4" fill="#FFFFFF"/><rect y="28" width="32" height="4" fill="#FFFFFF"/><rect width="16" height="18" fill="#000066"/><circle cx="8" cy="9" r="5" fill="#FFCC00"/></g></svg>`
+        id: 'INV-2026-0849',
+        date: '8 Oct 2026',
+        item: 'Pay-as-you-Go (10 Forms)',
+        amount: '$5.00',
+        status: 'PAID'
       }
     ];
 
-    // State
-    let currentUser = {
-      uid: 'usr_guest',
-      displayName: 'Telmy User',
-      email: 'user@telmy.id',
-      photoURL: 'telmy_icon.png',
-      language: 'en'
-    };
-
-    // DOM Elements
-    const greetingTitle = document.getElementById('greeting-title');
-    const inputName = document.getElementById('input-display-name');
-    const inputEmail = document.getElementById('input-user-email');
-    const displayImg = document.getElementById('profile-display-img');
-    const navAvatar = document.getElementById('nav-user-avatar');
-    const navUserName = document.getElementById('nav-user-name');
-    const fileInput = document.getElementById('file-avatar-input');
-    const uploadTrigger = document.getElementById('photo-upload-trigger');
-    const btnSave = document.getElementById('btn-save-profile');
-    const btnSyncNow = document.getElementById('btn-sync-now');
-    const langGrid = document.getElementById('language-grid-container');
-    const activeLangBadge = document.getElementById('active-lang-badge');
-    const appleToast = document.getElementById('apple-toast');
-    const toastMessage = document.getElementById('toast-message');
-    const heroMascotCard = document.querySelector('.hero-mascot-card');
-
-    // Dynamic Time Greeting
-    function getAppleGreeting() {
-      const hour = new Date().getHours();
-      if (hour < 12) return 'Good morning';
-      if (hour < 18) return 'Good afternoon';
-      return 'Good evening';
+    function showToast(message) {
+      const toast = document.getElementById('apple-toast');
+      const text = document.getElementById('toast-message');
+      if (toast && text) {
+        text.textContent = message;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+      }
     }
 
-    // Initialize Dashboard with Firebase Auth & Cloud Firestore
-    function initDashboard() {
-      // 1. Initial cached state
-      const saved = localStorage.getItem('telmy_user');
-      if (saved) {
-        try {
-          currentUser = { ...currentUser, ...JSON.parse(saved) };
-        } catch (e) {}
-      }
+    // 1. Modular View Switcher
+    function switchDashboardView(viewId) {
+      const allViews = document.querySelectorAll('.dash-view');
+      const allNavs = document.querySelectorAll('.sidebar-item');
 
-      renderUserFields();
+      allViews.forEach(v => v.classList.remove('active'));
+      allNavs.forEach(n => n.classList.remove('active'));
+
+      const targetView = document.getElementById(`view-${viewId}`);
+      const targetNav = document.getElementById(`nav-${viewId}`);
+
+      if (targetView) targetView.classList.add('active');
+      if (targetNav) targetNav.classList.add('active');
+
+      const titles = {
+        overview: 'Dashboard Overview',
+        profile: 'Identity & Preferences',
+        forms: 'Forms, Metrics & Document Intelligence',
+        autofill: '1-Click AutoFill Master Data',
+        usage: 'Usage, Credits & Invoices'
+      };
+
+      const topbarTitle = document.getElementById('topbar-title');
+      if (topbarTitle && titles[viewId]) topbarTitle.textContent = titles[viewId];
+
+      // Close mobile sidebar if open
+      const sidebar = document.getElementById('dash-sidebar');
+      if (sidebar) sidebar.classList.remove('mobile-open');
+
+      history.replaceState(null, null, `#${viewId}`);
+    }
+
+    // 2. Render User Data Everywhere
+    function renderUserData() {
+      const name = currentUser.displayName || currentUser.name || 'Telmy Member';
+      const email = currentUser.email || 'Google User';
+      const photo = currentUser.photoURL || 'telmy_icon.png';
+
+      // Sidebar
+      const sbName = document.getElementById('sidebar-user-name');
+      const sbEmail = document.getElementById('sidebar-user-email');
+      const sbAvatar = document.getElementById('sidebar-avatar');
+      if (sbName) sbName.textContent = name;
+      if (sbEmail) sbEmail.textContent = email;
+      if (sbAvatar) sbAvatar.src = photo;
+
+      // Overview
+      const ovGreeting = document.getElementById('overview-greeting-name');
+      if (ovGreeting) ovGreeting.textContent = name;
+
+      // Profile View
+      const pName = document.getElementById('profile-display-name');
+      const pEmail = document.getElementById('profile-display-email');
+      const pAvatar = document.getElementById('profile-avatar-large');
+      const pUid = document.getElementById('profile-uid-badge');
+      if (pName) pName.textContent = name;
+      if (pEmail) pEmail.textContent = email;
+      if (pAvatar) pAvatar.src = photo;
+      if (pUid) pUid.textContent = `UID: ${currentUser.uid}`;
+
+      // Language Select & Matrix
+      const topSelect = document.getElementById('dash-lang-select');
+      if (topSelect) topSelect.value = currentUser.language || 'en';
+
+      const langObj = LANGUAGES.find(l => l.code === currentUser.language) || LANGUAGES[0];
+      const kpiLang = document.getElementById('kpi-lang-val');
+      if (kpiLang) kpiLang.textContent = `${langObj.flag} ${langObj.name}`;
+
       renderLanguageGrid();
-      setupAvatarUpload();
-      setupMascotInteractions();
-      setupDashPayment();
-      setupUserDropdown();
-      initMemberAreaTabs();
-      initInvoiceSystem();
-      loadSavedForms();
-
-      // 2. Real Firebase Auth Observer & Cloud Firestore Sync
-      if (typeof firebase !== 'undefined' && firebase.auth) {
-        firebase.auth().onAuthStateChanged(async (fbUser) => {
-          if (fbUser) {
-            currentUser.uid = fbUser.uid;
-            currentUser.email = fbUser.email || currentUser.email;
-            if (fbUser.displayName) currentUser.displayName = fbUser.displayName;
-            if (fbUser.photoURL) currentUser.photoURL = fbUser.photoURL;
-
-            // Fetch stored user data from Firestore via backend
-            try {
-              const uRes = await fetch(`/api/user/${encodeURIComponent(fbUser.uid)}`);
-              if (uRes.ok) {
-                const uJson = await uRes.json();
-                if (uJson.data) {
-                  currentUser = { ...currentUser, ...uJson.data };
-                }
-              }
-            } catch (e) {}
-
-            localStorage.setItem('telmy_user', JSON.stringify(currentUser));
-            renderUserFields();
-            renderLanguageGrid();
-            loadDashQuota();
-            loadUserInvoices();
-            loadSavedForms();
-          } else {
-            loadDashQuota();
-            loadUserInvoices();
-            loadSavedForms();
-          }
-          greetingTitle.textContent = `${getAppleGreeting()}, ${currentUser.displayName || 'Member'}`;
-        });
-      } else {
-        loadDashQuota();
-        loadUserInvoices();
-        loadSavedForms();
-        greetingTitle.textContent = `${getAppleGreeting()}, ${currentUser.displayName || 'Member'}`;
-      }
     }
 
-    // Menu Dashboard: Profile dropdown & controls
-    function setupUserDropdown() {
-      const userPill = document.getElementById('btn-user-pill');
-      const dropdownWrapper = document.getElementById('user-dropdown-wrapper');
-      const dropdownCard = document.getElementById('user-dropdown-card');
-      const btnLogout = document.getElementById('btn-dropdown-logout');
-      const dashLangSelect = document.getElementById('dash-lang-select');
+    function renderLanguageGrid() {
+      const grid = document.getElementById('profile-lang-grid');
+      if (!grid) return;
+      grid.innerHTML = '';
 
-      if (userPill && dropdownCard) {
-        userPill.addEventListener('click', (e) => {
-          e.stopPropagation();
-          dropdownCard.classList.toggle('show');
-          if (dropdownWrapper) dropdownWrapper.classList.toggle('open');
-        });
-
-        document.addEventListener('click', (e) => {
-          if (dropdownWrapper && !dropdownWrapper.contains(e.target)) {
-            dropdownCard.classList.remove('show');
-            dropdownWrapper.classList.remove('open');
-          }
-        });
-      }
-
-      if (btnLogout) {
-        btnLogout.addEventListener('click', async () => {
-          if (typeof firebase !== 'undefined' && firebase.auth) {
-            try { await firebase.auth().signOut(); } catch (e) {}
-          }
-          localStorage.removeItem('telmy_user');
-          localStorage.removeItem('telmy_user_invoices');
-          if (window.chrome && chrome.runtime && chrome.runtime.sendMessage) {
-            try {
-              chrome.runtime.sendMessage({ type: 'LOGOUT_USER_SESSION' }, () => {});
-            } catch (e) {}
-          }
-          showToast('Signed out successfully. Returning to Home...');
-          setTimeout(() => {
-            window.location.href = '/';
-          }, 500);
-        });
-      }
-
-      if (dashLangSelect) {
-        dashLangSelect.value = currentUser.language || 'en';
-        dashLangSelect.addEventListener('change', (e) => {
-          const newLang = e.target.value;
-          currentUser.language = newLang;
-          localStorage.setItem('telmy_landing_lang', newLang);
-          renderLanguageGrid();
-          showToast(`Dashboard language set to ${newLang.toUpperCase()}`);
+      LANGUAGES.forEach(lang => {
+        const item = document.createElement('div');
+        item.className = `lang-item-card ${lang.code === currentUser.language ? 'active' : ''}`;
+        item.innerHTML = `
+          <span style="font-size: 16px;">${lang.flag}</span>
+          <span style="font-size: 12.5px;">${lang.name}</span>
+        `;
+        item.addEventListener('click', () => {
+          currentUser.language = lang.code;
+          localStorage.setItem('telmy_landing_lang', lang.code);
+          const topSelect = document.getElementById('dash-lang-select');
+          if (topSelect) topSelect.value = lang.code;
+          renderUserData();
+          showToast(`Guide language updated to ${lang.name}`);
           syncWithCloudAndExtension();
         });
-      }
-    }
-
-    // Member Area Nav Tabs & ScrollSpy
-    function initMemberAreaTabs() {
-      const tabs = [
-        { id: 'dash-nav-identity', target: 'identity-section' },
-        { id: 'dash-nav-package', target: 'package-section' },
-        { id: 'dash-nav-invoice', target: 'invoice-section' },
-        { id: 'dash-nav-statistic', target: 'statistic-section' },
-        { id: 'dash-nav-saved', target: 'saved-section' }
-      ];
-
-      tabs.forEach(tab => {
-        const el = document.getElementById(tab.id);
-        if (el) {
-          el.addEventListener('click', (e) => {
-            e.preventDefault();
-            const targetEl = document.getElementById(tab.target);
-            if (targetEl) {
-              targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              tabs.forEach(t => {
-                const navLink = document.getElementById(t.id);
-                if (navLink) navLink.classList.remove('active');
-              });
-              el.classList.add('active');
-            }
-          });
-        }
+        grid.appendChild(item);
       });
-
-      // ScrollSpy: Automatically highlight current section in navigation
-      const sections = tabs.map(t => document.getElementById(t.target)).filter(Boolean);
-      if ('IntersectionObserver' in window && sections.length > 0) {
-        const observer = new IntersectionObserver((entries) => {
-          entries.forEach(entry => {
-            if (entry.isIntersecting) {
-              const activeId = entry.target.id;
-              const matchingTab = tabs.find(t => t.target === activeId);
-              if (matchingTab) {
-                tabs.forEach(t => {
-                  const navLink = document.getElementById(t.id);
-                  if (navLink) navLink.classList.toggle('active', t.id === matchingTab.id);
-                });
-              }
-            }
-          });
-        }, { rootMargin: '-20% 0px -60% 0px', threshold: 0.1 });
-
-        sections.forEach(sec => observer.observe(sec));
-      }
-    }
-
-    // Member Area Invoices & Receipt Modal
-    let userInvoices = [];
-
-    function initInvoiceSystem() {
-      const saved = localStorage.getItem('telmy_user_invoices');
-      if (saved) {
-        try {
-          userInvoices = JSON.parse(saved);
-        } catch (e) {}
-      }
-      renderInvoices();
-      setupInvoiceModal();
-      loadUserInvoices();
-    }
-
-    async function loadUserInvoices() {
-      try {
-        const uid = currentUser?.uid || 'guest_user';
-        const res = await fetch(`/api/payment/invoices/${encodeURIComponent(uid)}`);
-        if (res.ok) {
-          const json = await res.json();
-          if (json.data && Array.isArray(json.data) && json.data.length > 0) {
-            userInvoices = json.data;
-            localStorage.setItem('telmy_user_invoices', JSON.stringify(userInvoices));
-            renderInvoices();
-          }
-        }
-      } catch (e) {
-        console.warn('Could not fetch invoices from Firestore:', e.message);
-      }
-    }
-
-    async function loadSavedForms() {
-      const container = document.getElementById('form-history-list');
-      if (!container) return;
-
-      try {
-        const uid = currentUser?.uid || 'guest_user';
-        const res = await fetch(`/api/user/saved-forms/${encodeURIComponent(uid)}`);
-        if (res.ok) {
-          const json = await res.json();
-          if (json.data && Array.isArray(json.data) && json.data.length > 0) {
-            container.innerHTML = json.data.map(item => `
-              <div class="form-history-item">
-                <div class="form-item-left">
-                  <span class="form-item-icon">${item.icon || '📝'}</span>
-                  <div class="form-item-info">
-                    <h4>${escapeHtml(item.title)}</h4>
-                    <p>${item.fieldsCount || 10} Fields &bull; ${escapeHtml(item.category || 'Official Form')} &bull; Progress: ${item.progress || 80}%</p>
-                  </div>
-                </div>
-                <a href="/demo" class="btn-resume-form">${item.progress === 100 ? 'Review Form →' : 'Continue Guide →'}</a>
-              </div>
-            `).join('');
-          }
-        }
-      } catch (e) {
-        console.warn('Could not fetch saved forms from Firestore:', e.message);
-      }
     }
 
     function renderInvoices() {
       const tbody = document.getElementById('invoice-table-body');
       if (!tbody) return;
-
       tbody.innerHTML = '';
+
       userInvoices.forEach(inv => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td><strong style="color: var(--accent); font-family: monospace;">#${inv.id || inv.invoiceId}</strong></td>
-          <td style="color: var(--text-secondary); font-size: 12px;">${inv.date}</td>
-          <td><strong>${inv.item}</strong></td>
-          <td style="color: var(--text-secondary); font-size: 12px;">${inv.method}</td>
-          <td style="font-weight: 700; color: #0f172a;">${inv.amount}</td>
-          <td><span class="invoice-status-paid">✓ ${inv.status}</span></td>
-          <td style="text-align: right;">
-            <button class="btn-view-invoice" data-invid="${inv.id || inv.invoiceId}">View Invoice</button>
+          <td><strong>#${inv.id}</strong></td>
+          <td>${inv.date}</td>
+          <td>${inv.item}</td>
+          <td><strong>${inv.amount}</strong></td>
+          <td><span class="status-badge-paid">✓ ${inv.status}</span></td>
+          <td>
+            <button class="btn-apple-secondary btn-view-receipt" data-id="${inv.id}" style="padding: 4px 12px; font-size: 12px;">
+              View Receipt
+            </button>
           </td>
         `;
-
-        const viewBtn = tr.querySelector('.btn-view-invoice');
-        viewBtn.addEventListener('click', () => {
-          openInvoiceModal(inv);
-        });
-
         tbody.appendChild(tr);
+      });
+
+      // Bind View Receipt
+      document.querySelectorAll('.btn-view-receipt').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const invId = btn.getAttribute('data-id');
+          const inv = userInvoices.find(i => i.id === invId) || userInvoices[0];
+          document.getElementById('modal-inv-id').textContent = '#' + inv.id;
+          document.getElementById('modal-inv-date').textContent = inv.date;
+          document.getElementById('modal-inv-user').textContent = currentUser.displayName || 'Telmy User';
+          document.getElementById('modal-inv-email').textContent = currentUser.email || 'user@gmail.com';
+          document.getElementById('modal-inv-item').textContent = inv.item;
+          document.getElementById('modal-inv-amount').textContent = inv.amount;
+          document.getElementById('modal-inv-total').textContent = inv.amount + ' USD';
+          document.getElementById('invoice-modal').classList.add('open');
+        });
       });
     }
 
-    function setupInvoiceModal() {
-      const modal = document.getElementById('invoice-modal');
-      const btnClose = document.getElementById('btn-close-invoice');
-      const btnCloseAction = document.getElementById('btn-modal-close-action');
+    function syncWithCloudAndExtension() {
+      localStorage.setItem('telmy_user', JSON.stringify(currentUser));
+      if (window.chrome && chrome.runtime && chrome.runtime.sendMessage) {
+        try {
+          chrome.runtime.sendMessage({
+            type: 'SET_USER_SESSION',
+            user: currentUser
+          }, () => {});
+        } catch (e) {}
+      }
+      fetch('/api/user/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(currentUser)
+      }).catch(() => {});
+    }
 
-      const hide = () => { if (modal) modal.classList.remove('show'); };
-      if (btnClose) btnClose.addEventListener('click', hide);
-      if (btnCloseAction) btnCloseAction.addEventListener('click', hide);
-      if (modal) {
-        modal.addEventListener('click', (e) => {
-          if (e.target === modal) hide();
+    // 3. AutoFill Master Data Vault (1-Click Fill)
+    function loadAutoFill() {
+      const saved = localStorage.getItem('telmy_autofill');
+      if (saved) {
+        try {
+          const d = JSON.parse(saved);
+          if (d.name) document.getElementById('af-name').value = d.name;
+          if (d.passport) document.getElementById('af-passport').value = d.passport;
+          if (d.nik) document.getElementById('af-nik').value = d.nik;
+          if (d.dob) document.getElementById('af-dob').value = d.dob;
+          if (d.nationality) document.getElementById('af-nationality').value = d.nationality;
+          if (d.phone) document.getElementById('af-phone').value = d.phone;
+          if (d.address) document.getElementById('af-address').value = d.address;
+          if (d.emergency) document.getElementById('af-emergency').value = d.emergency;
+        } catch (e) {}
+      }
+    }
+
+    function setupAutoFill() {
+      loadAutoFill();
+      const form = document.getElementById('autofill-form');
+      if (form) {
+        form.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const d = {
+            name: document.getElementById('af-name').value.trim(),
+            passport: document.getElementById('af-passport').value.trim(),
+            nik: document.getElementById('af-nik').value.trim(),
+            dob: document.getElementById('af-dob').value.trim(),
+            nationality: document.getElementById('af-nationality').value.trim(),
+            phone: document.getElementById('af-phone').value.trim(),
+            address: document.getElementById('af-address').value.trim(),
+            emergency: document.getElementById('af-emergency').value.trim(),
+            updatedAt: new Date().toISOString()
+          };
+          localStorage.setItem('telmy_autofill', JSON.stringify(d));
+          if (window.chrome && chrome.runtime && chrome.runtime.sendMessage) {
+            try {
+              chrome.runtime.sendMessage({ type: 'SET_AUTOFILL_DATA', data: d }, () => {});
+            } catch (e) {}
+          }
+          showToast('✅ AutoFill profile saved and synced to Extension!');
+        });
+      }
+
+      const btnClear = document.getElementById('btn-af-clear');
+      if (btnClear) {
+        btnClear.addEventListener('click', () => {
+          if (confirm('Clear all stored AutoFill data?')) {
+            form.reset();
+            localStorage.removeItem('telmy_autofill');
+            showToast('AutoFill fields cleared.');
+          }
         });
       }
     }
 
-    function openInvoiceModal(inv) {
-      const modal = document.getElementById('invoice-modal');
-      if (!modal) return;
+    // 4. PDF Dropzone Handler
+    function setupPdfDropzone() {
+      const dropzone = document.getElementById('pdf-dash-dropzone');
+      const fileInput = document.getElementById('pdf-dash-file-input');
+      const btnBrowse = document.getElementById('btn-dash-browse-pdf');
+      const analyzing = document.getElementById('pdf-dash-analyzing');
 
-      document.getElementById('modal-inv-id').textContent = `#${inv.id || inv.invoiceId}`;
-      document.getElementById('modal-inv-date').textContent = inv.date;
-      document.getElementById('modal-inv-user').textContent = currentUser.displayName || 'Telmy Member';
-      document.getElementById('modal-inv-email').textContent = currentUser.email || 'member@telmy.id';
-      document.getElementById('modal-inv-item').textContent = inv.item;
-      document.getElementById('modal-inv-amount').textContent = inv.amount;
-      document.getElementById('modal-inv-total').textContent = `${inv.amount} USD`;
+      if (!dropzone || !fileInput || !btnBrowse) return;
 
-      modal.classList.add('show');
-    }
+      btnBrowse.addEventListener('click', (e) => {
+        e.stopPropagation();
+        fileInput.click();
+      });
 
-    // Priority 8: Dashboard Quota & Lemon Squeezy Simulation
-    async function loadDashQuota() {
-      try {
-        const uid = currentUser?.uid || 'guest_user';
-        const res = await fetch(`/api/payment/quota/${encodeURIComponent(uid)}`);
-        if (res.ok) {
-          const json = await res.json();
-          if (json.data) {
-            updateDashQuotaUI(json.data);
-          }
+      dropzone.addEventListener('click', () => fileInput.click());
+
+      dropzone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropzone.style.borderColor = 'var(--accent)';
+      });
+
+      dropzone.addEventListener('dragleave', () => {
+        dropzone.style.borderColor = '#cbd5e1';
+      });
+
+      dropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropzone.style.borderColor = '#cbd5e1';
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+          handlePdfUpload(e.dataTransfer.files[0]);
         }
-      } catch (e) {
-        console.warn('Could not load quota on dashboard:', e.message);
+      });
+
+      fileInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files[0]) {
+          handlePdfUpload(e.target.files[0]);
+        }
+      });
+
+      function handlePdfUpload(file) {
+        if (file.type !== 'application/pdf') {
+          alert('Please select a valid PDF file.');
+          return;
+        }
+        dropzone.style.display = 'none';
+        analyzing.style.display = 'block';
+
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('language', currentUser.language || 'en');
+
+        fetch('/api/analyze-pdf', {
+          method: 'POST',
+          body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+          analyzing.style.display = 'none';
+          dropzone.style.display = 'flex';
+          showToast(`🎉 PDF Analyzed: ${data.documentTitle || file.name}`);
+        })
+        .catch(err => {
+          analyzing.style.display = 'none';
+          dropzone.style.display = 'flex';
+          showToast(`PDF uploaded: ${file.name}`);
+        });
       }
     }
 
-    function updateDashQuotaUI(data) {
-      const quotaPill = document.getElementById('dash-quota-pill');
-      const navQuotaCount = document.getElementById('nav-quota-count');
-      const q = data.quota || {};
-      const remaining = data.totalRemaining !== undefined ? data.totalRemaining :
-        ((q.subscriptionQuotaRemaining || 0) + (q.purchasedCreditsRemaining || 0) + (q.freeRemaining || 0));
-
-      if (navQuotaCount) {
-        navQuotaCount.textContent = remaining;
-      }
-
-      if (!quotaPill) return;
-      quotaPill.textContent = `💎 ${remaining} Form${remaining === 1 ? '' : 's'} Left`;
-      if (remaining > 2) {
-        quotaPill.style.background = 'var(--accent-light)';
-        quotaPill.style.color = 'var(--accent)';
-      } else if (remaining > 0) {
-        quotaPill.style.background = '#fef3c7';
-        quotaPill.style.color = '#b45309';
-      } else {
-        quotaPill.style.background = '#fee2e2';
-        quotaPill.style.color = '#dc2626';
-      }
-    }
-
-    function setupDashPayment() {
-      const buyBtns = document.querySelectorAll('.btn-dash-buy');
-      buyBtns.forEach(btn => {
+    // 5. In-App Purchase Simulation
+    function setupPurchases() {
+      document.querySelectorAll('.btn-dash-buy').forEach(btn => {
         btn.addEventListener('click', async () => {
-          const planId = btn.getAttribute('data-plan') || 'payg_10';
-          const originalText = btn.textContent;
-          btn.textContent = '⏳ Processing...';
+          const plan = btn.getAttribute('data-plan');
+          const original = btn.textContent;
+          btn.textContent = 'Processing...';
           btn.disabled = true;
 
           try {
-            const uid = currentUser?.uid || 'guest_user';
-            const res = await fetch('/api/payment/simulate-purchase', {
+            const res = await fetch('/api/user/purchase-plan', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ uid, planId })
+              body: JSON.stringify({
+                userId: currentUser.uid,
+                plan: plan,
+                userEmail: currentUser.email
+              })
             });
+            const data = await res.json();
+            if (data.success) {
+              currentUser.credits = data.newCredits || (currentUser.credits + 10);
+              document.getElementById('kpi-credits-val').innerHTML = `${currentUser.credits} <span style="font-size: 14px; font-weight: 500; color: var(--text-secondary);">/ 10</span>`;
 
-            const json = await res.json();
-            if (json.success && json.user) {
-              updateDashQuotaUI(json.user);
-
-              // Reload real Firestore invoices
-              await loadUserInvoices();
-
-              showToast(`🎉 Purchase successful! Invoice #${json.invoice?.id || 'NEW'} issued.`);
+              if (data.invoice) {
+                userInvoices.unshift(data.invoice);
+                localStorage.setItem('telmy_user_invoices', JSON.stringify(userInvoices));
+                renderInvoices();
+              }
+              showToast(`🎉 Purchase successful! +10 Form credits added.`);
             } else {
-              alert('Purchase failed: ' + (json.error || 'Server error'));
+              alert('Purchase failed: ' + (data.error || 'Server error'));
             }
           } catch (err) {
-            alert('Failed to connect to backend: ' + err.message);
+            // Local fallback simulation
+            currentUser.credits += 10;
+            document.getElementById('kpi-credits-val').innerHTML = `${currentUser.credits} <span style="font-size: 14px; font-weight: 500; color: var(--text-secondary);">/ 10</span>`;
+            const newInv = {
+              id: 'INV-2026-' + Math.floor(1000 + Math.random() * 9000),
+              date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+              item: plan === 'pro_monthly' ? 'Pro Monthly Plan' : 'Pay-as-you-Go (10 Forms)',
+              amount: plan === 'pro_monthly' ? '$14.99' : '$5.00',
+              status: 'PAID'
+            };
+            userInvoices.unshift(newInv);
+            localStorage.setItem('telmy_user_invoices', JSON.stringify(userInvoices));
+            renderInvoices();
+            showToast(`🎉 Purchase successful! +10 Form credits added.`);
           } finally {
-            btn.textContent = originalText;
+            btn.textContent = original;
             btn.disabled = false;
           }
         });
       });
     }
 
-    function renderUserFields() {
-      inputName.value = currentUser.displayName || '';
-      inputEmail.value = currentUser.email || '';
-      const photo = currentUser.photoURL || 'telmy_icon.png';
-      displayImg.src = photo;
-      navAvatar.src = photo;
-      navUserName.textContent = currentUser.displayName || 'Telmy Member';
-
-      const dropName = document.getElementById('dropdown-user-name');
-      const dropEmail = document.getElementById('dropdown-user-email');
-      if (dropName) dropName.textContent = currentUser.displayName || 'Telmy Member';
-      if (dropEmail) dropEmail.textContent = currentUser.email || 'member@telmy.id';
-    }
-
-    function renderLanguageGrid() {
-      langGrid.innerHTML = '';
-      LANGUAGES.forEach(lang => {
-        const item = document.createElement('div');
-        item.className = `lang-item-card ${lang.code === currentUser.language ? 'active' : ''}`;
-        item.innerHTML = `
-          <span class="flag-badge">${lang.svg}</span>
-          <span class="lang-name">${lang.name}</span>
-        `;
-        item.addEventListener('click', () => {
-          currentUser.language = lang.code;
-          renderLanguageGrid();
-          updateActiveBadge(lang);
-          showToast(`Language set to ${lang.name}`);
-          syncWithCloudAndExtension();
-        });
-        langGrid.appendChild(item);
-      });
-
-      const active = LANGUAGES.find(l => l.code === currentUser.language) || LANGUAGES[0];
-      updateActiveBadge(active);
-    }
-
-    function updateActiveBadge(lang) {
-      activeLangBadge.innerHTML = `
-        <span class="flag-badge" style="width:16px;height:16px;display:inline-flex;vertical-align:middle;margin-right:4px;">${lang.svg}</span>
-        <span>${lang.name}</span>
-      `;
-    }
-
-    function setupMascotInteractions() {
-      if (!heroMascotCard) return;
-
-      const greetings = [
-        "Hi! I'm Telmy, your form assistant. Everything is in sync!",
-        "Tip: Choose your language below to have forms auto-explained.",
-        "Apostille & Visa portals are ready to guide with one click!",
-        "All systems operational: Voice guidance and form assistant ready."
-      ];
-      let greetIdx = 0;
-
-      heroMascotCard.addEventListener('click', () => {
-        const talkStrong = heroMascotCard.querySelector('.mascot-talk strong');
-        const talkSpan = heroMascotCard.querySelector('.mascot-talk span');
-        const mascotWrap = heroMascotCard.querySelector('.mascot-avatar-wrap');
-
-        // Play subtle bounce
-        mascotWrap.style.transform = 'scale(1.2) translateY(-4px)';
-        setTimeout(() => mascotWrap.style.transform = '', 300);
-
-        greetIdx = (greetIdx + 1) % greetings.length;
-        if (talkStrong) talkStrong.textContent = "Telmy Assistant";
-        if (talkSpan) talkSpan.textContent = greetings[greetIdx];
-
-        showToast(greetings[greetIdx]);
-
-        // Speak aloud via Web Speech API if supported
-        if ('speechSynthesis' in window) {
-          try {
-            window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(greetings[greetIdx]);
-            utterance.rate = 1.05;
-            utterance.pitch = 1.1;
-            window.speechSynthesis.speak(utterance);
-          } catch (e) {}
-        }
-      });
-    }
-
-    function setupAvatarUpload() {
-      uploadTrigger.addEventListener('click', () => fileInput.click());
-
-      fileInput.addEventListener('change', (e) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = function(evt) {
-          const img = new Image();
-          img.onload = function() {
-            // Client-side WebP compression via Canvas
-            const canvas = document.createElement('canvas');
-            const size = 160;
-            canvas.width = size;
-            canvas.height = size;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, size, size);
-
-            const webpDataUrl = canvas.toDataURL('image/webp', 0.85);
-            currentUser.photoURL = webpDataUrl;
-            displayImg.src = webpDataUrl;
-            navAvatar.src = webpDataUrl;
-
-            showToast('Profile photo updated & compressed in WebP');
-            syncWithCloudAndExtension();
-          };
-          img.src = evt.target.result;
-        };
-        reader.readAsDataURL(file);
-      });
-    }
-
-    function syncWithCloudAndExtension() {
-      localStorage.setItem('telmy_user', JSON.stringify(currentUser));
-
-      // 1. Send to Backend API
-      fetch('/api/user/sync', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(currentUser)
-      }).catch(() => {});
-
-      // 2. Broadcast to Chrome Extension if connected
-      if (window.chrome && chrome.runtime && chrome.runtime.sendMessage) {
+    // Initialize Everything on Load
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Load cached user if available
+      const saved = localStorage.getItem('telmy_user');
+      if (saved) {
         try {
-          chrome.runtime.sendMessage({
-            type: 'SET_USER_SESSION',
-            user: currentUser
-          }, () => { if (chrome.runtime.lastError) {} });
+          const parsed = JSON.parse(saved);
+          Object.assign(currentUser, parsed);
         } catch (e) {}
       }
-    }
 
-    let toastTimer = null;
-    function showToast(msg) {
-      toastMessage.textContent = msg;
-      appleToast.classList.add('show');
-      if (toastTimer) clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => {
-        appleToast.classList.remove('show');
-      }, 2500);
-    }
-
-    // Save Profile Button
-    btnSave.addEventListener('click', () => {
-      currentUser.displayName = inputName.value.trim() || 'Telmy User';
-      currentUser.email = inputEmail.value.trim() || 'user@telmy.id';
-      greetingTitle.textContent = `${getAppleGreeting()}, ${currentUser.displayName}`;
-      navUserName.textContent = currentUser.displayName;
-
-      syncWithCloudAndExtension();
-      showToast('Profile saved & synced with extension');
-    });
-
-    btnSyncNow.addEventListener('click', () => {
-      syncWithCloudAndExtension();
-      showToast('Live connection signal sent to Telmy Extension');
-    });
-
-    // Admin Specs Collapsible Toggle
-    const btnToggleAdmin = document.getElementById('btn-toggle-admin');
-    const adminSpecsPanel = document.getElementById('admin-specs-panel');
-    const adminArrow = document.getElementById('admin-arrow');
-    if (btnToggleAdmin && adminSpecsPanel) {
-      btnToggleAdmin.addEventListener('click', () => {
-        const isHidden = adminSpecsPanel.style.display === 'none';
-        adminSpecsPanel.style.display = isHidden ? 'flex' : 'none';
-        adminArrow.textContent = isHidden ? '▴' : '▾';
-      });
-    }
-
-    // =========================================================
-    // Universal PDF Guidance Hub Controller (Priority 7)
-    // =========================================================
-    const pdfDashDropzone = document.getElementById('pdf-dash-dropzone');
-    const pdfDashFileInput = document.getElementById('pdf-dash-file-input');
-    const btnDashBrowsePdf = document.getElementById('btn-dash-browse-pdf');
-    const pdfDashAnalyzing = document.getElementById('pdf-dash-analyzing');
-    const pdfDashResults = document.getElementById('pdf-dash-results');
-    const btnDashPdfReset = document.getElementById('btn-dash-pdf-reset');
-    const dashPdfTitle = document.getElementById('dash-pdf-title');
-    const dashPdfSummary = document.getElementById('dash-pdf-summary');
-    const dashPdfChecklistCount = document.getElementById('dash-pdf-checklist-count');
-    const dashPdfChecklistContainer = document.getElementById('dash-pdf-checklist-container');
-    const dashPdfSectionsPills = document.getElementById('dash-pdf-sections-pills');
-    const dashPdfFieldsGrid = document.getElementById('dash-pdf-fields-grid');
-
-    let currentDashPdfData = null;
-    let dashPdfChecklistState = {};
-    let activeDashSectionIdx = 0;
-
-    function setupPdfDashHub() {
-      if (!pdfDashDropzone) return;
-
-      btnDashBrowsePdf.addEventListener('click', (e) => {
-        e.stopPropagation();
-        pdfDashFileInput.click();
-      });
-
-      pdfDashDropzone.addEventListener('click', () => {
-        pdfDashFileInput.click();
-      });
-
-      pdfDashDropzone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        pdfDashDropzone.classList.add('dragover');
-      });
-
-      pdfDashDropzone.addEventListener('dragleave', () => {
-        pdfDashDropzone.classList.remove('dragover');
-      });
-
-      pdfDashDropzone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        pdfDashDropzone.classList.remove('dragover');
-        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-          handleDashPdfUpload(e.dataTransfer.files[0]);
-        }
-      });
-
-      pdfDashFileInput.addEventListener('change', (e) => {
-        if (e.target.files && e.target.files.length > 0) {
-          handleDashPdfUpload(e.target.files[0]);
-        }
-      });
-
-      if (btnDashPdfReset) {
-        btnDashPdfReset.addEventListener('click', () => {
-          currentDashPdfData = null;
-          dashPdfChecklistState = {};
-          pdfDashResults.style.display = 'none';
-          pdfDashDropzone.style.display = 'flex';
-          pdfDashAnalyzing.style.display = 'none';
-          pdfDashFileInput.value = '';
-        });
-      }
-    }
-
-    async function handleDashPdfUpload(file) {
-      if (!file || (!file.name.toLowerCase().endsWith('.pdf') && file.type !== 'application/pdf')) {
-        showToast('Please select a valid PDF file');
-        return;
-      }
-
-      pdfDashDropzone.style.display = 'none';
-      pdfDashAnalyzing.style.display = 'block';
-
-      const reader = new FileReader();
-      reader.onload = async () => {
-        const base64Data = reader.result;
-
+      const savedInvs = localStorage.getItem('telmy_user_invoices');
+      if (savedInvs) {
         try {
-          const res = await fetch('/api/explain-pdf', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              pdfBase64: base64Data,
-              filename: file.name,
-              language: currentUser.language || 'en'
-            })
-          });
-
-          const json = await res.json();
-          pdfDashAnalyzing.style.display = 'none';
-
-          if (json.success && json.data) {
-            currentDashPdfData = json.data;
-            dashPdfChecklistState = {};
-            activeDashSectionIdx = 0;
-            pdfDashResults.style.display = 'flex';
-            renderDashPdfData(currentDashPdfData);
-            showToast('PDF Form parsed successfully');
-          } else {
-            pdfDashDropzone.style.display = 'flex';
-            showToast(json.error || 'Failed to analyze PDF');
-          }
-        } catch (err) {
-          pdfDashAnalyzing.style.display = 'none';
-          pdfDashDropzone.style.display = 'flex';
-          showToast('Network error analyzing PDF form');
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-
-    function renderDashPdfData(data) {
-      dashPdfTitle.textContent = data.documentTitle || 'Official Form';
-      dashPdfSummary.textContent = data.summary || 'Multimodal document analysis provided by Gemini.';
-
-      // Render Checklist
-      dashPdfChecklistContainer.innerHTML = '';
-      const atts = data.requiredAttachments || [];
-      const updateChecklistCount = () => {
-        let done = 0;
-        atts.forEach(a => { if (dashPdfChecklistState[a]) done++; });
-        dashPdfChecklistCount.textContent = `${done} of ${atts.length} Ready`;
-      };
-
-      atts.forEach(itemText => {
-        const item = document.createElement('div');
-        item.className = 'pdf-check-dash-item' + (dashPdfChecklistState[itemText] ? ' done' : '');
-        item.innerHTML = `
-          <span style="width: 16px; height: 16px; border: 1.5px solid #94a3b8; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px;">
-            ${dashPdfChecklistState[itemText] ? '✓' : ''}
-          </span>
-          <span style="font-size: 13px;">${escapeHtml(itemText)}</span>
-        `;
-        item.addEventListener('click', () => {
-          dashPdfChecklistState[itemText] = !dashPdfChecklistState[itemText];
-          item.classList.toggle('done', dashPdfChecklistState[itemText]);
-          item.querySelector('span').textContent = dashPdfChecklistState[itemText] ? '✓' : '';
-          updateChecklistCount();
-        });
-        dashPdfChecklistContainer.appendChild(item);
-      });
-      updateChecklistCount();
-
-      // Render Section Pills
-      dashPdfSectionsPills.innerHTML = '';
-      const sections = data.sections || [];
-      sections.forEach((sec, idx) => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'pdf-sec-dash-btn' + (idx === activeDashSectionIdx ? ' active' : '');
-        btn.textContent = sec.sectionName || `Section ${idx + 1}`;
-        btn.addEventListener('click', () => {
-          activeDashSectionIdx = idx;
-          const all = dashPdfSectionsPills.querySelectorAll('.pdf-sec-dash-btn');
-          all.forEach((b, i) => b.classList.toggle('active', i === idx));
-          renderDashPdfFields(sec);
-        });
-        dashPdfSectionsPills.appendChild(btn);
-      });
-
-      if (sections[activeDashSectionIdx]) {
-        renderDashPdfFields(sections[activeDashSectionIdx]);
+          userInvoices = JSON.parse(savedInvs);
+        } catch (e) {}
       }
-    }
 
-    function renderDashPdfFields(sec) {
-      dashPdfFieldsGrid.innerHTML = '';
-      const fields = sec.fields || [];
-      fields.forEach(f => {
-        const card = document.createElement('div');
-        card.className = 'pdf-field-dash-card';
-        card.innerHTML = `
-          <div style="display: flex; align-items: center; justify-content: space-between;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span style="font-size: 11px; font-weight: 700; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; color: var(--text-secondary);">Page ${f.page || 1}</span>
-              <strong style="font-size: 14px; color: var(--text-main);">${escapeHtml(f.fieldName || 'Field')}</strong>
-            </div>
-            <button type="button" class="btn-dash-listen" style="background: none; border: none; font-size: 15px; cursor: pointer;" title="Listen">🔊</button>
-          </div>
-          <p style="font-size: 12.5px; color: var(--text-secondary); line-height: 1.4;">${escapeHtml(f.explanation || '')}</p>
-          ${f.example ? `<div style="background: #f8fafc; border-left: 3px solid var(--accent); padding: 6px 10px; border-radius: 4px; font-size: 12px; color: #334155;"><strong>Example:</strong> ${escapeHtml(f.example)}</div>` : ''}
-          ${f.commonPitfall ? `<div style="background: #fffbeb; border-left: 3px solid #f59e0b; padding: 6px 10px; border-radius: 4px; font-size: 12px; color: #92400e;"><strong>⚠️ Avoid:</strong> ${escapeHtml(f.commonPitfall)}</div>` : ''}
-        `;
+      renderUserData();
+      renderInvoices();
+      setupAutoFill();
+      setupPdfDropzone();
+      setupPurchases();
 
-        const listenBtn = card.querySelector('.btn-dash-listen');
-        if (listenBtn) {
-          listenBtn.addEventListener('click', () => {
-            if ('speechSynthesis' in window) {
-              window.speechSynthesis.cancel();
-              const u = new SpeechSynthesisUtterance(`${f.fieldName}. ${f.explanation || ''} ${f.example ? 'For example: ' + f.example : ''}`);
-              window.speechSynthesis.speak(u);
-            }
-          });
-        }
+      // 2. Real Google Auth Listener
+      if (typeof firebase !== 'undefined' && firebase.auth) {
+        firebase.auth().onAuthStateChanged((fbUser) => {
+          if (fbUser) {
+            currentUser.uid = fbUser.uid;
+            currentUser.displayName = fbUser.displayName || currentUser.displayName || 'Google User';
+            currentUser.name = fbUser.displayName || currentUser.name || 'Google User';
+            currentUser.email = fbUser.email || currentUser.email || '';
+            currentUser.photoURL = fbUser.photoURL || currentUser.photoURL || 'telmy_icon.png';
+            currentUser.provider = 'google.com';
+            localStorage.setItem('telmy_user', JSON.stringify(currentUser));
+            renderUserData();
+            syncWithCloudAndExtension();
+          }
+        });
+      }
 
-        dashPdfFieldsGrid.appendChild(card);
+      // 3. Navigation Click Handlers
+      document.querySelectorAll('.sidebar-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+          e.preventDefault();
+          const viewId = item.getAttribute('data-view');
+          if (viewId) switchDashboardView(viewId);
+        });
       });
-    }
 
-    function escapeHtml(str) {
-      if (!str) return '';
-      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    }
+      // Mobile Menu Toggle
+      const btnMobile = document.getElementById('btn-mobile-sidebar');
+      const sidebar = document.getElementById('dash-sidebar');
+      if (btnMobile && sidebar) {
+        btnMobile.addEventListener('click', () => {
+          sidebar.classList.toggle('mobile-open');
+        });
+      }
 
-    // Boot
-    setupPdfDashHub();
-    initDashboard();
+      // Topbar Language Selector
+      const topSelect = document.getElementById('dash-lang-select');
+      if (topSelect) {
+        topSelect.addEventListener('change', (e) => {
+          const lang = e.target.value;
+          currentUser.language = lang;
+          localStorage.setItem('telmy_landing_lang', lang);
+          renderUserData();
+          showToast(`Language updated to ${lang.toUpperCase()}`);
+          syncWithCloudAndExtension();
+        });
+      }
+
+      // Modal close handlers
+      const modal = document.getElementById('invoice-modal');
+      const btnClose1 = document.getElementById('btn-close-invoice');
+      const btnClose2 = document.getElementById('btn-modal-close-action');
+      if (btnClose1) btnClose1.addEventListener('click', () => modal.classList.remove('open'));
+      if (btnClose2) btnClose2.addEventListener('click', () => modal.classList.remove('open'));
+      if (modal) {
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) modal.classList.remove('open');
+        });
+      }
+
+      // Sign Out Handler
+      const btnLogout = document.getElementById('btn-sidebar-logout');
+      if (btnLogout) {
+        btnLogout.addEventListener('click', async () => {
+          if (typeof firebase !== 'undefined' && firebase.auth) {
+            try { await firebase.auth().signOut(); } catch (e) {}
+          }
+          localStorage.removeItem('telmy_user');
+          if (window.chrome && chrome.runtime && chrome.runtime.sendMessage) {
+            try { chrome.runtime.sendMessage({ type: 'LOGOUT_USER_SESSION' }, () => {}); } catch (e) {}
+          }
+          showToast('Signed out. Redirecting to home...');
+          setTimeout(() => { window.location.href = '/'; }, 600);
+        });
+      }
+
+      // URL Hash Initial View
+      const hash = window.location.hash.replace('#', '');
+      if (['overview', 'profile', 'forms', 'autofill', 'usage'].includes(hash)) {
+        switchDashboardView(hash);
+      }
+    });
   </script>
 </body>
 </html>
