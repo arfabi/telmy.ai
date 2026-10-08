@@ -38,10 +38,13 @@
 [Prioritas 2: Talking Avatar Robot & Brand UI/UX] (✅ Selesai)
                        │
                        ▼
-[Prioritas 5: User Dashboard & Web Platform] ──► [Prioritas 6: Final Packaging CWS & Submit]
-                                                               │
-                                                               ▼
-                                                [Prioritas 4: Glossary Firestore] (Di Akhir)
+[Prioritas 5: User Dashboard & Web Platform] ──► [Prioritas 7: Universal PDF & Interactive Writer] (⚡ PRIORITAS TINGGI)
+                       │                                       │
+                       ▼                                       ▼
+[Prioritas 8: Monetization & Quota Engine] ─────► [Prioritas 9: Smart Fill, Auditor & Privacy Shield] (⚡ PRIORITAS TINGGI)
+                       │                                       │
+                       ▼                                       ▼
+[Prioritas 4: Hybrid KB & Vector Search] ───────► [Prioritas 6: Final Packaging CWS & Submit]
 ```
 
 ---
@@ -110,16 +113,45 @@
 
 ---
 
-### 🎖️ PRIORITAS 4: Domain-Based Glossary System (Firestore & Role Management)
-*Target: Database glosarium per domain untuk mencegah kesalahan istilah birokrasi baku.*
+### 🎖️ PRIORITAS 4: Hybrid Knowledge Base & Firestore Vector Search Engine
+*Target: Mengubah basis data kamus statis menjadi sistem memori cerdas berbasis Firestore + Vector Search (`text-embedding-004`). Menghemat biaya token Gemini, memangkas latensi (<100ms), dan menjaga konsistensi istilah birokrasi & beasiswa di seluruh fitur (Web Form, Translation, dan PDF/Image).*
 
-- [ ] **4.1. Skema Dokumen Firestore `glossaries/{domain}`:**
-  - `domain`: Nama domain web target (misal: `layanan.kemenkumham.go.id`).
-  - `glossary_items`: Array aturan istilah (`term`, `action`: `DO_NOT_TRANSLATE` | `FORCE_TRANSLATE`, `target_term`).
-  - `user_suggestions`: Array masukan istilah dari pengguna (`user_id`, `suggested_term`, `status`: `PENDING`).
-- [ ] **4.2. Pengelolaan Hak Akses (Role Management):**
-  - **Admin:** Verifikasi & pengesahan istilah glosarium resmi dari dashboard.
-  - **User:** Tombol *"Ajukan Glosarium"* langsung dari panel ekstensi saat menemukan istilah lokal/khusus.
+#### 4.1. Fondasi Firestore Live yang Telah Berjalan (Production-Ready)
+- [x] **Koleksi `entries` (Kamus Kolom Formulir):**
+  - Menyimpan penjelasan kolom multi-bahasa dengan status `source: "ai_draft"` atau `"verified"`.
+  - Berhasil terhubung ke Cloud Firestore live (`guidemeto-bdf36`) via `backend/src/config/firebase.js`.
+  - Dilengkapi metadata: `domain`, `originalLabel`, `inputType`, `section`, `officialDocUrl`, dan `reviewerNotes`.
+- [x] **Koleksi Umpan Balik Pengguna (`suggestions`, `ratings`, `unmatched`):**
+  - `suggestions`: Penampung koreksi/masukan pengguna dari ekstensi (`pending`, `reviewed`, `approved`).
+  - `ratings`: Pelacak rating kegunaan kolom (`isHelpful: boolean`).
+  - `unmatched`: Penghitung frekuensi kolom baru yang belum terverifikasi (`FieldValue.increment(1)`).
+- [x] **REST API & Resolusi Ganda di Backend:**
+  - Route aktif: `GET /api/dictionary?domain=...` dan `PUT /api/dictionary/:id/verify`.
+  - Strategi resolusi dinamis di `.env`: `EXPLAIN_STRATEGY=AI_FIRST` (otomatis simpan draft AI ke Firestore) dan `DB_FIRST` (cek cache Firestore terlebih dahulu).
+
+#### 4.2. Firestore Vector Search Engine (Cross-Domain Semantic Cache)
+- [ ] **Firestore Vector Indexing (`text-embedding-004`):**
+  - Mengatasi keterbatasan *exact string matching* (`domain:field_label`) yang sering *cache miss* akibat variasi penamaan DOM antar situs web.
+  - Tambahkan field `embedding` (vektor 768 dimensi) di koleksi `entries` menggunakan Google Cloud Vertex / Gemini Embeddings API.
+  - Query penelusuran semantik native Firestore:
+    `db.collection('entries').findNearest('embedding', queryVector, { limit: 1, distanceMeasure: 'COSINE' })`.
+  - **Threshold Similarity $\ge 0.90$:** Jika kolom memiliki arti semantik yang sama (contoh: *"Full Name in Passport"* vs *"Nama Lengkap (sesuai Paspor)"*), langsung sajikan panduan terverifikasi dari Firestore tanpa memanggil Gemini API lagi (Latensi <100ms, biaya $0).
+
+#### 4.3. Bureaucratic & Scholarship Term Dictionary (Context-Aware RAG untuk Translasi)
+- [ ] **Koleksi `bureaucratic_terms` (Aturan Preservasi Istilah Resmi):**
+  - Menyimpan istilah resmi beasiswa & birokrasi internasional (contoh: NIK, SKCK, Apostille, ToR / Transcript of Records, Affidavit of Support, Schengen Visa, Alien Registration).
+  - Skema data: `term`, `category`, `rule` (`DO_NOT_TRANSLATE` | `FORCE_TRANSLATE` | `EXPLAIN_IN_PARENTHESES`), `targetTranslations`, dan vektor embedding frasa.
+- [ ] **Dynamic In-Context Injection di `translateService.js`:**
+  - Saat menerjemahkan halaman web beasiswa/visa, lakukan vector search ringkas untuk menemukan Top-5 istilah birokrasi yang relevan di halaman tersebut.
+  - Suntikkan hanya 5 istilah tersebut ke prompt Gemini sebagai aturan kamus resmi. Prompt tetap ringkas dan hemat token, namun terjemahan 100% akurat dan baku.
+
+#### 4.4. Universal Document & PDF Template Cache (Zero-Token Re-Use)
+- [ ] **Koleksi `document_templates` (Cache Formulir Populer):**
+  - Menyimpan struktur hasil analisis formulir PDF/Scan beasiswa dan visa resmi (MEXT, LPDP, AAS, visa kedutaan).
+  - Skema data: `templateId`, `documentTitle`, `issuingAuthority`, `fileHashSha256`, `sections`, `checklistAttachments`, dan vektor embedding judul/header.
+- [ ] **Pencarian Bertingkat (Hash First, Vector Fallback):**
+  - **Tingkat 1 (Exact SHA-256 Hash):** Jika berkas PDF yang diunggah memiliki hash identik dengan berkas yang pernah diproses sebelumnya, langsung kembalikan panduan lengkap secara instan tanpa memanggil Gemini (100% Zero-Token).
+  - **Tingkat 2 (Semantic Vector Match):** Untuk formulir hasil foto kamera miring atau scan resolusi berbeda, cocokkan embedding header form dengan template resmi yang ada untuk memberikan panduan standar.
 
 ---
 
@@ -205,11 +237,134 @@
   - Stepper tombol seksi/bab formulir per halaman PDF.
   - Tombol narasi audio `🔊` per kolom yang memicu TTS dengan sinkronisasi gerak bibir avatar robot Telmy.
   - Tombol cepat *"💬 Ask Telmy"* yang langsung berpindah ke tab Chat untuk tanya jawab kontekstual kolom tersebut.
-  - Checklist lampiran pendukung (*#### 7.4. PDF Preparation Hub di Web Dashboard (`/dashboard`)
+  - [x] **Checklist Lampiran Pendukung:**
+    * Visualisasi checklist berkas lampiran pendukung (pasfoto, rekening koran, sponsor) dengan centang interaktif dan kalkulasi kesiapan.
+
+#### 7.4. PDF Preparation Hub di Web Dashboard (`/dashboard`)
 - [x] **Arena Persiapan & Riwayat Dokumen:**
   - Bento Card *"Universal PDF Form Guidance Hub"* di Web Dashboard (`/dashboard`) dengan Drag-and-Drop Drop Zone.
   - Visualisasi checklist berkas lampiran dengan centang interaktif dan kalkulasi kesiapan.
   - Tampilan grid responsif untuk kolom-kolom tiap seksi lengkap dengan tombol audio TTS Web Speech API.
+
+#### 7.5. [⚡ PRIORITAS TINGGI] 1-Click Native Viewer Ingestion (Tanpa Re-Upload)
+- [ ] **Auto-Fetch PDF Langsung dari Tab Aktif:**
+  - Banner di Side Panel mendeteksi URL PDF aktif (`https://.../form.pdf`).
+  - Tombol aksi *"⚡ Analisis Form Ini Langsung (1-Klik)"*: Background script langsung mengunduh stream PDF via `fetch(tab.url)` ➔ konversi ke Base64 ➔ kirim ke Gemini API.
+  - Pengguna tidak perlu lagi mendownload PDF ke komputer lalu drag-and-drop manual.
+- [ ] **Smart Fallback untuk Berkas Lokal (`file:///`):**
+  - Jika URL berawalan `file:///`, berikan panduan drag-and-drop yang ramah ke drop zone Side Panel (sesuai restriksi keamanan Chrome).
+
+#### 7.6. [⚡ PRIORITAS TINGGI] Multimodal Photo, Scan & Handwritten Document Engine
+- [ ] **Dukungan Format Gambar Ekstensif:**
+  - Backend `/api/explain-pdf` diperluas menjadi Universal Document Explainer yang menerima `application/pdf`, `image/jpeg`, `image/png`, dan `image/webp`.
+  - Satu pipeline tunggal memanfaatkan Native Multimodal Document Understanding Gemini 3.5 Flash-Lite (tanpa butuh OCR terpisah).
+- [ ] **Client-Side Image Resizer/Compressor (Canvas Optimization):**
+  - Kompresi foto jepretan kamera ponsel (dari 10-15MB menjadi ~500KB) menggunakan HTML5 `<canvas>` (maksimal 2048px, JPEG 85%) sebelum Base64 di-generate. Upload instan dan hemat bandwidth.
+- [ ] **Handwriting & Visual Layout Prompt Enhancement:**
+  - Prompt Gemini Multimodal dioptimasi khusus untuk membaca formulir hasil scan miring, coretan tulisan tangan (handwriting recognition), stempel resmi, dan kotak centang fisik.
+  - Deteksi ketidakpastian tulisan tangan: Tandai isian ambigu dengan flag `uncertaintyNotice` pada JSON response.
+
+#### 7.7. [⚡ PRIORITAS TINGGI] Interactive PDF Form Writer & Direct Export (pdf-lib Integration)
+- [ ] **Interactive Field Input di Side Panel & Dashboard:**
+  - Selain melihat panduan seksi-per-seksi, pengguna dapat langsung mengisi jawaban kolom formulir pada panel Telmy.
+  - Opsi *"✨ Fill from Profile"* untuk memasukkan data yang tersimpan di Profile Vault langsung ke isian PDF.
+- [ ] **Client-Side PDF Text Overlay Injection (`pdf-lib`):**
+  - Menggunakan library `pdf-lib` yang berjalan 100% lokal di browser pengguna.
+  - Memetakan teks jawaban ke koordinat kolom PDF tanpa memerlukan server pengolah PDF berbayar (aman privasi & biaya $0).
+- [ ] **1-Click Official PDF Export:**
+  - Tombol aksi *"📥 Unduh PDF Terisi Resmi"*: menghasilkan file PDF asli yang telah terisi rapi dengan format font dan alignment standar dokumen kedutaan/beasiswa, siap langsung dicetak atau diunggah.
+
+---
+
+### 💎 PRIORITAS 8: Monetization & Usage Quota Engine (Freemium, Pay-as-you-Go, & Subscription)
+*Target: Menyiapkan model bisnis SaaS yang berkelanjutan dengan unit economics tinggi (>85% net margin) melalui skema 5 form gratis awal, Pay-as-you-Go $5 (5 form tanpa batas waktu), serta Pro Subscription $9.99/bulan (50 form/bulan) dengan aturan pemotongan kuota berbatas waktu terlebih dahulu.*
+
+#### 8.1. Skema Tingkatan Harga & Kuota (Pricing Tiers)
+- [ ] **Free Tier (Gratis 5 Form Awal):**
+  - Setiap pengguna baru (terautentikasi via Firebase Auth) otomatis mendapatkan kuota 5 kali analisis form gratis (*no credit card required*).
+  - Cukup untuk menyelesaikan dan menguji coba pendaftaran beasiswa, visa, atau formulir portal pemerintah tanpa friksi awal.
+- [ ] **Pay-as-you-Go ($5 untuk 5 Form / $1 per Form - Tanpa Kadaluwarsa):**
+  - Pembelian kredit fleksibel setelah kuota gratis habis ($5 untuk 5 form).
+  - **Tanpa batas waktu / tidak pernah kedaluwarsa (No Expiration).**
+  - Opsi paling ramah dan ideal bagi pengguna musiman (pendaftar beasiswa luar negeri, pelancong visa, pengurus birokrasi pemerintah) yang menghindari beban komitmen langganan bulanan.
+- [ ] **Pro Subscription ($9.99 per Bulan untuk Kuota 50 Form per Bulan):**
+  - Kuota 50 formulir per bulan yang diperbarui (*reset/refreshed*) setiap siklus tagihan bulanan.
+  - Ditargetkan untuk pengguna rutin, konsultan beasiswa/studi luar negeri, agen visa/travel, dan profesional legal.
+
+#### 8.2. Arsitektur Data Firestore & Logika Konsumsi Kuota (Expiring-First Priority)
+- [ ] **Aturan Prioritas Pemotongan Kuota (Subscription First, then PAYG):**
+  - Jika pengguna memiliki kombinasi kuota (misal: pernah membeli paket PAYG lalu kemudian berlangganan Pro):
+    1. **Prioritas 1 (Habiskan Kuota Berbatas Waktu):** Sistem WAJIB memotong kuota langganan Pro terlebih dahulu (`subscriptionQuotaRemaining`) karena memiliki batas waktu aktif bulanan.
+    2. **Prioritas 2 (Kredit Permanen):** Kuota PAYG (`purchasedCreditsRemaining`) baru dipotong setelah kuota Pro pada bulan berjalan telah habis (0).
+    3. **Prioritas 3 (Free Tier Awal):** Kuota gratis (`freeRemaining`) hanya dikonsumsi di awal bagi pengguna baru sebelum bertransaksi.
+- [ ] **Skema Dokumen `users/{uid}` di Firestore:**
+  - Menyimpan status kuota pengguna:
+    ```json
+    {
+      "plan": "free", // "free" | "payg" | "pro"
+      "quota": {
+        "freeRemaining": 5,
+        "purchasedCreditsRemaining": 0, // Kuota PAYG (Permanen/No Expiration)
+        "subscriptionQuotaRemaining": 0, // Kuota Pro (50/bulan)
+        "subscriptionStatus": "none", // "none" | "active" | "canceled"
+        "subscriptionExpiresAt": null
+      },
+      "usageStats": {
+        "totalFormsProcessed": 0,
+        "lastActiveAt": "2026-10-08T..."
+      }
+    }
+    ```
+- [ ] **Backend Quota Verification Middleware (`backend/src/middleware/quotaMiddleware.js`):**
+  - Memverifikasi kuota pengguna sebelum mengeksekusi analisis form (Web Form & PDF/Image):
+    1. Periksa apakah `subscriptionQuotaRemaining > 0` dan langganan aktif: potong kuota Pro secara atomik (`FieldValue.increment(-1)`).
+    2. Jika kuota Pro kosong (0) atau tidak berlangganan: periksa apakah `purchasedCreditsRemaining > 0`, lalu potong kuota PAYG (`FieldValue.increment(-1)`).
+    3. Jika tidak ada PAYG: periksa apakah `freeRemaining > 0`, lalu potong kuota free (`FieldValue.increment(-1)`).
+    4. Jika seluruh kuota habis (0): Kembalikan HTTP `402 Payment Required` dengan payload status kuota dan URL checkout.
+
+#### 8.3. Antarmuka Paywall & Integrasi Payment Gateway
+- [ ] **Paywall Modal di Side Panel & Web Dashboard:**
+  - Saat sisa kuota menipis (sisa 1 form) atau habis (0 form), tampilkan modal penawaran yang elegan:
+    * *"Pay-as-you-Go: $5 / 5 Forms ($1/form, Tanpa Batas Waktu)"*
+    * *"Pro Subscription: $9.99 / Bulan (50 Forms/bulan, Refresh Otomatis)"*
+  - Badge kuota live di header Side Panel menampilkan sisa kuota aktif secara transparan.
+- [ ] **Payment Gateway Integration (Stripe / Lemon Squeezy):**
+  - Integrasi Checkout Webhook untuk update kuota otomatis di Firestore saat pembayaran berhasil (tambah kredit PAYG atau aktivasi Pro 50 form).
+  - Mendukung kartu kredit global, Apple Pay, dan Google Pay.
+
+---
+
+### 🛡️ PRIORITAS 9: Scholarship & Government Assistance Suite (Smart Fill, Pre-Submission Auditor, & Privacy Shield)
+*Target: Menjadikan Telmy asisten menyeluruh yang aktif membantu pengisian secara aman, memvalidasi isian sebelum disubmit untuk menghindari diskualifikasi beasiswa/visa, dan menjaga privasi data sensitif 100% patuh regulasi Chrome Web Store.*
+
+#### 9.1. [⚡ PRIORITAS TINGGI] Encrypted Profile Vault & User-Initiated 1-Click Smart Fill
+- [ ] **Penyimpanan Master Profil Terenkripsi:**
+  - Pengguna mengisi master profil terverifikasi sekali di Web Dashboard (`/dashboard`) atau Side Panel.
+  - Data yang disimpan: Nama Paspor, No Paspor, Tanggal Terbit/Habis, NIK, Tempat/Tanggal Lahir, Nama Ibu Kandung, Kewarganegaraan, Riwayat Pendidikan, IPK (skala 4.0 & skala 100), Kontak Darurat.
+  - Disimpan lokal di `chrome.storage.local` dan disinkronkan aman ke Firestore `users/{uid}/profile`.
+- [ ] **User-Initiated 1-Click Smart Fill (Kepatuhan Penuh CWS Policy):**
+  - **Prinsip Utama:** Tidak ada auto-fill liar/otomatis di background. Manipulasi DOM hanya terjadi saat pengguna mengklik tombol secara sadar (*explicit user gesture*).
+  - Saat scanner mengenali kolom input (misal: "Nama Lengkap sesuai Paspor"), tampilkan chip tombol ramah di Side Panel: `[ ✨ Isi dengan Nama Paspor ]`.
+  - Sekali klik, nilai langsung terisi ke elemen input web.
+  - **Whitelist Filter Aman:** Hanya mengizinkan pengisian field demografi/profil beasiswa; mutlak memblokir field `password`, nomor kartu kredit, CVV, dan kode OTP.
+
+#### 9.2. [⚡ PRIORITAS TINGGI] AI Pre-Submission Form Auditor (Pemeriksa Kesalahan Sebelum Submit)
+- [ ] **Pemindaian Isian Formulir Menyeluruh (One-Click Audit):**
+  - Tombol aksi *"🔍 Audit Form Sebelum Submit"* di header Side Panel.
+  - Skrip membaca seluruh nilai yang sudah diketik pengguna pada formulir web atau isian PDF.
+  - Dikirim ke endpoint `/api/audit-form` (Gemini 3.5 Flash-Lite) bersama konteks aturan resmi beasiswa/portal tersebut.
+- [ ] **Laporan Audit Visual "Traffic Light" (Zero-Disqualification):**
+  - 🟢 **Format Valid (Green):** Isian sudah sesuai standar (kapitalisasi nama paspor, urutan nama keluarga, format tanggal DD/MM/YYYY).
+  - 🟡 **Peringatan Ambigu (Yellow Warning):** Peringatan potensi diskualifikasi (contoh: *"Anda memasukkan gelar 'M.Sc' pada kolom nama belakang; universitas Jerman biasanya menolak gelar di kolom nama"* atau *"Alamat tidak menyertakan kode pos internasional"*).
+  - 🔴 **Kesalahan Fatal (Red Error):** Kesalahan fatal yang memicu penolakan (contoh: masa berlaku paspor kurang dari 6 bulan dari estimasi tanggal mulai kuliah, atau format tanggal lahir terbalik antara tanggal dan bulan).
+
+#### 9.3. [⚡ PRIORITAS TINGGI] Privacy Shield & Client-Side PII Auto-Masking
+- [ ] **Client-Side PII Masker (Local Redaction):**
+  - Sebelum label form, placeholder, atau cuplikan konteks dikirim dari browser ke backend API Gemini, modul sensor lokal di `content/scanner.js` memfilter dan menyamarkan data sensitif pengguna.
+  - Masking otomatis menggunakan Regex pattern: Nomor KTP $\rightarrow$ `[MASKED_NATIONAL_ID]`, Nomor Paspor $\rightarrow$ `[MASKED_PASSPORT]`, Nomor Telepon $\rightarrow$ `[MASKED_PHONE]`.
+- [ ] **Indikator Transparansi Privasi di UI:**
+  - Badge proteksi aktif di header Side Panel: `🛡️ Privacy Shield Active (PII Masked Locally)`.
+  - Memberikan rasa aman mutlak bagi pendaftar beasiswa dan pengurus dokumen resmi, sekaligus memastikan kepatuhan 100% terhadap Chrome Web Store Privacy Policy & regulasi data global (GDPR).
 
 ---
 
@@ -222,10 +377,10 @@
 | **Hari 3** | Rancang Master SVG Talking Avatar + Layer Viseme Mulut | File SVG ringan dengan kontrol layer viseme & kedip |
 | **Hari 4** | Web Audio API Lip-Sync (Sinkronisasi Audio WaveNet TTS Real-time) | Mulut avatar bergerak natural mengikuti frekuensi suara |
 | **Hari 5** | Fitur Tambahan di Chatbot: "Translate Full Page (Context-Aware)" | Batch JSON payload ke Gemini 3.5 Flash-Lite & DOM swap |
-| **Hari 6** | Universal PDF Form Guidance (Gemini Multimodal Document Processing) | Upload PDF kedutaan/visa di Side Panel & panduan interaktif |
-| **Hari 7** | Domain-Based Glossary System di Firestore + Saran Pengguna | Koleksi Firestore `glossaries/{domain}` & role admin/user |
-| **Hari 8** | **DEPLOY FIREBASE PLATFORM (DOMAIN GRATIS `telmy.web.app`)** | Segera online publik dengan SSL otomatis tanpa biaya domain |
-| **Hari 9** | **END-TO-END TESTING ONLINE DENGAN EKSTENSI** | Uji coba fitur live form scanner, PDF explainer, dan voice TTS |
+| **Hari 6** | Universal PDF Guidance & Interactive Writer (`pdf-lib`) | Upload PDF kedutaan/visa, isi kolom interaktif & ekspor PDF |
+| **Hari 7** | Hybrid Knowledge Base & Firestore Vector Search Engine | Semantic caching field form, RAG kamus istilah, & zero-token PDF |
+| **Hari 8** | Scholarship Suite (Smart Fill, Auditor & Privacy Shield) | 1-Click profil fill, sanity error checker, & PII masking |
+| **Hari 9** | **DEPLOY FIREBASE & END-TO-END ONLINE TESTING** | Deploy `telmy.web.app` & pengujian live ekstensi di internet |
 | **Hari 10** | **SUBMIT CHROME WEB STORE & FINAL HACKATHON SUBMISSION** | Submit ZIP bersih ke Google Developer Console & submit juri |
 
 ---
