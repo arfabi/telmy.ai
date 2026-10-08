@@ -2928,4 +2928,248 @@ body {
   background: #0369a1;
 }
 
+/* =========================================================
+   2 Big Interactive Mode Selector Cards (Chatbot vs Voicebot)
+   ========================================================= */
+.sp-mode-cards-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 14px 16px 12px;
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.sp-mode-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 14px 12px 12px;
+  min-height: 115px;
+  background: #ffffff;
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  user-select: none;
+  outline: none;
+}
+
+.sp-mode-card:hover {
+  transform: translateY(-2px);
+  border-color: #93c5fd;
+  box-shadow: 0 6px 16px rgba(2, 132, 199, 0.1);
+}
+
+.sp-mode-card:focus-visible {
+  border-color: #0284c7;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.25);
+}
+
+.sp-mode-card.active {
+  background: linear-gradient(145deg, #ffffff 0%, #f0f7ff 100%);
+  border-color: #0284c7;
+  box-shadow: 0 6px 20px rgba(2, 132, 199, 0.18);
+}
+
+.mode-card-badge-pill {
+  align-self: flex-start;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 12px;
+  background: #f1f5f9;
+  color: #64748b;
+  margin-bottom: 8px;
+  letter-spacing: 0.2px;
+  transition: all 0.2s ease;
+}
+
+.sp-mode-card.active .mode-card-badge-pill {
+  background: #0284c7;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
+}
+
+.mode-card-icon-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+  font-size: 22px;
+  transition: all 0.2s ease;
+}
+
+.sp-mode-card.active .mode-card-icon-wrap {
+  background: #0284c7;
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(2, 132, 199, 0.25);
+}
+
+.voice-icon-glow {
+  display: inline-block;
+  animation: voiceGlowPulse 2.5s infinite;
+}
+
+@keyframes voiceGlowPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); filter: drop-shadow(0 2px 6px rgba(2, 132, 199, 0.4)); }
+}
+
+.mode-card-title {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 3px 0;
+  line-height: 1.2;
+}
+
+.mode-card-desc {
+  font-size: 11px;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.35;
+}
+
+.sp-mode-card.active .mode-card-title {
+  color: #0369a1;
+}
+
+/* =========================================================
+   Voicebot Hero Stage (Large SVG Robot & Big Mic Button)
+   ========================================================= */
+.sp-voicebot-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 22px 16px 18px;
+  background: radial-gradient(circle at 50% 25%, #f0f9ff 0%, #f8fafc 80%);
+  border-bottom: 1px solid #e2e8f0;
+  text-align: center;
+  animation: fadeIn 0.25s ease;
+}
+
+.voicebot-robot-frame {
+  position: relative;
+  width: 88px;
+  height: 88px;
+  margin-bottom: 12px;
+  filter: drop-shadow(0 10px 20px rgba(2, 132, 199, 0.22));
+  transition: transform 0.3s ease;
+}
+
+.voicebot-robot-slot {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.voicebot-robot-slot .telmy-avatar-wrapper {
+  width: 88px !important;
+  height: 88px !important;
+}
+
+.voicebot-status-container {
+  margin-bottom: 16px;
+  max-width: 290px;
+}
+
+.voicebot-status-title {
+  font-size: 15.5px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 4px 0;
+}
+
+.voicebot-status-desc {
+  font-size: 12px;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.voicebot-mic-control-center {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-voicebot-big-mic {
+  position: relative;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(2, 132, 199, 0.35);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+}
+
+.btn-voicebot-big-mic:hover {
+  transform: scale(1.06);
+  box-shadow: 0 12px 28px rgba(2, 132, 199, 0.45);
+}
+
+.btn-voicebot-big-mic:active {
+  transform: scale(0.96);
+}
+
+.btn-voicebot-big-mic.listening {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  box-shadow: 0 8px 28px rgba(239, 68, 68, 0.45);
+  animation: bigMicPulse 1.4s infinite;
+}
+
+@keyframes bigMicPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); box-shadow: 0 10px 32px rgba(239, 68, 68, 0.6); }
+}
+
+.big-mic-ripple {
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  border: 2px solid rgba(2, 132, 199, 0.3);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.btn-voicebot-big-mic.listening .big-mic-ripple {
+  border-color: rgba(239, 68, 68, 0.4);
+  animation: rippleRing 1.5s infinite;
+}
+
+@keyframes rippleRing {
+  0% { transform: scale(0.9); opacity: 0.8; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+
+.voicebot-mic-caption {
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+  letter-spacing: 0.2px;
+}
+
+.btn-voicebot-big-mic.listening + .voicebot-mic-caption {
+  color: #dc2626;
+  font-weight: 800;
+}
+
 

@@ -120,13 +120,64 @@
       <button id="sp-btn-stop-audio" class="sp-audio-stop-btn" title="Stop Audio">✕</button>
     </div>
 
-    <!-- TAB 1: Live Copilot Chat -->
+    <!-- TAB 1: Live Copilot Chat & Voice Assistant -->
     <section id="pane-chat" class="sp-pane active">
+
+      <!-- BIG INTERACTIVE MODE SELECTOR CARDS -->
+      <div class="sp-mode-cards-container" id="sp-mode-cards-container">
+        <!-- Card 1: Chatbot Mode -->
+        <div class="sp-mode-card active" id="card-mode-chat" data-mode="chat" role="button" tabindex="0">
+          <div class="mode-card-badge-pill" id="badge-mode-chat-status">✓ Aktif</div>
+          <div class="mode-card-icon-wrap">
+            <span class="mode-card-icon">💬</span>
+          </div>
+          <div class="mode-card-info">
+            <h4 class="mode-card-title">Mode Chatbot</h4>
+            <p class="mode-card-desc">Teks cepat & hening (Tanpa Suara)</p>
+          </div>
+        </div>
+
+        <!-- Card 2: Voicebot Mode -->
+        <div class="sp-mode-card" id="card-mode-voice" data-mode="voice" role="button" tabindex="0">
+          <div class="mode-card-badge-pill" id="badge-mode-voice-status">○ Beralih Mode</div>
+          <div class="mode-card-icon-wrap">
+            <span class="mode-card-icon voice-icon-glow">🎙️</span>
+          </div>
+          <div class="mode-card-info">
+            <h4 class="mode-card-title">Mode Voicebot</h4>
+            <p class="mode-card-desc">Suara Google WaveNet & Robot Interaktif</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- VOICEBOT HERO STAGE (Visible only when Mode Voicebot is active) -->
+      <div id="sp-voicebot-stage" class="sp-voicebot-stage" style="display: none;">
+        <div class="voicebot-robot-frame">
+          <div id="sp-voicebot-robot-slot" class="voicebot-robot-slot"></div>
+        </div>
+        
+        <div class="voicebot-status-container">
+          <h3 id="lbl-voicebot-status-title" class="voicebot-status-title">Halo, saya Telmy!</h3>
+          <p id="lbl-voicebot-status-desc" class="voicebot-status-desc">Klik tombol mikrofon di bawah untuk berbicara langsung</p>
+        </div>
+
+        <div class="voicebot-mic-control-center">
+          <button type="button" id="btn-voicebot-big-mic" class="btn-voicebot-big-mic" title="Klik untuk berbicara (Push-to-Talk)">
+            <div class="big-mic-ripple" id="voicebot-mic-ripple"></div>
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+              <line x1="12" x2="12" y1="19" y2="22"/>
+            </svg>
+          </button>
+          <div class="voicebot-mic-caption" id="lbl-voicebot-mic-caption">Klik untuk Bicara</div>
+        </div>
+      </div>
 
       <div class="sp-chat-stream" id="chat-stream">
         <!-- Messages rendered dynamically -->
       </div>
-      <div class="sp-chat-footer">
+      <div class="sp-chat-footer" id="sp-chat-footer">
         <!-- Quick Action Suggestion Chips (Power Tools & Utilities) -->
         <div class="sp-quick-chips" id="sp-quick-chips">
           <button type="button" class="sp-quick-chip" id="chip-pdf-guide" title="Guide PDF or physical uploaded document">
@@ -146,15 +197,15 @@
           <span id="mic-status-text">Listening to your voice...</span>
         </div>
 
-        <div class="sp-input-bar">
-          <!-- Push-to-Talk Button -->
-          <button id="btn-mic" class="btn-mic" title="Click to Speak (Push-to-Talk)">
+        <div class="sp-input-bar" id="sp-input-bar">
+          <!-- Push-to-Talk Button (Visible in Voicebot mode, hidden in Chatbot mode) -->
+          <button id="btn-mic" class="btn-mic" title="Click to Speak (Push-to-Talk)" style="display: none;">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
           </button>
           
           <div class="sp-input-wrapper">
             <textarea id="chat-input" class="sp-input sp-textarea" rows="2" placeholder="Ask Telmy about this form..." autocomplete="off"></textarea>
-            <button id="btn-mute" class="btn-audio-toggle" title="Mute / Unmute Assistant Voice">
+            <button id="btn-mute" class="btn-audio-toggle" title="Mute / Unmute Assistant Voice" style="display: none;">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
             </button>
           </div>

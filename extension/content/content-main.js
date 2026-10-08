@@ -10,9 +10,19 @@
   cleanupFloatingDOM();
 
   if (window.__TELMY_INITIALIZED__) {
+    if (typeof window.__TELMY_TRIGGER_SCAN__ === 'function') {
+      window.__TELMY_TRIGGER_SCAN__();
+    }
     return;
   }
   window.__TELMY_INITIALIZED__ = true;
+
+  // Global trigger handle for re-activation
+  window.__TELMY_TRIGGER_SCAN__ = () => {
+    isScannerActivated = true;
+    gmtSettings.isActive = true;
+    startScanWorkflow();
+  };
 
   // On initial page load, scanner is in passive STANDBY mode (isActive = false)
   // Badges & DOM observer are only attached when user explicitly activates Telmy

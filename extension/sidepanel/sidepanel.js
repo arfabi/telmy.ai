@@ -21,6 +21,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   const micBanner = document.getElementById('mic-status-banner');
   const micText = document.getElementById('mic-status-text');
 
+  // Big Mode Cards & Voicebot Stage Elements
+  const cardModeChat = document.getElementById('card-mode-chat');
+  const cardModeVoice = document.getElementById('card-mode-voice');
+  const badgeModeChatStatus = document.getElementById('badge-mode-chat-status');
+  const badgeModeVoiceStatus = document.getElementById('badge-mode-voice-status');
+  const spVoicebotStage = document.getElementById('sp-voicebot-stage');
+  const spVoicebotRobotSlot = document.getElementById('sp-voicebot-robot-slot');
+  const lblVoicebotStatusTitle = document.getElementById('lbl-voicebot-status-title');
+  const lblVoicebotStatusDesc = document.getElementById('lbl-voicebot-status-desc');
+  const btnVoicebotBigMic = document.getElementById('btn-voicebot-big-mic');
+  const lblVoicebotMicCaption = document.getElementById('lbl-voicebot-mic-caption');
+
   // Translation Banner & Quick Chips Elements (Priority 3)
   const spTranslateBanner = document.getElementById('sp-translate-banner');
   const lblTranslateStatus = document.getElementById('lbl-translate-status');
@@ -143,6 +155,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   let isTranslating = false;
   let translatedElementCount = 0;
   let telmyAvatar = null;
+  let voicebotAvatar = null;
+  let currentBotMode = 'chat'; // 'chat' | 'voice'
   let activeSourceMode = 'web';
   let currentPdfData = null;
   let activePdfSectionIndex = 0;
@@ -394,7 +408,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 1. Initialize Active Tab, User & Onboarding
   async function init() {
     // Load Settings & User
-    const stored = await chrome.storage.local.get(['settings', 'hasCompletedOnboarding', 'user']);
+    const stored = await chrome.storage.local.get(['settings', 'hasCompletedOnboarding', 'user', 'telmyBotMode']);
     if (stored.settings) {
       currentLanguage = stored.settings.language || 'en';
       langSelect.value = currentLanguage;
@@ -415,6 +429,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupPdfMode();
     setupQuotaAndPaywall();
     refreshUserQuota();
+
+    // Initialize Mode Toggle Cards (Chatbot vs Voicebot)
+    const initialMode = stored.telmyBotMode || 'chat';
+    setBotMode(initialMode);
+    setupModeToggleCards();
 
     // Determine current active tab
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -437,6 +456,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         interactive: true,
         onClick: handleAvatarTap
       });
+      if (initialMode === 'voice' && spVoicebotRobotSlot) {
+        voicebotAvatar = new TelmyAvatar(spVoicebotRobotSlot, {
+          size: 88,
+          interactive: true,
+          onClick: handleAvatarTap
+        });
+      }
     }
 
     setupSpeechRecognition();
@@ -674,10 +700,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       chrome.tabs.sendMessage(tabId, { type: 'ACTIVATE_SCANNER' }, (res) => {
-        if (chrome.runtime.lastError || !res) {
+        const lastErr = chrome.runtime.lastError;
+        if (lastErr || !res) {
           injectContentScript(tabId, () => {
             chrome.tabs.sendMessage(tabId, { type: 'ACTIVATE_SCANNER' }, (res2) => {
-              if (chrome.runtime.lastError) {}
+              const lastErr2 = chrome.runtime.lastError;
               if (res2 && res2.count !== undefined) {
                 badgeFieldsCount.textContent = res2.count;
                 fieldsCountPill.textContent = `${res2.count} ${t('tab_fields') || 'Fields'}`;
@@ -698,7 +725,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   function deactivateScannerOnTab(tabId) {
     if (!tabId) return;
     chrome.tabs.sendMessage(tabId, { type: 'DEACTIVATE_SCANNER' }, () => {
-      if (chrome.runtime.lastError) {}
+      const lastErr = chrome.runtime.lastError;
     });
     badgeFieldsCount.textContent = '0';
     fieldsCountPill.textContent = `0 ${t('tab_fields') || 'Fields'}`;
@@ -824,6 +851,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (lblChipWhat) lblChipWhat.textContent = t('chip_what');
     if (lblChipDocs) lblChipDocs.textContent = t('chip_docs');
     updateTranslateBannerUI();
+
+    // Mode Card Badges & Voicebot Stage Text
+    if (currentBotMode === 'chat') {
+      if (badgeModeChatStatus) badgeModeChatStatus.textContent = currentLanguage === 'id' ? '✓ Aktif' : '✓ Active';
+      if (badgeModeVoiceStatus) badgeModeVoiceStatus.textContent = currentLanguage === 'id' ? '○ Beralih Mode' : '○ Switch Mode';
+    } else {
+      if (badgeModeVoiceStatus) badgeModeVoiceStatus.textContent = currentLanguage === 'id' ? '✓ Aktif' : '✓ Active';
+      if (badgeModeChatStatus) badgeModeChatStatus.textContent = currentLanguage === 'id' ? '○ Beralih Mode' : '○ Switch Mode';
+    }
+    updateVoicebotStageLabels();
 
     // If chat stream is currently showing ephemeral welcome, update its language
     if (!chatHistory || chatHistory.length === 0) {
@@ -1319,16 +1356,118 @@ document.addEventListener('DOMContentLoaded', async () => {
       time: formatTime(new Date())
     });
 
-    if (!isMuted) {
+    if (!isMuted && currentBotMode === 'voice') {
       speakResponse(greeting);
     }
   }
 
-  // 6. Push-to-Talk Voice Engine
+  // 6. Dual-Mode Controller: Mode Chatbot (Silent) vs Mode Voicebot (Interactive Audio)
+  function setBotMode(mode) {
+    currentBotMode = mode;
+    chrome.storage.local.set({ telmyBotMode: mode });
+
+    if (mode === 'chat') {
+      if (cardModeChat) cardModeChat.classList.add('active');
+      if (cardModeVoice) cardModeVoice.classList.remove('active');
+      if (badgeModeChatStatus) badgeModeChatStatus.textContent = currentLanguage === 'id' ? '✓ Aktif' : '✓ Active';
+      if (badgeModeVoiceStatus) badgeModeVoiceStatus.textContent = currentLanguage === 'id' ? '○ Beralih Mode' : '○ Switch Mode';
+
+      // Chatbot mode: silent, no voice output or mic input
+      isMuted = true;
+      stopSpeaking();
+      stopListening();
+      if (spVoicebotStage) spVoicebotStage.style.display = 'none';
+      if (btnMic) btnMic.style.display = 'none';
+      if (btnMute) btnMute.style.display = 'none';
+      if (audioBar) audioBar.style.display = 'none';
+    } else {
+      // Voicebot mode: active speech assistant with large animated robot & big mic
+      if (cardModeVoice) cardModeVoice.classList.add('active');
+      if (cardModeChat) cardModeChat.classList.remove('active');
+      if (badgeModeVoiceStatus) badgeModeVoiceStatus.textContent = currentLanguage === 'id' ? '✓ Aktif' : '✓ Active';
+      if (badgeModeChatStatus) badgeModeChatStatus.textContent = currentLanguage === 'id' ? '○ Beralih Mode' : '○ Switch Mode';
+
+      isMuted = false;
+      if (spVoicebotStage) spVoicebotStage.style.display = 'flex';
+      if (btnMic) btnMic.style.display = 'flex';
+      if (btnMute) {
+        btnMute.style.display = 'flex';
+        btnMute.classList.remove('muted');
+      }
+
+      // Initialize large avatar in voicebot robot slot if not already created
+      if (!voicebotAvatar && window.TelmyAvatar && spVoicebotRobotSlot) {
+        voicebotAvatar = new TelmyAvatar(spVoicebotRobotSlot, {
+          size: 88,
+          interactive: true,
+          onClick: handleAvatarTap
+        });
+      }
+
+      updateVoicebotStageLabels();
+    }
+  }
+
+  function setupModeToggleCards() {
+    if (cardModeChat) {
+      cardModeChat.addEventListener('click', () => setBotMode('chat'));
+      cardModeChat.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          setBotMode('chat');
+        }
+      });
+    }
+
+    if (cardModeVoice) {
+      cardModeVoice.addEventListener('click', () => setBotMode('voice'));
+      cardModeVoice.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          setBotMode('voice');
+        }
+      });
+    }
+  }
+
+  function updateVoicebotStageLabels() {
+    if (!lblVoicebotStatusTitle || !lblVoicebotStatusDesc || !lblVoicebotMicCaption) return;
+
+    if (isListening) {
+      lblVoicebotStatusTitle.textContent = currentLanguage === 'id' ? 'Mendengarkan...' : 'Listening...';
+      lblVoicebotStatusDesc.textContent = currentLanguage === 'id' ? 'Silakan bicara ke mikrofon Anda...' : 'Speak now into your microphone...';
+      lblVoicebotMicCaption.textContent = currentLanguage === 'id' ? 'Mendengarkan...' : 'Listening...';
+    } else if (isSpeaking) {
+      lblVoicebotStatusTitle.textContent = currentLanguage === 'id' ? 'Telmy Berbicara' : 'Telmy is Speaking';
+      lblVoicebotMicCaption.textContent = currentLanguage === 'id' ? 'Sedang Membaca...' : 'Speaking...';
+    } else {
+      lblVoicebotStatusTitle.textContent = currentLanguage === 'id' ? 'Halo, saya Telmy!' : 'Hello, I am Telmy!';
+      lblVoicebotStatusDesc.textContent = currentLanguage === 'id' ? 'Klik tombol mikrofon di bawah untuk berbicara langsung' : 'Click the microphone button below to speak directly';
+      lblVoicebotMicCaption.textContent = currentLanguage === 'id' ? 'Klik untuk Bicara' : 'Click to Speak';
+    }
+  }
+
+  // Ensure microphone permission in Chrome extension context
+  async function ensureMicPermission() {
+    try {
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach(t => t.stop());
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.warn('[Telmy Mic Permission]', err);
+      return false;
+    }
+  }
+
+  // 7. Push-to-Talk Voice Engine & Big Mic Control
   function setupSpeechRecognition() {
     const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRec) {
-      btnMic.style.display = 'none';
+      if (btnMic) btnMic.style.display = 'none';
+      if (btnVoicebotBigMic) btnVoicebotBigMic.style.opacity = '0.5';
       return;
     }
 
@@ -1338,9 +1477,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     speechRecognizer.onstart = () => {
       isListening = true;
-      btnMic.classList.add('active');
-      micBanner.style.display = 'flex';
-      micText.textContent = t('mic_listening');
+      if (btnMic) btnMic.classList.add('active');
+      if (btnVoicebotBigMic) btnVoicebotBigMic.classList.add('listening');
+      if (micBanner) micBanner.style.display = 'flex';
+      if (micText) micText.textContent = t('mic_listening');
+      if (voicebotAvatar) voicebotAvatar.setState('THINKING');
+      if (telmyAvatar) telmyAvatar.setState('THINKING');
+      updateVoicebotStageLabels();
     };
 
     speechRecognizer.onresult = (event) => {
@@ -1353,9 +1496,13 @@ document.addEventListener('DOMContentLoaded', async () => {
           interim += event.results[i][0].transcript;
         }
       }
-      if (interim) micText.textContent = `"${interim}"`;
+      if (interim) {
+        if (micText) micText.textContent = `"${interim}"`;
+        if (lblVoicebotStatusDesc) lblVoicebotStatusDesc.textContent = `"${interim}"`;
+      }
       if (final) {
-        micBanner.style.display = 'none';
+        if (micBanner) micBanner.style.display = 'none';
+        stopListening();
         handleSendMessage(final);
       }
     };
@@ -1370,16 +1517,32 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
   }
 
-  function toggleListening() {
+  async function toggleListening() {
     if (isListening) {
       stopListening();
     } else {
-      startListening();
+      await startListening();
     }
   }
 
-  function startListening() {
+  async function startListening() {
+    if (isListening) return;
+
+    // Check mic permission first
+    const hasPerm = await ensureMicPermission();
+    if (!hasPerm) {
+      const msg = currentLanguage === 'id'
+        ? 'Akses mikrofon belum diizinkan. Harap izinkan akses mikrofon di pengaturan browser Anda.'
+        : 'Microphone access is not permitted. Please allow microphone permissions in your browser settings.';
+      alert(msg);
+      return;
+    }
+
+    if (!speechRecognizer) {
+      setupSpeechRecognition();
+    }
     if (!speechRecognizer) return;
+
     try {
       speechRecognizer.lang = LOCALE_MAP[currentLanguage] || 'en-US';
       speechRecognizer.start();
@@ -1390,32 +1553,44 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function stopListening() {
     isListening = false;
-    btnMic.classList.remove('active');
-    micBanner.style.display = 'none';
+    if (btnMic) btnMic.classList.remove('active');
+    if (btnVoicebotBigMic) btnVoicebotBigMic.classList.remove('listening');
+    if (micBanner) micBanner.style.display = 'none';
+    if (voicebotAvatar && !isSpeaking) voicebotAvatar.setState('IDLE');
+    if (telmyAvatar && !isSpeaking) telmyAvatar.setState('IDLE');
+    updateVoicebotStageLabels();
+
     if (speechRecognizer) {
       try { speechRecognizer.stop(); } catch (e) {}
     }
   }
 
-  btnMic.addEventListener('click', toggleListening);
+  if (btnMic) btnMic.addEventListener('click', toggleListening);
+  if (btnVoicebotBigMic) btnVoicebotBigMic.addEventListener('click', toggleListening);
 
   // Mute / Audio Toggle
-  btnMute.addEventListener('click', () => {
-    isMuted = !isMuted;
-    btnMute.classList.toggle('muted', isMuted);
-    if (isMuted) stopSpeaking();
-  });
+  if (btnMute) {
+    btnMute.addEventListener('click', () => {
+      isMuted = !isMuted;
+      btnMute.classList.toggle('muted', isMuted);
+      if (isMuted) stopSpeaking();
+    });
+  }
 
-  // 7. TTS Playback (Gemini Flash-Lite TTS + Browser Fallback)
+  // 8. TTS Playback (Gemini WaveNet TTS + Browser Fallback + Dual Avatar Sync)
   function speakResponse(text) {
-    if (isMuted || !text) return;
+    if (currentBotMode === 'chat' || isMuted || !text) return;
     stopSpeaking();
 
     isSpeaking = true;
-    audioBar.style.display = 'flex';
-    audioStatusText.textContent = t('speaking_text');
+    if (audioBar) audioBar.style.display = 'flex';
+    if (audioStatusText) audioStatusText.textContent = t('speaking_text');
+    updateVoicebotStageLabels();
+    if (lblVoicebotStatusDesc) {
+      lblVoicebotStatusDesc.textContent = text.length > 85 ? text.substring(0, 85) + '...' : text;
+    }
 
-    // 1. Try Gemini TTS via backend gateway
+    // 1. Try Gemini WaveNet TTS via backend gateway
     chrome.runtime.sendMessage({
       type: 'VOICE_TTS',
       payload: { text, language: currentLanguage }
@@ -1424,6 +1599,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         currentAudio = new Audio(res.audioDataUrl);
         if (telmyAvatar) {
           telmyAvatar.attachAudioElement(currentAudio);
+        }
+        if (voicebotAvatar) {
+          voicebotAvatar.attachAudioElement(currentAudio);
         }
         currentAudio.onended = stopSpeaking;
         currentAudio.onerror = () => speakBrowserFallback(text);
@@ -1435,6 +1613,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function speakBrowserFallback(text) {
+    if (currentBotMode === 'chat' || isMuted) {
+      stopSpeaking();
+      return;
+    }
     if (!('speechSynthesis' in window)) {
       stopSpeaking();
       return;
@@ -1446,6 +1628,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (telmyAvatar) {
       telmyAvatar.startSpeechCadence();
     }
+    if (voicebotAvatar) {
+      voicebotAvatar.startSpeechCadence();
+    }
     utterance.onend = stopSpeaking;
     utterance.onerror = stopSpeaking;
     window.speechSynthesis.speak(utterance);
@@ -1453,10 +1638,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function stopSpeaking() {
     isSpeaking = false;
-    audioBar.style.display = 'none';
+    if (audioBar) audioBar.style.display = 'none';
     if (telmyAvatar) {
       telmyAvatar.setState('IDLE');
     }
+    if (voicebotAvatar) {
+      voicebotAvatar.setState('IDLE');
+    }
+    updateVoicebotStageLabels();
     if (currentAudio) {
       try { currentAudio.pause(); } catch (e) {}
       currentAudio = null;
@@ -1466,7 +1655,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  btnStopAudio.addEventListener('click', stopSpeaking);
+  if (btnStopAudio) btnStopAudio.addEventListener('click', stopSpeaking);
 
   // 8. Fields List & Detail Rendering
   function renderFieldsList(fields) {
