@@ -12,8 +12,6 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   const stored = await chrome.storage.local.get(['settings', 'suggestions_history']);
   if (!stored.settings) {
     await chrome.storage.local.set({ settings: DEFAULT_SETTINGS });
-  } else if (!stored.settings.apiUrl || stored.settings.apiUrl.includes('localhost:8080')) {
-    await chrome.storage.local.set({ settings: { ...stored.settings, apiUrl: DEFAULT_SETTINGS.apiUrl } });
   }
   if (!stored.suggestions_history) {
     await chrome.storage.local.set({ suggestions_history: [] });
@@ -30,16 +28,47 @@ if (chrome.sidePanel && chrome.sidePanel.setPanelBehavior) {
   chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch(() => {});
 }
 
-// Helper: fetch with timeout
+// Helper: fetch with timeout and smart local fallback if cloud returns static HTML or is offline
 async function fetchWithTimeout(url, options = {}, timeoutMs = 30000) {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const res = await fetch(url, { ...options, signal: controller.signal });
     clearTimeout(id);
+
+    // If cloud endpoint returned static HTML (Firebase hosting rewrite because backend not on cloud yet),
+    // automatically attempt local dev backend server (http://localhost:8080/api)
+    const contentType = res.headers.get('content-type') || '';
+    if (contentType.includes('text/html') && url.includes('telmy.web.app/api')) {
+      const localUrl = url.replace('https://telmy.web.app/api', 'http://localhost:8080/api');
+      try {
+        const localController = new AbortController();
+        const localId = setTimeout(() => localController.abort(), 10000);
+        const localRes = await fetch(localUrl, { ...options, signal: localController.signal });
+        clearTimeout(localId);
+        if (localRes.ok && (localRes.headers.get('content-type') || '').includes('application/json')) {
+          console.log(`[Telmy SW] Re-routed request from static cloud to live local server: ${localUrl}`);
+          return localRes;
+        }
+      } catch (localErr) {
+        // Local server not reachable either
+      }
+    }
+
     return res;
   } catch (err) {
     clearTimeout(id);
+    // If cloud network failed, try localhost:8080 as backup
+    if (url.includes('telmy.web.app/api')) {
+      const localUrl = url.replace('https://telmy.web.app/api', 'http://localhost:8080/api');
+      try {
+        const localController = new AbortController();
+        const localId = setTimeout(() => localController.abort(), 10000);
+        const localRes = await fetch(localUrl, { ...options, signal: localController.signal });
+        clearTimeout(localId);
+        if (localRes.ok) return localRes;
+      } catch (e) {}
+    }
     throw err;
   }
 }
