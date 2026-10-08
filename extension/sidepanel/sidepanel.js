@@ -298,9 +298,19 @@ document.addEventListener('DOMContentLoaded', async () => {
       hi: 'कॉपी हो गया!', fil: 'Nakopya!', ms: 'Disalin!'
     },
     detail_avoid: {
-      en: '⚠️ Avoid Mistakes:', id: '⚠️ Hindari Kesalahan:', ja: '⚠️ 注意点:', ko: '⚠️ 주의 사항:',
-      zh: '⚠️ 避免错误:', 'zh-TW': '⚠️ 避免錯誤:', vi: '⚠️ Tránh lỗi:', th: '⚠️ ข้อควรระวัง:',
-      hi: '⚠️ गलतियों से बचें:', fil: '⚠️ Iwasan ang Mali:', ms: '⚠️ Elakkan Kesilapan:'
+      en: 'Common Mistakes', id: 'Hindari Kesalahan', ja: '注意点', ko: '주의 사항',
+      zh: '避免错误', 'zh-TW': '避免錯誤', vi: 'Tránh lỗi', th: 'ข้อควรระวัง',
+      hi: 'गलतियों से बचें', fil: 'Iwasan ang Mali', ms: 'Elakkan Kesilapan'
+    },
+    detail_foreign_notes: {
+      en: 'Notes for Foreigners', id: 'Catatan untuk WNA', ja: '外国人向け注意事項', ko: '외국인 유의사항',
+      zh: '外籍人士注意事项', 'zh-TW': '外籍人士注意事項', vi: 'Lưu ý cho người nước ngoài', th: 'หมายเหตุสำหรับชาวต่างชาติ',
+      hi: 'विदेशी नागरिकों के लिए निर्देश', fil: 'Paunawa para sa Dayuhan', ms: 'Nota untuk Warga Asing'
+    },
+    ai_draft_badge: {
+      en: 'AI Draft', id: 'Draf AI', ja: 'AIドラフト', ko: 'AI 초안',
+      zh: 'AI草案', 'zh-TW': 'AI草案', vi: 'Bản thảo AI', th: 'ร่างโดย AI',
+      hi: 'एआई प्रारूप', fil: 'AI Draft', ms: 'Draf AI'
     },
     fields_unit: {
       en: 'Fields', id: 'Kolom', ja: '項目', ko: '개',
@@ -1745,43 +1755,256 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
+  function formatMistakes(mistakes) {
+    if (!mistakes) return '';
+    if (Array.isArray(mistakes)) {
+      if (mistakes.length === 1) return escapeHTML(mistakes[0]);
+      return `<ul class="alert-list">${mistakes.map(m => `<li>${escapeHTML(m)}</li>`).join('')}</ul>`;
+    }
+    return escapeHTML(mistakes);
+  }
+
+  function formatHowToFill(how) {
+    if (!how) return '';
+    if (Array.isArray(how)) {
+      return `<div class="detail-steps-wrapper">${how.map(h => `<p class="step-line">${escapeHTML(h)}</p>`).join('')}</div>`;
+    }
+    const text = String(how);
+    if (/Step \d+:|Langkah \d+:/i.test(text)) {
+      const parts = text.split(/(?=Step \d+:|Langkah \d+:)/i);
+      return `<div class="detail-steps-wrapper">${parts.filter(p => p.trim()).map(p => `<p class="step-line">${escapeHTML(p.trim())}</p>`).join('')}</div>`;
+    }
+    return escapeHTML(text);
+  }
+
+  function generateClientSmartFallback(metadata, lang) {
+    const raw = (metadata.label || metadata.name || 'Kolom Isian').trim();
+    const lower = raw.toLowerCase();
+
+    let labelEn = raw;
+    let exampleEn = 'Official data matching identity document';
+    let meaningEn = `This field collects official information for "${raw}". The agency requires this to verify legal identity and process your application.`;
+    let howEn = `Step 1: Check your official legal document (KTP, passport, or birth certificate). Step 2: Type or select the exact details without typos. Step 3: Verify consistency across all uploaded pages.`;
+    let mistakesEn = ['Typo in spelling or discrepancy with official physical documents', 'Entering informal nicknames or abbreviations'];
+    let foreignEn = 'For foreign citizens, ensure details match your valid international passport and legalization stamps.';
+
+    if (lower.includes('diri') && lower.includes('sendiri')) {
+      labelEn = 'Myself';
+      meaningEn = 'This option declares that you are submitting the application for your own documents or records, rather than on behalf of another person. Ditjen AHU asks this to confirm you are legally authorized and to know whose identity must be verified.';
+      howEn = `Step 1: Confirm the application concerns your own personal documents (e.g. birth certificate, marriage certificate, or diploma). Step 2: Select 'Diri Sendiri' (Myself). Step 3: If applying for someone else, choose 'Orang Lain' and prepare authorization documents.`;
+      exampleEn = `Selected: 'Diri Sendiri' - Applicant requests an Apostille excerpt for personal use.`;
+      mistakesEn = ['Selecting "Myself" while uploading identity documents belonging to another person, leading to rejection.'];
+      foreignEn = 'Choose "Myself" only if the request is about your own personal records. Foreign nationals must upload valid passport copies.';
+    } else if (lower.includes('tempat') && lower.includes('lahir')) {
+      labelEn = 'Place of Birth';
+      meaningEn = 'The official city, town, or municipality where the applicant was born as stated in official records. Ditjen AHU verifies this against civil registry records.';
+      howEn = `Step 1: Check your official birth certificate or passport. Step 2: Enter the exact city or regency name. Step 3: Do not write hospital or clinic names.`;
+      exampleEn = 'Jakarta, Indonesia (or New York, USA)';
+      mistakesEn = ['Entering the hospital or clinic name instead of the official city', 'Typo in city spelling compared to passport'];
+      foreignEn = 'Ensure the spelling matches exactly what is written on your international passport to avoid Apostille verification delays.';
+    } else if (lower.includes('tanggal') && lower.includes('lahir')) {
+      labelEn = 'Date of Birth';
+      meaningEn = 'Official calendar date of birth of the applicant as recorded on government identification.';
+      howEn = `Step 1: Enter date in DD-MM-YYYY format or use the date picker. Step 2: Verify against your official passport.`;
+      exampleEn = '15-08-1990';
+      mistakesEn = ['Swapping month and day order', 'Year typo'];
+      foreignEn = 'Ensure date strictly matches the Gregorian calendar date in your passport.';
+    } else if (lower.includes('nama')) {
+      labelEn = 'Full Name';
+      meaningEn = 'Complete legal name of the applicant as recorded on government identification.';
+      howEn = `Step 1: Type full legal name in capital letters. Step 2: Include all middle names. Step 3: Do not use abbreviations unless recorded in your passport.`;
+      exampleEn = 'JOHN MICHAEL DOE';
+      mistakesEn = ['Omitting middle name present on passport', 'Spelling discrepancy'];
+      foreignEn = 'Write your full name in Latin letters exactly as printed on the machine-readable zone of your passport.';
+    }
+
+    if (lang === 'id') {
+      return {
+        label: raw,
+        originalLabel: raw,
+        meaning: `Kolom untuk mengisi data "${raw}". Instansi terkait memerlukan data ini untuk verifikasi keabsahan dokumen resmi.`,
+        howToFill: `Langkah 1: Periksa dokumen resmi (KTP/Akta/Paspor). Langkah 2: Masukkan data secara lengkap dan akurat. Langkah 3: Pastikan tidak ada kesalahan ketik.`,
+        example: metadata.placeholder && metadata.placeholder.length < 40 ? metadata.placeholder : `Contoh data resmi sesuai berkas`,
+        commonMistakes: ['Salah ketik angka/huruf atau ketidaksesuaian dengan dokumen fisik', 'Mengosongkan kolom wajib'],
+        tipsForForeigners: 'Bagi WNA, pastikan data yang dimasukkan sesuai dengan paspor internasional atau visa/KITAS aktif.',
+        confidence: 0.85,
+        source: 'ai_draft',
+        provider: 'fallback'
+      };
+    }
+
+    return {
+      label: labelEn,
+      originalLabel: raw,
+      meaning: meaningEn,
+      howToFill: howEn,
+      example: exampleEn,
+      commonMistakes: mistakesEn,
+      tipsForForeigners: foreignEn,
+      confidence: 0.85,
+      source: 'ai_draft',
+      provider: 'fallback'
+    };
+  }
+
   function renderFieldDetail(field) {
     fieldsEmptyState.style.display = 'none';
     fieldDetailContent.style.display = 'block';
 
+    const index = activeFieldIndex;
     const meta = field.metadata || {};
     const dict = field.dictEntry || {};
-    const trans = (dict.translations && dict.translations[currentLanguage]) || {};
+    const trans = (dict.translations && dict.translations[currentLanguage]) || null;
 
-    const title = trans.label || meta.label || meta.name || `Kolom #${activeFieldIndex + 1}`;
-    const meaning = trans.meaning || `Kolom untuk mengisi data ${escapeHTML(title)}. Pastikan sesuai dokumen resmi.`;
-    const howToFill = trans.how_to_fill || 'Ketikkan data secara lengkap dan akurat sesuai kartu identitas Anda.';
-    const example = trans.example || meta.placeholder || 'Contoh sesuai dokumen';
-    const mistakes = trans.common_mistakes || 'Salah ketik angka/huruf atau mengosongkan kolom penting ini.';
+    field._aiExplanation = field._aiExplanation || {};
+    const cached = field._aiExplanation[currentLanguage];
+
+    if (cached) {
+      renderDetailCard(field, cached);
+      return;
+    }
+
+    if (trans && (trans.confidence >= 0.95 || trans.meaning)) {
+      const entryData = {
+        ...trans,
+        originalLabel: meta.label || meta.name || trans.label,
+        source: dict.verified ? 'verified' : 'ai_draft'
+      };
+      field._aiExplanation[currentLanguage] = entryData;
+      renderDetailCard(field, entryData);
+      return;
+    }
+
+    // Render loading shimmer skeleton
+    const rawLabel = meta.label || meta.name || (currentLanguage === 'id' ? `Kolom #${index + 1}` : `Field #${index + 1}`);
+    fieldDetailContent.innerHTML = `
+      <div class="field-detail-header">
+        <div class="field-title-group">
+          <div class="field-title-row">
+            <span class="field-badge-num">#${index + 1}</span>
+            <h3 class="field-detail-title">${escapeHTML(rawLabel)}</h3>
+          </div>
+          <div class="field-original-subtitle">${t('analyzing_field') || '✨ Gemini AI is analyzing field...'}</div>
+        </div>
+        <span class="ai-badge-pill shimmer-pill">✨ Gemini AI</span>
+      </div>
+      <div class="skeleton-shimmer-box">
+        <div class="skeleton-line shimmer-anim" style="width: 85%;"></div>
+        <div class="skeleton-line shimmer-anim" style="width: 95%;"></div>
+        <div class="skeleton-line shimmer-anim" style="width: 60%;"></div>
+        <div class="skeleton-box shimmer-anim" style="height: 52px; margin-top: 6px;"></div>
+        <div class="skeleton-box shimmer-anim" style="height: 44px; margin-top: 6px;"></div>
+      </div>
+    `;
+
+    // Request AI explanation from background service worker
+    chrome.runtime.sendMessage({
+      type: 'EXPLAIN_FIELD',
+      payload: {
+        metadata: meta,
+        language: currentLanguage,
+        pageContext: document.title || 'Pendaftaran Permohonan Apostille'
+      }
+    }, (resp) => {
+      let finalData;
+      if (!chrome.runtime.lastError && resp && resp.success && resp.data) {
+        finalData = resp.data;
+        if (resp.quota) {
+          refreshUserQuota(resp.quota);
+        }
+      } else {
+        finalData = generateClientSmartFallback(meta, currentLanguage);
+      }
+
+      field._aiExplanation[currentLanguage] = finalData;
+
+      // Only render into DOM if user is still viewing this field
+      if (activeFieldIndex === index) {
+        renderDetailCard(field, finalData);
+      }
+    });
+  }
+
+  function renderDetailCard(field, data) {
+    const meta = field.metadata || {};
+    const translatedLabel = data.label || meta.label || meta.name || `Field #${activeFieldIndex + 1}`;
+    const origLabel = data.originalLabel || meta.label || meta.name || '';
+    const meaning = data.meaning || `Field to provide ${escapeHTML(translatedLabel)}.`;
+    const howToFill = data.howToFill || data.how_to_fill || 'Enter data accurately as shown in your official identification.';
+    const example = data.example || meta.placeholder || 'Example entry';
+    const mistakes = data.commonMistakes || data.common_mistakes || null;
+    const foreigners = data.tipsForForeigners || data.tips_for_foreigners || data.foreign_note || null;
+    const sourceBadge = data.source === 'verified' ? '✓ Verified' : (t('ai_draft_badge') || 'AI Draft');
+
+    const showSubtitle = origLabel && (origLabel.toLowerCase() !== translatedLabel.toLowerCase());
 
     fieldDetailContent.innerHTML = `
       <div class="field-detail-header">
-        <span class="field-badge-num">#${activeFieldIndex + 1}</span>
-        <h3 class="field-detail-title">${escapeHTML(title)}</h3>
+        <div class="field-title-group">
+          <div class="field-title-row">
+            <span class="field-badge-num">#${activeFieldIndex + 1}</span>
+            <h3 class="field-detail-title">${escapeHTML(translatedLabel)}</h3>
+          </div>
+          ${showSubtitle ? `<div class="field-original-subtitle">${escapeHTML(origLabel)}</div>` : ''}
+        </div>
+        <span class="ai-badge-pill ${data.source === 'verified' ? 'verified' : 'draft'}">${escapeHTML(sourceBadge)}</span>
       </div>
+
+      <!-- 1. MEANING & PURPOSE -->
       <div class="detail-section">
-        <div class="detail-label">${t('detail_meaning')}</div>
+        <div class="detail-label">
+          <span class="detail-icon">🧭</span>
+          <span>${t('detail_meaning')}</span>
+        </div>
         <div class="detail-text">${escapeHTML(meaning)}</div>
       </div>
+
+      <!-- 2. HOW TO FILL -->
       <div class="detail-section">
-        <div class="detail-label">${t('detail_how')}</div>
-        <div class="detail-text">${escapeHTML(howToFill)}</div>
+        <div class="detail-label">
+          <span class="detail-icon">📝</span>
+          <span>${t('detail_how')}</span>
+        </div>
+        <div class="detail-text">${formatHowToFill(howToFill)}</div>
       </div>
+
+      <!-- 3. FICTIONAL EXAMPLE -->
       <div class="detail-section">
-        <div class="detail-label">${t('detail_example')}</div>
-        <div class="example-box">
-          <span class="example-code">${escapeHTML(example)}</span>
+        <div class="detail-label">
+          <span class="detail-icon">📋</span>
+          <span>${t('detail_example')}</span>
+        </div>
+        <div class="detail-fictional-example">
+          <div class="example-text">${escapeHTML(example)}</div>
           <button type="button" class="btn-copy-example" id="btn-copy-val">${t('detail_copy')}</button>
         </div>
       </div>
-      <div class="alert-warning">
-        <strong>${t('detail_avoid')}</strong> ${escapeHTML(mistakes)}
-      </div>
+
+      <!-- 4. COMMON MISTAKES -->
+      ${mistakes ? `
+        <div class="alert-common-mistakes">
+          <div class="alert-mistakes-title">
+            <span class="alert-icon">⚠️</span>
+            <strong>${t('detail_avoid')}</strong>
+          </div>
+          <div class="alert-mistakes-body">
+            ${formatMistakes(mistakes)}
+          </div>
+        </div>
+      ` : ''}
+
+      <!-- 5. NOTES FOR FOREIGNERS -->
+      ${foreigners ? `
+        <div class="alert-foreign-notes">
+          <div class="alert-foreign-title">
+            <span class="alert-icon">🌐</span>
+            <strong>${t('detail_foreign_notes')}</strong>
+          </div>
+          <div class="alert-foreign-body">
+            ${escapeHTML(foreigners)}
+          </div>
+        </div>
+      ` : ''}
     `;
 
     const copyBtn = fieldDetailContent.querySelector('#btn-copy-val');
@@ -1792,7 +2015,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         setTimeout(() => { copyBtn.textContent = t('detail_copy'); }, 1500);
       });
     }
-
   }
 
   // Stepper Buttons

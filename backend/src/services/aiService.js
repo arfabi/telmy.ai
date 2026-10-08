@@ -120,27 +120,42 @@ async function callGemini(fieldMetadata, targetLanguage, pageContext) {
     }
   });
 
+  const originalLabel = fieldMetadata.label || fieldMetadata.name || 'Kolom Isian';
   const prompt = `
-You are Telmy.ai, an AI form-filling assistant for public and government forms.
-Task: Explain this field for applicants and the general public.
+You are Telmy.ai, an expert AI public administration and government form-filling co-pilot.
+Task: Analyze this form field, explain its purpose, and provide step-by-step guidance for an applicant in the requested TARGET LANGUAGE (${targetLanguage.toUpperCase()}).
 
-Field info:
-- Original Label: "${fieldMetadata.label || fieldMetadata.name || 'Kolom Isian'}"
+Form & Field Context:
+- Original Form Label: "${originalLabel}"
+- Form / Service Context: "${pageContext || fieldMetadata.domain || 'Layanan Administrasi / Government Portal'}"
 - Input Type: "${fieldMetadata.type || 'text'}"
 - Available Options: ${fieldMetadata.options && fieldMetadata.options.length ? JSON.stringify(fieldMetadata.options) : 'None'}
 - Placeholder / Hint: "${fieldMetadata.placeholder || '-'}"
-- Domain / Page: "${fieldMetadata.domain || 'Layanan Administrasi'}" (${pageContext || ''})
-- Target Language: ${targetLanguage.toUpperCase()}
+- Target User Language: ${targetLanguage.toUpperCase()}
 
-Return valid JSON:
+Instructions:
+1. Detect and preserve the original label from the page ("${originalLabel}").
+2. Translate the label into the Target User Language (${targetLanguage.toUpperCase()}).
+3. "meaning": Provide 2 to 3 informative sentences explaining what this field declares or collects, and why the government / institution requires it.
+4. "howToFill": Provide clear, step-by-step instructions (e.g. Step 1: ..., Step 2: ...) detailing how the applicant should fill or select this field properly according to legal documents.
+5. "example": Provide a realistic, contextual fictional example.
+6. "commonMistakes": Provide 2 to 3 common pitfalls, errors, or discrepancies that cause rejection or delay.
+7. "tipsForForeigners": Provide important considerations for foreigners, expatriates, or international passport holders.
+8. ALL output fields must be translated to the TARGET LANGUAGE (${targetLanguage.toUpperCase()}), except "originalLabel" which remains in its original form.
+
+Return strict JSON only:
 {
-  "label": "Translated field name in target language (e.g. 'Place of Birth')",
-  "meaning": "Meaning in target language",
-  "howToFill": "How to fill in target language",
-  "example": "Realistic fictional example (e.g. 'New York, USA')",
-  "commonMistakes": ["Mistake 1", "Mistake 2"],
-  "tipsForForeigners": "Notes for foreigners",
-  "confidence": 0.95
+  "label": "Translated field title in ${targetLanguage.toUpperCase()}",
+  "originalLabel": "${originalLabel}",
+  "meaning": "Detailed meaning and administrative purpose in ${targetLanguage.toUpperCase()}",
+  "howToFill": "Step-by-step guidance in ${targetLanguage.toUpperCase()}",
+  "example": "Realistic fictional example in ${targetLanguage.toUpperCase()}",
+  "commonMistakes": [
+    "Mistake 1 in ${targetLanguage.toUpperCase()}",
+    "Mistake 2 in ${targetLanguage.toUpperCase()}"
+  ],
+  "tipsForForeigners": "Specific guidance for foreigners in ${targetLanguage.toUpperCase()}",
+  "confidence": 0.98
 }
 `;
 
@@ -149,6 +164,7 @@ Return valid JSON:
   const parsed = JSON.parse(text);
   return {
     ...parsed,
+    originalLabel: parsed.originalLabel || originalLabel,
     source: 'ai_draft',
     provider: 'gemini',
     generatedAt: new Date().toISOString()
@@ -175,6 +191,7 @@ export async function generateFieldExplanation(fieldMetadata, targetLanguage = '
           console.log(`[AI Service] Matched known semantic field: ${key} (${targetLanguage})`);
           return {
             ...translations[targetLanguage],
+            originalLabel: fieldMetadata.label || fieldMetadata.name || key,
             confidence: 0.98,
             source: 'verified',
             generatedAt: new Date().toISOString()
@@ -256,6 +273,7 @@ function createSmartFallback(metadata, lang) {
 
   return {
     ...(templates[lang] || templates['en']),
+    originalLabel: raw,
     source: 'ai_draft',
     generatedAt: new Date().toISOString()
   };

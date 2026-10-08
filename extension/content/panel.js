@@ -1226,7 +1226,7 @@ window.GMTPanel = (function () {
       }
     };
 
-    return templates[lang] || templates['id'];
+    return templates[lang] || templates['en'] || templates['id'];
   }
 
   function escapeHTML(str) {
