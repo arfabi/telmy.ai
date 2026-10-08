@@ -4,7 +4,7 @@ const DEFAULT_SETTINGS = {
   isActive: true,
   theme: 'light',
   highlightColor: '#2563eb',
-  apiUrl: 'https://telmy.web.app/api'
+  apiUrl: 'https://telmy-ai-git-620239122732.asia-northeast1.run.app/api'
 };
 
 chrome.runtime.onInstalled.addListener(async (details) => {
@@ -12,6 +12,9 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   const stored = await chrome.storage.local.get(['settings', 'suggestions_history']);
   if (!stored.settings) {
     await chrome.storage.local.set({ settings: DEFAULT_SETTINGS });
+  } else if (!stored.settings.apiUrl || stored.settings.apiUrl.includes('telmy.web.app')) {
+    // Migrate to live Cloud Run endpoint
+    await chrome.storage.local.set({ settings: { ...stored.settings, apiUrl: DEFAULT_SETTINGS.apiUrl } });
   }
   if (!stored.suggestions_history) {
     await chrome.storage.local.set({ suggestions_history: [] });
