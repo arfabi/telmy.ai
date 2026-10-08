@@ -351,6 +351,42 @@ document.addEventListener('DOMContentLoaded', async () => {
       en: 'Required Docs', id: 'Syarat Dokumen', ja: '必要書類', ko: '필요 서류',
       zh: '所需证件', 'zh-TW': '所需證件', vi: 'Giấy tờ cần có', th: 'เอกสารที่ต้องใช้',
       hi: 'आवश्यक दस्तावेज़', fil: 'Mga Dokumento', ms: 'Dokumen Diperlukan'
+    },
+    privacy_text: {
+      en: 'Privacy Shield: PII Masked Locally', id: 'Pelindung Privasi: PII Disamarkan Lokal', ja: 'プライバシー保護: 個人情報をローカルでマスク',
+      ko: '개인정보 보호: 로컬에서 PII 마스킹', zh: '隐私保护：本地屏蔽敏感信息', 'zh-TW': '隱私保護：本機屏蔽敏感資料',
+      vi: 'Bảo vệ quyền riêng tư: Che PII cục bộ', th: 'การคุ้มครองความเป็นส่วนตัว: ซ่อนข้อมูลระบุตัวตนในตัวเครื่อง',
+      hi: 'गोपनीयता शील्ड: PII स्थानीय रूप से छुपाया गया', fil: 'Privacy Shield: Naka-mask ang PII', ms: 'Pelindung Privasi: PII Ditolak Tempatan'
+    },
+    audit_btn_title: {
+      en: 'Pre-Submission Form Audit', id: 'Audit Form Sebelum Submit', ja: '送信前フォーム検証', ko: '제출 전 양식 검토',
+      zh: '提交前表单审核', 'zh-TW': '提交前表單審核', vi: 'Kiểm tra biểu mẫu trước khi gửi', th: 'ตรวจสอบฟอร์มก่อนส่ง',
+      hi: 'सबमिट करने से पहले फ़ॉर्म ऑडिट', fil: 'I-audit ang Form Bago Isumite', ms: 'Audit Borang Sebelum Hantar'
+    },
+    audit_btn_sub: {
+      en: 'Sanity check completeness & format', id: 'Pemeriksaan kelengkapan & format isian', ja: '記入漏れや形式の自動チェック', ko: '작성 누락 및 형식 점검',
+      zh: '检查完整性与格式规范', 'zh-TW': '檢查完整性與格式規範', vi: 'Kiểm tra tính đầy đủ & định dạng', th: 'ตรวจความสมบูรณ์และรูปแบบ',
+      hi: 'पूर्णता और प्रारूप की जाँच करें', fil: 'Tingnan ang pagkakumpleto at format', ms: 'Pemeriksaan kelengkapan & format'
+    },
+    audit_report_heading: {
+      en: 'Form Audit Report', id: 'Laporan Audit Form', ja: 'フォーム検証レポート', ko: '양식 검토 보고서',
+      zh: '表单审核报告', 'zh-TW': '表單審核報告', vi: 'Báo cáo kiểm tra biểu mẫu', th: 'รายงานการตรวจสอบฟอร์ม',
+      hi: 'फ़ॉर्म ऑडिट रिपोर्ट', fil: 'Ulat sa Pag-audit ng Form', ms: 'Laporan Audit Borang'
+    },
+    audit_status_ready: {
+      en: '🟢 Ready to Submit', id: '🟢 100% Siap Kirim', ja: '🟢 送信準備完了', ko: '🟢 제출 준비 완료',
+      zh: '🟢 已准备好提交', 'zh-TW': '🟢 已準備好提交', vi: '🟢 Sẵn sàng gửi', th: '🟢 พร้อมส่ง',
+      hi: '🟢 सबमिट के लिए तैयार', fil: '🟢 Handa nang Isumite', ms: '🟢 Sedia Dihantar'
+    },
+    audit_status_danger: {
+      en: '🔴 Action Required', id: '🔴 Perlu Diperbaiki', ja: '🔴 要修正', ko: '🔴 조치 필요',
+      zh: '🔴 需要修正', 'zh-TW': '🔴 需要修正', vi: '🔴 Cần chỉnh sửa', th: '🔴 ต้องแก้ไข',
+      hi: '🔴 कार्रवाई आवश्यक', fil: '🔴 Kailangang Ayusin', ms: '🔴 Perlu Dibetulkan'
+    },
+    audit_status_warning: {
+      en: '🟡 Suggestions Found', id: '🟡 Cek Rekomendasi', ja: '🟡 推奨事項あり', ko: '🟡 권장 사항 있음',
+      zh: '🟡 建议优化', 'zh-TW': '🟡 建議優化', vi: '🟡 Gợi ý cần xem', th: '🟡 มีคำแนะนำ',
+      hi: '🟡 सुझाव उपलब्ध', fil: '🟡 May Mungkahi', ms: '🟡 Ada Cadangan'
     }
   };
 
@@ -407,12 +443,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (tab && tab.id) {
       currentTabId = tab.id;
-      loadSessionChat(tab.url);
+      await loadSessionChat(tab.url);
       checkPdfTab(tab.url);
       if (isScannerRunning) {
         activateScannerOnTab(tab.id);
       }
       checkPageTranslationStatus(tab.id);
+    } else {
+      renderWelcome();
     }
 
     // Initialize Interactive Talking Avatar Companion (Priority 2)
@@ -425,7 +463,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     setupSpeechRecognition();
-    renderWelcome();
 
     // Clean up active tab badges when sidepanel is closed/unloaded
     window.addEventListener('beforeunload', () => {
@@ -805,13 +842,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (elPreTitle) elPreTitle.textContent = t('prereq_title');
     const elTips = document.getElementById('lbl-tips-title');
     if (elTips) elTips.textContent = t('tips_title');
-    if (fieldsCountPill) fieldsCountPill.textContent = `${detectedFields.length} ${t('fields_unit')}`;
+    // Privacy Shield
+    const elPriv = document.getElementById('lbl-privacy-text');
+    if (elPriv) elPriv.textContent = t('privacy_text');
+
+    // Pre-Submission Form Auditor
+    const elAuditTitle = document.getElementById('lbl-audit-btn-title');
+    if (elAuditTitle) elAuditTitle.textContent = t('audit_btn_title');
+    const elAuditSub = document.getElementById('lbl-audit-btn-sub');
+    if (elAuditSub) elAuditSub.textContent = t('audit_btn_sub');
+    const elAuditHeading = document.getElementById('lbl-audit-report-heading');
+    if (elAuditHeading) elAuditHeading.textContent = t('audit_report_heading');
 
     // Translation Banner & Chips
     if (lblChipTranslate) lblChipTranslate.textContent = t('chip_translate');
     if (lblChipWhat) lblChipWhat.textContent = t('chip_what');
     if (lblChipDocs) lblChipDocs.textContent = t('chip_docs');
     updateTranslateBannerUI();
+
+    // If chat stream is currently showing ephemeral welcome, update its language
+    if (!chatHistory || chatHistory.length === 0) {
+      renderWelcome();
+    }
   }
 
   // Rescan Button
@@ -823,8 +875,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 5. Chat & AI Interaction
   function renderWelcome() {
+    chatStream.innerHTML = '';
+
+    // Sanitize any corrupt duplicate welcome messages from chat history
+    chatHistory = (chatHistory || []).filter((m) => {
+      if (!m || !m.text) return false;
+      const isWelcome = m.role === 'assistant' && (
+        m.text.includes('your AI form-filling assistant') ||
+        m.text.includes('asisten pengisian formulir') ||
+        m.text.includes('AI 양식 도우미') ||
+        m.text.includes('AI フォームアシスタント')
+      );
+      return !isWelcome;
+    });
+
     if (chatHistory.length === 0) {
-      appendChatMessage({
+      // Ephemeral welcome message: render directly to DOM without polluting chatHistory or storage
+      appendChatMessageDOM({
         role: 'assistant',
         text: t('welcome_msg'),
         actions: [
@@ -834,7 +901,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         time: formatTime(new Date())
       });
     } else {
-      chatStream.innerHTML = '';
       chatHistory.forEach(appendChatMessageDOM);
     }
   }
@@ -981,32 +1047,55 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Context-Aware Page Translation Workflow (Priority 3)
   // =========================================================
   function updateTranslateBannerUI() {
-    if (!spTranslateBanner) return;
+    // Update Quick Chip in Chat Pane
+    if (chipTranslatePage) {
+      if (isTranslating) {
+        chipTranslatePage.classList.add('loading');
+        if (lblChipTranslate) lblChipTranslate.textContent = t('translating_status') || 'Translating...';
+        chipTranslatePage.disabled = true;
+      } else if (isPageTranslated) {
+        chipTranslatePage.classList.add('active');
+        if (lblChipTranslate) lblChipTranslate.textContent = `${t('btn_revert_page')} (${translatedElementCount})`;
+        chipTranslatePage.disabled = false;
+      } else {
+        chipTranslatePage.classList.remove('loading', 'active');
+        if (lblChipTranslate) lblChipTranslate.textContent = t('chip_translate');
+        chipTranslatePage.disabled = false;
+      }
+    }
 
-    if (isTranslating) {
-      spTranslateBanner.className = 'sp-translate-banner translating';
-      lblTranslateStatus.textContent = t('translating_status');
-      lblTranslateSubtitle.textContent = 'Gemini 3.5 Flash-Lite • Preserving UI/UX & Glossary...';
-      btnToggleTranslate.className = 'btn-translate-action loading';
-      btnTranslateIcon.textContent = '⏳';
-      btnTranslateLabel.textContent = 'Translating...';
-      btnToggleTranslate.disabled = true;
-    } else if (isPageTranslated) {
-      spTranslateBanner.className = 'sp-translate-banner translated';
-      lblTranslateStatus.textContent = `🌐 ${t('translate_banner_title')} (${translatedElementCount})`;
-      lblTranslateSubtitle.textContent = `Context-Aware to ${currentLanguage.toUpperCase()}`;
-      btnToggleTranslate.className = 'btn-translate-action active-revert';
-      btnTranslateIcon.textContent = '🔙';
-      btnTranslateLabel.textContent = t('btn_revert_page');
-      btnToggleTranslate.disabled = false;
-    } else {
-      spTranslateBanner.className = 'sp-translate-banner';
-      lblTranslateStatus.textContent = t('translate_banner_title');
-      lblTranslateSubtitle.textContent = t('translate_banner_sub');
-      btnToggleTranslate.className = 'btn-translate-action';
-      btnTranslateIcon.textContent = '🌐';
-      btnTranslateLabel.textContent = t('btn_translate_page');
-      btnToggleTranslate.disabled = false;
+    if (spTranslateBanner) {
+      if (isTranslating) {
+        spTranslateBanner.className = 'sp-translate-banner translating';
+        if (lblTranslateStatus) lblTranslateStatus.textContent = t('translating_status');
+        if (lblTranslateSubtitle) lblTranslateSubtitle.textContent = 'Gemini 3.5 Flash-Lite • Preserving UI/UX & Glossary...';
+        if (btnToggleTranslate) {
+          btnToggleTranslate.className = 'btn-translate-action loading';
+          if (btnTranslateIcon) btnTranslateIcon.textContent = '⏳';
+          if (btnTranslateLabel) btnTranslateLabel.textContent = 'Translating...';
+          btnToggleTranslate.disabled = true;
+        }
+      } else if (isPageTranslated) {
+        spTranslateBanner.className = 'sp-translate-banner translated';
+        if (lblTranslateStatus) lblTranslateStatus.textContent = `🌐 ${t('translate_banner_title')} (${translatedElementCount})`;
+        if (lblTranslateSubtitle) lblTranslateSubtitle.textContent = `Context-Aware to ${currentLanguage.toUpperCase()}`;
+        if (btnToggleTranslate) {
+          btnToggleTranslate.className = 'btn-translate-action active-revert';
+          if (btnTranslateIcon) btnTranslateIcon.textContent = '🔙';
+          if (btnTranslateLabel) btnTranslateLabel.textContent = t('btn_revert_page');
+          btnToggleTranslate.disabled = false;
+        }
+      } else {
+        spTranslateBanner.className = 'sp-translate-banner';
+        if (lblTranslateStatus) lblTranslateStatus.textContent = t('translate_banner_title');
+        if (lblTranslateSubtitle) lblTranslateSubtitle.textContent = t('translate_banner_sub');
+        if (btnToggleTranslate) {
+          btnToggleTranslate.className = 'btn-translate-action';
+          if (btnTranslateIcon) btnTranslateIcon.textContent = '🌐';
+          if (btnTranslateLabel) btnTranslateLabel.textContent = t('btn_translate_page');
+          btnToggleTranslate.disabled = false;
+        }
+      }
     }
   }
 
@@ -1334,21 +1423,27 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 8. Fields List & Detail Rendering
   function renderFieldsList(fields) {
     fieldsQuickList.innerHTML = '';
+    const auditCard = document.getElementById('sp-audit-trigger-card');
+
     if (!fields || fields.length === 0) {
       fieldsEmptyState.style.display = 'block';
       fieldDetailContent.style.display = 'none';
+      if (auditCard) auditCard.style.display = 'none';
       btnStepperPrev.disabled = true;
       btnStepperNext.disabled = true;
       stepperIndicator.textContent = '0 / 0';
       return;
     }
 
+    if (auditCard) auditCard.style.display = 'block';
+
     fields.forEach((f, idx) => {
       const item = document.createElement('div');
       item.className = `quick-field-item ${idx === activeFieldIndex ? 'active' : ''}`;
+      const defaultFieldLbl = currentLanguage === 'id' ? `Kolom #${idx + 1}` : `Field #${idx + 1}`;
       item.innerHTML = `
         <span class="quick-num">${idx + 1}</span>
-        <span class="quick-title">${escapeHTML(f.metadata.label || f.metadata.name || `Kolom #${idx + 1}`)}</span>
+        <span class="quick-title">${escapeHTML(f.metadata.label || f.metadata.name || defaultFieldLbl)}</span>
       `;
       item.addEventListener('click', () => selectFieldByIndex(idx, true));
       fieldsQuickList.appendChild(item);
@@ -1533,9 +1628,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
       const key = `telmy_sp_chat_${url ? new URL(url).hostname : 'global'}`;
       const res = await chrome.storage.local.get([key]);
-      chatHistory = res[key] || [];
-      renderWelcome();
-    } catch (e) {}
+      const stored = res[key] || [];
+      // Clean up any historical duplicate welcome messages from previous sessions
+      chatHistory = stored.filter((m) => {
+        if (!m || !m.text) return false;
+        const isWelcome = m.role === 'assistant' && (
+          m.text.includes('your AI form-filling assistant') ||
+          m.text.includes('asisten pengisian formulir') ||
+          m.text.includes('AI 양식 도우미') ||
+          m.text.includes('AI フォームアシスタント')
+        );
+        return !isWelcome;
+      });
+      await chrome.storage.local.set({ [key]: chatHistory });
+    } catch (e) {
+      chatHistory = [];
+    }
+    renderWelcome();
   }
 
   async function saveSessionChat() {
@@ -2201,14 +2310,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     chrome.tabs.sendMessage(currentTabId, { type: 'AUDIT_FORM_VALUES' }, (res) => {
+      const isIndo = currentLanguage === 'id';
+
       if (chrome.runtime.lastError || !res || !res.success || !res.fields) {
-        alert('Tidak dapat memindai nilai isian formulir pada halaman web ini. Pastikan halaman memiliki input.');
+        alert(isIndo
+          ? 'Tidak dapat memindai nilai isian formulir pada halaman web ini. Pastikan halaman memiliki input aktif.'
+          : 'Unable to scan form values on this webpage. Please ensure active input fields exist.');
         return;
       }
 
       const fields = res.fields;
       if (fields.length === 0) {
-        alert('Belum ada kolom yang terdeteksi untuk diaudit.');
+        alert(isIndo
+          ? 'Belum ada kolom yang terdeteksi untuk diaudit.'
+          : 'No form fields detected to audit.');
         return;
       }
 
@@ -2218,7 +2333,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       fields.forEach((f) => {
         const val = (f.value || '').trim();
-        const lbl = f.label || `Kolom #${f.index + 1}`;
+        const defaultFieldLbl = isIndo ? `Kolom #${f.index + 1}` : `Field #${f.index + 1}`;
+        const lbl = f.label || defaultFieldLbl;
         const lowLbl = lbl.toLowerCase();
 
         // 1. Red Error: Required but completely empty
@@ -2226,8 +2342,10 @@ document.addEventListener('DOMContentLoaded', async () => {
           findings.push({
             type: 'red',
             icon: '🔴',
-            title: `Kolom Wajib Belum Diisi: ${lbl}`,
-            desc: 'Kolom ini wajib diisi menurut aturan portal. Kosong berisiko diskualifikasi otomatis.'
+            title: isIndo ? `Kolom Wajib Belum Diisi: ${lbl}` : `Required Field Empty: ${lbl}`,
+            desc: isIndo
+              ? 'Kolom ini wajib diisi menurut aturan portal. Kosong berisiko diskualifikasi otomatis.'
+              : 'This field is required. Leaving it blank may cause submission rejection or disqualification.'
           });
           hasRed = true;
           return;
@@ -2236,19 +2354,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!val) return;
 
         // 2. Date checks (Passport validity <6 months)
-        if (lowLbl.includes('paspor') && (lowLbl.includes('berlaku') || lowLbl.includes('expir') || lowLbl.includes('validity'))) {
-          const parsedDate = new Date(val);
-          if (!isNaN(parsedDate.getTime())) {
-            const sixMonthsFromNow = new Date();
-            sixMonthsFromNow.setMonth(sixMonthsFromNow.getMonth() + 6);
-            if (parsedDate < sixMonthsFromNow) {
-              findings.push({
-                type: 'red',
-                icon: '🔴',
-                title: `Masa Berlaku Paspor Kritis (<6 Bulan): ${lbl}`,
-                desc: 'Hampir seluruh kedutaan dan maskapai menolak paspor dengan sisa masa berlaku kurang dari 6 bulan.'
-              });
-              hasRed = true;
+        if (lowLbl.includes('paspor') || lowLbl.includes('passport')) {
+          if (lowLbl.includes('berlaku') || lowLbl.includes('expir') || lowLbl.includes('validity') || lowLbl.includes('date')) {
+            const parsedDate = new Date(val);
+            if (!isNaN(parsedDate.getTime())) {
+              const sixMonthsFromNow = new Date();
+              sixMonthsFromNow.setMonth(sixMonthsFromNow.getMonth() + 6);
+              if (parsedDate < sixMonthsFromNow) {
+                findings.push({
+                  type: 'red',
+                  icon: '🔴',
+                  title: isIndo ? `Masa Berlaku Paspor Kritis (<6 Bulan): ${lbl}` : `Passport Validity Critical (<6 Months): ${lbl}`,
+                  desc: isIndo
+                    ? 'Hampir seluruh kedutaan dan maskapai menolak paspor dengan sisa masa berlaku kurang dari 6 bulan.'
+                    : 'Most embassies, consulates, and airlines require at least 6 months validity from departure date.'
+                });
+                hasRed = true;
+              }
             }
           }
         }
@@ -2259,8 +2381,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             findings.push({
               type: 'yellow',
               icon: '🟡',
-              title: `Gelar Akademik Terdeteksi di Kolom Nama: "${val}"`,
-              desc: 'Sebagian besar pendaftaran beasiswa dan visa internasional melarang gelar di kolom nama resmi paspor.'
+              title: isIndo ? `Gelar Akademik Terdeteksi di Kolom Nama: "${val}"` : `Academic Title in Name Field: "${val}"`,
+              desc: isIndo
+                ? 'Sebagian besar pendaftaran beasiswa dan visa internasional melarang gelar di kolom nama resmi paspor.'
+                : 'International scholarship and visa portals usually require exact passport name without academic/honorary titles.'
             });
             hasYellow = true;
           }
@@ -2268,8 +2392,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             findings.push({
               type: 'yellow',
               icon: '🟡',
-              title: `Nama Huruf Kecil Semua: "${val}"`,
-              desc: 'Disarankan gunakan HURUF KAPITAL atau Title Case sesuai paspor untuk menghindari kesalahan cetak berkas.'
+              title: isIndo ? `Nama Huruf Kecil Semua: "${val}"` : `Name Field is Lowercase: "${val}"`,
+              desc: isIndo
+                ? 'Disarankan gunakan HURUF KAPITAL atau Title Case sesuai paspor untuk menghindari kesalahan cetak berkas.'
+                : 'Recommended to use UPPERCASE or Title Case matching your official identity document.'
             });
             hasYellow = true;
           }
@@ -2282,8 +2408,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             findings.push({
               type: 'yellow',
               icon: '🟡',
-              title: `Panjang NIK Tidak Standar (${numDigits} digit)`,
-              desc: 'Format NIK Indonesia adalah tepat 16 digit angka.'
+              title: isIndo ? `Panjang NIK Tidak Standar (${numDigits} digit)` : `Non-Standard ID Length (${numDigits} digits)`,
+              desc: isIndo ? 'Format NIK Indonesia adalah tepat 16 digit angka.' : 'Standard Indonesian National ID (NIK) is exactly 16 digits.'
             });
             hasYellow = true;
           }
@@ -2295,8 +2421,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         findings.push({
           type: 'green',
           icon: '🟢',
-          title: 'Semua Isian Sesuai Standar Birokrasi',
-          desc: 'Format nama, tanggal, dan seluruh kolom wajib telah terisi rapi tanpa potensi diskualifikasi.'
+          title: isIndo ? 'Semua Isian Sesuai Standar Birokrasi' : 'All Fields Meet Standard Requirements',
+          desc: isIndo
+            ? 'Format nama, tanggal, dan seluruh kolom wajib telah terisi rapi tanpa potensi diskualifikasi.'
+            : 'Names, dates, and required fields are properly formatted with no critical errors detected.'
         });
       }
 
@@ -2305,13 +2433,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         spAuditReportBox.style.display = 'block';
         if (hasRed) {
           auditStatusPill.className = 'audit-status-pill danger';
-          auditStatusPill.textContent = '🔴 Perlu Diperbaiki';
+          auditStatusPill.textContent = t('audit_status_danger') || '🔴 Action Required';
         } else if (hasYellow) {
           auditStatusPill.className = 'audit-status-pill warning';
-          auditStatusPill.textContent = '🟡 Cek Rekomendasi';
+          auditStatusPill.textContent = t('audit_status_warning') || '🟡 Suggestions Found';
         } else {
           auditStatusPill.className = 'audit-status-pill';
-          auditStatusPill.textContent = '🟢 100% Siap Kirim';
+          auditStatusPill.textContent = t('audit_status_ready') || '🟢 Ready to Submit';
         }
 
         auditReportItems.innerHTML = findings.map(f => `

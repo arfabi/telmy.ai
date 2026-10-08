@@ -22,17 +22,17 @@
           <span id="sp-quota-text">5 Forms</span>
         </div>
         <select id="sp-lang-select" class="sp-select" title="Select Language">
-          <option value="en" selected>🇬🇧 EN (English)</option>
-          <option value="id">🇮🇩 ID (Indonesia)</option>
-          <option value="ja">🇯🇵 JA (日本語)</option>
-          <option value="ko">🇰🇷 KO (한국어)</option>
-          <option value="zh">🇨🇳 ZH (简体中文)</option>
-          <option value="zh-TW">🇹🇼 TW (繁體中文)</option>
-          <option value="vi">🇻🇳 VI (Tiếng Việt)</option>
-          <option value="th">🇹🇭 TH (ไทย)</option>
-          <option value="hi">🇮🇳 HI (हिन्दी)</option>
-          <option value="fil">🇵🇭 FIL (Filipino)</option>
-          <option value="ms">🇲🇾 MS (Melayu)</option>
+          <option value="en" selected>🇬🇧 EN</option>
+          <option value="id">🇮🇩 ID</option>
+          <option value="ja">🇯🇵 JA</option>
+          <option value="ko">🇰🇷 KO</option>
+          <option value="zh">🇨🇳 ZH</option>
+          <option value="zh-TW">🇹🇼 TW</option>
+          <option value="vi">🇻🇳 VI</option>
+          <option value="th">🇹🇭 TH</option>
+          <option value="hi">🇮🇳 HI</option>
+          <option value="fil">🇵🇭 FIL</option>
+          <option value="ms">🇲🇾 MS</option>
         </select>
         <button id="sp-btn-user" class="sp-icon-btn sp-profile-btn" title="Account / Profile">
           <span id="sp-user-avatar-text">👤</span>
@@ -71,7 +71,7 @@
     <!-- Priority 9.3: Privacy Shield Indicator (Local PII Masking) -->
     <div id="sp-privacy-bar" class="sp-privacy-bar" title="Sensitive PII like National IDs, Passports, and Phone Numbers are masked locally before AI processing">
       <span class="privacy-shield-icon">🛡️</span>
-      <span id="lbl-privacy-text" class="privacy-shield-text">Privacy Shield Active: PII Masked Locally</span>
+      <span id="lbl-privacy-text" class="privacy-shield-text">Privacy Shield: PII Masked Locally</span>
       <span class="privacy-shield-tag">GDPR Safe</span>
     </div>
 
@@ -123,22 +123,6 @@
 
     <!-- TAB 1: Live Copilot Chat -->
     <section id="pane-chat" class="sp-pane active">
-      <!-- Context-Aware Page Translation Bar (Priority 3) -->
-      <div id="sp-translate-banner" class="sp-translate-banner">
-        <div class="sp-translate-info">
-          <span class="sp-translate-badge-icon">🌐</span>
-          <div class="sp-translate-texts">
-            <span id="lbl-translate-status" class="sp-translate-title">Full Page Translation</span>
-            <span id="lbl-translate-subtitle" class="sp-translate-sub">Context-aware & UI/UX standard</span>
-          </div>
-        </div>
-        <div class="sp-translate-actions">
-          <button id="btn-toggle-translate" class="btn-translate-action" title="Translate entire web page into target language">
-            <span id="btn-translate-icon">🌐</span>
-            <span id="btn-translate-label">Translate Page</span>
-          </button>
-        </div>
-      </div>
 
       <div class="sp-chat-stream" id="chat-stream">
         <!-- Messages rendered dynamically -->
@@ -211,20 +195,20 @@
             <div id="field-detail-content" style="display: none;"></div>
           </div>
 
-          <!-- Priority 9.2: AI Pre-Submission Auditor Trigger -->
-          <div class="sp-audit-trigger-card">
+          <!-- Priority 9.2: AI Pre-Submission Auditor Trigger (hidden when 0 fields) -->
+          <div class="sp-audit-trigger-card" id="sp-audit-trigger-card" style="display: none;">
             <button type="button" class="btn-run-audit" id="btn-run-form-audit">
               <span class="audit-btn-icon">🔍</span>
               <div class="audit-btn-text">
-                <strong id="lbl-audit-btn-title">Audit Form Sebelum Submit</strong>
-                <small id="lbl-audit-btn-sub">Pemeriksaan sanity check kelengkapan & format</small>
+                <strong id="lbl-audit-btn-title">Pre-Submission Form Audit</strong>
+                <small id="lbl-audit-btn-sub">Sanity check completeness & format</small>
               </div>
             </button>
             <div id="sp-audit-report-box" class="sp-audit-report-box" style="display: none;">
               <div class="audit-report-header">
-                <div class="audit-status-pill" id="audit-status-pill">🟢 100% Ready</div>
-                <strong id="lbl-audit-report-heading">Laporan Audit Form</strong>
-                <button type="button" id="btn-close-audit-report" class="btn-audit-close" title="Tutup laporan">✕</button>
+                <div class="audit-status-pill" id="audit-status-pill">🟢 Ready to Submit</div>
+                <strong id="lbl-audit-report-heading">Form Audit Report</strong>
+                <button type="button" id="btn-close-audit-report" class="btn-audit-close" title="Close report">✕</button>
               </div>
               <div id="audit-report-items" class="audit-report-items"></div>
             </div>

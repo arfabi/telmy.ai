@@ -61,27 +61,28 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 14px;
-  background: rgba(255, 255, 255, 0.82);
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.85);
   backdrop-filter: var(--sp-glass);
   -webkit-backdrop-filter: var(--sp-glass);
   border-bottom: 1px solid var(--sp-border);
-  box-shadow: var(--sp-shadow-sm);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   z-index: 10;
   flex-shrink: 0;
+  gap: 8px;
 }
 
 .sp-brand {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   text-decoration: none;
   cursor: pointer;
 }
 
 .sp-avatar-slot {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -129,7 +130,7 @@ body {
 }
 
 .sp-brand-logo-img {
-  height: 22px;
+  height: 20px;
   width: auto;
   object-fit: contain;
   display: block;
@@ -138,17 +139,17 @@ body {
 .sp-controls {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
 }
 
 .sp-select {
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--sp-text);
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.95);
   border: 1px solid var(--sp-border);
   border-radius: var(--sp-radius-full);
-  padding: 4px 8px;
+  padding: 3px 6px;
   cursor: pointer;
   outline: none;
   transition: all 0.15s;
@@ -164,8 +165,8 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   border: 1px solid var(--sp-border);
   background: #ffffff;
@@ -2185,8 +2186,8 @@ body {
   justify-content: space-between;
   background: #f0fdf4;
   border-bottom: 1px solid #bbf7d0;
-  padding: 5px 14px;
-  font-size: 10.5px;
+  padding: 3px 12px;
+  font-size: 10px;
   color: #166534;
   flex-shrink: 0;
 }
