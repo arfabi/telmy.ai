@@ -2,6 +2,11 @@
 document.addEventListener('DOMContentLoaded', async () => {
   // UI Elements
   const langSelect = document.getElementById('sp-lang-select');
+  const spLangDropdown = document.getElementById('sp-lang-dropdown');
+  const spLangBtn = document.getElementById('sp-lang-btn');
+  const spLangMenu = document.getElementById('sp-lang-menu');
+  const spCurrentFlag = document.getElementById('sp-current-flag');
+  const spCurrentLangCode = document.getElementById('sp-current-lang-code');
   const btnRescan = document.getElementById('sp-btn-rescan');
   const tabBtns = document.querySelectorAll('.sp-tab-btn');
   const panes = document.querySelectorAll('.sp-pane');
@@ -32,6 +37,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   const lblVoicebotStatusDesc = document.getElementById('lbl-voicebot-status-desc');
   const btnVoicebotBigMic = document.getElementById('btn-voicebot-big-mic');
   const lblVoicebotMicCaption = document.getElementById('lbl-voicebot-mic-caption');
+  const spModeCardsContainer = document.getElementById('sp-mode-cards-container');
+  const spModeCompactBar = document.getElementById('sp-mode-compact-bar');
+  const lblCompactModeTitle = document.getElementById('lbl-compact-mode-title');
 
   // Translation Banner & Quick Chips Elements (Priority 3)
   const spTranslateBanner = document.getElementById('sp-translate-banner');
@@ -78,8 +86,41 @@ document.addEventListener('DOMContentLoaded', async () => {
   const pdfSectionsTabs = document.getElementById('pdf-sections-tabs');
   const pdfActiveSectionFields = document.getElementById('pdf-active-section-fields');
   const pdfSectionIndicator = document.getElementById('pdf-section-indicator');
-  const chipPdfGuide = document.getElementById('chip-pdf-guide');
   const btnPdfExportFilled = document.getElementById('btn-pdf-export-filled');
+
+  // Priority 7 & 8: Encrypted Profile Vault & Multi-Document Ingestion Elements
+  const btnVaultLockToggle = document.getElementById('btn-vault-lock-toggle');
+  const lblVaultLockIcon = document.getElementById('lbl-vault-lock-icon');
+  const btnVaultAutofillNow = document.getElementById('btn-vault-autofill-now');
+  const vaultFieldsCount = document.getElementById('vault-fields-count');
+  const btnVaultAddCustom = document.getElementById('btn-vault-add-custom');
+  const btnVaultWipe = document.getElementById('btn-vault-wipe');
+  const vaultFieldsList = document.getElementById('vault-fields-list');
+
+  // Vault Modals Elements
+  const vaultPinModal = document.getElementById('vault-pin-modal');
+  const vaultPinModalTitle = document.getElementById('vault-pin-modal-title');
+  const vaultPinModalSub = document.getElementById('vault-pin-modal-sub');
+  const inputVaultPin = document.getElementById('input-vault-pin');
+  const vaultPinError = document.getElementById('vault-pin-error');
+  const btnSubmitVaultPin = document.getElementById('btn-submit-vault-pin');
+  const btnCancelVaultPin = document.getElementById('btn-cancel-vault-pin');
+
+  const vaultFieldModal = document.getElementById('vault-field-modal');
+  const lblVaultModalFieldTitle = document.getElementById('lbl-vault-modal-field-title');
+  const btnCloseFieldModal = document.getElementById('btn-close-field-modal');
+  const inputVaultFieldLabel = document.getElementById('input-vault-field-label');
+  const inputVaultFieldValue = document.getElementById('input-vault-field-value');
+  const inputVaultFieldAliases = document.getElementById('input-vault-field-aliases');
+  const btnSaveVaultField = document.getElementById('btn-save-vault-field');
+  const btnCancelVaultField = document.getElementById('btn-cancel-vault-field');
+
+  // Vault Ingestion Dropzone Elements
+  const vaultDocDropzone = document.getElementById('vault-doc-dropzone');
+  const vaultDocFileInput = document.getElementById('vault-doc-file-input');
+  const btnBrowseVaultDoc = document.getElementById('btn-browse-vault-doc');
+  const vaultDocContent = document.getElementById('vault-drop-content');
+  const vaultDocAnalyzing = document.getElementById('vault-doc-analyzing');
 
   // Pre-Submission Auditor Elements (Priority 9.2)
   const btnRunFormAudit = document.getElementById('btn-run-form-audit');
@@ -169,6 +210,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   let currentPdfMimeType = 'application/pdf';
   let pdfUserFormValues = {};
 
+  // Priority 7 & 8 Vault State
+  let currentDecryptedVault = null;
+  let currentVaultPin = null;
+  let isVaultUnlocked = false;
+  let currentEditingFieldId = null;
+  let pinUnlockCallback = null;
+
   // Complete JAPAC Multi-Language Matrix (English default)
   const I18N = {
     brand_tag: {
@@ -177,14 +225,24 @@ document.addEventListener('DOMContentLoaded', async () => {
       hi: 'AI फ़ॉर्म सहायक', fil: 'AI Form Assistant', ms: 'Pembantu Borang AI'
     },
     tab_chat: {
-      en: 'Chat', id: 'Obrolan', ja: 'チャット', ko: '대화',
-      zh: '对话', 'zh-TW': '對話', vi: 'Trò chuyện', th: 'แชท',
-      hi: 'बातचीत', fil: 'Kausapin', ms: 'Sembang'
+      en: 'Assistant', id: 'Asisten', ja: 'アシスタント', ko: '어시스턴트',
+      zh: '助手', 'zh-TW': '助理', vi: 'Trợ lý', th: 'ผู้ช่วย',
+      hi: 'सहायक', fil: 'Assistant', ms: 'Pembantu'
+    },
+    tab_vault: {
+      en: 'AutoFill', id: 'AutoFill', ja: '自動入力', ko: '자동완성',
+      zh: '自动填写', 'zh-TW': '自動填寫', vi: 'Tự động điền', th: 'กรอกอัตโนมัติ',
+      hi: 'ऑटोफ़िल', fil: 'AutoFill', ms: 'AutoFill'
+    },
+    tab_pdf: {
+      en: 'PDF Form', id: 'Formulir PDF', ja: 'PDFフォーム', ko: 'PDF 양식',
+      zh: 'PDF 表单', 'zh-TW': 'PDF 表單', vi: 'Biểu mẫu PDF', th: 'แบบฟอร์ม PDF',
+      hi: 'पीडीएफ फ़ॉर्म', fil: 'PDF Form', ms: 'Borang PDF'
     },
     tab_fields: {
-      en: 'Fields', id: 'Kolom', ja: '入力欄', ko: '입력란',
-      zh: '表单项', 'zh-TW': '欄位', vi: 'Trường', th: 'ช่องข้อมูล',
-      hi: 'फ़ील्ड्स', fil: 'Mga Kolum', ms: 'Ruangan'
+      en: 'Fields & Audit', id: 'Kolom & Audit', ja: '項目&検証', ko: '입력란&검토',
+      zh: '表单项&审核', 'zh-TW': '欄位&審核', vi: 'Trường & Kiểm tra', th: 'ช่องข้อมูล&ตรวจ',
+      hi: 'फ़ील्ड्स और ऑडिट', fil: 'Mga Kolum & Audit', ms: 'Ruangan & Audit'
     },
     tab_summary: {
       en: 'Overview', id: 'Ringkasan', ja: '概要', ko: '개요',
@@ -392,8 +450,534 @@ document.addEventListener('DOMContentLoaded', async () => {
       en: '🟡 Suggestions Found', id: '🟡 Cek Rekomendasi', ja: '🟡 推奨事項あり', ko: '🟡 권장 사항 있음',
       zh: '🟡 建议优化', 'zh-TW': '🟡 建議優化', vi: '🟡 Gợi ý cần xem', th: '🟡 มีคำแนะนำ',
       hi: '🟡 सुझाव उपलब्ध', fil: '🟡 May Mungkahi', ms: '🟡 Ada Cadangan'
+    },
+    mode_chat_title: {
+      en: 'Chatbot Mode', id: 'Mode Chatbot', ja: 'チャットボット', ko: '챗봇 모드',
+      zh: '聊天机器人模式', 'zh-TW': '聊天機器人模式', vi: 'Chế độ Chatbot', th: 'โหมดแชทบอท',
+      hi: 'चैटबॉट मोड', fil: 'Chatbot Mode', ms: 'Mod Chatbot'
+    },
+    mode_chat_desc: {
+      en: 'Fast & silent text (Muted)', id: 'Teks cepat & hening (Mute)', ja: '高速・テキスト対話 (ミュート)', ko: '조용한 텍스트 대화 (음소거)',
+      zh: '快速静音文本 (静音)', 'zh-TW': '快速靜音文字 (靜音)', vi: 'Văn bản nhanh & im lặng (Tắt tiếng)', th: 'ข้อความรวดเร็วและเงียบ (ปิดเสียง)',
+      hi: 'तेज़ और शांत टेक्स्ट (म्यूट)', fil: 'Mabilis at tahimik na text (Naka-mute)', ms: 'Teks pantas & senyap (Bisu)'
+    },
+    mode_chat_compact: {
+      en: 'Chatbot (Silent)', id: 'Chatbot (Hening)', ja: 'チャットボット (静音)', ko: '챗봇 (조용히)',
+      zh: '聊天机器人 (静音)', 'zh-TW': '聊天機器人 (靜音)', vi: 'Chatbot (Im lặng)', th: 'แชทบอท (เงียบ)',
+      hi: 'चैटबॉट (शांत)', fil: 'Chatbot (Tahimik)', ms: 'Chatbot (Senyap)'
+    },
+    mode_voice_title: {
+      en: 'Voicebot Mode', id: 'Mode Voicebot', ja: '音声対話モード', ko: '음성봇 모드',
+      zh: '语音助手模式', 'zh-TW': '語音助理模式', vi: 'Chế độ Voicebot', th: 'โหมดสนทนาเสียง',
+      hi: 'वॉइसबॉट मोड', fil: 'Voicebot Mode', ms: 'Mod Voicebot'
+    },
+    mode_voice_desc: {
+      en: 'Google WaveNet Voice & Interactive Avatar', id: 'Suara Google WaveNet & Avatar Interaktif', ja: 'Google WaveNet音声＆対話アバター', ko: 'Google WaveNet 음성 및 대화형 아바타',
+      zh: 'Google WaveNet 语音与动态形象', 'zh-TW': 'Google WaveNet 語音與互動虛擬人', vi: 'Giọng nói Google WaveNet & Avatar tương tác', th: 'เสียง Google WaveNet และอวาตาร์โต้ตอบ',
+      hi: 'Google WaveNet आवाज़ और इंटरैक्टिव अवतार', fil: 'Boses ng Google WaveNet at Interactive Avatar', ms: 'Suara Google WaveNet & Avatar Interaktif'
+    },
+    mode_voice_compact: {
+      en: 'Voicebot (Interactive)', id: 'Voicebot (Interaktif)', ja: '音声ボット (対話)', ko: '음성봇 (대화형)',
+      zh: '语音助手 (互动)', 'zh-TW': '語音助理 (互動)', vi: 'Voicebot (Tương tác)', th: 'สนทนาเสียง (โต้ตอบ)',
+      hi: 'वॉइसबॉट (इंटरैक्टिव)', fil: 'Voicebot (Interactive)', ms: 'Voicebot (Interaktif)'
+    },
+    mode_status_active: {
+      en: '✓ Active', id: '✓ Aktif', ja: '✓ 有効', ko: '✓ 활성',
+      zh: '✓ 已启用', 'zh-TW': '✓ 已啟用', vi: '✓ Hoạt động', th: '✓ ใช้งานอยู่',
+      hi: '✓ सक्रिय', fil: '✓ Aktibo', ms: '✓ Aktif'
+    },
+    mode_status_switch: {
+      en: '○ Switch Mode', id: '○ Beralih Mode', ja: '○ 切り替え', ko: '○ 모드 전환',
+      zh: '○ 切换模式', 'zh-TW': '○ 切換模式', vi: '○ Chuyển chế độ', th: '○ สลับโหมด',
+      hi: '○ मोड बदलें', fil: '○ Lumipat ng Mode', ms: '○ Tukar Mod'
+    },
+    hover_change_mode: {
+      en: 'Hover to change mode', id: 'Arahkan kursor untuk ganti mode', ja: 'カーソルを合わせて切替', ko: '마우스를 올려 모드 변경',
+      zh: '悬停以切换模式', 'zh-TW': '懸停以切換模式', vi: 'Di chuột để đổi chế độ', th: 'ชี้เพื่อเปลี่ยนโหมด',
+      hi: 'मोड बदलने के लिए होवर करें', fil: 'Itapat para magpalit ng mode', ms: 'Arahkan kursor untuk tukar mod'
+    },
+    voicebot_status_idle_title: {
+      en: "Hello, I'm Telmy!", id: 'Halo, saya Telmy!', ja: 'こんにちは、Telmyです！', ko: '안녕하세요, Telmy입니다!',
+      zh: '您好，我是 Telmy！', 'zh-TW': '您好，我是 Telmy！', vi: 'Xin chào, tôi là Telmy!', th: 'สวัสดีครับ ผมคือ Telmy!',
+      hi: 'नमस्ते, मैं Telmy हूँ!', fil: 'Kamusta, ako si Telmy!', ms: 'Hai, saya Telmy!'
+    },
+    voicebot_status_idle_desc: {
+      en: 'Click the microphone button below to speak directly', id: 'Klik tombol mikrofon di bawah untuk berbicara langsung',
+      ja: '下のマイクボタンをクリックして直接お話しください', ko: '아래 마이크 버튼을 눌러 말씀해 주세요',
+      zh: '点击下方麦克风即可直接语音交流', 'zh-TW': '點擊下方麥克風即可直接語音對話',
+      vi: 'Nhấn nút micrô bên dưới để nói trực tiếp', th: 'กดปุ่มไมโครโฟนด้านล่างเพื่อพูดคุยโดยตรง',
+      hi: 'सीधे बात करने के लिए नीचे दिए गए माइक पर क्लिक करें', fil: 'I-click ang mikropono sa ibaba para magsalita',
+      ms: 'Klik butang mikrofon di bawah untuk bercakap terus'
+    },
+    voicebot_mic_caption_idle: {
+      en: 'Click to Speak', id: 'Klik untuk Bicara', ja: 'クリックして話す', ko: '클릭하여 말하기',
+      zh: '点击说话', 'zh-TW': '點擊說話', vi: 'Nhấn để nói', th: 'กดเพื่อพูด',
+      hi: 'बोलने के लिए क्लिक करें', fil: 'I-click para Magsalita', ms: 'Klik untuk Bercakap'
+    },
+    voicebot_status_listening_title: {
+      en: 'Listening...', id: 'Mendengarkan...', ja: '音声を聞き取り中...', ko: '듣고 있습니다...',
+      zh: '正在聆听...', 'zh-TW': '正在聆聽...', vi: 'Đang lắng nghe...', th: 'กำลังฟัง...',
+      hi: 'सुन रहे हैं...', fil: 'Nakikinig...', ms: 'Mendengar...'
+    },
+    voicebot_status_listening_desc: {
+      en: 'Speak now into your microphone...', id: 'Silakan bicara ke mikrofon Anda...',
+      ja: 'マイクに向かってお話しください...', ko: '마이크에 대고 말씀하세요...',
+      zh: '请对着麦克风说话...', 'zh-TW': '請對著麥克風說話...',
+      vi: 'Hãy nói vào micrô của bạn...', th: 'พูดใส่ไมโครโฟนของคุณได้เลย...',
+      hi: 'कृपया अपने माइक्रोफ़ोन में बोलें...', fil: 'Magsalita sa iyong mikropono...',
+      ms: 'Sila bercakap ke mikrofon anda...'
+    },
+    voicebot_mic_caption_listening: {
+      en: 'Listening...', id: 'Mendengarkan...', ja: '音声認識中...', ko: '듣는 중...',
+      zh: '正在聆听...', 'zh-TW': '正在聆聽...', vi: 'Đang nghe...', th: 'กำลังฟัง...',
+      hi: 'सुन रहे हैं...', fil: 'Nakikinig...', ms: 'Mendengar...'
+    },
+    voicebot_status_speaking_title: {
+      en: 'Telmy is Speaking', id: 'Telmy Berbicara', ja: 'Telmy が発話中', ko: 'Telmy가 말하고 있습니다',
+      zh: 'Telmy 正在说话', 'zh-TW': 'Telmy 正在說話', vi: 'Telmy đang nói', th: 'Telmy กำลังพูด',
+      hi: 'Telmy बोल रहा है', fil: 'Nagsasalita si Telmy', ms: 'Telmy sedang Bercakap'
+    },
+    voicebot_status_speaking_desc: {
+      en: 'Please listen to the guidance', id: 'Silakan dengarkan panduan', ja: 'ガイダンスをお聞きください', ko: '안내를 들어주세요',
+      zh: '请聆听指引', 'zh-TW': '請聆聽指引', vi: 'Vui lòng lắng nghe hướng dẫn', th: 'โปรดฟังคำแนะนำ',
+      hi: 'कृपया मार्गदर्शन सुनें', fil: 'Makinig sa gabay', ms: 'Sila dengar panduan'
+    },
+    voicebot_mic_caption_speaking: {
+      en: 'Speaking...', id: 'Sedang Membaca...', ja: '読み上げ中...', ko: '음성 출력 중...',
+      zh: '正在朗读...', 'zh-TW': '正在朗讀...', vi: 'Đang phát âm...', th: 'กำลังอ่าน...',
+      hi: 'बोल रहा है...', fil: 'Nagsasalita...', ms: 'Sedang Membaca...'
+    },
+    welcome_hero_title: {
+      en: 'Hello! I am Telmy 👋', id: 'Halo! Saya Telmy 👋', ja: 'こんにちは！Telmyです 👋', ko: '안녕하세요! Telmy입니다 👋',
+      zh: '您好！我是 Telmy 👋', 'zh-TW': '您好！我是 Telmy 👋', vi: 'Xin chào! Tôi là Telmy 👋', th: 'สวัสดีครับ! ผมคือ Telmy 👋',
+      hi: 'नमस्ते! मैं Telmy हूँ 👋', fil: 'Kamusta! Ako si Telmy 👋', ms: 'Hai! Saya Telmy 👋'
+    },
+    welcome_hero_desc: {
+      en: 'Your friendly AI form-filling companion. Ask me anything about this form using text or speech, or choose an option below:',
+      id: 'Asisten ramah pengisian formulir AI Anda. Tanyakan apa pun tentang formulir ini via teks atau suara, atau pilih opsi di bawah:',
+      ja: 'あなたのAIフォーム入力アシスタントです。テキストまたは音声で質問するか、以下のオプションを選択してください：',
+      ko: '친절한 AI 양식 작성 도우미입니다. 텍스트나 음성으로 질문하시거나 아래 옵션을 선택하세요:',
+      zh: '您的专属 AI 表单填写助手。通过文字或语音提问，或选择以下操作：',
+      'zh-TW': '您的專屬 AI 表單填寫助理。透過文字或語音提問，或選擇以下操作：',
+      vi: 'Trợ lý AI thân thiện giúp bạn điền biểu mẫu. Hãy hỏi tôi qua văn bản hoặc giọng nói, hoặc chọn bên dưới:',
+      th: 'ผู้ช่วยกรอกฟอร์ม AI ของคุณ ถามคำถามผ่านข้อความหรือเสียง หรือเลือกตัวเลือกด้านล่าง:',
+      hi: 'आपका मित्रवत AI फ़ॉर्म सहायक। टेक्स्ट या आवाज़ से कुछ भी पूछें, या नीचे दिए गए विकल्प चुनें:',
+      fil: 'Ang iyong maaasahang AI form assistant. Magtanong gamit ang text o boses, o pumili sa ibaba:',
+      ms: 'Pembantu pengisian borang AI mesra anda. Tanya apa sahaja menggunakan teks atau suara, atau pilih pilihan di bawah:'
+    },
+    welcome_chip_about: {
+      en: 'Tell me About this form', id: 'Jelaskan tentang formulir ini', ja: 'このフォームの概要を教えて', ko: '이 양식에 대해 알려줘',
+      zh: '告诉我此表单的内容', 'zh-TW': '告訴我此表單的內容', vi: 'Cho tôi biết về biểu mẫu này', th: 'อธิบายเกี่ยวกับฟอร์มนี้',
+      hi: 'इस फ़ॉर्म के बारे में बताएं', fil: 'Sabihin ang tungkol sa form na ito', ms: 'Terangkan tentang borang ini'
+    },
+    welcome_chip_guide: {
+      en: 'Guide me Fields by Fields', id: 'Pandu saya Kolom demi Kolom', ja: '項目ごとにガイドして', ko: '항목별로 안내해줘',
+      zh: '逐项引导我填写', 'zh-TW': '逐欄引導我填寫', vi: 'Hướng dẫn từng trường', th: 'แนะนำทีละช่อง',
+      hi: 'एक-एक करके फ़ील्ड्स समझाएं', fil: 'Gabayan ako bawat kolum', ms: 'Pandu saya Ruangan demi Ruangan'
+    },
+    welcome_chip_translate: {
+      en: 'Translate this Page', id: 'Terjemahkan Halaman Ini', ja: 'このページを翻訳', ko: '이 페이지 번역',
+      zh: '翻译此页面', 'zh-TW': '翻譯此頁面', vi: 'Dịch trang này', th: 'แปลหน้านี้',
+      hi: 'इस पृष्ठ का अनुवाद करें', fil: 'Isalin ang pahinang ito', ms: 'Terjemah Halaman Ini'
+    },
+    default_chat_reply: {
+      en: 'I am ready to help you complete this form. Click on any field on the page to see detailed step-by-step guidance.',
+      id: 'Saya siap membantu memandu pengisian formulir ini. Klik salah satu kolom di halaman untuk melihat petunjuk detail.',
+      ja: 'このフォームの入力をサポートします。ページ内の入力項目をクリックして詳細な手順をご確認ください。',
+      ko: '양식 작성을 도와드릴 준비가 되었습니다. 페이지의 입력란을 클릭하여 단계별 안내를 확인하세요.',
+      zh: '我已准备好协助您填写此表单。点击页面上的任意输入项即可查看详细指引。',
+      'zh-TW': '我已準備好協助您填寫此表單。點擊頁面上的任意欄位即可查看詳細指引。',
+      vi: 'Tôi sẵn sàng giúp bạn điền biểu mẫu này. Nhấp vào bất kỳ trường nào trên trang để xem hướng dẫn chi tiết.',
+      th: 'พร้อมช่วยเหลือคุณในการกรอกแบบฟอร์มนี้แล้ว คลิกที่ช่องใดก็ได้ในหน้าเพื่อดูคำแนะนำทีละขั้นตอน',
+      hi: 'मैं इस फ़ॉर्म को भरने में आपकी मदद के लिए तैयार हूँ। विस्तृत मार्गदर्शन देखने के लिए पेज पर किसी फ़ील्ड पर क्लिक करें।',
+      fil: 'Handa akong tulungan kang sagutan ang form na ito. I-click ang anumang kolum para sa gabay.',
+      ms: 'Saya sedia membantu mengisi borang ini. Klik mana-mana ruangan pada halaman untuk melihat panduan terperinci.'
+    },
+    msg_about_form: {
+      en: 'Tell me what this form is about and what documents are required.',
+      id: 'Tolong jelaskan ringkasan formulir ini dan apa saja yang diperlukan.',
+      ja: 'このフォームの概要と必要な書類について教えてください。',
+      ko: '이 양식의 개요와 필요한 서류를 설명해 주세요.',
+      zh: '请解释此表单的概要以及需要准备哪些文件。',
+      'zh-TW': '請說明此表單的概要以及需要準備哪些證件。',
+      vi: 'Hãy giải thích biểu mẫu này nói về điều gì và cần những giấy tờ nào.',
+      th: 'ช่วยอธิบายภาพรวมของฟอร์มนี้และเอกสารที่ต้องใช้หน่อยครับ',
+      hi: 'कृपया बताएं कि यह फ़ॉर्म किस बारे में है और किन दस्तावेज़ों की आवश्यकता है।',
+      fil: 'Ipaliwanag kung para saan ang form na ito at anong mga dokumento ang kailangan.',
+      ms: 'Tolong jelaskan ringkasan borang ini dan apa yang diperlukan.'
+    },
+    autofill_not_configured_msg: {
+      en: '⚡ **1-Click AutoFill**: Your master profile is not configured yet. Visit your Member Area at https://telmy.web.app/dashboard#autofill to set up your legal name, passport, and identity info!',
+      id: '⚡ **1-Click AutoFill**: Data profil tersimpan Anda belum diisi. Kunjungi Member Area di https://telmy.web.app/dashboard#autofill untuk menyimpan data paspor, NIK, dan identitas Anda!',
+      ja: '⚡ **1-クリック自動入力**: マスタープロファイルが未設定です。https://telmy.web.app/dashboard#autofill で身元情報を登録してください！',
+      ko: '⚡ **1-클릭 자동완성**: 마스터 프로필이 설정되지 않았습니다. https://telmy.web.app/dashboard#autofill 에서 정보를 등록하세요!',
+      zh: '⚡ **一键自动填写**：您的个人主配置文件尚未设置。请访问 https://telmy.web.app/dashboard#autofill 设置您的身份信息！',
+      'zh-TW': '⚡ **一鍵自動填寫**：您的個人主設定檔尚未設定。請訪問 https://telmy.web.app/dashboard#autofill 設定您的身分資料！',
+      vi: '⚡ **Tự động điền 1 chạm**: Hồ sơ của bạn chưa được thiết lập. Hãy truy cập https://telmy.web.app/dashboard#autofill để cài đặt!',
+      th: '⚡ **กรอกอัตโนมัติใน 1 คลิก**: คุณยังไม่ได้ตั้งค่าโปรไฟล์หลัก ไปที่ https://telmy.web.app/dashboard#autofill เพื่อตั้งค่า!',
+      hi: '⚡ **1-क्लिक ऑटोफ़िल**: आपकी प्रोफ़ाइल अभी कॉन्फ़िगर नहीं है। अपनी जानकारी सेट करने के लिए https://telmy.web.app/dashboard#autofill पर जाएं!',
+      fil: '⚡ **1-Click AutoFill**: Hindi pa naka-configure ang iyong profile. Pumunta sa https://telmy.web.app/dashboard#autofill!',
+      ms: '⚡ **1-Click AutoFill**: Profil utama anda belum ditetapkan. Layari https://telmy.web.app/dashboard#autofill untuk menyediakannya!'
+    },
+    autofill_complete_msg: {
+      en: '⚡ **1-Click AutoFill Complete**: Successfully filled {count} using your encrypted profile vault. Please review all entries before submitting!',
+      id: '⚡ **1-Click AutoFill Selesai**: Berhasil mengisi {count} dari profil aman Anda. Harap periksa kembali sebelum mengirimkan formulir!',
+      ja: '⚡ **自動入力完了**: 暗号化保管庫から {count} を正常に入力しました。送信前に全項目をご確認ください！',
+      ko: '⚡ **자동완성 완료**: 보안 보관함의 데이터로 {count}을(를) 채웠습니다. 제출 전 반드시 확인해 주세요!',
+      zh: '⚡ **自动填写完成**：已使用加密个人资料成功填写 {count}。请在提交前仔细核对！',
+      'zh-TW': '⚡ **自動填寫完成**：已使用加密個人檔案成功填寫 {count}。請在提交前仔細核對！',
+      vi: '⚡ **Hoàn tất tự động điền**: Đã điền thành công {count} từ kho an toàn. Vui lòng kiểm tra lại trước khi gửi!',
+      th: '⚡ **กรอกอัตโนมัติเสร็จสิ้น**: กรอก {count} สำเร็จจากคลังที่ปลอดภัย โปรดตรวจสอบก่อนส่งฟอร์ม!',
+      hi: '⚡ **1-क्लिक ऑटोफ़िल पूर्ण**: आपके सुरक्षित वॉल्ट से {count} सफलतापूर्वक भर दिए गए। कृपया सबमिट करने से पहले जाँच लें!',
+      fil: '⚡ **Tapos na ang 1-Click AutoFill**: Matagumpay na napunan ang {count} mula sa iyong secure vault. Suriin bago isumite!',
+      ms: '⚡ **1-Click AutoFill Selesai**: Berjaya mengisi {count} daripada profil selamat anda. Sila semak semula sebelum menghantar!'
+    },
+    matching_fields: {
+      en: 'matching fields', id: 'kolom yang cocok', ja: '一致する項目', ko: '일치하는 항목',
+      zh: '匹配的字段', 'zh-TW': '相符的欄位', vi: 'trường phù hợp', th: 'ช่องที่ตรงกัน',
+      hi: 'मिलान फ़ील्ड्स', fil: 'mga tumutugmang kolum', ms: 'ruangan yang sepadan'
+    },
+    page_reverted_msg: {
+      en: '🔙 The webpage has been restored to its original text.',
+      id: '🔙 Halaman web telah dikembalikan ke bahasa aslinya.',
+      ja: '🔙 ウェブページを元の言語に戻しました。',
+      ko: '🔙 웹페이지가 원래 언어로 복원되었습니다.',
+      zh: '🔙 网页已恢复为其原始语言。',
+      'zh-TW': '🔙 網頁已還原為其原始語言。',
+      vi: '🔙 Trang web đã được khôi phục về văn bản gốc.',
+      th: '🔙 หน้าเว็บถูกกู้คืนเป็นภาษาดั้งเดิมแล้ว',
+      hi: '🔙 वेबपेज अपने मूल टेक्स्ट में पुनर्स्थापित कर दिया गया है।',
+      fil: '🔙 Ibinalik ang webpage sa orihinal na wika.',
+      ms: '🔙 Halaman web telah dikembalikan ke bahasa asalnya.'
+    },
+    no_translatable_elements_msg: {
+      en: 'No translatable elements detected on this webpage.',
+      id: 'Tidak ada elemen teks yang dapat diterjemahkan pada halaman ini.',
+      ja: 'このウェブページには翻訳可能なテキストが検出されませんでした。',
+      ko: '이 웹페이지에서 번역 가능한 요소를 찾을 수 없습니다.',
+      zh: '此网页未检测到可翻译的文本元素。',
+      'zh-TW': '此網頁未偵測到可翻譯的文字元素。',
+      vi: 'Không tìm thấy phần tử có thể dịch trên trang web này.',
+      th: 'ไม่พบข้อความที่แปลได้ในหน้าเว็บนี้',
+      hi: 'इस वेबपेज पर कोई अनुवाद योग्य तत्व नहीं मिला।',
+      fil: 'Walang nakitang text na maisasalin sa webpage na ito.',
+      ms: 'Tiada elemen teks yang boleh diterjemahkan pada halaman ini.'
+    },
+    page_translated_msg: {
+      en: '🌐 **Full Page Translated ({count} elements)**\n\nThe webpage has been translated into **{lang}** using **Google Gemini**.\n\n✓ **Official Bureaucracy Terms Preserved** (e.g., NIK, KTP, NPWP, SKCK)\n✓ **UI/UX Standards Applied** (Button & navigation actions mapped professionally)\n\nYou can click **Show Original** at any time to revert.',
+      id: '🌐 **Halaman Berhasil Diterjemahkan ({count} elemen)**\n\nSeluruh teks UI halaman telah diterjemahkan ke bahasa **{lang}** menggunakan **Google Gemini**.\n\n✓ **Istilah Birokrasi Baku Terjaga** (NIK, KTP, KK, SKCK)\n✓ **Standar UI/UX Profesional** (Tombol navigasi disesuaikan secara natural)\n\nKlik **Kembalikan Asli** kapan saja jika ingin membaca versi asli.',
+      ja: '🌐 **全ページ翻訳完了 ({count} 項目)**\n\n**Google Gemini** により **{lang}** へ翻訳されました。\n\n✓ 公的行政用語を正確に保持\n✓ UI/UX標準に準拠したボタン配置\n\nいつでも「原文に戻す」をクリックして戻せます。',
+      ko: '🌐 **전체 페이지 번역 완료 ({count}개 항목)**\n\n**Google Gemini**를 사용하여 **{lang}**(으)로 번역되었습니다.\n\n✓ 공공 행정 용어 정확히 보존\n✓ 전문적 UI/UX 표준 적용\n\n언제든지 **원문 보기**를 클릭하여 되돌릴 수 있습니다.',
+      zh: '🌐 **全页面翻译完成（共 {count} 个元素）**\n\n已使用 **Google Gemini** 翻译为 **{lang}**。\n\n✓ 规范行政术语精准保留\n✓ 专业 UI/UX 标准适配\n\n您可随时点击**显示原文**恢复。',
+      'zh-TW': '🌐 **全頁面翻譯完成（共 {count} 個元素）**\n\n已使用 **Google Gemini** 翻譯為 **{lang}**。\n\n✓ 規範行政術語精準保留\n✓ 專業 UI/UX 標準適配\n\n您可隨時點擊**顯示原文**還原。',
+      vi: '🌐 **Đã dịch toàn bộ trang ({count} phần tử)**\n\nTrang web đã được dịch sang **{lang}** bằng **Google Gemini**.\n\n✓ Bảo toàn thuật ngữ hành chính chính thức\n✓ Áp dụng chuẩn UI/UX chuyên nghiệp\n\nBạn có thể nhấp **Hiện bản gốc** bất kỳ lúc nào.',
+      th: '🌐 **แปลทั้งหน้าเสร็จสิ้น ({count} รายการ)**\n\nแปลเป็นภาษา **{lang}** โดย **Google Gemini** แล้ว\n\n✓ รักษาคำศัพท์ราชการอย่างถูกต้อง\n✓ มาตรฐาน UI/UX เป็นธรรมชาติ\n\nคลิก **แสดงต้นฉบับ** เพื่อเปลี่ยนกลับได้ตลอดเวลา',
+      hi: '🌐 **पूरे पृष्ठ का अनुवाद पूर्ण ({count} तत्व)**\n\n**Google Gemini** द्वारा **{lang}** में अनुवादित।\n\n✓ आधिकारिक प्रशासनिक शब्दावली सुरक्षित\n✓ पेशेवर UI/UX मानक लागू\n\nवापस लौटने के लिए कभी भी **मूल दिखाएं** पर क्लिक करें।',
+      fil: '🌐 **Naisalin ang Buong Pahina ({count} elemento)**\n\nNaisalin sa **{lang}** gamit ang **Google Gemini**.\n\n✓ Napanatili ang mga opisyal na termino\n✓ Propesyonal na pamantayan sa UI/UX\n\nI-click ang **Ipakita ang Orihinal** upang ibalik.',
+      ms: '🌐 **Halaman Berjaya Diterjemahkan ({count} elemen)**\n\nHalaman telah diterjemahkan ke **{lang}** menggunakan **Google Gemini**.\n\n✓ Istilah rasmi dikekalkan\n✓ Piawaian UI/UX profesional digunakan\n\nKlik **Tunjuk Asal** pada bila-bila masa untuk kembali.'
+    },
+    translate_error_msg: {
+      en: '⚠️ Translation service encountered an issue. Please ensure network connectivity.',
+      id: '⚠️ Layanan terjemahan mengalami kendala. Pastikan koneksi internet stabil.',
+      ja: '⚠️ 翻訳サービスで問題が発生しました。ネットワーク接続をご確認ください。',
+      ko: '⚠️ 번역 서비스에 문제가 발생했습니다. 네트워크 연결을 확인하세요.',
+      zh: '⚠️ 翻译服务遇到问题，请检查网络连接。',
+      'zh-TW': '⚠️ 翻譯服務發生問題，請檢查網路連線。',
+      vi: '⚠️ Dịch vụ dịch thuật gặp sự cố. Vui lòng kiểm tra kết nối mạng.',
+      th: '⚠️ บริการแปลพบปัญหา โปรดตรวจสอบการเชื่อมต่ออินเทอร์เน็ต',
+      hi: '⚠️ अनुवाद सेवा में समस्या आई। कृपया नेटवर्क कनेक्शन जांचें।',
+      fil: '⚠️ Nagka-problema sa serbisyo ng pagsasalin. Pakisuri ang koneksyon.',
+      ms: '⚠️ Perkhidmatan terjemahan menghadapi masalah. Sila pastikan sambungan internet stabil.'
+    },
+    chip_what_msg: {
+      en: 'What is this form about and what should I know?',
+      id: 'Jelaskan formulir ini tentang apa dan apa yang perlu saya ketahui?',
+      ja: 'このフォームは何についてのものですか？注意点は何ですか？',
+      ko: '이 양식은 무엇에 관한 것이며 어떤 점을 알아야 하나요?',
+      zh: '这是什么表单，有哪些注意事项？',
+      'zh-TW': '這是什麼表單，有哪些注意事項？',
+      vi: 'Biểu mẫu này nói về điều gì và tôi cần biết những gì?',
+      th: 'แบบฟอร์มนี้เกี่ยวกับอะไรและมีอะไรที่ฉันควรรู้บ้าง?',
+      hi: 'यह फ़ॉर्म किस बारे में है और मुझे क्या जानना चाहिए?',
+      fil: 'Para saan ang form na ito at ano ang dapat kong malaman?',
+      ms: 'Borang ini tentang apa dan apakah yang perlu saya ketahui?'
+    },
+    chip_docs_msg: {
+      en: 'What documents and requirements do I need to prepare for this form?',
+      id: 'Apa saja berkas dan dokumen yang harus saya siapkan untuk mengisi formulir ini?',
+      ja: 'このフォームに入力するために準備すべき書類は何ですか？',
+      ko: '이 양식을 작성하기 위해 준비해야 할 서류는 무엇인가요?',
+      zh: '填写此表单需要准备哪些文件和资料？',
+      'zh-TW': '填寫此表單需要準備哪些文件與資料？',
+      vi: 'Tôi cần chuẩn bị những tài liệu và giấy tờ gì cho biểu mẫu này?',
+      th: 'ต้องเตรียมเอกสารอะไรบ้างสำหรับแบบฟอร์มนี้?',
+      hi: 'इस फ़ॉर्म के लिए मुझे कौन से दस्तावेज़ और आवश्यकताएं तैयार करनी होंगी?',
+      fil: 'Anong mga dokumento ang kailangan kong ihanda para sa form na ito?',
+      ms: 'Apakah dokumen yang perlu saya sediakan untuk borang ini?'
+    },
+    avatar_greeting: {
+      en: "Hi there! 👋 I'm Telmy, your form assistant. You can ask me any question or press the microphone button below to speak with me!",
+      id: 'Halo! 👋 Saya Telmy, asisten formulir kamu. Kamu bisa tanyakan apa saja atau tekan tombol mikrofon di bawah untuk bicara langsung!',
+      ja: 'こんにちは！ 👋 フォームアシスタントの Telmy です。質問を入力するか、下のマイクボタンを押してお話しください！',
+      ko: '안녕하세요! 👋 양식 도우미 Telmy입니다. 질문을 입력하시거나 아래 마이크 버튼을 눌러 직접 말씀해 주세요!',
+      zh: '您好！👋 我是您的表单助手 Telmy。您可以随时提问，或点击下方麦克风与我直接交谈！',
+      'zh-TW': '您好！👋 我是您的表單助理 Telmy。您可以隨時提問，或點擊下方麥克風與我直接對話！',
+      vi: 'Xin chào! 👋 Tôi là Telmy, trợ lý biểu mẫu của bạn. Bạn có thể hỏi bất cứ điều gì hoặc nhấn micrô bên dưới để trò chuyện!',
+      th: 'สวัสดีครับ! 👋 ผมคือ Telmy ผู้ช่วยฟอร์มของคุณ ถามอะไรก็ได้หรือกดปุ่มไมโครโฟนด้านล่างเพื่อคุยกับผมเลย!',
+      hi: 'नमस्ते! 👋 मैं Telmy हूँ। आप मुझसे कुछ भी पूछ सकते हैं या मुझसे बात करने के लिए नीचे दिए गए माइक को दबा सकते हैं!',
+      fil: 'Kamusta! 👋 Ako si Telmy. Magtanong ng kahit ano o pindutin ang mikropono sa ibaba para makipag-usap!',
+      ms: 'Hai! 👋 Saya Telmy, pembantu borang anda. Anda boleh tanya apa sahaja atau tekan butang mikrofon di bawah untuk bercakap!'
+    },
+    mic_perm_required_msg: {
+      en: '🎙️ **Microphone Permission Required**: A new tab has opened to grant microphone access. Please click **Allow** on that tab, then click the microphone button again!',
+      id: '🎙️ **Izin Mikrofon Diperlukan**: Tab baru telah dibuka untuk memberikan izin mikrofon satu kali klik. Silakan klik **Allow** pada tab tersebut, lalu tekan tombol mikrofon kembali!',
+      ja: '🎙️ **マイクの許可が必要です**: マイクアクセスを許可するための新しいタブが開きました。そのタブで **許可** をクリックし、再度マイクボタンを押してください！',
+      ko: '🎙️ **마이크 권한 필요**: 마이크 사용 권한을 허용할 수 있는 새 탭이 열렸습니다. 해당 탭에서 **허용**을 누른 후 마이크 버튼을 다시 눌러주세요!',
+      zh: '🎙️ **需要麦克风权限**：已打开新标签页以授予麦克风权限。请在该标签页中点击**允许**，然后再次点击麦克风按钮！',
+      'zh-TW': '🎙️ **需要麥克風權限**：已開啟新分頁以授予麥克風權限。請在該分頁中點擊**允許**，然後再次點擊麥克風按鈕！',
+      vi: '🎙️ **Cần cấp quyền Micrô**: Tab mới đã mở để cấp quyền truy cập micrô. Vui lòng nhấp **Cho phép** trên tab đó, sau đó nhấp lại nút micrô!',
+      th: '🎙️ **ต้องได้รับอนุญาตใช้ไมโครโฟน**: แท็บใหม่เปิดขึ้นเพื่ออนุญาตให้เข้าถึงไมโครโฟน โปรดคลิก **อนุญาต** บนแท็บนั้นแล้วกดปุ่มไมค์อีกครั้ง!',
+      hi: '🎙️ **माइक्रोफ़ोन अनुमति आवश्यक**: माइक्रोफ़ोन एक्सेस देने के लिए एक नया टैब खुला है। कृपया उस टैब पर **Allow** पर क्लिक करें, फिर माइक बटन दोबारा दबाएं!',
+      fil: '🎙️ **Kailangan ng Pahintulot sa Mikropono**: Nagbukas ng bagong tab para magbigay ng access. I-click ang **Allow** doon, saka pindutin muli ang mic!',
+      ms: '🎙️ **Kebenaran Mikrofon Diperlukan**: Tab baharu telah dibuka untuk memberi kebenaran mikrofon. Sila klik **Allow** pada tab tersebut, kemudian tekan butang mikrofon semula!'
+    },
+    field_label_prefix: {
+      en: 'Field', id: 'Kolom', ja: '項目', ko: '입력란',
+      zh: '字段', 'zh-TW': '欄位', vi: 'Trường', th: 'ช่อง',
+      hi: 'फ़ील्ड', fil: 'Kolum', ms: 'Ruangan'
+    },
+    summary_desc_fallback: {
+      en: 'This page contains {count} form input fields.',
+      id: 'Halaman ini memuat {count} kolom isian formulir.',
+      ja: 'このページには {count} 個の入力項目があります。',
+      ko: '이 페이지에는 {count}개의 입력란이 있습니다.',
+      zh: '此页面包含 {count} 个表单输入项。',
+      'zh-TW': '此頁面包含 {count} 個表單輸入項。',
+      vi: 'Trang này có {count} trường nhập biểu mẫu.',
+      th: 'หน้านี้มีช่องกรอกแบบฟอร์ม {count} ช่อง',
+      hi: 'इस पेज पर {count} फ़ॉर्म फ़ील्ड्स मौजूद हैं।',
+      fil: 'Ang pahinang ito ay may {count} na kolum.',
+      ms: 'Halaman ini mengandungi {count} ruangan borang.'
+    },
+    progress_sub_text: {
+      en: '{filled} of {total} fields filled',
+      id: '{filled} dari {total} kolom terisi',
+      ja: '{total} 項目中 {filled} 項目入力済み',
+      ko: '{total}개 중 {filled}개 작성됨',
+      zh: '已填写 {filled} / {total} 项',
+      'zh-TW': '已填寫 {filled} / {total} 項',
+      vi: 'Đã điền {filled} trên {total} trường',
+      th: 'กรอกแล้ว {filled} จาก {total} ช่อง',
+      hi: '{total} में से {filled} फ़ील्ड्स भरे गए',
+      fil: '{filled} sa {total} na kolum ay napunan',
+      ms: '{filled} daripada {total} ruangan telah diisi'
+    },
+    pdf_intro_msg: {
+      en: "I've analyzed {title}. You can type into fields directly and export the completed official document.",
+      id: 'Saya telah menganalisis formulir {title}. Anda dapat mengisi langsung kolom di bawah dan mengekspor hasilnya.',
+      ja: '{title} を解析しました。直接入力して完成した公式書類を書き出せます。',
+      ko: '{title}을(를) 분석했습니다. 아래에서 직접 입력 후 문서를 내보낼 수 있습니다.',
+      zh: '已分析 {title}。您可以直接在下方填写并导出完成的正式文档。',
+      'zh-TW': '已分析 {title}。您可以直接在下方填寫並匯出完成的正式文件。',
+      vi: 'Tôi đã phân tích {title}. Bạn có thể điền trực tiếp và xuất tài liệu hoàn chỉnh.',
+      th: 'วิเคราะห์ {title} แล้ว คุณสามารถกรอกโดยตรงและส่งออกเอกสารฉบับสมบูรณ์ได้',
+      hi: 'मैंने {title} का विश्लेषण किया है। आप सीधे भर सकते हैं और दस्तावेज़ निर्यात कर सकते हैं।',
+      fil: 'Nasuri ko na ang {title}. Maaari mong sagutan nang direkta at i-export ang opisyal na dokumento.',
+      ms: 'Saya telah menganalisis borang {title}. Anda boleh mengisi terus ruangan di bawah dan mengeksport hasilnya.'
+    },
+    your_document: {
+      en: 'your document', id: 'dokumen Anda', ja: 'ドキュメント', ko: '문서',
+      zh: '您的文档', 'zh-TW': '您的文件', vi: 'tài liệu của bạn', th: 'เอกสารของคุณ',
+      hi: 'आपका दस्तावेज़', fil: 'iyong dokumento', ms: 'dokumen anda'
+    },
+    how_to_complete_field_msg: {
+      en: 'How do I complete "{field}" on this form?',
+      id: 'Bagaimana cara mengisi "{field}" pada formulir ini?',
+      ja: 'このフォームで「{field}」はどのように記入しますか？',
+      ko: '이 양식에서 "{field}"은(는) 어떻게 작성하나요?',
+      zh: '如何在此表单中填写“{field}”？',
+      'zh-TW': '如何在此表單中填寫「{field}」？',
+      vi: 'Cách điền "{field}" trên biểu mẫu này như thế nào?',
+      th: 'กรอก "{field}" ในฟอร์มนี้อย่างไร?',
+      hi: 'इस फ़ॉर्म पर "{field}" को कैसे भरें?',
+      fil: 'Paano sasagutan ang "{field}" sa form na ito?',
+      ms: 'Bagaimana cara mengisi "{field}" pada borang ini?'
+    },
+    audit_scan_error: {
+      en: 'Unable to scan form values on this webpage. Please ensure active input fields exist.',
+      id: 'Tidak dapat memindai nilai isian formulir pada halaman web ini. Pastikan halaman memiliki input aktif.',
+      ja: 'このウェブページのフォーム値をスキャンできません。入力項目が存在することをご確認ください。',
+      ko: '이 웹페이지의 양식 값을 스캔할 수 없습니다. 활성 입력란이 있는지 확인하세요.',
+      zh: '无法扫描此网页上的表单值。请确保页面具有有效输入项。',
+      'zh-TW': '無法掃描此網頁上的表單值。請確認頁面具有有效輸入欄位。',
+      vi: 'Không thể quét các giá trị biểu mẫu trên trang này. Hãy đảm bảo trang có các trường nhập.',
+      th: 'ไม่สามารถสแกนค่าในฟอร์มของหน้านี้ได้ โปรดตรวจสอบว่ามีช่องกรอกที่ใช้งานอยู่',
+      hi: 'इस वेबपेज पर फ़ॉर्म मानों को स्कैन करने में असमर्थ। कृपया सक्रिय इनपुट फ़ील्ड सुनिश्चित करें।',
+      fil: 'Hindi ma-scan ang mga value ng form sa webpage na ito. Siguraduhing may aktibong input.',
+      ms: 'Tidak dapat mengimbas nilai isian borang pada halaman ini. Pastikan terdapat input aktif.'
+    },
+    audit_no_fields: {
+      en: 'No form fields detected to audit.',
+      id: 'Belum ada kolom yang terdeteksi untuk diaudit.',
+      ja: '検証対象の入力項目が検出されていません。',
+      ko: '검토할 양식 입력란이 감지되지 않았습니다.',
+      zh: '未检测到可审核的表单项。',
+      'zh-TW': '未偵測到可審核的表單欄位。',
+      vi: 'Không tìm thấy trường biểu mẫu nào để kiểm tra.',
+      th: 'ไม่พบช่องกรอกแบบฟอร์มที่จะตรวจสอบ',
+      hi: 'ऑडिट करने के लिए कोई फ़ॉर्म फ़ील्ड नहीं मिली।',
+      fil: 'Walang nakitang kolum para i-audit.',
+      ms: 'Tiada ruangan borang yang dikesan untuk diaudit.'
+    },
+    audit_required_empty_title: {
+      en: 'Required Field Empty:', id: 'Kolom Wajib Belum Diisi:', ja: '必須項目が未入力:', ko: '필수 항목 누락:',
+      zh: '必填项未填写：', 'zh-TW': '必填欄位未填寫：', vi: 'Trường bắt buộc chưa điền:', th: 'ยังไม่ได้กรอกช่องบังคับ:',
+      hi: 'आवश्यक फ़ील्ड खाली है:', fil: 'Kailangang Kolum ay Walang Laman:', ms: 'Ruangan Wajib Belum Diisi:'
+    },
+    audit_required_empty_desc: {
+      en: 'This field is required. Leaving it blank may cause submission rejection or disqualification.',
+      id: 'Kolom ini wajib diisi menurut aturan portal. Kosong berisiko diskualifikasi otomatis.',
+      ja: 'この項目は必須です。空欄のまま送信すると却下される恐れがあります。',
+      ko: '이 항목은 필수입니다. 비워 둘 경우 제출이 거부되거나 탈락될 수 있습니다.',
+      zh: '此项为必填项。留空可能导致提交被拒或丧失资格。',
+      'zh-TW': '此欄位為必填項目。留空可能導致提交遭拒或喪失資格。',
+      vi: 'Trường này là bắt buộc. Để trống có thể dẫn đến việc hồ sơ bị từ chối.',
+      th: 'ช่องนี้เป็นช่องบังคับ การเว้นว่างไว้อาจทำให้ถูกปฏิเสธการส่งฟอร์ม',
+      hi: 'यह फ़ील्ड आवश्यक है। इसे खाली छोड़ने से आवेदन अस्वीकार हो सकता है।',
+      fil: 'Kailangan ang kolum na ito. Ang pag-iwan nitong walang laman ay maaaring maging sanhi ng pagtanggi.',
+      ms: 'Ruangan ini wajib diisi. Dibiarkan kosong berisiko pembatalan permohonan.'
+    },
+    audit_passport_crit_title: {
+      en: 'Passport Validity Critical (<6 Months):', id: 'Masa Berlaku Paspor Kritis (<6 Bulan):',
+      ja: 'パスポート有効期限が切迫 (<6ヶ月):', ko: '여권 유효기간 위험 (<6개월):',
+      zh: '护照有效期告急（<6个月）：', 'zh-TW': '護照有效期限告急（<6個月）：',
+      vi: 'Hạn hộ chiếu sắp hết (<6 tháng):', th: 'อายุหนังสือเดินทางเหลือน้อย (<6 เดือน):',
+      hi: 'पासपोर्ट वैधता महत्वपूर्ण (<6 महीने):', fil: 'Kritikal ang Bisa ng Pasaporte (<6 Buwan):',
+      ms: 'Tempoh Sah Pasport Kritikal (<6 Bulan):'
+    },
+    audit_passport_crit_desc: {
+      en: 'Most embassies, consulates, and airlines require at least 6 months validity from departure date.',
+      id: 'Hampir seluruh kedutaan dan maskapai menolak paspor dengan sisa masa berlaku kurang dari 6 bulan.',
+      ja: 'ほとんどの大使館や航空会社は、出発日から6ヶ月以上の有効期限を要求します。',
+      ko: '대부분의 대사관과 항공사는 출발일 기준 최소 6개월의 유효기간을 요구합니다.',
+      zh: '大多数使馆与航空公司要求护照自出发日起至少有6个月有效期。',
+      'zh-TW': '大多數使館與航空公司要求護照自出發日起至少具備6個月有效期限。',
+      vi: 'Hầu hết các đại sứ quán và hãng hàng không yêu cầu thời hạn ít nhất 6 tháng kể từ ngày khởi hành.',
+      th: 'สถานทูตและสายการบินส่วนใหญ่ต้องการอายุหนังสือเดินทางอย่างน้อย 6 เดือนนับจากวันเดินทาง',
+      hi: 'अधिकांश दूतावास और एयरलाइंस प्रस्थान तिथि से कम से कम 6 महीने की वैधता मांगते हैं।',
+      fil: 'Karamihan sa mga embahada at airline ay nangangailangan ng hindi bababa sa 6 na buwang bisa.',
+      ms: 'Hampir semua kedutaan dan syarikat penerbangan menolak pasport dengan baki kurang 6 bulan.'
+    },
+    audit_academic_title_title: {
+      en: 'Academic Title in Name Field:', id: 'Gelar Akademik Terdeteksi di Kolom Nama:',
+      ja: '氏名欄に学位・称号が検出されました:', ko: '이름란에 학위/직함이 포함됨:',
+      zh: '姓名栏检测到学位头衔：', 'zh-TW': '姓名欄位偵測到學位頭銜：',
+      vi: 'Phát hiện học vị trong trường tên:', th: 'พบคำนำหน้าทางวิชาการในช่องชื่อ:',
+      hi: 'नाम फ़ील्ड में शैक्षणिक उपाधि पाई गई:', fil: 'May Academic Title sa Kolum ng Pangalan:',
+      ms: 'Gelaran Akademik Dikesan pada Ruangan Nama:'
+    },
+    audit_academic_title_desc: {
+      en: 'International scholarship and visa portals usually require exact passport name without academic/honorary titles.',
+      id: 'Sebagian besar pendaftaran beasiswa dan visa internasional melarang gelar di kolom nama resmi paspor.',
+      ja: '国際的な奨学金やビザでは、学位称号を含まないパスポート記載通りの氏名が求められます。',
+      ko: '국제 장학금 및 비자 포털은 직함을 제외한 여권상의 정확한 성명을 요구합니다.',
+      zh: '国际奖学金和签证申请通常要求填写与护照一致的姓名，严禁包含学位或荣誉头衔。',
+      'zh-TW': '國際獎學金和簽證申請通常要求填寫與護照完全一致的姓名，嚴禁包含學位或榮譽頭銜。',
+      vi: 'Hồ sơ học bổng và thị thực quốc tế thường yêu cầu tên chính xác theo hộ chiếu mà không có học vị.',
+      th: 'พอร์ทัลทุนการศึกษาและวีซ่าระหว่างประเทศมักกำหนดให้ระบุชื่อตามหนังสือเดินทางโดยไม่มีตำแหน่งทางวิชาการ',
+      hi: 'अंतर्राष्ट्रीय छात्रवृत्ति और वीज़ा पोर्टल आमतौर पर बिना किसी उपाधि के सटीक पासपोर्ट नाम मांगते हैं।',
+      fil: 'Karaniwang hinihingi ng international scholarship at visa ang eksaktong pangalan sa pasaporte nang walang titulo.',
+      ms: 'Sebahagian besar pendaftaran biasiswa dan visa melarang gelaran akademik pada nama rasmi pasport.'
+    },
+    audit_lowercase_name_title: {
+      en: 'Name Field is Lowercase:', id: 'Nama Huruf Kecil Semua:', ja: '氏名がすべて小文字です:', ko: '이름이 모두 소문자입니다:',
+      zh: '姓名栏为全小写：', 'zh-TW': '姓名欄位為全小寫：', vi: 'Tên viết toàn bộ bằng chữ thường:', th: 'ชื่อเป็นตัวพิมพ์เล็กทั้งหมด:',
+      hi: 'नाम फ़ील्ड केवल छोटे अक्षरों में है:', fil: 'Maliit na Titik Lahat ang Pangalan:', ms: 'Nama Huruf Kecil Sahaja:'
+    },
+    audit_lowercase_name_desc: {
+      en: 'Recommended to use UPPERCASE or Title Case matching your official identity document.',
+      id: 'Disarankan gunakan HURUF KAPITAL atau Title Case sesuai paspor untuk menghindari kesalahan cetak berkas.',
+      ja: '書類の印刷不備を防ぐため、公的身分証に合わせた大文字またはタイトルケースを推奨します。',
+      ko: '문서 인쇄 오류를 방지하기 위해 신분증과 일치하는 대문자 작성을 권장합니다.',
+      zh: '建议使用全大写或首字母大写，与官方证件保持完全一致。',
+      'zh-TW': '建議使用全大寫或首字母大寫，與官方身分證明文件保持完全一致。',
+      vi: 'Khuyến nghị dùng CHỮ HOA hoặc Title Case khớp với giấy tờ tùy thân chính thức.',
+      th: 'แนะนำให้ใช้ตัวพิมพ์ใหญ่หรือ Title Case ให้ตรงกับเอกสารทางการ',
+      hi: 'आधिकारिक दस्तावेज़ से मिलान करने के लिए बड़े अक्षरों (UPPERCASE) का उपयोग करने की सलाह दी जाती है।',
+      fil: 'Inirerekomendang gamitin ang MALALAKING TITIK o Title Case na tugma sa iyong dokumento.',
+      ms: 'Disyorkan gunakan HURUF BESAR atau Title Case sepadan dengan dokumen rasmi.'
+    },
+    audit_id_length_title: {
+      en: 'Non-Standard ID Length ({count} digits)', id: 'Panjang NIK Tidak Standar ({count} digit)',
+      ja: '身元番号の桁数が規格外です ({count} 桁)', ko: '표준이 아닌 식별번호 길이 ({count}자리)',
+      zh: '证件号长度不规范（{count} 位）', 'zh-TW': '證件號長度不符規範（{count} 碼）',
+      vi: 'Độ dài số định danh không chuẩn ({count} số)', th: 'ความยาวหมายเลขประจำตัวไม่เป็นมาตรฐาน ({count} หลัก)',
+      hi: 'गैर-मानक आईडी लंबाई ({count} अंक)', fil: 'Hindi Karaniwang Haba ng ID ({count} digit)',
+      ms: 'Panjang No. Kad Pengenalan Tidak Piawai ({count} digit)'
+    },
+    audit_id_length_desc: {
+      en: 'Standard Indonesian National ID (NIK) is exactly 16 digits.',
+      id: 'Format NIK Indonesia adalah tepat 16 digit angka.',
+      ja: 'インドネシアの身分証番号 (NIK) は正確に16桁です。',
+      ko: '인도네시아 국가 식별 번호(NIK)는 정확히 16자리 숫자입니다.',
+      zh: '印尼国家身份证（NIK）规范格式为准确的 16 位纯数字。',
+      'zh-TW': '印尼國家身分證（NIK）標準格式為準確的 16 碼純數字。',
+      vi: 'Định dạng NIK Indonesia tiêu chuẩn là chính xác 16 chữ số.',
+      th: 'รูปแบบ NIK ของอินโดนีเซียคือตัวเลข 16 หลัก',
+      hi: 'मानक इंडोनेशियाई राष्ट्रीय पहचान पत्र (NIK) ठीक 16 अंकों का होता है।',
+      fil: 'Ang karaniwang Indonesian National ID (NIK) ay eksaktong 16 na digit.',
+      ms: 'Format NIK Indonesia adalah tepat 16 digit angka.'
+    },
+    audit_all_clean_title: {
+      en: 'All Fields Meet Standard Requirements', id: 'Semua Isian Sesuai Standar Birokrasi',
+      ja: 'すべての項目が基準を満たしています', ko: '모든 항목이 규정 기준을 충족합니다',
+      zh: '所有填写项均符合规范标准', 'zh-TW': '所有填寫欄位皆符合規範標準',
+      vi: 'Tất cả các trường đều đạt chuẩn', th: 'ทุกช่องตรงตามมาตรฐานที่กำหนด',
+      hi: 'सभी फ़ील्ड्स मानक आवश्यकताओं को पूरा करते हैं', fil: 'Lahat ng Kolum ay Sumusunod sa Pamantayan',
+      ms: 'Semua Isian Mematuhi Piawaian'
+    },
+    audit_all_clean_desc: {
+      en: 'Names, dates, and required fields are properly formatted with no critical errors detected.',
+      id: 'Format nama, tanggal, dan seluruh kolom wajib telah terisi rapi tanpa potensi diskualifikasi.',
+      ja: '氏名、日付、必須項目が正確に記入されており、重大な不備は検出されませんでした。',
+      ko: '이름, 날짜 및 필수 항목이 올바르게 작성되었으며 심각한 오류가 감지되지 않았습니다.',
+      zh: '姓名、日期和必填项格式正确，未检测到任何严重问题。',
+      'zh-TW': '姓名、日期和必填欄位格式正確，未偵測到任何重大錯誤。',
+      vi: 'Tên, ngày tháng và các trường bắt buộc đã được định dạng đúng, không có lỗi nghiêm trọng.',
+      th: 'ชื่อ วันที่ และช่องบังคับได้รับการจัดรูปแบบอย่างถูกต้อง ไม่พบข้อผิดพลาดร้ายแรง',
+      hi: 'नाम, तिथियां और आवश्यक फ़ील्ड्स उचित रूप से प्रारूपित हैं, कोई त्रुटि नहीं मिली।',
+      fil: 'Maayos ang format ng mga pangalan, petsa, at kinakailangang kolum nang walang kritikal na error.',
+      ms: 'Format nama, tarikh, dan semua ruangan wajib telah diisi dengan kemas tanpa ralat.'
     }
   };
+
+  const LANG_SVGS = {
+    en: '<svg viewBox="0 0 640 480"><path fill="#012169" d="M0 0h640v480H0z"/><path fill="#FFF" d="m75 0 244 181L562 0h78v62L400 241l240 178v61h-80L320 301 81 480H0v-60l239-179L0 64V0h75z"/><path fill="#C8102E" d="m424 288 216 160v32l-258-192h42zm-208-96L0 32V0l258 192h-42zM640 32 384 224h42l214-160V32zM0 448l256-192h-42L0 416v32z"/><path fill="#FFF" d="M240 0h160v480H240zM0 160h640v160H0z"/><path fill="#C8102E" d="M267 0h107v480H267zM0 187h640v107H0z"/></svg>',
+    id: '<svg viewBox="0 0 640 480"><path fill="#e70011" d="M0 0h640v240H0z"/><path fill="#ffffff" d="M0 240h640v240H0z"/></svg>',
+    ja: '<svg viewBox="0 0 640 480"><path fill="#ffffff" d="M0 0h640v480H0z"/><circle fill="#bc002d" cx="320" cy="240" r="144"/></svg>',
+    ko: '<svg viewBox="0 0 640 480"><path fill="#ffffff" d="M0 0h640v480H0z"/><g transform="translate(320,240)"><path fill="#cd2e3a" d="M0-120a120 120 0 0 1 120 120 60 60 0 0 1-60 60 60 60 0 0 0-60-60 60 60 0 0 0-60 60 60 60 0 0 1-60-60A120 120 0 0 1 0-120z"/><path fill="#0047a0" d="M0 120a120 120 0 0 1-120-120 60 60 0 0 1 60-60 60 60 0 0 0 60 60 60 60 0 0 0 60-60 60 60 0 0 1 60 60A120 120 0 0 1 0 120z"/></g><g fill="#000"><rect x="90" y="80" width="30" height="90" transform="rotate(-34 105 125)"/><rect x="130" y="80" width="30" height="90" transform="rotate(-34 145 125)"/><rect x="480" y="80" width="30" height="90" transform="rotate(34 495 125)"/><rect x="520" y="80" width="30" height="90" transform="rotate(34 535 125)"/></g></svg>',
+    zh: '<svg viewBox="0 0 640 480"><path fill="#ee1c25" d="M0 0h640v480H0z"/><polygon fill="#ffde00" points="120,60 133,100 175,100 141,125 154,165 120,140 86,165 99,125 65,100 107,100"/></svg>',
+    'zh-TW': '<svg viewBox="0 0 640 480"><path fill="#fe0000" d="M0 0h640v480H0z"/><path fill="#000095" d="M0 0h320v240H0z"/><circle fill="#fff" cx="160" cy="120" r="50"/><circle fill="#000095" cx="160" cy="120" r="34"/><circle fill="#fff" cx="160" cy="120" r="26"/></svg>',
+    vi: '<svg viewBox="0 0 640 480"><path fill="#da251d" d="M0 0h640v480H0z"/><polygon fill="#ffff00" points="320,90 357,204 477,204 380,274 417,388 320,318 223,388 260,274 163,204 283,204"/></svg>',
+    th: '<svg viewBox="0 0 640 480"><path fill="#a51931" d="M0 0h640v480H0z"/><path fill="#f4f5f8" d="M0 80h640v320H0z"/><path fill="#2d2a4a" d="M0 160h640v160H0z"/></svg>',
+    hi: '<svg viewBox="0 0 640 480"><path fill="#ff9933" d="M0 0h640v160H0z"/><path fill="#ffffff" d="M0 160h640v160H0z"/><path fill="#128807" d="M0 320h640v160H0z"/><circle fill="#000088" cx="320" cy="240" r="45"/><circle fill="#ffffff" cx="320" cy="240" r="37"/><circle fill="#000088" cx="320" cy="240" r="14"/></svg>',
+    fil: '<svg viewBox="0 0 640 480"><path fill="#0038a8" d="M0 0h640v240H0z"/><path fill="#ce1126" d="M0 240h640v240H0z"/><polygon fill="#ffffff" points="0,0 280,240 0,480"/><circle fill="#fcd116" cx="95" cy="240" r="32"/></svg>',
+    ms: '<svg viewBox="0 0 640 480"><g fill="#cc0000"><rect width="640" height="34" y="0"/><rect width="640" height="34" y="68"/><rect width="640" height="34" y="137"/><rect width="640" height="34" y="205"/><rect width="640" height="34" y="274"/><rect width="640" height="34" y="342"/><rect width="640" height="34" y="411"/></g><g fill="#ffffff"><rect width="640" height="34" y="34"/><rect width="640" height="34" y="102"/><rect width="640" height="34" y="171"/><rect width="640" height="34" y="239"/><rect width="640" height="34" y="308"/><rect width="640" height="34" y="377"/><rect width="640" height="34" y="446"/></g><rect width="320" height="274" fill="#000066"/><circle cx="160" cy="137" r="75" fill="#ffcc00"/><circle cx="185" cy="137" r="62" fill="#000066"/><polygon points="210,137 190,120 195,145 175,130 195,150 180,165 200,155 210,175 215,155 235,165 220,150 240,130 220,145 225,120" fill="#ffcc00"/></svg>'
+  };
+
+  const LANG_OPTIONS = [
+    { code: 'en', label: 'English', short: 'EN' },
+    { code: 'id', label: 'Indonesia', short: 'ID' },
+    { code: 'ja', label: '日本語', short: 'JA' },
+    { code: 'ko', label: '한국어', short: 'KO' },
+    { code: 'zh', label: '简体中文', short: 'ZH' },
+    { code: 'zh-TW', label: '繁體中文', short: 'TW' },
+    { code: 'vi', label: 'Tiếng Việt', short: 'VI' },
+    { code: 'th', label: 'ไทย', short: 'TH' },
+    { code: 'hi', label: 'हिन्दी', short: 'HI' },
+    { code: 'fil', label: 'Filipino', short: 'FIL' },
+    { code: 'ms', label: 'Bahasa Melayu', short: 'MS' }
+  ];
 
   const LOCALE_MAP = {
     en: 'en-US',
@@ -409,10 +993,102 @@ document.addEventListener('DOMContentLoaded', async () => {
     ms: 'ms-MY'
   };
 
-  function t(key) {
+  function t(key, replacements = {}) {
     const entry = I18N[key];
     if (!entry) return '';
-    return entry[currentLanguage] || entry['en'] || entry['id'] || '';
+    let val = entry[currentLanguage] || entry['en'] || entry['id'] || '';
+    if (replacements && typeof replacements === 'object') {
+      Object.entries(replacements).forEach(([k, v]) => {
+        val = val.replaceAll(`{${k}}`, v);
+      });
+    }
+    return val;
+  }
+
+  // Custom Mini Language Dropdown with SVG Flags (Priority 5.1)
+  function initCustomLanguageDropdown() {
+    if (!spLangDropdown || !spLangBtn || !spLangMenu) return;
+
+    spLangMenu.innerHTML = LANG_OPTIONS.map(opt => `
+      <button type="button" class="lang-menu-item ${opt.code === currentLanguage ? 'active' : ''}" data-lang="${opt.code}">
+        <span class="lang-flag">${LANG_SVGS[opt.code] || ''}</span>
+        <span class="lang-name">${opt.label}</span>
+        <span class="lang-code" style="margin-left: auto; font-size: 10px; opacity: 0.6;">${opt.short}</span>
+      </button>
+    `).join('');
+
+    updateCustomLanguageButton();
+
+    spLangBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = spLangDropdown.classList.contains('open');
+      if (isOpen) {
+        closeCustomLanguageDropdown();
+      } else {
+        openCustomLanguageDropdown();
+      }
+    });
+
+    spLangMenu.querySelectorAll('.lang-menu-item').forEach(item => {
+      item.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const selectedLang = item.getAttribute('data-lang');
+        if (selectedLang) {
+          selectLanguage(selectedLang);
+        }
+        closeCustomLanguageDropdown();
+      });
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!spLangDropdown.contains(e.target)) {
+        closeCustomLanguageDropdown();
+      }
+    });
+  }
+
+  function openCustomLanguageDropdown() {
+    if (!spLangDropdown || !spLangMenu) return;
+    spLangDropdown.classList.add('open');
+    spLangMenu.style.display = 'flex';
+  }
+
+  function closeCustomLanguageDropdown() {
+    if (!spLangDropdown || !spLangMenu) return;
+    spLangDropdown.classList.remove('open');
+    spLangMenu.style.display = 'none';
+  }
+
+  function updateCustomLanguageButton() {
+    if (spCurrentFlag) spCurrentFlag.innerHTML = LANG_SVGS[currentLanguage] || '';
+    if (spCurrentLangCode) {
+      const match = LANG_OPTIONS.find(o => o.code === currentLanguage);
+      spCurrentLangCode.textContent = match ? match.short : (currentLanguage || 'EN').toUpperCase();
+    }
+    if (spLangMenu) {
+      spLangMenu.querySelectorAll('.lang-menu-item').forEach(el => {
+        el.classList.toggle('active', el.getAttribute('data-lang') === currentLanguage);
+      });
+    }
+  }
+
+  function selectLanguage(lang) {
+    currentLanguage = lang;
+    if (langSelect) langSelect.value = currentLanguage;
+    const onboardingSelect = document.getElementById('onboarding-lang-select');
+    if (onboardingSelect) onboardingSelect.value = currentLanguage;
+    updateCustomLanguageButton();
+
+    chrome.storage.local.get(['settings']).then((res) => {
+      const updated = { ...(res.settings || {}), language: currentLanguage };
+      chrome.storage.local.set({ settings: updated });
+    });
+
+    applyLanguageUI();
+
+    if (activeFieldIndex >= 0 && detectedFields[activeFieldIndex]) {
+      renderFieldDetail(detectedFields[activeFieldIndex]);
+    }
   }
 
   // 1. Initialize Active Tab, User & Onboarding
@@ -427,6 +1103,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     currentUser = stored.user || null;
+    initCustomLanguageDropdown();
     renderUserUI();
     applyLanguageUI();
 
@@ -437,6 +1114,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     setupUserControlsAndOnboarding();
     setupPdfMode();
+    setupVaultController();
     setupQuotaAndPaywall();
     refreshUserQuota();
 
@@ -555,7 +1233,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       popoverUserName.textContent = currentUser.displayName || currentUser.name || 'User';
       popoverUserEmail.textContent = currentUser.email || 'Connected';
-      popoverAuthBadge.textContent = '✓ Firebase Connected';
+      popoverAuthBadge.textContent = '✓ Connected';
       popoverAuthBadge.className = 'badge-auth-status connected';
 
       btnPopoverAuth.style.display = 'none';
@@ -821,21 +1499,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Language Change
   langSelect.addEventListener('change', (e) => {
-    currentLanguage = e.target.value;
-    chrome.storage.local.get(['settings']).then((res) => {
-      const updated = { ...(res.settings || {}), language: currentLanguage };
-      chrome.storage.local.set({ settings: updated });
-    });
-    applyLanguageUI();
-    if (activeFieldIndex >= 0 && detectedFields[activeFieldIndex]) {
-      renderFieldDetail(detectedFields[activeFieldIndex]);
-    }
+    selectLanguage(e.target.value);
   });
 
   function applyLanguageUI() {
     chatInput.placeholder = t('chat_placeholder');
     const elChat = document.getElementById('lbl-tab-chat');
     if (elChat) elChat.textContent = t('tab_chat');
+    const elVault = document.getElementById('lbl-tab-vault');
+    if (elVault) elVault.textContent = t('tab_vault');
+    const elPdf = document.getElementById('lbl-tab-pdf');
+    if (elPdf) elPdf.textContent = t('tab_pdf');
     const elFields = document.getElementById('lbl-tab-fields');
     if (elFields) elFields.textContent = t('tab_fields');
     const elSummary = document.getElementById('lbl-tab-summary');
@@ -860,9 +1534,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (elPreTitle) elPreTitle.textContent = t('prereq_title');
     const elTips = document.getElementById('lbl-tips-title');
     if (elTips) elTips.textContent = t('tips_title');
-    // Privacy Shield
-    const elPriv = document.getElementById('lbl-privacy-text');
-    if (elPriv) elPriv.textContent = t('privacy_text');
+
+    // Mode Card Titles & Descriptions
+    const chatTitle = cardModeChat?.querySelector('.mode-card-title');
+    if (chatTitle) chatTitle.textContent = t('mode_chat_title');
+    const chatDesc = cardModeChat?.querySelector('.mode-card-desc');
+    if (chatDesc) chatDesc.textContent = t('mode_chat_desc');
+    const voiceTitle = cardModeVoice?.querySelector('.mode-card-title');
+    if (voiceTitle) voiceTitle.textContent = t('mode_voice_title');
+    const voiceDesc = cardModeVoice?.querySelector('.mode-card-desc');
+    if (voiceDesc) voiceDesc.textContent = t('mode_voice_desc');
+
+    if (lblCompactModeTitle) {
+      lblCompactModeTitle.textContent = currentBotMode === 'chat'
+        ? `💬 Mode: ${t('mode_chat_compact')}`
+        : `🎙️ Mode: ${t('mode_voice_compact')}`;
+    }
+    const compactHoverHint = spModeCompactBar?.querySelector('span:last-child');
+    if (compactHoverHint) compactHoverHint.textContent = `${t('hover_change_mode')} ▾`;
 
     // Pre-Submission Form Auditor
     const elAuditTitle = document.getElementById('lbl-audit-btn-title');
@@ -880,11 +1569,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Mode Card Badges & Voicebot Stage Text
     if (currentBotMode === 'chat') {
-      if (badgeModeChatStatus) badgeModeChatStatus.textContent = currentLanguage === 'id' ? '✓ Aktif' : '✓ Active';
-      if (badgeModeVoiceStatus) badgeModeVoiceStatus.textContent = currentLanguage === 'id' ? '○ Beralih Mode' : '○ Switch Mode';
+      if (badgeModeChatStatus) badgeModeChatStatus.textContent = t('mode_status_active');
+      if (badgeModeVoiceStatus) badgeModeVoiceStatus.textContent = t('mode_status_switch');
     } else {
-      if (badgeModeVoiceStatus) badgeModeVoiceStatus.textContent = currentLanguage === 'id' ? '✓ Aktif' : '✓ Active';
-      if (badgeModeChatStatus) badgeModeChatStatus.textContent = currentLanguage === 'id' ? '○ Beralih Mode' : '○ Switch Mode';
+      if (badgeModeVoiceStatus) badgeModeVoiceStatus.textContent = t('mode_status_active');
+      if (badgeModeChatStatus) badgeModeChatStatus.textContent = t('mode_status_switch');
     }
     updateVoicebotStageLabels();
 
@@ -924,6 +1613,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     if (chatHistory.length === 0) {
+      if (currentBotMode === 'voice') {
+        // Voicebot mode has its own large interactive avatar stage; hide welcome card to prevent overlap
+        return;
+      }
+
       const robotIconSrc = (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL)
         ? chrome.runtime.getURL('assets/telmy_icon.png')
         : '../assets/telmy_icon.png';
@@ -934,20 +1628,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         <div class="welcome-avatar-wrap">
           <img src="${robotIconSrc}" class="welcome-robot-icon" alt="Telmy Robot">
         </div>
-        <h3 class="welcome-title">Hello! I am Telmy 👋</h3>
-        <p class="welcome-subtitle">Your friendly AI form-filling companion. Ask me anything about this form using text or speech, or choose an option below:</p>
+        <h3 class="welcome-title">${escapeHTML(t('welcome_hero_title'))}</h3>
+        <p class="welcome-subtitle">${escapeHTML(t('welcome_hero_desc'))}</p>
         <div class="welcome-chips-grid">
           <button type="button" class="welcome-action-chip" data-action="ABOUT_FORM">
             <span class="chip-icon">📄</span>
-            <span class="chip-label">Tell me About this form</span>
+            <span class="chip-label">${escapeHTML(t('welcome_chip_about'))}</span>
           </button>
           <button type="button" class="welcome-action-chip" data-action="GUIDE_FIELDS">
             <span class="chip-icon">📝</span>
-            <span class="chip-label">Guide me Fields by Fields</span>
+            <span class="chip-label">${escapeHTML(t('welcome_chip_guide'))}</span>
           </button>
           <button type="button" class="welcome-action-chip" data-action="TRANSLATE_PAGE">
             <span class="chip-icon">🌐</span>
-            <span class="chip-label">Translate this Page</span>
+            <span class="chip-label">${escapeHTML(t('welcome_chip_translate'))}</span>
           </button>
         </div>
       `;
@@ -1008,9 +1702,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       const reply = response && response.data && response.data.reply
         ? response.data.reply
-        : (currentLanguage === 'en'
-            ? 'I am ready to help you complete this form. Click on any field on the page to see detailed step-by-step guidance.'
-            : 'Saya siap membantu memandu pengisian formulir ini. Klik salah satu kolom di halaman untuk melihat petunjuk detail.');
+        : t('default_chat_reply');
 
       const actions = response && response.data && Array.isArray(response.data.actions)
         ? response.data.actions
@@ -1102,7 +1794,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function handleActionChip(act) {
     if (act.type === 'ABOUT_FORM') {
-      handleSendMessage(currentLanguage === 'id' ? 'Tolong jelaskan ringkasan formulir ini dan apa saja yang diperlukan.' : 'Tell me what this form is about and what documents are required.');
+      handleSendMessage(t('msg_about_form'));
     } else if (act.type === 'GUIDE_FIELDS') {
       const tabFields = document.getElementById('tab-btn-fields');
       if (tabFields) tabFields.click();
@@ -1122,21 +1814,30 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   async function handleTrigger1ClickAutoFill() {
-    const stored = await chrome.storage.local.get(['telmy_autofill', 'user']);
-    let afData = stored.telmy_autofill || null;
-    if (!afData && stored.user) {
+    let afData = null;
+    if (isVaultUnlocked && currentDecryptedVault && Array.isArray(currentDecryptedVault.fields) && currentDecryptedVault.fields.length > 0) {
       afData = {
-        name: stored.user.displayName || stored.user.name || '',
-        email: stored.user.email || ''
+        fields: currentDecryptedVault.fields
       };
+      // Populate helper flat fields
+      currentDecryptedVault.fields.forEach(f => {
+        if (f.key && f.value) afData[f.key] = f.value;
+      });
+    } else {
+      const stored = await chrome.storage.local.get(['telmy_autofill', 'user']);
+      afData = stored.telmy_autofill || null;
+      if (!afData && stored.user) {
+        afData = {
+          name: stored.user.displayName || stored.user.name || '',
+          email: stored.user.email || ''
+        };
+      }
     }
 
-    if (!afData || (!afData.name && !afData.passport && !afData.nik && !afData.email)) {
+    if (!afData || (!afData.fields?.length && !afData.name && !afData.passport && !afData.nik && !afData.email)) {
       appendChatMessage({
         role: 'assistant',
-        text: currentLanguage === 'id'
-          ? '⚡ **1-Click AutoFill**: Data profil tersimpan Anda belum diisi. Kunjungi Member Area di https://telmy.web.app/dashboard#autofill untuk menyimpan data paspor, NIK, dan identitas Anda!'
-          : '⚡ **1-Click AutoFill**: Your master profile is not configured yet. Visit your Member Area at https://telmy.web.app/dashboard#autofill to set up your legal name, passport, and identity info!',
+        text: t('autofill_not_configured_msg') || 'No profile fields found in Vault. Please add fields or unlock your Vault first.',
         time: formatTime(new Date())
       });
       return;
@@ -1150,9 +1851,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         const count = (res && res.filledCount !== undefined) ? res.filledCount : 0;
         appendChatMessage({
           role: 'assistant',
-          text: currentLanguage === 'id'
-            ? `⚡ **1-Click AutoFill Selesai**: Berhasil mengisi ${count > 0 ? count + ' kolom' : 'kolom yang cocok'} dari profil aman Anda. Harap periksa kembali sebelum mengirimkan formulir!`
-            : `⚡ **1-Click AutoFill Complete**: Successfully filled ${count > 0 ? count + ' fields' : 'matching fields'} using your encrypted profile vault. Please review all entries before submitting!`,
+          text: t('autofill_complete_msg', {
+            count: count > 0 ? `${count} ${t('fields_unit')}` : t('matching_fields')
+          }),
           time: formatTime(new Date())
         });
       });
@@ -1244,9 +1945,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         appendChatMessage({
           role: 'assistant',
-          text: currentLanguage === 'en'
-            ? '🔙 The webpage has been restored to its original text.'
-            : '🔙 Halaman web telah dikembalikan ke bahasa aslinya.',
+          text: t('page_reverted_msg'),
           actions: [
             { type: 'TRANSLATE_PAGE', label: '🌐 ' + t('btn_translate_page') },
             { type: 'TAB_FIELDS', label: '📋 ' + t('tab_fields') }
@@ -1292,9 +1991,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       updateTranslateBannerUI();
       appendChatMessage({
         role: 'assistant',
-        text: currentLanguage === 'en'
-          ? 'No translatable elements detected on this webpage.'
-          : 'Tidak ada elemen teks yang dapat diterjemahkan pada halaman ini.',
+        text: t('no_translatable_elements_msg'),
         time: formatTime(new Date())
       });
       return;
@@ -1330,9 +2027,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           const langUpper = currentLanguage.toUpperCase();
           appendChatMessage({
             role: 'assistant',
-            text: currentLanguage === 'en'
-              ? `🌐 **Full Page Translated (${translatedElementCount} elements)**\n\nThe webpage has been translated into **English** using **Google Gemini**.\n\n✓ **Official Bureaucracy Terms Preserved** (e.g., NIK, KTP, NPWP, SKCK)\n✓ **UI/UX Standards Applied** (Button & navigation actions mapped professionally)\n\nYou can click **Show Original** at any time to revert.`
-              : `🌐 **Halaman Berhasil Diterjemahkan (${translatedElementCount} elemen)**\n\nSeluruh teks UI halaman telah diterjemahkan ke bahasa **${langUpper}** menggunakan **Google Gemini**.\n\n✓ **Istilah Birokrasi Baku Terjaga** (NIK, KTP, KK, SKCK)\n✓ **Standar UI/UX Profesional** (Tombol navigasi disesuaikan secara natural)\n\nKlik **Kembalikan Asli** kapan saja jika ingin membaca versi asli.`,
+            text: t('page_translated_msg', { count: translatedElementCount, lang: langUpper }),
             actions: [
               { type: 'REVERT_PAGE', label: '🔙 ' + t('btn_revert_page') },
               { type: 'TAB_FIELDS', label: '📋 ' + t('tab_fields') }
@@ -1350,9 +2045,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       appendChatMessage({
         role: 'assistant',
-        text: currentLanguage === 'en'
-          ? '⚠️ Translation service encountered an issue. Please ensure the Telmy backend is active.'
-          : '⚠️ Layanan terjemahan mengalami kendala. Pastikan server backend Telmy aktif di port 8080.',
+        text: t('translate_error_msg'),
         time: formatTime(new Date())
       });
     }
@@ -1363,19 +2056,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (chipTranslatePage) chipTranslatePage.addEventListener('click', handleTogglePageTranslation);
   if (chipWhatIsThis) {
     chipWhatIsThis.addEventListener('click', () => {
-      handleSendMessage(currentLanguage === 'en' ? 'What is this form about and what should I know?' : 'Jelaskan formulir ini tentang apa dan apa yang perlu saya ketahui?');
+      handleSendMessage(t('chip_what_msg'));
     });
   }
   if (chipRequiredDocs) {
     chipRequiredDocs.addEventListener('click', () => {
-      handleSendMessage(currentLanguage === 'en' ? 'What documents and requirements do I need to prepare for this form?' : 'Apa saja berkas dan dokumen yang harus saya siapkan untuk mengisi formulir ini?');
+      handleSendMessage(t('chip_docs_msg'));
     });
   }
 
   function handleAvatarTap() {
-    const greeting = currentLanguage === 'en'
-      ? "Hi there! 👋 I'm Telmy, your form assistant. You can ask me any question or press the microphone button below to speak with me!"
-      : "Halo! 👋 Saya Telmy, asisten formulir kamu. Kamu bisa tanyakan apa saja atau tekan tombol mikrofon di bawah untuk bicara langsung!";
+    const greeting = t('avatar_greeting');
 
     appendChatMessage({
       role: 'assistant',
@@ -1397,11 +2088,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     currentBotMode = mode;
     chrome.storage.local.set({ telmyBotMode: mode });
 
+    // Enable auto-compact mode selector (Priority 5.2)
+    if (spModeCardsContainer) {
+      spModeCardsContainer.classList.add('compact');
+    }
+
     if (mode === 'chat') {
       if (cardModeChat) cardModeChat.classList.add('active');
       if (cardModeVoice) cardModeVoice.classList.remove('active');
-      if (badgeModeChatStatus) badgeModeChatStatus.textContent = currentLanguage === 'id' ? '✓ Aktif' : '✓ Active';
-      if (badgeModeVoiceStatus) badgeModeVoiceStatus.textContent = currentLanguage === 'id' ? '○ Beralih Mode' : '○ Switch Mode';
+      if (badgeModeChatStatus) badgeModeChatStatus.textContent = t('mode_status_active');
+      if (badgeModeVoiceStatus) badgeModeVoiceStatus.textContent = t('mode_status_switch');
 
       // Chatbot mode: silent, no voice output or mic input
       isMuted = true;
@@ -1415,8 +2111,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       // Voicebot mode: active speech assistant with large animated robot & big mic
       if (cardModeVoice) cardModeVoice.classList.add('active');
       if (cardModeChat) cardModeChat.classList.remove('active');
-      if (badgeModeVoiceStatus) badgeModeVoiceStatus.textContent = currentLanguage === 'id' ? '✓ Aktif' : '✓ Active';
-      if (badgeModeChatStatus) badgeModeChatStatus.textContent = currentLanguage === 'id' ? '○ Beralih Mode' : '○ Switch Mode';
+      if (badgeModeVoiceStatus) badgeModeVoiceStatus.textContent = t('mode_status_active');
+      if (badgeModeChatStatus) badgeModeChatStatus.textContent = t('mode_status_switch');
 
       isMuted = false;
       if (spVoicebotStage) spVoicebotStage.style.display = 'flex';
@@ -1436,6 +2132,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       updateVoicebotStageLabels();
+    }
+
+    if (lblCompactModeTitle) {
+      lblCompactModeTitle.textContent = mode === 'chat'
+        ? `💬 Mode: ${t('mode_chat_compact')}`
+        : `🎙️ Mode: ${t('mode_voice_compact')}`;
+    }
+
+    // Refresh chat stream / welcome hero depending on mode (Priority 5.3)
+    if (!chatHistory || chatHistory.length === 0) {
+      renderWelcome();
     }
   }
 
@@ -1459,22 +2166,30 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
       });
     }
+
+    if (spModeCompactBar) {
+      spModeCompactBar.addEventListener('click', () => {
+        const nextMode = currentBotMode === 'chat' ? 'voice' : 'chat';
+        setBotMode(nextMode);
+      });
+    }
   }
 
   function updateVoicebotStageLabels() {
     if (!lblVoicebotStatusTitle || !lblVoicebotStatusDesc || !lblVoicebotMicCaption) return;
 
     if (isListening) {
-      lblVoicebotStatusTitle.textContent = currentLanguage === 'id' ? 'Mendengarkan...' : 'Listening...';
-      lblVoicebotStatusDesc.textContent = currentLanguage === 'id' ? 'Silakan bicara ke mikrofon Anda...' : 'Speak now into your microphone...';
-      lblVoicebotMicCaption.textContent = currentLanguage === 'id' ? 'Mendengarkan...' : 'Listening...';
+      lblVoicebotStatusTitle.textContent = t('voicebot_status_listening_title');
+      lblVoicebotStatusDesc.textContent = t('voicebot_status_listening_desc');
+      lblVoicebotMicCaption.textContent = t('voicebot_mic_caption_listening');
     } else if (isSpeaking) {
-      lblVoicebotStatusTitle.textContent = currentLanguage === 'id' ? 'Telmy Berbicara' : 'Telmy is Speaking';
-      lblVoicebotMicCaption.textContent = currentLanguage === 'id' ? 'Sedang Membaca...' : 'Speaking...';
+      lblVoicebotStatusTitle.textContent = t('voicebot_status_speaking_title');
+      lblVoicebotStatusDesc.textContent = t('voicebot_status_speaking_desc');
+      lblVoicebotMicCaption.textContent = t('voicebot_mic_caption_speaking');
     } else {
-      lblVoicebotStatusTitle.textContent = currentLanguage === 'id' ? 'Halo, saya Telmy!' : 'Hello, I am Telmy!';
-      lblVoicebotStatusDesc.textContent = currentLanguage === 'id' ? 'Klik tombol mikrofon di bawah untuk berbicara langsung' : 'Click the microphone button below to speak directly';
-      lblVoicebotMicCaption.textContent = currentLanguage === 'id' ? 'Klik untuk Bicara' : 'Click to Speak';
+      lblVoicebotStatusTitle.textContent = t('voicebot_status_idle_title');
+      lblVoicebotStatusDesc.textContent = t('voicebot_status_idle_desc');
+      lblVoicebotMicCaption.textContent = t('voicebot_mic_caption_idle');
     }
   }
 
@@ -1562,10 +2277,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Check mic permission first
     const hasPerm = await ensureMicPermission();
     if (!hasPerm) {
-      const msg = currentLanguage === 'id'
-        ? 'Akses mikrofon belum diizinkan. Harap izinkan akses mikrofon di pengaturan browser Anda.'
-        : 'Microphone access is not permitted. Please allow microphone permissions in your browser settings.';
-      alert(msg);
+      if (chrome.tabs && chrome.tabs.create) {
+        chrome.tabs.create({ url: chrome.runtime.getURL('permission/request-mic.html') });
+      }
+      appendChatMessage({
+        role: 'assistant',
+        text: t('mic_perm_required_msg'),
+        time: formatTime(new Date())
+      });
       return;
     }
 
@@ -1712,7 +2431,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     fields.forEach((f, idx) => {
       const item = document.createElement('div');
       item.className = `quick-field-item ${idx === activeFieldIndex ? 'active' : ''}`;
-      const defaultFieldLbl = currentLanguage === 'id' ? `Kolom #${idx + 1}` : `Field #${idx + 1}`;
+      const defaultFieldLbl = `${t('field_label_prefix')} #${idx + 1}`;
       item.innerHTML = `
         <span class="quick-num">${idx + 1}</span>
         <span class="quick-title">${escapeHTML(f.metadata.label || f.metadata.name || defaultFieldLbl)}</span>
@@ -1876,7 +2595,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Render loading shimmer skeleton
-    const rawLabel = meta.label || meta.name || (currentLanguage === 'id' ? `Kolom #${index + 1}` : `Field #${index + 1}`);
+    const rawLabel = meta.label || meta.name || `${t('field_label_prefix')} #${index + 1}`;
     fieldDetailContent.innerHTML = `
       <div class="field-detail-header">
         <div class="field-title-group">
@@ -2030,9 +2749,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (summary && summary.title) {
       summaryDescText.textContent = `${summary.title}: ${summary.description || 'Formulir pelayanan resmi.'}`;
     } else {
-      summaryDescText.textContent = currentLanguage === 'en'
-        ? `This page contains ${fields.length} form input fields.`
-        : `Halaman ini memuat ${fields.length} kolom isian formulir.`;
+      summaryDescText.textContent = t('summary_desc_fallback', { count: fields.length });
     }
 
     if (summary && summary.prerequisites && summary.prerequisites.length > 0) {
@@ -2053,9 +2770,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const pct = total > 0 ? Math.round((filled / total) * 100) : 0;
     progressPercent.textContent = `${pct}%`;
     progressBarFill.style.width = `${pct}%`;
-    progressSubText.textContent = currentLanguage === 'en'
-      ? `${filled} of ${total} fields filled`
-      : `${filled} dari ${total} kolom terisi`;
+    progressSubText.textContent = t('progress_sub_text', { filled, total });
   }
 
   // 10. Helpers & Persistence
@@ -2216,27 +2931,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     }
 
-    if (chipPdfGuide) {
-      chipPdfGuide.addEventListener('click', () => {
-        switchSourceMode('pdf');
-      });
-    }
-
-    const chipAutoFill = document.getElementById('chip-autofill');
-    if (chipAutoFill) {
-      chipAutoFill.addEventListener('click', async () => {
-        await handleTrigger1ClickAutoFill();
-      });
-    }
-
-    const chipTelmyBot = document.getElementById('chip-telmy-bot');
-    if (chipTelmyBot) {
-      chipTelmyBot.addEventListener('click', () => {
-        chatInput.focus();
-        chatInput.placeholder = currentLanguage === 'id' ? 'Tanyakan apa pun tentang formulir ini...' : 'Ask me anything about this form...';
-        chatStream.scrollTop = chatStream.scrollHeight;
-      });
-    }
 
     if (btnBrowsePdf && spPdfFileInput) {
       btnBrowsePdf.addEventListener('click', (e) => {
@@ -2377,9 +3071,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderPdfData(currentPdfData);
 
     if (telmyAvatar) telmyAvatar.setState('EXPLAINING');
-    const intro = currentLanguage === 'en'
-      ? `I've analyzed ${currentPdfData.documentTitle || 'your document'}. You can type into fields directly and export the completed official document.`
-      : `Saya telah menganalisis formulir ${currentPdfData.documentTitle || 'dokumen Anda'}. Anda dapat mengisi langsung kolom di bawah dan mengekspor hasilnya.`;
+    const intro = t('pdf_intro_msg', { title: currentPdfData.documentTitle || t('your_document') });
     speakResponse(intro);
   }
 
@@ -2585,7 +3277,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           e.stopPropagation();
           const tabChat = document.querySelector('.sp-tab-btn[data-tab="chat"]');
           if (tabChat) tabChat.click();
-          handleSendMessage(currentLanguage === 'id' ? `Bagaimana cara mengisi "${fieldName}" pada formulir ini?` : `How do I complete "${fieldName}" on this form?`);
+          handleSendMessage(t('how_to_complete_field_msg', { field: fieldName }));
         });
       }
 
@@ -2729,20 +3421,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     chrome.tabs.sendMessage(currentTabId, { type: 'AUDIT_FORM_VALUES' }, (res) => {
-      const isIndo = currentLanguage === 'id';
-
       if (chrome.runtime.lastError || !res || !res.success || !res.fields) {
-        alert(isIndo
-          ? 'Tidak dapat memindai nilai isian formulir pada halaman web ini. Pastikan halaman memiliki input aktif.'
-          : 'Unable to scan form values on this webpage. Please ensure active input fields exist.');
+        alert(t('audit_scan_error'));
         return;
       }
 
       const fields = res.fields;
       if (fields.length === 0) {
-        alert(isIndo
-          ? 'Belum ada kolom yang terdeteksi untuk diaudit.'
-          : 'No form fields detected to audit.');
+        alert(t('audit_no_fields'));
         return;
       }
 
@@ -2752,7 +3438,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       fields.forEach((f) => {
         const val = (f.value || '').trim();
-        const defaultFieldLbl = isIndo ? `Kolom #${f.index + 1}` : `Field #${f.index + 1}`;
+        const defaultFieldLbl = `${t('field_label_prefix')} #${f.index + 1}`;
         const lbl = f.label || defaultFieldLbl;
         const lowLbl = lbl.toLowerCase();
 
@@ -2761,10 +3447,8 @@ document.addEventListener('DOMContentLoaded', async () => {
           findings.push({
             type: 'red',
             icon: '🔴',
-            title: isIndo ? `Kolom Wajib Belum Diisi: ${lbl}` : `Required Field Empty: ${lbl}`,
-            desc: isIndo
-              ? 'Kolom ini wajib diisi menurut aturan portal. Kosong berisiko diskualifikasi otomatis.'
-              : 'This field is required. Leaving it blank may cause submission rejection or disqualification.'
+            title: `${t('audit_required_empty_title')} ${lbl}`,
+            desc: t('audit_required_empty_desc')
           });
           hasRed = true;
           return;
@@ -2783,10 +3467,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 findings.push({
                   type: 'red',
                   icon: '🔴',
-                  title: isIndo ? `Masa Berlaku Paspor Kritis (<6 Bulan): ${lbl}` : `Passport Validity Critical (<6 Months): ${lbl}`,
-                  desc: isIndo
-                    ? 'Hampir seluruh kedutaan dan maskapai menolak paspor dengan sisa masa berlaku kurang dari 6 bulan.'
-                    : 'Most embassies, consulates, and airlines require at least 6 months validity from departure date.'
+                  title: `${t('audit_passport_crit_title')} ${lbl}`,
+                  desc: t('audit_passport_crit_desc')
                 });
                 hasRed = true;
               }
@@ -2800,10 +3482,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             findings.push({
               type: 'yellow',
               icon: '🟡',
-              title: isIndo ? `Gelar Akademik Terdeteksi di Kolom Nama: "${val}"` : `Academic Title in Name Field: "${val}"`,
-              desc: isIndo
-                ? 'Sebagian besar pendaftaran beasiswa dan visa internasional melarang gelar di kolom nama resmi paspor.'
-                : 'International scholarship and visa portals usually require exact passport name without academic/honorary titles.'
+              title: `${t('audit_academic_title_title')} "${val}"`,
+              desc: t('audit_academic_title_desc')
             });
             hasYellow = true;
           }
@@ -2811,10 +3491,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             findings.push({
               type: 'yellow',
               icon: '🟡',
-              title: isIndo ? `Nama Huruf Kecil Semua: "${val}"` : `Name Field is Lowercase: "${val}"`,
-              desc: isIndo
-                ? 'Disarankan gunakan HURUF KAPITAL atau Title Case sesuai paspor untuk menghindari kesalahan cetak berkas.'
-                : 'Recommended to use UPPERCASE or Title Case matching your official identity document.'
+              title: `${t('audit_lowercase_name_title')} "${val}"`,
+              desc: t('audit_lowercase_name_desc')
             });
             hasYellow = true;
           }
@@ -2827,8 +3505,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             findings.push({
               type: 'yellow',
               icon: '🟡',
-              title: isIndo ? `Panjang NIK Tidak Standar (${numDigits} digit)` : `Non-Standard ID Length (${numDigits} digits)`,
-              desc: isIndo ? 'Format NIK Indonesia adalah tepat 16 digit angka.' : 'Standard Indonesian National ID (NIK) is exactly 16 digits.'
+              title: t('audit_id_length_title', { count: numDigits }),
+              desc: t('audit_id_length_desc')
             });
             hasYellow = true;
           }
@@ -2840,10 +3518,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         findings.push({
           type: 'green',
           icon: '🟢',
-          title: isIndo ? 'Semua Isian Sesuai Standar Birokrasi' : 'All Fields Meet Standard Requirements',
-          desc: isIndo
-            ? 'Format nama, tanggal, dan seluruh kolom wajib telah terisi rapi tanpa potensi diskualifikasi.'
-            : 'Names, dates, and required fields are properly formatted with no critical errors detected.'
+          title: t('audit_all_clean_title'),
+          desc: t('audit_all_clean_desc')
         });
       }
 
@@ -2920,6 +3596,674 @@ document.addEventListener('DOMContentLoaded', async () => {
       binary += String.fromCharCode(bytes[i]);
     }
     return `data:${mimeType};base64,` + btoa(binary);
+  }
+
+  // =========================================================================
+  // Priority 7 & 8: Zero-Knowledge CSE Vault & Document Ingestion Controller
+  // =========================================================================
+  function setupVaultController() {
+    // 1. Initial lock state & Session Cache restoration
+    checkVaultSessionCache();
+
+    // 2. Lock / Unlock Toggle Button
+    if (btnVaultLockToggle) {
+      btnVaultLockToggle.addEventListener('click', () => {
+        if (isVaultUnlocked) {
+          lockVault();
+        } else {
+          openVaultPinModal();
+        }
+      });
+    }
+
+    // 3. 1-Click AutoFill Form CTA in Vault Pane
+    if (btnVaultAutofillNow) {
+      btnVaultAutofillNow.addEventListener('click', handleVault1ClickAutoFill);
+    }
+
+    // 4. Add Custom Field Button
+    if (btnVaultAddCustom) {
+      btnVaultAddCustom.addEventListener('click', () => {
+        if (!isVaultUnlocked) {
+          openVaultPinModal(() => openFieldModal(null));
+        } else {
+          openFieldModal(null);
+        }
+      });
+    }
+
+    // 5. Wipe Master Vault Button
+    if (btnVaultWipe) {
+      btnVaultWipe.addEventListener('click', wipeVault);
+    }
+
+    // 6. PIN Modal Controls
+    if (btnSubmitVaultPin && inputVaultPin) {
+      btnSubmitVaultPin.addEventListener('click', handleVaultPinSubmit);
+      inputVaultPin.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') handleVaultPinSubmit();
+      });
+      // Allow only numbers and max 6 digits
+      inputVaultPin.addEventListener('input', () => {
+        inputVaultPin.value = inputVaultPin.value.replace(/\D/g, '').slice(0, 6);
+      });
+    }
+
+    if (btnCancelVaultPin) {
+      btnCancelVaultPin.addEventListener('click', closeVaultPinModal);
+    }
+
+    if (vaultPinModal) {
+      vaultPinModal.addEventListener('click', (e) => {
+        if (e.target === vaultPinModal) closeVaultPinModal();
+      });
+    }
+
+    // 7. Field Edit / Add Modal Controls
+    if (btnCloseFieldModal) {
+      btnCloseFieldModal.addEventListener('click', closeFieldModal);
+    }
+    if (btnCancelVaultField) {
+      btnCancelVaultField.addEventListener('click', closeFieldModal);
+    }
+    if (btnSaveVaultField) {
+      btnSaveVaultField.addEventListener('click', handleSaveFieldSubmit);
+    }
+    if (vaultFieldModal) {
+      vaultFieldModal.addEventListener('click', (e) => {
+        if (e.target === vaultFieldModal) closeFieldModal();
+      });
+    }
+
+    // 8. Document Dropzone Setup (Priority 8)
+    setupVaultDocDropzone();
+  }
+
+  async function checkVaultSessionCache() {
+    try {
+      const stored = await chrome.storage.local.get(['telmy_vault_session_cache']);
+      if (stored.telmy_vault_session_cache && stored.telmy_vault_session_cache.fields) {
+        currentDecryptedVault = stored.telmy_vault_session_cache;
+        isVaultUnlocked = true;
+        updateVaultHeaderUI(true);
+        renderVaultFieldsList();
+        return;
+      }
+    } catch (e) {}
+
+    // Default locked state
+    isVaultUnlocked = false;
+    currentDecryptedVault = null;
+    updateVaultHeaderUI(false);
+    renderVaultFieldsList();
+  }
+
+  function updateVaultHeaderUI(unlocked) {
+    if (lblVaultLockIcon) {
+      lblVaultLockIcon.textContent = unlocked ? '🔓' : '🔒';
+    }
+    if (btnVaultLockToggle) {
+      btnVaultLockToggle.title = unlocked ? 'Lock Vault (Clear from RAM)' : 'Unlock Vault with PIN';
+    }
+  }
+
+  function openVaultPinModal(onSuccess = null, title = null, subtitle = null) {
+    pinUnlockCallback = onSuccess;
+    if (vaultPinModalTitle && title) vaultPinModalTitle.textContent = title;
+    if (vaultPinModalSub && subtitle) vaultPinModalSub.textContent = subtitle;
+    if (vaultPinError) {
+      vaultPinError.textContent = '';
+      vaultPinError.style.display = 'none';
+    }
+    if (inputVaultPin) {
+      inputVaultPin.value = '';
+    }
+    if (vaultPinModal) {
+      vaultPinModal.style.display = 'flex';
+      setTimeout(() => inputVaultPin && inputVaultPin.focus(), 100);
+    }
+  }
+
+  function closeVaultPinModal() {
+    if (vaultPinModal) vaultPinModal.style.display = 'none';
+    if (inputVaultPin) inputVaultPin.value = '';
+    if (vaultPinError) vaultPinError.style.display = 'none';
+    pinUnlockCallback = null;
+  }
+
+  async function handleVaultPinSubmit() {
+    if (!inputVaultPin) return;
+    const pin = inputVaultPin.value.trim();
+
+    if (!pin || pin.length !== 6 || !/^\d{6}$/.test(pin)) {
+      showVaultPinError(t('vault_pin_error_format') || 'PIN must be exactly 6 numeric digits.');
+      return;
+    }
+
+    if (btnSubmitVaultPin) {
+      btnSubmitVaultPin.textContent = '⏳ Verifying...';
+      btnSubmitVaultPin.disabled = true;
+    }
+
+    try {
+      // 1. Fetch encrypted envelope from background / cloud
+      const res = await new Promise((resolve) => {
+        chrome.runtime.sendMessage({ type: 'VAULT_GET' }, resolve);
+      });
+
+      const envelope = res && res.envelope ? res.envelope : null;
+
+      if (!envelope || !envelope.ciphertext) {
+        // Vault is empty / first time setup!
+        const initialVault = {
+          vaultVersion: 2,
+          lastUpdated: new Date().toISOString(),
+          documents: [],
+          fields: []
+        };
+
+        // If user is logged in, optionally populate initial canonical fields
+        if (currentUser) {
+          if (currentUser.displayName || currentUser.name) {
+            initialVault.fields.push({
+              id: 'f_' + Date.now().toString(36) + '_1',
+              key: 'full_name',
+              label: 'Nama Lengkap (Full Name)',
+              value: currentUser.displayName || currentUser.name,
+              category: 'identity',
+              aliases: ['nama', 'name', 'full name', 'applicant name', 'nama lengkap'],
+              confidence: 1.0,
+              isCustom: false
+            });
+          }
+          if (currentUser.email) {
+            initialVault.fields.push({
+              id: 'f_' + Date.now().toString(36) + '_2',
+              key: 'email',
+              label: 'Email',
+              value: currentUser.email,
+              category: 'contact',
+              aliases: ['email', 'surel', 'e-mail address', 'alamat email'],
+              confidence: 1.0,
+              isCustom: false
+            });
+          }
+        }
+
+        // Encrypt with this new PIN
+        const newEnvelope = await window.TelmyCryptoVault.encryptVaultData(initialVault, pin);
+        await new Promise((resolve) => {
+          chrome.runtime.sendMessage({ type: 'VAULT_SAVE', envelope: newEnvelope }, resolve);
+        });
+
+        currentDecryptedVault = initialVault;
+        currentVaultPin = pin;
+        isVaultUnlocked = true;
+        await chrome.storage.local.set({ telmy_vault_session_cache: initialVault });
+        syncAutofillStorage(initialVault);
+
+        closeVaultPinModal();
+        updateVaultHeaderUI(true);
+        renderVaultFieldsList();
+
+        if (pinUnlockCallback) {
+          pinUnlockCallback();
+          pinUnlockCallback = null;
+        }
+        return;
+      }
+
+      // 2. Existing envelope: Decrypt with Web Crypto API
+      try {
+        const decrypted = await window.TelmyCryptoVault.decryptVaultData(envelope, pin);
+        currentDecryptedVault = decrypted;
+        currentVaultPin = pin;
+        isVaultUnlocked = true;
+
+        await chrome.storage.local.set({ telmy_vault_session_cache: decrypted });
+        syncAutofillStorage(decrypted);
+
+        closeVaultPinModal();
+        updateVaultHeaderUI(true);
+        renderVaultFieldsList();
+
+        if (pinUnlockCallback) {
+          pinUnlockCallback();
+          pinUnlockCallback = null;
+        }
+      } catch (decryptErr) {
+        showVaultPinError(t('vault_pin_error_incorrect') || 'Incorrect 6-Digit PIN. Please check and try again.');
+      }
+    } catch (err) {
+      showVaultPinError('Decryption error: ' + err.message);
+    } finally {
+      if (btnSubmitVaultPin) {
+        btnSubmitVaultPin.textContent = 'Unlock Vault';
+        btnSubmitVaultPin.disabled = false;
+      }
+    }
+  }
+
+  function showVaultPinError(msg) {
+    if (vaultPinError) {
+      vaultPinError.textContent = msg;
+      vaultPinError.style.display = 'block';
+    }
+    if (inputVaultPin) {
+      inputVaultPin.classList.add('error');
+      setTimeout(() => inputVaultPin && inputVaultPin.classList.remove('error'), 1000);
+      inputVaultPin.focus();
+    }
+  }
+
+  async function lockVault() {
+    isVaultUnlocked = false;
+    currentDecryptedVault = null;
+    currentVaultPin = null;
+    await chrome.storage.local.remove(['telmy_vault_session_cache']);
+    updateVaultHeaderUI(false);
+    renderVaultFieldsList();
+  }
+
+  async function saveAndReEncryptVault() {
+    if (!currentDecryptedVault) return;
+    if (!currentVaultPin) {
+      // Need PIN to encrypt
+      openVaultPinModal(() => saveAndReEncryptVault());
+      return;
+    }
+
+    currentDecryptedVault.lastUpdated = new Date().toISOString();
+
+    // 1. Web Crypto API Encryption (<50ms)
+    const envelope = await window.TelmyCryptoVault.encryptVaultData(currentDecryptedVault, currentVaultPin);
+
+    // 2. Sync to background service worker and local session cache
+    chrome.runtime.sendMessage({ type: 'VAULT_SAVE', envelope }, () => {});
+    await chrome.storage.local.set({ telmy_vault_session_cache: currentDecryptedVault });
+
+    // 3. Keep legacy autofill cache synced for content script
+    syncAutofillStorage(currentDecryptedVault);
+  }
+
+  function syncAutofillStorage(vaultData) {
+    if (!vaultData || !Array.isArray(vaultData.fields)) return;
+    const findVal = (keyOrAlias) => {
+      const match = vaultData.fields.find(f => 
+        (f.key && f.key.toLowerCase() === keyOrAlias.toLowerCase()) ||
+        (f.aliases && f.aliases.some(a => a.toLowerCase() === keyOrAlias.toLowerCase()))
+      );
+      return match ? match.value : '';
+    };
+
+    const afPayload = {
+      fields: vaultData.fields,
+      full_name: findVal('full_name') || findVal('name'),
+      name: findVal('full_name') || findVal('name'),
+      passport_number: findVal('passport_number') || findVal('passport'),
+      passport: findVal('passport_number') || findVal('passport'),
+      nik: findVal('nik') || findVal('ktp'),
+      email: findVal('email'),
+      phone: findVal('phone'),
+      birth_date: findVal('birth_date') || findVal('dob'),
+      dob: findVal('birth_date') || findVal('dob'),
+      address: findVal('address'),
+      nationality: findVal('nationality'),
+      gpa: findVal('gpa') || findVal('ipk'),
+      emergency_contact: findVal('emergency_contact') || findVal('emergency')
+    };
+
+    chrome.storage.local.set({ telmy_autofill: afPayload });
+  }
+
+  function renderVaultFieldsList() {
+    if (!vaultFieldsList) return;
+
+    if (!isVaultUnlocked || !currentDecryptedVault) {
+      // Render Locked View
+      if (vaultFieldsCount) vaultFieldsCount.textContent = '🔒 Locked';
+      vaultFieldsList.innerHTML = `
+        <div style="text-align: center; padding: 32px 16px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px; margin-top: 8px;">
+          <div style="font-size: 32px; margin-bottom: 8px;">🔒</div>
+          <strong style="display: block; font-size: 13px; color: #0f172a; margin-bottom: 4px;">Vault is Locked</strong>
+          <p style="font-size: 11.5px; color: #64748b; line-height: 1.4; margin-bottom: 14px;">Enter your 6-Digit Master PIN to view, edit, or autofill your zero-knowledge encrypted profile.</p>
+          <button type="button" id="btn-vault-inline-unlock" class="btn-vault-pin-pri" style="max-width: 180px; margin: 0 auto; padding: 8px 14px; font-size: 12px;">Unlock Vault</button>
+        </div>
+      `;
+      const btnUnlock = document.getElementById('btn-vault-inline-unlock');
+      if (btnUnlock) btnUnlock.addEventListener('click', () => openVaultPinModal());
+      return;
+    }
+
+    const fields = currentDecryptedVault.fields || [];
+    if (vaultFieldsCount) {
+      vaultFieldsCount.textContent = `${fields.length} item${fields.length === 1 ? '' : 's'}`;
+    }
+
+    if (fields.length === 0) {
+      vaultFieldsList.innerHTML = `
+        <div style="text-align: center; padding: 28px 16px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px;">
+          <div style="font-size: 28px; margin-bottom: 6px;">📂</div>
+          <strong style="display: block; font-size: 12.5px; color: #0f172a; margin-bottom: 4px;">No Verified Fields Stored</strong>
+          <p style="font-size: 11.5px; color: #64748b; line-height: 1.4;">Click "+ Add Field" above or upload an ID/Passport below to populate your encrypted vault.</p>
+        </div>
+      `;
+      return;
+    }
+
+    vaultFieldsList.innerHTML = fields.map((f) => {
+      const docBadge = f.isCustom ? 'Custom' : (f.sourceDocName || f.category || 'ID');
+      const aliasStr = Array.isArray(f.aliases) && f.aliases.length > 0 ? f.aliases.slice(0, 3).join(', ') : '';
+      return `
+        <div class="vault-field-row" data-field-id="${escapeHTML(f.id)}">
+          <div class="vault-field-meta">
+            <div class="vault-field-label-wrap">
+              <span class="vault-field-label">${escapeHTML(f.label || f.key)}</span>
+              <span class="vault-field-doc-tag">${escapeHTML(docBadge)}</span>
+            </div>
+            <div class="vault-field-val">${escapeHTML(f.value || '')}</div>
+            ${aliasStr ? `<div style="font-size: 10px; color: #94a3b8; margin-top: 2px;">Aliases: ${escapeHTML(aliasStr)}</div>` : ''}
+          </div>
+          <div class="vault-field-ctrls">
+            <button type="button" class="btn-field-ctrl edit" data-field-id="${escapeHTML(f.id)}" title="Edit field value">✏️</button>
+            <button type="button" class="btn-field-ctrl delete" data-field-id="${escapeHTML(f.id)}" title="Delete field">🗑️</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Attach row button events
+    vaultFieldsList.querySelectorAll('.btn-field-ctrl.edit').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const fieldId = btn.getAttribute('data-field-id');
+        const field = fields.find(f => f.id === fieldId);
+        if (field) openFieldModal(field);
+      });
+    });
+
+    vaultFieldsList.querySelectorAll('.btn-field-ctrl.delete').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const fieldId = btn.getAttribute('data-field-id');
+        deleteVaultField(fieldId);
+      });
+    });
+  }
+
+  function openFieldModal(field = null) {
+    currentEditingFieldId = field ? field.id : null;
+    if (lblVaultModalFieldTitle) {
+      lblVaultModalFieldTitle.textContent = field ? 'Edit Field Value' : '+ Add Custom Field';
+    }
+    if (inputVaultFieldLabel) {
+      inputVaultFieldLabel.value = field ? (field.label || field.key || '') : '';
+    }
+    if (inputVaultFieldValue) {
+      inputVaultFieldValue.value = field ? (field.value || '') : '';
+    }
+    if (inputVaultFieldAliases) {
+      inputVaultFieldAliases.value = field && Array.isArray(field.aliases) ? field.aliases.join(', ') : '';
+    }
+    if (vaultFieldModal) {
+      vaultFieldModal.style.display = 'flex';
+      setTimeout(() => inputVaultFieldLabel && inputVaultFieldLabel.focus(), 100);
+    }
+  }
+
+  function closeFieldModal() {
+    if (vaultFieldModal) vaultFieldModal.style.display = 'none';
+    currentEditingFieldId = null;
+  }
+
+  async function handleSaveFieldSubmit() {
+    if (!inputVaultFieldLabel || !inputVaultFieldValue) return;
+    const label = inputVaultFieldLabel.value.trim();
+    const value = inputVaultFieldValue.value.trim();
+    const aliasStr = inputVaultFieldAliases ? inputVaultFieldAliases.value.trim() : '';
+
+    if (!label) {
+      alert('Field Label is required');
+      inputVaultFieldLabel.focus();
+      return;
+    }
+    if (!value) {
+      alert('Field Value is required');
+      inputVaultFieldValue.focus();
+      return;
+    }
+
+    const aliases = aliasStr.split(',').map(s => s.trim().toLowerCase()).filter(s => s.length >= 2);
+
+    if (!currentDecryptedVault) {
+      currentDecryptedVault = { vaultVersion: 2, lastUpdated: new Date().toISOString(), documents: [], fields: [] };
+    }
+    if (!Array.isArray(currentDecryptedVault.fields)) {
+      currentDecryptedVault.fields = [];
+    }
+
+    if (currentEditingFieldId) {
+      // Edit existing
+      const idx = currentDecryptedVault.fields.findIndex(f => f.id === currentEditingFieldId);
+      if (idx !== -1) {
+        currentDecryptedVault.fields[idx] = {
+          ...currentDecryptedVault.fields[idx],
+          label,
+          value,
+          aliases
+        };
+      }
+    } else {
+      // Add new field
+      const keySlug = label.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || `custom_${Date.now()}`;
+      currentDecryptedVault.fields.push({
+        id: 'f_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 4),
+        key: keySlug,
+        label,
+        value,
+        category: 'custom',
+        aliases,
+        confidence: 1.0,
+        isCustom: true
+      });
+    }
+
+    closeFieldModal();
+    renderVaultFieldsList();
+    await saveAndReEncryptVault();
+  }
+
+  async function deleteVaultField(fieldId) {
+    if (!currentDecryptedVault || !Array.isArray(currentDecryptedVault.fields)) return;
+    const target = currentDecryptedVault.fields.find(f => f.id === fieldId);
+    if (!target) return;
+
+    if (!confirm(`Delete "${target.label || target.key}" from your vault?`)) return;
+
+    currentDecryptedVault.fields = currentDecryptedVault.fields.filter(f => f.id !== fieldId);
+    renderVaultFieldsList();
+    await saveAndReEncryptVault();
+  }
+
+  async function wipeVault() {
+    const confirmMsg = t('vault_wipe_confirm') || 'Are you sure you want to completely wipe all vault data and encryption keys? This cannot be undone.';
+    if (!confirm(confirmMsg)) return;
+
+    await new Promise((resolve) => {
+      chrome.runtime.sendMessage({ type: 'VAULT_WIPE' }, resolve);
+    });
+
+    currentDecryptedVault = null;
+    currentVaultPin = null;
+    isVaultUnlocked = false;
+    await chrome.storage.local.remove(['telmy_vault_session_cache', 'telmy_autofill', 'telmy_vault_envelope']);
+
+    updateVaultHeaderUI(false);
+    renderVaultFieldsList();
+    alert('Vault wiped successfully. All data has been cleared.');
+  }
+
+  async function handleVault1ClickAutoFill() {
+    if (!isVaultUnlocked) {
+      openVaultPinModal(() => handleVault1ClickAutoFill());
+      return;
+    }
+
+    const fields = currentDecryptedVault ? (currentDecryptedVault.fields || []) : [];
+    if (fields.length === 0) {
+      alert('Your Vault is currently empty. Add profile fields or upload an ID card first.');
+      return;
+    }
+
+    handleTrigger1ClickAutoFill();
+  }
+
+  // =========================================================================
+  // Priority 8: Multi-Document Ingestion (OCR KTP, Passport, Diploma)
+  // =========================================================================
+  function setupVaultDocDropzone() {
+    if (!vaultDocDropzone) return;
+
+    if (btnBrowseVaultDoc && vaultDocFileInput) {
+      btnBrowseVaultDoc.addEventListener('click', (e) => {
+        e.stopPropagation();
+        vaultDocFileInput.click();
+      });
+    }
+
+    vaultDocDropzone.addEventListener('click', () => {
+      if (vaultDocFileInput) vaultDocFileInput.click();
+    });
+
+    vaultDocDropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      vaultDocDropzone.classList.add('dragover');
+    });
+
+    vaultDocDropzone.addEventListener('dragleave', () => {
+      vaultDocDropzone.classList.remove('dragover');
+    });
+
+    vaultDocDropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      vaultDocDropzone.classList.remove('dragover');
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        handleVaultDocUpload(e.dataTransfer.files[0]);
+      }
+    });
+
+    if (vaultDocFileInput) {
+      vaultDocFileInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files.length > 0) {
+          handleVaultDocUpload(e.target.files[0]);
+        }
+      });
+    }
+  }
+
+  async function handleVaultDocUpload(file) {
+    if (!file) return;
+
+    if (!isVaultUnlocked) {
+      openVaultPinModal(() => handleVaultDocUpload(file), 'Unlock Vault to Ingest Document', 'Enter your 6-Digit Master PIN to securely encrypt the extracted document data.');
+      return;
+    }
+
+    const isPdf = file.name.toLowerCase().endsWith('.pdf') || file.type === 'application/pdf';
+    const isImage = file.type.startsWith('image/') || /\.(jpg|jpeg|png|webp)$/i.test(file.name);
+
+    if (!isPdf && !isImage) {
+      alert('Please upload an ID card, Passport, or Academic Document in PDF, JPG, or PNG format.');
+      return;
+    }
+
+    if (vaultDocContent) vaultDocContent.style.display = 'none';
+    if (vaultDocAnalyzing) vaultDocAnalyzing.style.display = 'flex';
+    if (telmyAvatar) telmyAvatar.setState('THINKING');
+
+    try {
+      let fileDataUrl;
+      if (isImage) {
+        fileDataUrl = await compressImageFileToDataUrl(file, 2048, 0.85);
+      } else {
+        fileDataUrl = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      }
+
+      chrome.runtime.sendMessage({
+        type: 'VAULT_EXTRACT_DOCUMENT',
+        fileBase64: fileDataUrl,
+        fileName: file.name,
+        mimeType: isPdf ? 'application/pdf' : (file.type || 'image/jpeg')
+      }, async (res) => {
+        if (vaultDocContent) vaultDocContent.style.display = 'flex';
+        if (vaultDocAnalyzing) vaultDocAnalyzing.style.display = 'none';
+        if (vaultDocFileInput) vaultDocFileInput.value = '';
+        if (telmyAvatar) telmyAvatar.setState('IDLE');
+
+        if (chrome.runtime.lastError || !res || !res.success || !Array.isArray(res.fields)) {
+          alert('Extraction failed: ' + (res?.error || 'Could not extract entities from document.'));
+          return;
+        }
+
+        const docId = 'doc_' + Date.now().toString(36);
+        const docName = res.documentName || file.name;
+
+        if (!currentDecryptedVault) {
+          currentDecryptedVault = { vaultVersion: 2, lastUpdated: new Date().toISOString(), documents: [], fields: [] };
+        }
+        if (!Array.isArray(currentDecryptedVault.documents)) currentDecryptedVault.documents = [];
+        if (!Array.isArray(currentDecryptedVault.fields)) currentDecryptedVault.fields = [];
+
+        currentDecryptedVault.documents.push({
+          id: docId,
+          type: res.documentType || 'OTHER',
+          name: docName,
+          uploadedAt: new Date().toISOString()
+        });
+
+        // Merge extracted fields into vault
+        res.fields.forEach((extField) => {
+          if (!extField || !extField.value) return;
+          const cleanVal = String(extField.value).trim();
+          if (!cleanVal) return;
+
+          // Check if field with same key already exists
+          const existingIdx = currentDecryptedVault.fields.findIndex(f => f.key === extField.key);
+          if (existingIdx !== -1) {
+            // Update value if different
+            currentDecryptedVault.fields[existingIdx].value = cleanVal;
+            currentDecryptedVault.fields[existingIdx].sourceDocId = docId;
+            currentDecryptedVault.fields[existingIdx].sourceDocName = docName;
+          } else {
+            currentDecryptedVault.fields.push({
+              id: 'f_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 4),
+              key: extField.key || 'field_' + Date.now(),
+              label: extField.label || extField.key,
+              value: cleanVal,
+              sourceDocId: docId,
+              sourceDocName: docName,
+              category: extField.category || 'identity',
+              aliases: Array.isArray(extField.aliases) ? extField.aliases : [],
+              confidence: 0.95,
+              isCustom: false
+            });
+          }
+        });
+
+        await saveAndReEncryptVault();
+        renderVaultFieldsList();
+
+        alert(`🎉 Successfully extracted ${res.fields.length} fields from "${docName}" into your encrypted Vault!\n\nZero-Retention Policy: Physical document file was discarded immediately.`);
+      });
+    } catch (err) {
+      if (vaultDocContent) vaultDocContent.style.display = 'flex';
+      if (vaultDocAnalyzing) vaultDocAnalyzing.style.display = 'none';
+      if (telmyAvatar) telmyAvatar.setState('IDLE');
+      alert('Document processing error: ' + err.message);
+    }
   }
 
   // =========================================================================

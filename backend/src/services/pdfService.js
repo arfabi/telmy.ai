@@ -305,3 +305,87 @@ export async function explainPdfForm(base64Payload, fileName = 'Document.pdf', t
     };
   }
 }
+
+/**
+ * Priority 8.2: Extract structured identity entities from uploaded KTP, Passport, or Diploma
+ * Zero Document Retention: Buffer is discarded immediately after LLM execution.
+ */
+export async function extractVaultEntitiesFromDocument(base64Payload, fileName = 'Document.pdf', mimeType = 'application/pdf') {
+  if (!base64Payload) {
+    throw new Error('Base64 payload required for vault document ingestion');
+  }
+
+  let cleanBase64 = base64Payload;
+  let resolvedMime = mimeType || 'application/pdf';
+
+  const dataUriMatch = base64Payload.match(/^data:([^;]+);base64,(.+)$/);
+  if (dataUriMatch) {
+    resolvedMime = dataUriMatch[1];
+    cleanBase64 = dataUriMatch[2].trim();
+  } else {
+    cleanBase64 = base64Payload.trim();
+    const ext = fileName.toLowerCase().split('.').pop();
+    if (ext === 'jpg' || ext === 'jpeg') resolvedMime = 'image/jpeg';
+    else if (ext === 'png') resolvedMime = 'image/png';
+    else if (ext === 'webp') resolvedMime = 'image/webp';
+    else if (ext === 'pdf') resolvedMime = 'application/pdf';
+  }
+
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error('GEMINI_API_KEY environment variable is not configured');
+  }
+
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite';
+  const model = genAI.getGenerativeModel({
+    model: modelName,
+    generationConfig: {
+      responseMimeType: 'application/json',
+      temperature: 0.1
+    }
+  });
+
+  const prompt = `You are Telmy.ai Smart Document Ingestion Engine.
+Analyze this official identity document (e.g. National ID / KTP / e-KTP, Passport, Academic Diploma, Transcript, Language Certificate, Family Card).
+Extract all official personal data and entity values accurately without hallucination.
+
+Return ONLY a valid JSON object following this exact schema:
+{
+  "documentType": "PASSPORT" | "ID_CARD" | "DIPLOMA" | "TRANSCRIPT" | "CERTIFICATE" | "OTHER",
+  "documentName": "e.g. Passport of Indonesia, KTP Republik Indonesia, Ijazah S1",
+  "fields": [
+    {
+      "key": "canonical_key_name (e.g. full_name, passport_number, nik, birth_date, birth_place, nationality, gender, address, issue_date, expiry_date, university, gpa, degree, major, score)",
+      "label": "Human readable field label (e.g. Nama Lengkap, Nomor Paspor, IPK)",
+      "value": "Exact string extracted from the document",
+      "category": "identity" | "travel" | "education" | "contact",
+      "aliases": ["array", "of", "likely", "form", "labels", "or", "synonyms"]
+    }
+  ]
+}`;
+
+  const documentPart = {
+    inlineData: {
+      data: cleanBase64,
+      mimeType: resolvedMime
+    }
+  };
+
+  try {
+    const result = await model.generateContent([prompt, documentPart]);
+    const responseText = result.response.text();
+    const parsed = JSON.parse(responseText.trim());
+
+    return {
+      success: true,
+      documentType: parsed.documentType || 'OTHER',
+      documentName: parsed.documentName || fileName,
+      fields: Array.isArray(parsed.fields) ? parsed.fields : []
+    };
+  } catch (err) {
+    console.error('[Vault OCR] Error extracting entities with Gemini:', err);
+    throw err;
+  }
+}
+

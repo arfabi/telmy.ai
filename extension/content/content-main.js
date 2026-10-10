@@ -147,22 +147,43 @@
         const label = ((item.metadata.label || '') + ' ' + (item.metadata.name || '') + ' ' + (item.metadata.placeholder || '')).toLowerCase();
         let valToFill = null;
 
-        if (/(full.*name|applicant.*name|nama.*lengkap|your.*name|nama pemohon)/i.test(label) && data.name) {
-          valToFill = data.name;
-        } else if (/(passport|no.*paspor|nomor.*paspor)/i.test(label) && data.passport) {
-          valToFill = data.passport;
-        } else if (/(nik|ktp|national.*id|identity.*number)/i.test(label) && data.nik) {
-          valToFill = data.nik;
-        } else if (/(birth.*date|date.*of.*birth|tanggal.*lahir|dob)/i.test(label) && data.dob) {
-          valToFill = data.dob;
-        } else if (/(nationality|kewarganegaraan|citizenship)/i.test(label) && data.nationality) {
-          valToFill = data.nationality;
-        } else if (/(phone|telp|nomor.*hp|mobile|telephone)/i.test(label) && data.phone) {
-          valToFill = data.phone;
-        } else if (/(address|alamat|domisili|residence)/i.test(label) && data.address) {
-          valToFill = data.address;
-        } else if (/(emergency|kontak.*darurat)/i.test(label) && data.emergency) {
-          valToFill = data.emergency;
+        // 1. Dynamic Vault Fields Matching (Priority 8.4)
+        if (Array.isArray(data.fields)) {
+          for (const f of data.fields) {
+            if (!f || !f.value) continue;
+            const matchKeywords = [f.key, ...(f.aliases || []), f.label].filter(Boolean);
+            const isMatch = matchKeywords.some(kw => {
+              const cleanKw = kw.toLowerCase().trim();
+              return cleanKw.length >= 2 && label.includes(cleanKw);
+            });
+            if (isMatch) {
+              valToFill = f.value;
+              break;
+            }
+          }
+        }
+
+        // 2. Legacy Key-Value Matching Fallback
+        if (!valToFill) {
+          if (/(full.*name|applicant.*name|nama.*lengkap|your.*name|nama pemohon)/i.test(label) && (data.full_name || data.name)) {
+            valToFill = data.full_name || data.name;
+          } else if (/(passport|no.*paspor|nomor.*paspor)/i.test(label) && (data.passport_number || data.passport)) {
+            valToFill = data.passport_number || data.passport;
+          } else if (/(nik|ktp|national.*id|identity.*number)/i.test(label) && data.nik) {
+            valToFill = data.nik;
+          } else if (/(birth.*date|date.*of.*birth|tanggal.*lahir|dob)/i.test(label) && (data.birth_date || data.dob)) {
+            valToFill = data.birth_date || data.dob;
+          } else if (/(nationality|kewarganegaraan|citizenship)/i.test(label) && data.nationality) {
+            valToFill = data.nationality;
+          } else if (/(phone|telp|nomor.*hp|mobile|telephone|whatsapp)/i.test(label) && data.phone) {
+            valToFill = data.phone;
+          } else if (/(address|alamat|domisili|residence)/i.test(label) && data.address) {
+            valToFill = data.address;
+          } else if (/(gpa|ipk|grade point)/i.test(label) && data.gpa) {
+            valToFill = data.gpa;
+          } else if (/(emergency|kontak.*darurat)/i.test(label) && (data.emergency_contact || data.emergency)) {
+            valToFill = data.emergency_contact || data.emergency;
+          }
         }
 
         if (valToFill && !el.value) {
@@ -283,33 +304,15 @@
         gmtSettings = { ...gmtSettings, ...settings, isActive: true };
       }
 
-      chrome.runtime.sendMessage({ type: 'LOAD_MOCK_DICTIONARY' }, (res) => {
-        let pageSummary = null;
-        const currentHost = (window.location.hostname || '').toLowerCase();
+      dictionaryData = [];
+      cachedPageSummary = null;
+      window.__TELMY_DICT__ = dictionaryData;
 
-        if (res && res.success && res.data) {
-          const pattern = (res.data.domain_pattern || '').toLowerCase();
-          const isDomainMatch = pattern && (currentHost.includes(pattern) || currentHost.includes('localhost') || currentHost.includes('127.0.0.1') || currentHost === '');
-          if (isDomainMatch) {
-            dictionaryData = res.data.fields || [];
-            pageSummary = res.data.page_summary || null;
-          } else {
-            dictionaryData = [];
-            pageSummary = null;
-          }
-        } else {
-          dictionaryData = [];
-        }
+      triggerScanLadder();
+      setupMutationObserver();
+      setupSPARouteInterceptor();
 
-        window.__TELMY_DICT__ = dictionaryData;
-        cachedPageSummary = pageSummary;
-
-        triggerScanLadder();
-        setupMutationObserver();
-        setupSPARouteInterceptor();
-
-        if (onComplete) onComplete();
-      });
+      if (onComplete) onComplete();
     });
   }
 

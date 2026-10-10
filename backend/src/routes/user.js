@@ -220,4 +220,83 @@ router.post('/user/saved-forms/:uid', async (req, res) => {
   }
 });
 
+/**
+ * GET /api/user/vault/:uid
+ * Retrieve Zero-Knowledge Encrypted Vault Ciphertext (Server never sees plain data)
+ */
+router.get('/user/vault/:uid', async (req, res) => {
+  try {
+    const { uid } = req.params;
+    const { db, isFirebaseConnected } = getFirestore();
+
+    if (isFirebaseConnected && db) {
+      const doc = await db.collection('user_vaults').doc(uid).get();
+      if (doc.exists) {
+        return res.json({ success: true, data: doc.data() });
+      }
+    }
+
+    return res.json({ success: true, data: null });
+  } catch (error) {
+    console.error('[User Route] Error fetching encrypted vault:', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * POST /api/user/vault/:uid
+ * Save or update Zero-Knowledge Encrypted Vault Ciphertext
+ */
+router.post('/user/vault/:uid', async (req, res) => {
+  try {
+    const { uid } = req.params;
+    const { ciphertext, iv, salt, updatedAt } = req.body;
+
+    if (!ciphertext || !iv || !salt) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required encrypted envelope fields: ciphertext, iv, salt'
+      });
+    }
+
+    const vaultPayload = {
+      uid,
+      ciphertext,
+      iv,
+      salt,
+      updatedAt: updatedAt || new Date().toISOString()
+    };
+
+    const { db, isFirebaseConnected } = getFirestore();
+    if (isFirebaseConnected && db) {
+      await db.collection('user_vaults').doc(uid).set(vaultPayload, { merge: true });
+    }
+
+    return res.json({ success: true, data: vaultPayload });
+  } catch (error) {
+    console.error('[User Route] Error saving encrypted vault:', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * DELETE /api/user/vault/:uid
+ * Wipe Zero-Knowledge Encrypted Vault completely
+ */
+router.delete('/user/vault/:uid', async (req, res) => {
+  try {
+    const { uid } = req.params;
+    const { db, isFirebaseConnected } = getFirestore();
+
+    if (isFirebaseConnected && db) {
+      await db.collection('user_vaults').doc(uid).delete();
+    }
+
+    return res.json({ success: true, message: 'Vault wiped successfully' });
+  } catch (error) {
+    console.error('[User Route] Error wiping vault:', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 export default router;

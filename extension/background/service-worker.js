@@ -31,52 +31,16 @@ if (chrome.sidePanel && chrome.sidePanel.setPanelBehavior) {
   chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch(() => {});
 }
 
-// Helper: fetch with timeout and smart local fallback if cloud returns static HTML or is offline
+// Helper: fetch with timeout directly to Cloud Run
 async function fetchWithTimeout(url, options = {}, timeoutMs = 30000) {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const res = await fetch(url, { ...options, signal: controller.signal });
     clearTimeout(id);
-
-    // If cloud endpoint returned static HTML (Firebase hosting rewrite not deployed yet),
-    // automatically attempt live Cloud Run endpoint (telmy-ai.cloud.run)
-    const contentType = res.headers.get('content-type') || '';
-    if (contentType.includes('text/html') && url.includes('telmy.web.app/api')) {
-      const cloudRunUrl = url.replace('https://telmy.web.app/api', 'https://telmy-ai.cloud.run/api');
-      try {
-        const cloudController = new AbortController();
-        const cloudId = setTimeout(() => cloudController.abort(), 15000);
-        const cloudRes = await fetch(cloudRunUrl, { ...options, signal: cloudController.signal });
-        clearTimeout(cloudId);
-        if (cloudRes.ok && (cloudRes.headers.get('content-type') || '').includes('application/json')) {
-          console.log(`[Telmy SW] Re-routed request from static hosting to live Cloud Run: ${cloudRunUrl}`);
-          return cloudRes;
-        }
-      } catch (cloudErr) {
-        // Fallback to local dev if Cloud Run not reachable
-        try {
-          const localUrl = url.replace('https://telmy.web.app/api', 'http://localhost:8080/api');
-          const localRes = await fetch(localUrl, { ...options });
-          if (localRes.ok) return localRes;
-        } catch (e) {}
-      }
-    }
-
     return res;
   } catch (err) {
     clearTimeout(id);
-    // If cloud network failed, try Cloud Run or localhost
-    if (url.includes('telmy.web.app/api')) {
-      const cloudRunUrl = url.replace('https://telmy.web.app/api', 'https://telmy-ai.cloud.run/api');
-      try {
-        const cloudController = new AbortController();
-        const cloudId = setTimeout(() => cloudController.abort(), 15000);
-        const cloudRes = await fetch(cloudRunUrl, { ...options, signal: cloudController.signal });
-        clearTimeout(cloudId);
-        if (cloudRes.ok) return cloudRes;
-      } catch (e) {}
-    }
     throw err;
   }
 }
@@ -220,15 +184,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
-  if (message.type === 'LOAD_MOCK_DICTIONARY') {
-    // Read local mock json file
-    const url = chrome.runtime.getURL('mock/apostille-ahu.json');
-    fetch(url)
-      .then((res) => res.json())
-      .then((data) => sendResponse({ success: true, data }))
-      .catch((err) => sendResponse({ success: false, error: err.message }));
-    return true;
-  }
 
   if (message.type === 'SUBMIT_SUGGESTION') {
     chrome.storage.local.get(['settings', 'suggestions_history']).then(async (res) => {
@@ -594,6 +549,155 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     chrome.storage.local.set({ [key]: message.history || [] }).then(() => {
       sendResponse({ success: true });
     });
+    return true;
+  }
+
+  // =========================================================================
+  // Zero-Knowledge CSE Vault & Smart Document Extraction (Priority 7 & 8)
+  // =========================================================================
+  if (message.type === 'VAULT_GET') {
+    (async () => {
+      try {
+        const stored = await chrome.storage.local.get(['telmy_vault_envelope', 'user', 'settings']);
+        let envelope = stored.telmy_vault_envelope || null;
+        const user = stored.user;
+        const settings = stored.settings || DEFAULT_SETTINGS;
+        const apiUrl = settings.apiUrl || DEFAULT_SETTINGS.apiUrl;
+
+        // If authenticated, check cloud Firestore for cross-device sync
+        if (user && user.uid) {
+          try {
+            const resp = await fetchWithTimeout(`${apiUrl}/user/vault/${user.uid}`, {}, 6000);
+            if (resp.ok) {
+              const json = await resp.json();
+              if (json.success && json.data) {
+                const cloudEnv = json.data;
+                const localDate = envelope && envelope.updatedAt ? new Date(envelope.updatedAt).getTime() : 0;
+                const cloudDate = cloudEnv.updatedAt ? new Date(cloudEnv.updatedAt).getTime() : 0;
+                if (!envelope || cloudDate >= localDate) {
+                  envelope = {
+                    ciphertext: cloudEnv.ciphertext,
+                    iv: cloudEnv.iv,
+                    salt: cloudEnv.salt,
+                    updatedAt: cloudEnv.updatedAt
+                  };
+                  await chrome.storage.local.set({ telmy_vault_envelope: envelope });
+                }
+              }
+            }
+          } catch (cloudErr) {
+            console.warn('[Telmy SW] Cloud vault fetch failed, using local:', cloudErr.message);
+          }
+        }
+
+        sendResponse({ success: true, envelope });
+      } catch (err) {
+        sendResponse({ success: false, error: err.message });
+      }
+    })();
+    return true;
+  }
+
+  if (message.type === 'VAULT_SAVE') {
+    (async () => {
+      try {
+        const envelope = message.envelope;
+        if (!envelope || !envelope.ciphertext || !envelope.iv || !envelope.salt) {
+          sendResponse({ success: false, error: 'Invalid envelope' });
+          return;
+        }
+
+        // 1. Save locally
+        await chrome.storage.local.set({ telmy_vault_envelope: envelope });
+
+        // 2. Sync to cloud Firestore if user is logged in
+        const stored = await chrome.storage.local.get(['user', 'settings']);
+        const user = stored.user;
+        const settings = stored.settings || DEFAULT_SETTINGS;
+        const apiUrl = settings.apiUrl || DEFAULT_SETTINGS.apiUrl;
+
+        if (user && user.uid) {
+          try {
+            await fetchWithTimeout(`${apiUrl}/user/vault/${user.uid}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                ciphertext: envelope.ciphertext,
+                iv: envelope.iv,
+                salt: envelope.salt,
+                updatedAt: envelope.updatedAt || new Date().toISOString()
+              })
+            }, 8000);
+          } catch (cloudErr) {
+            console.warn('[Telmy SW] Cloud vault sync failed:', cloudErr.message);
+          }
+        }
+
+        sendResponse({ success: true, envelope });
+      } catch (err) {
+        sendResponse({ success: false, error: err.message });
+      }
+    })();
+    return true;
+  }
+
+  if (message.type === 'VAULT_WIPE') {
+    (async () => {
+      try {
+        await chrome.storage.local.remove(['telmy_vault_envelope', 'telmy_vault_session_cache', 'telmy_autofill']);
+
+        const stored = await chrome.storage.local.get(['user', 'settings']);
+        const user = stored.user;
+        const settings = stored.settings || DEFAULT_SETTINGS;
+        const apiUrl = settings.apiUrl || DEFAULT_SETTINGS.apiUrl;
+
+        if (user && user.uid) {
+          try {
+            await fetchWithTimeout(`${apiUrl}/user/vault/${user.uid}`, {
+              method: 'DELETE'
+            }, 6000);
+          } catch (cloudErr) {
+            console.warn('[Telmy SW] Cloud vault wipe failed:', cloudErr.message);
+          }
+        }
+
+        sendResponse({ success: true });
+      } catch (err) {
+        sendResponse({ success: false, error: err.message });
+      }
+    })();
+    return true;
+  }
+
+  if (message.type === 'VAULT_EXTRACT_DOCUMENT') {
+    (async () => {
+      try {
+        const stored = await chrome.storage.local.get(['settings']);
+        const settings = stored.settings || DEFAULT_SETTINGS;
+        const apiUrl = settings.apiUrl || DEFAULT_SETTINGS.apiUrl;
+
+        const resp = await fetchWithTimeout(`${apiUrl}/pdf/extract-vault`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fileBase64: message.fileBase64,
+            fileName: message.fileName || 'Document.pdf',
+            mimeType: message.mimeType || 'application/pdf'
+          })
+        }, 60000);
+
+        if (!resp.ok) {
+          const errJson = await resp.json().catch(() => ({}));
+          throw new Error(errJson.error || `HTTP ${resp.status}`);
+        }
+
+        const data = await resp.json();
+        sendResponse(data);
+      } catch (err) {
+        console.error('[Telmy SW] Document extraction failed:', err);
+        sendResponse({ success: false, error: err.message });
+      }
+    })();
     return true;
   }
 });

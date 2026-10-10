@@ -16,6 +16,9 @@
     "scripting",
     "sidePanel"
   ],
+  "host_permissions": [
+    "https://telmy-ai.cloud.run/*"
+  ],
   "action": {
     "default_icon": {
       "16": "assets/icons/icon16.png",

@@ -21,18 +21,27 @@
           <span class="quota-icon">💎</span>
           <span id="sp-quota-text">5 Forms</span>
         </div>
-        <select id="sp-lang-select" class="sp-select" title="Select Language">
-          <option value="en" selected>🇬🇧 EN</option>
-          <option value="id">🇮🇩 ID</option>
-          <option value="ja">🇯🇵 JA</option>
-          <option value="ko">🇰🇷 KO</option>
-          <option value="zh">🇨🇳 ZH</option>
-          <option value="zh-TW">🇹🇼 TW</option>
-          <option value="vi">🇻🇳 VI</option>
-          <option value="th">🇹🇭 TH</option>
-          <option value="hi">🇮🇳 HI</option>
-          <option value="fil">🇵🇭 FIL</option>
-          <option value="ms">🇲🇾 MS</option>
+        <!-- Custom SVG Mini Language Dropdown (Priority 5.1) -->
+        <div class="sp-lang-dropdown" id="sp-lang-dropdown">
+          <button type="button" class="sp-lang-btn" id="sp-lang-btn" title="Select Language">
+            <span class="lang-flag" id="sp-current-flag"></span>
+            <span class="lang-code" id="sp-current-lang-code">EN</span>
+            <svg class="lang-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="sp-lang-menu" id="sp-lang-menu" style="display: none;"></div>
+        </div>
+        <select id="sp-lang-select" style="display: none;">
+          <option value="en" selected>EN</option>
+          <option value="id">ID</option>
+          <option value="ja">JA</option>
+          <option value="ko">KO</option>
+          <option value="zh">ZH</option>
+          <option value="zh-TW">TW</option>
+          <option value="vi">VI</option>
+          <option value="th">TH</option>
+          <option value="hi">HI</option>
+          <option value="fil">FIL</option>
+          <option value="ms">MS</option>
         </select>
         <button id="sp-btn-user" class="sp-icon-btn sp-profile-btn" title="Account / Profile">
           <span id="sp-user-avatar-text">👤</span>
@@ -68,13 +77,6 @@
       <button id="btn-pdf-banner-action" class="btn-pdf-banner-btn">⚡ 1-Click Guide</button>
     </div>
 
-    <!-- Priority 9.3: Privacy Shield Indicator (Local PII Masking) -->
-    <div id="sp-privacy-bar" class="sp-privacy-bar" title="Sensitive PII like National IDs, Passports, and Phone Numbers are masked locally before AI processing">
-      <span class="privacy-shield-icon">🛡️</span>
-      <span id="lbl-privacy-text" class="privacy-shield-text">Privacy Shield: PII Masked Locally</span>
-      <span class="privacy-shield-tag">GDPR Safe</span>
-    </div>
-
     <!-- User Profile Popover Dropdown -->
     <div id="sp-profile-popover" class="sp-profile-popover" style="display: none;">
       <div class="popover-user-info">
@@ -94,20 +96,24 @@
       </div>
     </div>
 
-    <!-- Navigation Tabs -->
+    <!-- Navigation Tabs (4 Core Pillars: Priority 6.2) -->
     <nav class="sp-nav-tabs">
-      <button class="sp-tab-btn active" data-tab="chat" id="tab-btn-chat">
+      <button class="sp-tab-btn active" data-tab="chat" id="tab-btn-chat" title="AI Assistant (Chat & Voice)">
         <span class="tab-icon">💬</span>
-        <span class="tab-label" id="lbl-tab-chat">Chat</span>
+        <span class="tab-label" id="lbl-tab-chat">Assistant</span>
       </button>
-      <button class="sp-tab-btn" data-tab="fields" id="tab-btn-fields">
+      <button class="sp-tab-btn" data-tab="vault" id="tab-btn-vault" title="1-Click AutoFill & Encrypted Profile Vault">
+        <span class="tab-icon">⚡</span>
+        <span class="tab-label" id="lbl-tab-vault">AutoFill</span>
+      </button>
+      <button class="sp-tab-btn" data-tab="pdf" id="tab-btn-pdf" title="Official PDF Form Guide & Certified Writer">
+        <span class="tab-icon">📄</span>
+        <span class="tab-label" id="lbl-tab-pdf">PDF Form</span>
+      </button>
+      <button class="sp-tab-btn" data-tab="fields" id="tab-btn-fields" title="Web Form Fields Inspection & Audit">
         <span class="tab-icon">📋</span>
-        <span class="tab-label" id="lbl-tab-fields">Fields</span>
+        <span class="tab-label" id="lbl-tab-fields">Fields & Audit</span>
         <span class="sp-badge" id="badge-fields-count">0</span>
-      </button>
-      <button class="sp-tab-btn" data-tab="summary" id="tab-btn-summary">
-        <span class="tab-icon">📌</span>
-        <span class="tab-label" id="lbl-tab-summary">Overview</span>
       </button>
     </nav>
 
@@ -127,26 +133,32 @@
       <div class="sp-mode-cards-container" id="sp-mode-cards-container">
         <!-- Card 1: Chatbot Mode -->
         <div class="sp-mode-card active" id="card-mode-chat" data-mode="chat" role="button" tabindex="0">
-          <div class="mode-card-badge-pill" id="badge-mode-chat-status">✓ Aktif</div>
+          <div class="mode-card-badge-pill" id="badge-mode-chat-status">✓ Active</div>
           <div class="mode-card-icon-wrap">
             <span class="mode-card-icon">💬</span>
           </div>
           <div class="mode-card-info">
-            <h4 class="mode-card-title">Mode Chatbot</h4>
-            <p class="mode-card-desc">Teks cepat & hening (Tanpa Suara)</p>
+            <h4 class="mode-card-title">Chatbot Mode</h4>
+            <p class="mode-card-desc">Fast & silent text (Muted)</p>
           </div>
         </div>
 
         <!-- Card 2: Voicebot Mode -->
         <div class="sp-mode-card" id="card-mode-voice" data-mode="voice" role="button" tabindex="0">
-          <div class="mode-card-badge-pill" id="badge-mode-voice-status">○ Beralih Mode</div>
+          <div class="mode-card-badge-pill" id="badge-mode-voice-status">○ Switch Mode</div>
           <div class="mode-card-icon-wrap">
             <span class="mode-card-icon voice-icon-glow">🎙️</span>
           </div>
           <div class="mode-card-info">
-            <h4 class="mode-card-title">Mode Voicebot</h4>
-            <p class="mode-card-desc">Suara Google WaveNet & Robot Interaktif</p>
+            <h4 class="mode-card-title">Voicebot Mode</h4>
+            <p class="mode-card-desc">Google WaveNet Voice & Interactive Avatar</p>
           </div>
+        </div>
+
+        <!-- Compact Summary Bar (Shown when .compact is active) -->
+        <div class="sp-mode-compact-bar" id="sp-mode-compact-bar">
+          <span id="lbl-compact-mode-title">💬 Mode: Chatbot (Silent)</span>
+          <span style="font-size: 10px; color: #0284c7;">Hover to change mode ▾</span>
         </div>
       </div>
 
@@ -157,12 +169,12 @@
         </div>
         
         <div class="voicebot-status-container">
-          <h3 id="lbl-voicebot-status-title" class="voicebot-status-title">Halo, saya Telmy!</h3>
-          <p id="lbl-voicebot-status-desc" class="voicebot-status-desc">Klik tombol mikrofon di bawah untuk berbicara langsung</p>
+          <h3 id="lbl-voicebot-status-title" class="voicebot-status-title">Hello, I'm Telmy!</h3>
+          <p id="lbl-voicebot-status-desc" class="voicebot-status-desc">Click the microphone button below to speak directly</p>
         </div>
 
         <div class="voicebot-mic-control-center">
-          <button type="button" id="btn-voicebot-big-mic" class="btn-voicebot-big-mic" title="Klik untuk berbicara (Push-to-Talk)">
+          <button type="button" id="btn-voicebot-big-mic" class="btn-voicebot-big-mic" title="Click to Speak (Push-to-Talk)">
             <div class="big-mic-ripple" id="voicebot-mic-ripple"></div>
             <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
               <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
@@ -170,7 +182,7 @@
               <line x1="12" x2="12" y1="19" y2="22"/>
             </svg>
           </button>
-          <div class="voicebot-mic-caption" id="lbl-voicebot-mic-caption">Klik untuk Bicara</div>
+          <div class="voicebot-mic-caption" id="lbl-voicebot-mic-caption">Click to Speak</div>
         </div>
       </div>
 
@@ -178,19 +190,6 @@
         <!-- Messages rendered dynamically -->
       </div>
       <div class="sp-chat-footer" id="sp-chat-footer">
-        <!-- Quick Action Suggestion Chips (Power Tools & Utilities) -->
-        <div class="sp-quick-chips" id="sp-quick-chips">
-          <button type="button" class="sp-quick-chip" id="chip-pdf-guide" title="Guide PDF or physical uploaded document">
-            <span>📄</span> <span id="lbl-chip-pdf">Guide PDF Form</span>
-          </button>
-          <button type="button" class="sp-quick-chip" id="chip-autofill" title="1-Click AutoFill from saved profile">
-            <span>⚡</span> <span id="lbl-chip-autofill">1-Click AutoFill</span>
-          </button>
-          <button type="button" class="sp-quick-chip" id="chip-telmy-bot" title="Ask Telmy AI companion anything">
-            <span>🤖</span> <span id="lbl-chip-bot">Telmy Bot</span>
-          </button>
-        </div>
-
         <!-- Live Speech Recognition Transcript Status -->
         <div id="mic-status-banner" class="mic-status-banner" style="display: none;">
           <span class="pulse-dot"></span>
@@ -217,77 +216,84 @@
       </div>
     </section>
 
-    <!-- TAB 2: Fields List & Inspection (Web & PDF Dual Mode) -->
-    <section id="pane-fields" class="sp-pane">
-      <!-- Mode Segment Switcher -->
-      <div class="sp-source-toggle" id="sp-source-toggle">
-        <button type="button" class="source-toggle-btn active" id="btn-mode-web">
-          <span>🌐</span> <span id="lbl-mode-web">Web Page</span>
-        </button>
-        <button type="button" class="source-toggle-btn" id="btn-mode-pdf">
-          <span>📄</span> <span id="lbl-mode-pdf">PDF Document</span>
-        </button>
-      </div>
-
-      <!-- VIEW A: Web Form Container -->
-      <div id="web-mode-container" class="web-mode-view">
-        <div class="sp-fields-container">
-          <!-- Active Field Card -->
-          <div id="active-field-card" class="sp-active-card">
-            <div class="sp-card-empty" id="fields-empty-state">
-              <div class="sp-empty-icon">📋</div>
-              <h3 id="lbl-empty-fields-title">Select a Form Field</h3>
-              <p id="lbl-empty-fields-desc">Hover or click any field badge on the page to view detailed guidelines, requirements, and examples.</p>
-            </div>
-            <div id="field-detail-content" style="display: none;"></div>
+    <!-- TAB 2: 1-Click AutoFill & Encrypted Profile Vault (Priority 7 & 8) -->
+    <section id="pane-vault" class="sp-pane">
+      <div class="vault-container">
+        <!-- Vault Security Header -->
+        <div class="vault-hero-badge">
+          <div class="vault-hero-icon">🛡️</div>
+          <div class="vault-hero-info">
+            <h3 id="lbl-vault-title">Profile & Document Vault</h3>
+            <p id="lbl-vault-cse-badge">Zero-Knowledge Client-Side Encrypted (AES-256)</p>
           </div>
+          <button type="button" id="btn-vault-lock-toggle" class="btn-vault-lock-status" title="Lock / Unlock Vault with PIN">
+            <span id="lbl-vault-lock-icon">🔒</span>
+          </button>
+        </div>
 
-          <!-- Priority 9.2: AI Pre-Submission Auditor Trigger (hidden when 0 fields) -->
-          <div class="sp-audit-trigger-card" id="sp-audit-trigger-card" style="display: none;">
-            <button type="button" class="btn-run-audit" id="btn-run-form-audit">
-              <span class="audit-btn-icon">🔍</span>
-              <div class="audit-btn-text">
-                <strong id="lbl-audit-btn-title">Pre-Submission Form Audit</strong>
-                <small id="lbl-audit-btn-sub">Sanity check completeness & format</small>
-              </div>
-            </button>
-            <div id="sp-audit-report-box" class="sp-audit-report-box" style="display: none;">
-              <div class="audit-report-header">
-                <div class="audit-status-pill" id="audit-status-pill">🟢 Ready to Submit</div>
-                <strong id="lbl-audit-report-heading">Form Audit Report</strong>
-                <button type="button" id="btn-close-audit-report" class="btn-audit-close" title="Close report">✕</button>
-              </div>
-              <div id="audit-report-items" class="audit-report-items"></div>
-            </div>
+        <!-- 1-Click AutoFill Primary Trigger -->
+        <div class="vault-autofill-banner">
+          <div class="vault-autofill-info">
+            <strong id="lbl-vault-ready-title">Ready to Fill Active Form</strong>
+            <small id="lbl-vault-ready-sub">Matches verified profile data to web inputs</small>
           </div>
+          <button type="button" id="btn-vault-autofill-now" class="btn-vault-autofill-cta">
+            <span>⚡ 1-Click AutoFill Form</span>
+          </button>
+        </div>
 
-          <!-- Detected Fields Accordion / Quick List -->
-          <div class="sp-fields-list-box">
-            <div class="sp-section-heading">
-              <span id="lbl-detected-fields-header">Detected Form Fields</span>
-              <span id="fields-count-pill" class="sp-pill">0 Fields</span>
+        <!-- Multi-Document Ingestion Dropzone (KTP, Passport, Ijazah, dll) -->
+        <div class="vault-doc-dropzone" id="vault-doc-dropzone">
+          <input type="file" id="vault-doc-file-input" accept=".pdf,image/png,image/jpeg,image/jpg" style="display: none;">
+          <div class="vault-drop-content" id="vault-drop-content">
+            <span class="vault-drop-icon">📤</span>
+            <div class="vault-drop-text">
+              <strong id="lbl-vault-upload-title">Ingest ID, Passport, or Academic Diploma</strong>
+              <small id="lbl-vault-upload-sub">PDF, PNG, JPG &bull; Extracted by Gemini Multimodal</small>
             </div>
-            <div id="fields-quick-list" class="sp-quick-list"></div>
+            <button type="button" class="btn-browse-vault-doc" id="btn-browse-vault-doc">Upload Document</button>
+          </div>
+          <!-- Ingestion Loading State -->
+          <div id="vault-doc-analyzing" class="vault-doc-analyzing" style="display: none;">
+            <div class="sp-spinner"></div>
+            <strong>Extracting data with Gemini Multimodal...</strong>
+            <small>Zero Retention: File is shredded from memory immediately</small>
           </div>
         </div>
 
-        <!-- Footer Stepper for Web Fields -->
-        <footer class="sp-stepper-footer">
-          <button id="btn-stepper-prev" class="sp-stepper-btn" disabled>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
-            <span id="lbl-stepper-prev">Previous</span>
-          </button>
-          <span id="stepper-indicator" class="sp-stepper-indicator">0 / 0</span>
-          <button id="btn-stepper-next" class="sp-stepper-btn" disabled>
-            <span id="lbl-stepper-next">Next</span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
-          </button>
-        </footer>
-      </div>
+        <!-- Zero-Knowledge Privacy Guarantee Banner (Priority 9.2) -->
+        <div class="vault-zk-banner">
+          <div class="vault-zk-icon">🛡️</div>
+          <div class="vault-zk-text">
+            <strong>Zero-Knowledge Privacy Guarantee</strong>
+            <p>Physical documents are never retained on our servers. Extracted entities are immediately encrypted via Client-Side Encryption (AES-256) using your Master PIN. Only you hold the decryption key.</p>
+          </div>
+        </div>
 
-      <!-- VIEW B: PDF & Document Guidance Container (Priority 7) -->
-      <div id="pdf-mode-container" class="pdf-mode-view" style="display: none;">
-        <!-- PDF / Photo Dropzone Card (Priority 7.6: Multimodal Photo & Scan Support) -->
+        <!-- Dynamic Extracted Fields List -->
+        <div class="vault-fields-section">
+          <div class="vault-fields-header">
+            <div class="vault-fields-header-title">
+              <h4 id="lbl-vault-data-title">Verified Profile Data</h4>
+              <span class="vault-pill-count" id="vault-fields-count">0 items</span>
+            </div>
+            <div class="vault-fields-actions">
+              <button type="button" id="btn-vault-add-custom" class="btn-vault-action-sm" title="Add Custom Field">+ Add Field</button>
+              <button type="button" id="btn-vault-wipe" class="btn-vault-action-danger-sm" title="Clear All Vault Data">Wipe</button>
+            </div>
+          </div>
+
+          <div class="vault-fields-list" id="vault-fields-list">
+            <!-- Dynamically populated field rows -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: PDF Document Form Guidance & Certified Writer (Priority 6.2 & 7) -->
+    <section id="pane-pdf" class="sp-pane">
+      <div id="pdf-mode-container" class="pdf-mode-view">
+        <!-- PDF / Photo Dropzone Card -->
         <div id="sp-pdf-dropzone" class="sp-pdf-dropzone">
           <input type="file" id="sp-pdf-file-input" accept="application/pdf,image/jpeg,image/png,image/webp" style="display: none;">
           <div class="sp-pdf-drop-content" id="sp-pdf-drop-content">
@@ -339,7 +345,7 @@
           <!-- Field Breakdown for Selected Section -->
           <div id="pdf-active-section-fields" class="pdf-active-section-fields"></div>
 
-          <!-- Priority 7.7: Interactive PDF Form Writer & Official Export -->
+          <!-- Interactive PDF Form Writer & Official Export -->
           <div class="pdf-export-action-card" id="pdf-export-card">
             <div class="pdf-export-info">
               <strong id="lbl-export-card-title">📝 Interactive Form Writer & Official Export</strong>
@@ -355,36 +361,90 @@
       </div>
     </section>
 
-    <!-- TAB 3: Summary Overview -->
-    <section id="pane-summary" class="sp-pane">
-      <div class="sp-summary-container">
-        <!-- Progress Box -->
-        <div class="sp-progress-card">
-          <div class="sp-progress-header">
-            <span id="lbl-progress-title">Form Completion Progress</span>
-            <span id="progress-percent" class="sp-progress-num">0%</span>
+    <!-- TAB 4: Web Form Fields List & Pre-Submission Auditor (Priority 6.2 & 9.2) -->
+    <section id="pane-fields" class="sp-pane">
+      <div id="web-mode-container" class="web-mode-view">
+        <div class="sp-fields-container">
+          <!-- Active Field Card -->
+          <div id="active-field-card" class="sp-active-card">
+            <div class="sp-card-empty" id="fields-empty-state">
+              <div class="sp-empty-icon">📋</div>
+              <h3 id="lbl-empty-fields-title">Select a Form Field</h3>
+              <p id="lbl-empty-fields-desc">Hover or click any field badge on the page to view detailed guidelines, requirements, and examples.</p>
+            </div>
+            <div id="field-detail-content" style="display: none;"></div>
           </div>
-          <div class="sp-progress-bar-bg">
-            <div id="progress-bar-fill" class="sp-progress-bar-fill" style="width: 0%;"></div>
+
+          <!-- AI Pre-Submission Auditor Trigger (hidden when 0 fields) -->
+          <div class="sp-audit-trigger-card" id="sp-audit-trigger-card" style="display: none;">
+            <button type="button" class="btn-run-audit" id="btn-run-form-audit">
+              <span class="audit-btn-icon">🔍</span>
+              <div class="audit-btn-text">
+                <strong id="lbl-audit-btn-title">Pre-Submission Form Audit</strong>
+                <small id="lbl-audit-btn-sub">Sanity check completeness & format</small>
+              </div>
+            </button>
+            <div id="sp-audit-report-box" class="sp-audit-report-box" style="display: none;">
+              <div class="audit-report-header">
+                <div class="audit-status-pill" id="audit-status-pill">🟢 Ready to Submit</div>
+                <strong id="lbl-audit-report-heading">Form Audit Report</strong>
+                <button type="button" id="btn-close-audit-report" class="btn-audit-close" title="Close report">✕</button>
+              </div>
+              <div id="audit-report-items" class="audit-report-items"></div>
+            </div>
           </div>
-          <div class="sp-progress-sub" id="progress-sub-text">0 of 0 fields filled</div>
+
+          <!-- Detected Fields Accordion / Quick List -->
+          <div class="sp-fields-list-box">
+            <div class="sp-section-heading">
+              <span id="lbl-detected-fields-header">Detected Form Fields</span>
+              <span id="fields-count-pill" class="sp-pill">0 Fields</span>
+            </div>
+            <div id="fields-quick-list" class="sp-quick-list"></div>
+          </div>
+
+          <!-- Form Overview & Completion Progress -->
+          <div class="sp-summary-container" style="padding: 10px 0;">
+            <div class="sp-progress-card">
+              <div class="sp-progress-header">
+                <span id="lbl-progress-title">Form Completion Progress</span>
+                <span id="progress-percent" class="sp-progress-num">0%</span>
+              </div>
+              <div class="sp-progress-bar-bg">
+                <div id="progress-bar-fill" class="sp-progress-bar-fill" style="width: 0%;"></div>
+              </div>
+              <div class="sp-progress-sub" id="progress-sub-text">0 of 0 fields filled</div>
+            </div>
+
+            <div class="sp-summary-card">
+              <div class="sp-summary-item">
+                <h4 id="lbl-summary-title">📌 Form Overview</h4>
+                <p id="summary-desc-text">Scanning page to analyze form context...</p>
+              </div>
+              <div class="sp-summary-item" id="box-prerequisites" style="display: none;">
+                <h4 id="lbl-prereq-title">📑 Prerequisites & Documents</h4>
+                <ul id="summary-prereq-list" class="sp-prereq-list"></ul>
+              </div>
+              <div class="sp-summary-item">
+                <h4 id="lbl-tips-title">💡 Helpful Tips</h4>
+                <p id="summary-tips-text">Ensure all information matches your official physical documents. Avoid fictitious or estimated values.</p>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <!-- Form Overview Card -->
-        <div class="sp-summary-card">
-          <div class="sp-summary-item">
-            <h4 id="lbl-summary-title">📌 Form Overview</h4>
-            <p id="summary-desc-text">Scanning page to analyze form context...</p>
-          </div>
-          <div class="sp-summary-item" id="box-prerequisites" style="display: none;">
-            <h4 id="lbl-prereq-title">📑 Prerequisites & Documents</h4>
-            <ul id="summary-prereq-list" class="sp-prereq-list"></ul>
-          </div>
-          <div class="sp-summary-item">
-            <h4 id="lbl-tips-title">💡 Helpful Tips</h4>
-            <p id="summary-tips-text">Ensure all information matches your official physical documents. Avoid fictitious or estimated values.</p>
-          </div>
-        </div>
+        <!-- Footer Stepper for Web Fields -->
+        <footer class="sp-stepper-footer">
+          <button id="btn-stepper-prev" class="sp-stepper-btn" disabled>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
+            <span id="lbl-stepper-prev">Previous</span>
+          </button>
+          <span id="stepper-indicator" class="sp-stepper-indicator">0 / 0</span>
+          <button id="btn-stepper-next" class="sp-stepper-btn" disabled>
+            <span id="lbl-stepper-next">Next</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
+          </button>
+        </footer>
       </div>
     </section>
 
@@ -441,9 +501,9 @@
           </select>
         </div>
 
-        <!-- Step 2: Firebase Account Authentication -->
+        <!-- Step 2: Account Authentication -->
         <div class="onboarding-section">
-          <label class="onboarding-label">2. Connect Your Account (Firebase)</label>
+          <label class="onboarding-label">2. Connect Your Account</label>
           <div id="onboarding-auth-box" class="onboarding-auth-box">
             <div id="onboarding-unauthed" class="onboarding-auth-actions">
               <button id="btn-onboarding-google" class="btn-auth-google">
@@ -543,8 +603,56 @@
     </div>
   </div>
 
+  <!-- Priority 7: 6-Digit Vault PIN Modal -->
+  <div id="vault-pin-modal" class="sp-modal" style="display: none;">
+    <div class="sp-modal-content vault-pin-modal-content">
+      <div class="vault-pin-icon-wrap">🔒</div>
+      <h3 id="vault-pin-modal-title">Unlock Profile Vault</h3>
+      <p id="vault-pin-modal-sub" class="vault-pin-subtitle">Enter your 6-Digit Master PIN to decrypt your profile & documents with Zero-Knowledge encryption.</p>
+      
+      <div class="vault-pin-input-group">
+        <input type="password" maxlength="6" id="input-vault-pin" class="vault-pin-input" placeholder="••••••" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
+      </div>
+      <div id="vault-pin-error" class="vault-pin-error-msg" style="display: none;"></div>
+
+      <div class="vault-pin-btn-group">
+        <button type="button" id="btn-submit-vault-pin" class="btn-vault-pin-pri">Unlock Vault</button>
+        <button type="button" id="btn-cancel-vault-pin" class="btn-vault-pin-sec">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Priority 7 & 8: Edit / Add Vault Field Modal -->
+  <div id="vault-field-modal" class="sp-modal" style="display: none;">
+    <div class="sp-modal-content vault-edit-modal-content">
+      <div class="sp-modal-header">
+        <h3 id="lbl-vault-modal-field-title">Edit Field Value</h3>
+        <button type="button" id="btn-close-field-modal" class="sp-modal-close">&times;</button>
+      </div>
+      <div class="vault-edit-body">
+        <div class="vault-edit-field-row">
+          <label id="lbl-edit-row-name">Field Name / Label</label>
+          <input type="text" id="input-vault-field-label" class="sp-input" placeholder="e.g. Passport Number, Full Name">
+        </div>
+        <div class="vault-edit-field-row">
+          <label id="lbl-edit-row-val">Field Value</label>
+          <input type="text" id="input-vault-field-value" class="sp-input" placeholder="e.g. A1234567">
+        </div>
+        <div class="vault-edit-field-row">
+          <label id="lbl-edit-row-aliases">Aliases / Matching Keywords (comma-separated)</label>
+          <input type="text" id="input-vault-field-aliases" class="sp-input" placeholder="passport, no paspor, travel document">
+        </div>
+      </div>
+      <div class="vault-edit-footer">
+        <button type="button" id="btn-save-vault-field" class="btn-vault-pin-pri">Save & Encrypt</button>
+        <button type="button" id="btn-cancel-vault-field" class="btn-vault-pin-sec">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <script src="pdf-lib.min.js"></script>
   <script src="avatar-controller.js"></script>
+  <script src="crypto-vault.js"></script>
   <script src="sidepanel.js"></script>
 </body>
 </html>
