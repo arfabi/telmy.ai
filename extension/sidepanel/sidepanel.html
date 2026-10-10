@@ -603,17 +603,70 @@
     </div>
   </div>
 
-  <!-- Priority 7: 6-Digit Vault PIN Modal -->
+  <!-- Dual-Lock Vault Modal: Password (6-12 chars) or 12-Word Seed Phrase -->
   <div id="vault-pin-modal" class="sp-modal" style="display: none;">
     <div class="sp-modal-content vault-pin-modal-content">
-      <div class="vault-pin-icon-wrap">🔒</div>
+      <div class="vault-pin-icon-wrap" id="vault-modal-icon">🔒</div>
       <h3 id="vault-pin-modal-title">Unlock Profile Vault</h3>
-      <p id="vault-pin-modal-sub" class="vault-pin-subtitle">Enter your 6-Digit Master PIN to decrypt your profile & documents with Zero-Knowledge encryption.</p>
+      <p id="vault-pin-modal-sub" class="vault-pin-subtitle">Choose your authentication method to decrypt your encrypted Zero-Knowledge vault.</p>
       
-      <div class="vault-pin-input-group">
-        <input type="password" maxlength="6" id="input-vault-pin" class="vault-pin-input" placeholder="••••••" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
+      <!-- Lockout Alert Banner -->
+      <div id="vault-lockout-banner" class="vault-lockout-alert" style="display: none;">
+        <span class="lockout-icon">⏳</span>
+        <span id="vault-lockout-text">Too many failed attempts. Locked for 30s.</span>
       </div>
+
+      <!-- Mode Selector Tabs -->
+      <div class="vault-mode-tabs" id="vault-mode-tabs">
+        <button type="button" class="vault-tab-btn active" id="tab-vault-password">🔑 Password (6–12)</button>
+        <button type="button" class="vault-tab-btn" id="tab-vault-seed">🛡️ 12 Seed Words</button>
+      </div>
+
+      <!-- Mode A: Password View -->
+      <div id="vault-view-password" class="vault-mode-view">
+        <div class="vault-input-wrap">
+          <input type="password" maxlength="12" id="input-vault-password" class="vault-password-input" placeholder="Enter password (6–12 chars)" autocomplete="off">
+          <button type="button" id="btn-toggle-pwd-visibility" class="btn-pwd-eye" title="Show / Hide Password">👁️</button>
+        </div>
+        <!-- Password Strength Meter -->
+        <div id="vault-pwd-strength-wrap" class="vault-strength-wrap" style="display: none;">
+          <div class="vault-strength-track">
+            <div id="vault-strength-bar" class="vault-strength-bar"></div>
+          </div>
+          <div class="vault-strength-labels">
+            <span style="font-size: 11px; color: #64748b;">Strength:</span>
+            <span id="vault-strength-text" style="font-size: 11px; font-weight: 700; color: #94a3b8;">Enter 6–12 chars</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mode B: Seed Phrase View -->
+      <div id="vault-view-seed" class="vault-mode-view" style="display: none;">
+        <!-- Setup Mode Seed Phrase Grid -->
+        <div id="vault-seed-setup-box" style="display: none;">
+          <p style="font-size: 11px; color: #64748b; margin-bottom: 8px;">Write down these 12 words in order. Never share them with anyone.</p>
+          <div id="vault-seed-chips" class="vault-seed-chips-grid"></div>
+          <div class="vault-seed-actions">
+            <button type="button" id="btn-generate-new-seed" class="btn-seed-action">⚡ Re-generate</button>
+            <button type="button" id="btn-copy-seed-words" class="btn-seed-action">📋 Copy All</button>
+            <button type="button" id="btn-download-seed-txt" class="btn-seed-action">📥 Save .txt</button>
+          </div>
+          <label class="vault-seed-confirm-label">
+            <input type="checkbox" id="chk-seed-saved"> I have written down my 12 secret words safely.
+          </label>
+        </div>
+
+        <!-- Unlock Mode Seed Phrase Input -->
+        <div id="vault-seed-unlock-box">
+          <textarea id="textarea-vault-seed" class="vault-seed-textarea" placeholder="Paste or type your 12 secret words separated by spaces..." rows="3"></textarea>
+        </div>
+      </div>
+
       <div id="vault-pin-error" class="vault-pin-error-msg" style="display: none;"></div>
+
+      <div class="vault-session-hint">
+        <span>🔒 Session Unlock: Stays unlocked during your current browser session.</span>
+      </div>
 
       <div class="vault-pin-btn-group">
         <button type="button" id="btn-submit-vault-pin" class="btn-vault-pin-pri">Unlock Vault</button>

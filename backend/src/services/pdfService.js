@@ -337,7 +337,7 @@ export async function extractVaultEntitiesFromDocument(base64Payload, fileName =
   }
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite';
+  const modelName = process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite';
   const model = genAI.getGenerativeModel({
     model: modelName,
     generationConfig: {

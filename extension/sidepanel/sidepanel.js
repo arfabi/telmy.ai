@@ -97,11 +97,31 @@ document.addEventListener('DOMContentLoaded', async () => {
   const btnVaultWipe = document.getElementById('btn-vault-wipe');
   const vaultFieldsList = document.getElementById('vault-fields-list');
 
-  // Vault Modals Elements
+  // Vault Modals Elements (Dual-Lock: Password & 12-Word Seed Phrase)
   const vaultPinModal = document.getElementById('vault-pin-modal');
   const vaultPinModalTitle = document.getElementById('vault-pin-modal-title');
   const vaultPinModalSub = document.getElementById('vault-pin-modal-sub');
-  const inputVaultPin = document.getElementById('input-vault-pin');
+  const vaultModalIcon = document.getElementById('vault-modal-icon');
+  const vaultLockoutBanner = document.getElementById('vault-lockout-banner');
+  const vaultLockoutText = document.getElementById('vault-lockout-text');
+  const vaultModeTabs = document.getElementById('vault-mode-tabs');
+  const tabVaultPassword = document.getElementById('tab-vault-password');
+  const tabVaultSeed = document.getElementById('tab-vault-seed');
+  const vaultViewPassword = document.getElementById('vault-view-password');
+  const vaultViewSeed = document.getElementById('vault-view-seed');
+  const inputVaultPassword = document.getElementById('input-vault-password');
+  const btnTogglePwdVisibility = document.getElementById('btn-toggle-pwd-visibility');
+  const vaultPwdStrengthWrap = document.getElementById('vault-pwd-strength-wrap');
+  const vaultStrengthBar = document.getElementById('vault-strength-bar');
+  const vaultStrengthText = document.getElementById('vault-strength-text');
+  const vaultSeedSetupBox = document.getElementById('vault-seed-setup-box');
+  const vaultSeedUnlockBox = document.getElementById('vault-seed-unlock-box');
+  const vaultSeedChips = document.getElementById('vault-seed-chips');
+  const btnGenerateNewSeed = document.getElementById('btn-generate-new-seed');
+  const btnCopySeedWords = document.getElementById('btn-copy-seed-words');
+  const btnDownloadSeedTxt = document.getElementById('btn-download-seed-txt');
+  const chkSeedSaved = document.getElementById('chk-seed-saved');
+  const textareaVaultSeed = document.getElementById('textarea-vault-seed');
   const vaultPinError = document.getElementById('vault-pin-error');
   const btnSubmitVaultPin = document.getElementById('btn-submit-vault-pin');
   const btnCancelVaultPin = document.getElementById('btn-cancel-vault-pin');
@@ -607,17 +627,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       ms: 'Tolong jelaskan ringkasan borang ini dan apa yang diperlukan.'
     },
     autofill_not_configured_msg: {
-      en: '⚡ **1-Click AutoFill**: Your master profile is not configured yet. Visit your Member Area at https://telmy.web.app/dashboard#autofill to set up your legal name, passport, and identity info!',
-      id: '⚡ **1-Click AutoFill**: Data profil tersimpan Anda belum diisi. Kunjungi Member Area di https://telmy.web.app/dashboard#autofill untuk menyimpan data paspor, NIK, dan identitas Anda!',
-      ja: '⚡ **1-クリック自動入力**: マスタープロファイルが未設定です。https://telmy.web.app/dashboard#autofill で身元情報を登録してください！',
-      ko: '⚡ **1-클릭 자동완성**: 마스터 프로필이 설정되지 않았습니다. https://telmy.web.app/dashboard#autofill 에서 정보를 등록하세요!',
-      zh: '⚡ **一键自动填写**：您的个人主配置文件尚未设置。请访问 https://telmy.web.app/dashboard#autofill 设置您的身份信息！',
-      'zh-TW': '⚡ **一鍵自動填寫**：您的個人主設定檔尚未設定。請訪問 https://telmy.web.app/dashboard#autofill 設定您的身分資料！',
-      vi: '⚡ **Tự động điền 1 chạm**: Hồ sơ của bạn chưa được thiết lập. Hãy truy cập https://telmy.web.app/dashboard#autofill để cài đặt!',
-      th: '⚡ **กรอกอัตโนมัติใน 1 คลิก**: คุณยังไม่ได้ตั้งค่าโปรไฟล์หลัก ไปที่ https://telmy.web.app/dashboard#autofill เพื่อตั้งค่า!',
-      hi: '⚡ **1-क्लिक ऑटोफ़िल**: आपकी प्रोफ़ाइल अभी कॉन्फ़िगर नहीं है। अपनी जानकारी सेट करने के लिए https://telmy.web.app/dashboard#autofill पर जाएं!',
-      fil: '⚡ **1-Click AutoFill**: Hindi pa naka-configure ang iyong profile. Pumunta sa https://telmy.web.app/dashboard#autofill!',
-      ms: '⚡ **1-Click AutoFill**: Profil utama anda belum ditetapkan. Layari https://telmy.web.app/dashboard#autofill untuk menyediakannya!'
+      en: '⚡ **1-Click AutoFill**: Your master profile is not configured yet. Visit your Member Area at https://telmy-ai.cloud.run/dashboard#autofill to set up your legal name, passport, and identity info!',
+      id: '⚡ **1-Click AutoFill**: Data profil tersimpan Anda belum diisi. Kunjungi Member Area di https://telmy-ai.cloud.run/dashboard#autofill untuk menyimpan data paspor, NIK, dan identitas Anda!',
+      ja: '⚡ **1-クリック自動入力**: マスタープロファイルが未設定です。https://telmy-ai.cloud.run/dashboard#autofill で身元情報を登録してください！',
+      ko: '⚡ **1-클릭 자동완성**: 마스터 프로필이 설정되지 않았습니다. https://telmy-ai.cloud.run/dashboard#autofill 에서 정보를 등록하세요!',
+      zh: '⚡ **一键自动填写**：您的个人主配置文件尚未设置。请访问 https://telmy-ai.cloud.run/dashboard#autofill 设置您的身份信息！',
+      'zh-TW': '⚡ **一鍵自動填寫**：您的個人主設定檔尚未設定。請訪問 https://telmy-ai.cloud.run/dashboard#autofill 設定您的身分資料！',
+      vi: '⚡ **Tự động điền 1 chạm**: Hồ sơ của bạn chưa được thiết lập. Hãy truy cập https://telmy-ai.cloud.run/dashboard#autofill để cài đặt!',
+      th: '⚡ **กรอกอัตโนมัติใน 1 คลิก**: คุณยังไม่ได้ตั้งค่าโปรไฟล์หลัก ไปที่ https://telmy-ai.cloud.run/dashboard#autofill เพื่อตั้งค่า!',
+      hi: '⚡ **1-क्लिक ऑटोफ़िल**: आपकी प्रोफ़ाइल अभी कॉन्फ़िगर नहीं है। अपनी जानकारी सेट करने के लिए https://telmy-ai.cloud.run/dashboard#autofill पर जाएं!',
+      fil: '⚡ **1-Click AutoFill**: Hindi pa naka-configure ang iyong profile. Pumunta sa https://telmy-ai.cloud.run/dashboard#autofill!',
+      ms: '⚡ **1-Click AutoFill**: Profil utama anda belum ditetapkan. Layari https://telmy-ai.cloud.run/dashboard#autofill untuk menyediakannya!'
     },
     autofill_complete_msg: {
       en: '⚡ **1-Click AutoFill Complete**: Successfully filled {count} using your encrypted profile vault. Please review all entries before submitting!',
@@ -3637,22 +3657,142 @@ document.addEventListener('DOMContentLoaded', async () => {
       btnVaultWipe.addEventListener('click', wipeVault);
     }
 
-    // 6. PIN Modal Controls
-    if (btnSubmitVaultPin && inputVaultPin) {
-      btnSubmitVaultPin.addEventListener('click', handleVaultPinSubmit);
-      inputVaultPin.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') handleVaultPinSubmit();
-      });
-      // Allow only numbers and max 6 digits
-      inputVaultPin.addEventListener('input', () => {
-        inputVaultPin.value = inputVaultPin.value.replace(/\D/g, '').slice(0, 6);
+    // 6. Dual-Lock Vault Modal Setup & Controls
+    let activeVaultMode = 'password'; // 'password' | 'seed_phrase'
+    let isVaultSetupMode = false;
+    let currentGeneratedSeed = '';
+    let lockoutInterval = null;
+
+    function switchVaultModalTab(mode) {
+      activeVaultMode = mode;
+      if (tabVaultPassword) tabVaultPassword.classList.toggle('active', mode === 'password');
+      if (tabVaultSeed) tabVaultSeed.classList.toggle('active', mode === 'seed_phrase');
+      if (vaultViewPassword) vaultViewPassword.style.display = mode === 'password' ? 'block' : 'none';
+      if (vaultViewSeed) vaultViewSeed.style.display = mode === 'seed_phrase' ? 'block' : 'none';
+      if (vaultPinError) vaultPinError.style.display = 'none';
+
+      if (mode === 'password' && inputVaultPassword) {
+        setTimeout(() => inputVaultPassword.focus(), 50);
+      } else if (mode === 'seed_phrase' && isVaultSetupMode && !currentGeneratedSeed) {
+        generateAndRenderSeedChips();
+      }
+    }
+
+    function togglePasswordVisibility() {
+      if (!inputVaultPassword) return;
+      const isPwd = inputVaultPassword.type === 'password';
+      inputVaultPassword.type = isPwd ? 'text' : 'password';
+      if (btnTogglePwdVisibility) btnTogglePwdVisibility.textContent = isPwd ? '🙈' : '👁️';
+    }
+
+    function updatePasswordStrengthUI() {
+      if (!inputVaultPassword) return;
+      const val = inputVaultPassword.value;
+      if (isVaultSetupMode && vaultPwdStrengthWrap) {
+        vaultPwdStrengthWrap.style.display = 'block';
+        const st = window.TelmyCryptoVault.calculatePasswordStrength(val);
+        if (vaultStrengthBar) {
+          vaultStrengthBar.style.width = st.percent + '%';
+          vaultStrengthBar.style.backgroundColor = st.color;
+        }
+        if (vaultStrengthText) {
+          vaultStrengthText.textContent = st.label;
+          vaultStrengthText.style.color = st.color;
+        }
+      } else if (vaultPwdStrengthWrap) {
+        vaultPwdStrengthWrap.style.display = 'none';
+      }
+    }
+
+    function generateAndRenderSeedChips() {
+      currentGeneratedSeed = window.TelmyCryptoVault.generateSeedPhrase();
+      const words = currentGeneratedSeed.split(' ');
+      if (vaultSeedChips) {
+        vaultSeedChips.innerHTML = words.map((w, idx) => `
+          <div class="vault-seed-chip">
+            <span class="vault-seed-num">${idx + 1}.</span>
+            <span>${w}</span>
+          </div>
+        `).join('');
+      }
+      if (chkSeedSaved) chkSeedSaved.checked = false;
+    }
+
+    function copySeedWordsToClipboard() {
+      if (!currentGeneratedSeed) return;
+      navigator.clipboard.writeText(currentGeneratedSeed).then(() => {
+        showToast('📋 12 secret words copied to clipboard!');
       });
     }
 
+    function downloadSeedTxtFile() {
+      if (!currentGeneratedSeed) return;
+      const txtContent = `TELMY.AI — EMERGENCY ZERO-KNOWLEDGE SEED PHRASE\n` +
+        `Generated: ${new Date().toISOString()}\n\n` +
+        `Your 12 Secret Words (Keep this safe & offline):\n` +
+        `${currentGeneratedSeed}\n\n` +
+        `IMPORTANT: If you lose these words, your encrypted profile cannot be recovered by anyone.`;
+      const blob = new Blob([txtContent], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `telmy-vault-seed-${Date.now().toString(36)}.txt`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('📥 Emergency seed phrase text file saved!');
+    }
+
+    function checkAndApplyLockoutUI() {
+      if (!window.TelmyCryptoVault) return false;
+      const status = window.TelmyCryptoVault.getAttemptStatus();
+      if (status.isLocked) {
+        if (vaultLockoutBanner) {
+          vaultLockoutBanner.style.display = 'flex';
+          if (vaultLockoutText) {
+            vaultLockoutText.textContent = `⚠️ Too many failed attempts. Locked for ${status.remainingSeconds}s.`;
+          }
+        }
+        if (btnSubmitVaultPin) btnSubmitVaultPin.disabled = true;
+
+        if (lockoutInterval) clearInterval(lockoutInterval);
+        lockoutInterval = setInterval(() => {
+          const fresh = window.TelmyCryptoVault.getAttemptStatus();
+          if (!fresh.isLocked) {
+            clearInterval(lockoutInterval);
+            lockoutInterval = null;
+            if (vaultLockoutBanner) vaultLockoutBanner.style.display = 'none';
+            if (btnSubmitVaultPin) btnSubmitVaultPin.disabled = false;
+          } else if (vaultLockoutText) {
+            vaultLockoutText.textContent = `⚠️ Too many failed attempts. Locked for ${fresh.remainingSeconds}s.`;
+          }
+        }, 1000);
+        return true;
+      } else {
+        if (vaultLockoutBanner) vaultLockoutBanner.style.display = 'none';
+        if (btnSubmitVaultPin) btnSubmitVaultPin.disabled = false;
+        return false;
+      }
+    }
+
+    if (tabVaultPassword) tabVaultPassword.addEventListener('click', () => switchVaultModalTab('password'));
+    if (tabVaultSeed) tabVaultSeed.addEventListener('click', () => switchVaultModalTab('seed_phrase'));
+    if (btnTogglePwdVisibility) btnTogglePwdVisibility.addEventListener('click', togglePasswordVisibility);
+    if (inputVaultPassword) {
+      inputVaultPassword.addEventListener('input', updatePasswordStrengthUI);
+      inputVaultPassword.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') handleVaultPinSubmit();
+      });
+    }
+    if (btnGenerateNewSeed) btnGenerateNewSeed.addEventListener('click', generateAndRenderSeedChips);
+    if (btnCopySeedWords) btnCopySeedWords.addEventListener('click', copySeedWordsToClipboard);
+    if (btnDownloadSeedTxt) btnDownloadSeedTxt.addEventListener('click', downloadSeedTxtFile);
+
+    if (btnSubmitVaultPin) {
+      btnSubmitVaultPin.addEventListener('click', handleVaultPinSubmit);
+    }
     if (btnCancelVaultPin) {
       btnCancelVaultPin.addEventListener('click', closeVaultPinModal);
     }
-
     if (vaultPinModal) {
       vaultPinModal.addEventListener('click', (e) => {
         if (e.target === vaultPinModal) closeVaultPinModal();
@@ -3681,6 +3821,30 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function checkVaultSessionCache() {
     try {
+      // 1. Check Session Unlock Secret (Session Storage / Memory)
+      const sessionSecret = window.TelmyCryptoVault ? window.TelmyCryptoVault.getSessionVaultSecret() : null;
+      if (sessionSecret) {
+        const res = await new Promise((resolve) => {
+          chrome.runtime.sendMessage({ type: 'VAULT_GET' }, resolve);
+        });
+        const envelope = res && res.envelope ? res.envelope : null;
+        if (envelope && envelope.ciphertext) {
+          try {
+            const decrypted = await window.TelmyCryptoVault.decryptVaultData(envelope, sessionSecret);
+            currentDecryptedVault = decrypted;
+            currentVaultPin = sessionSecret;
+            isVaultUnlocked = true;
+            updateVaultHeaderUI(true);
+            renderVaultFieldsList();
+            return;
+          } catch (sessErr) {
+            // Session key invalidated or changed
+            if (window.TelmyCryptoVault) window.TelmyCryptoVault.clearSessionVaultSecret();
+          }
+        }
+      }
+
+      // 2. Check local session cache fallback
       const stored = await chrome.storage.local.get(['telmy_vault_session_cache']);
       if (stored.telmy_vault_session_cache && stored.telmy_vault_session_cache.fields) {
         currentDecryptedVault = stored.telmy_vault_session_cache;
@@ -3703,41 +3867,111 @@ document.addEventListener('DOMContentLoaded', async () => {
       lblVaultLockIcon.textContent = unlocked ? '🔓' : '🔒';
     }
     if (btnVaultLockToggle) {
-      btnVaultLockToggle.title = unlocked ? 'Lock Vault (Clear from RAM)' : 'Unlock Vault with PIN';
+      btnVaultLockToggle.title = unlocked ? 'Lock Vault (Clear Session from RAM)' : 'Unlock Profile Vault';
     }
   }
 
-  function openVaultPinModal(onSuccess = null, title = null, subtitle = null) {
+  async function openVaultPinModal(onSuccess = null, title = null, subtitle = null) {
     pinUnlockCallback = onSuccess;
-    if (vaultPinModalTitle && title) vaultPinModalTitle.textContent = title;
-    if (vaultPinModalSub && subtitle) vaultPinModalSub.textContent = subtitle;
     if (vaultPinError) {
       vaultPinError.textContent = '';
       vaultPinError.style.display = 'none';
     }
-    if (inputVaultPin) {
-      inputVaultPin.value = '';
+
+    // Check if envelope exists
+    let envelope = null;
+    try {
+      const res = await new Promise((resolve) => {
+        chrome.runtime.sendMessage({ type: 'VAULT_GET' }, resolve);
+      });
+      envelope = res && res.envelope && res.envelope.ciphertext ? res.envelope : null;
+    } catch (e) {}
+
+    isVaultSetupMode = !envelope;
+
+    if (vaultPinModalTitle) {
+      vaultPinModalTitle.textContent = title || (isVaultSetupMode ? 'Create Master Security Key' : 'Unlock Profile Vault');
     }
+    if (vaultPinModalSub) {
+      vaultPinModalSub.textContent = subtitle || (isVaultSetupMode
+        ? 'Protect your profile data with Bank-grade Client-Side Encryption. Choose a Password (6–12 chars) or a 12-Word Seed Phrase.'
+        : 'Enter your Master Password or 12 Secret Words to decrypt your profile.');
+    }
+    if (btnSubmitVaultPin) {
+      btnSubmitVaultPin.textContent = isVaultSetupMode ? 'Set Up & Encrypt Vault' : 'Unlock Vault';
+    }
+
+    if (isVaultSetupMode) {
+      if (vaultModeTabs) vaultModeTabs.style.display = 'flex';
+      if (vaultPwdStrengthWrap) vaultPwdStrengthWrap.style.display = 'block';
+      if (vaultSeedSetupBox) vaultSeedSetupBox.style.display = 'block';
+      if (vaultSeedUnlockBox) vaultSeedUnlockBox.style.display = 'none';
+    } else {
+      // In unlock mode, default to envelope's lockType
+      const lockType = (envelope && envelope.lockType) ? envelope.lockType : 'password';
+      if (vaultModeTabs) vaultModeTabs.style.display = 'flex';
+      if (vaultPwdStrengthWrap) vaultPwdStrengthWrap.style.display = 'none';
+      if (vaultSeedSetupBox) vaultSeedSetupBox.style.display = 'none';
+      if (vaultSeedUnlockBox) vaultSeedUnlockBox.style.display = 'block';
+      activeVaultMode = lockType;
+    }
+
+    // Reset inputs
+    if (inputVaultPassword) {
+      inputVaultPassword.value = '';
+      inputVaultPassword.type = 'password';
+    }
+    if (btnTogglePwdVisibility) btnTogglePwdVisibility.textContent = '👁️';
+    if (textareaVaultSeed) textareaVaultSeed.value = '';
+
+    // Check rate-limiting lockout state
+    checkAndApplyLockoutUI();
+
+    switchVaultModalTab(activeVaultMode);
+
     if (vaultPinModal) {
       vaultPinModal.style.display = 'flex';
-      setTimeout(() => inputVaultPin && inputVaultPin.focus(), 100);
+      if (activeVaultMode === 'password' && inputVaultPassword) {
+        setTimeout(() => inputVaultPassword.focus(), 100);
+      }
     }
   }
 
   function closeVaultPinModal() {
     if (vaultPinModal) vaultPinModal.style.display = 'none';
-    if (inputVaultPin) inputVaultPin.value = '';
+    if (inputVaultPassword) inputVaultPassword.value = '';
+    if (textareaVaultSeed) textareaVaultSeed.value = '';
     if (vaultPinError) vaultPinError.style.display = 'none';
     pinUnlockCallback = null;
   }
 
   async function handleVaultPinSubmit() {
-    if (!inputVaultPin) return;
-    const pin = inputVaultPin.value.trim();
+    if (checkAndApplyLockoutUI()) return;
 
-    if (!pin || pin.length !== 6 || !/^\d{6}$/.test(pin)) {
-      showVaultPinError(t('vault_pin_error_format') || 'PIN must be exactly 6 numeric digits.');
-      return;
+    let secret = '';
+    if (activeVaultMode === 'password') {
+      secret = inputVaultPassword ? inputVaultPassword.value.trim() : '';
+      if (!secret || secret.length < 6 || secret.length > 12) {
+        showVaultPinError('Password must be between 6 and 12 characters.');
+        if (inputVaultPassword) inputVaultPassword.focus();
+        return;
+      }
+    } else {
+      if (isVaultSetupMode) {
+        secret = currentGeneratedSeed.trim();
+        if (!chkSeedSaved || !chkSeedSaved.checked) {
+          showVaultPinError('Please confirm that you have saved your 12 secret words safely.');
+          return;
+        }
+      } else {
+        secret = textareaVaultSeed ? textareaVaultSeed.value.trim() : '';
+        const words = secret.split(/\s+/).filter(Boolean);
+        if (words.length !== 12) {
+          showVaultPinError('Please enter all 12 seed words separated by spaces.');
+          if (textareaVaultSeed) textareaVaultSeed.focus();
+          return;
+        }
+      }
     }
 
     if (btnSubmitVaultPin) {
@@ -3746,23 +3980,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     try {
-      // 1. Fetch encrypted envelope from background / cloud
       const res = await new Promise((resolve) => {
         chrome.runtime.sendMessage({ type: 'VAULT_GET' }, resolve);
       });
-
       const envelope = res && res.envelope ? res.envelope : null;
 
       if (!envelope || !envelope.ciphertext) {
-        // Vault is empty / first time setup!
+        // First-time setup
         const initialVault = {
           vaultVersion: 2,
           lastUpdated: new Date().toISOString(),
+          lockType: activeVaultMode,
           documents: [],
           fields: []
         };
 
-        // If user is logged in, optionally populate initial canonical fields
         if (currentUser) {
           if (currentUser.displayName || currentUser.name) {
             initialVault.fields.push({
@@ -3790,14 +4022,13 @@ document.addEventListener('DOMContentLoaded', async () => {
           }
         }
 
-        // Encrypt with this new PIN
-        const newEnvelope = await window.TelmyCryptoVault.encryptVaultData(initialVault, pin);
+        const newEnvelope = await window.TelmyCryptoVault.encryptVaultData(initialVault, secret, null, activeVaultMode);
         await new Promise((resolve) => {
           chrome.runtime.sendMessage({ type: 'VAULT_SAVE', envelope: newEnvelope }, resolve);
         });
 
         currentDecryptedVault = initialVault;
-        currentVaultPin = pin;
+        currentVaultPin = secret;
         isVaultUnlocked = true;
         await chrome.storage.local.set({ telmy_vault_session_cache: initialVault });
         syncAutofillStorage(initialVault);
@@ -3805,6 +4036,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         closeVaultPinModal();
         updateVaultHeaderUI(true);
         renderVaultFieldsList();
+        showToast('🔓 Brankas berhasil dibuat & terenkripsi!');
 
         if (pinUnlockCallback) {
           pinUnlockCallback();
@@ -3813,11 +4045,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
       }
 
-      // 2. Existing envelope: Decrypt with Web Crypto API
+      // Existing envelope decryption
       try {
-        const decrypted = await window.TelmyCryptoVault.decryptVaultData(envelope, pin);
+        const decrypted = await window.TelmyCryptoVault.decryptVaultData(envelope, secret);
         currentDecryptedVault = decrypted;
-        currentVaultPin = pin;
+        currentVaultPin = secret;
         isVaultUnlocked = true;
 
         await chrome.storage.local.set({ telmy_vault_session_cache: decrypted });
@@ -3826,19 +4058,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         closeVaultPinModal();
         updateVaultHeaderUI(true);
         renderVaultFieldsList();
+        showToast('🔓 Brankas berhasil dibuka untuk sesi ini!');
 
         if (pinUnlockCallback) {
           pinUnlockCallback();
           pinUnlockCallback = null;
         }
       } catch (decryptErr) {
-        showVaultPinError(t('vault_pin_error_incorrect') || 'Incorrect 6-Digit PIN. Please check and try again.');
+        if (decryptErr.message && decryptErr.message.startsWith('VAULT_LOCKED')) {
+          checkAndApplyLockoutUI();
+          showVaultPinError('⚠️ Brankas terkunci karena 3x salah percobaan.');
+        } else {
+          const attemptStatus = window.TelmyCryptoVault.getAttemptStatus();
+          const remainingAttempts = Math.max(0, 3 - (attemptStatus.failedAttempts || 0));
+          if (attemptStatus.isLocked) {
+            checkAndApplyLockoutUI();
+          } else {
+            showVaultPinError(`❌ Kunci tidak cocok. Sisa ${remainingAttempts} percobaan lagi.`);
+          }
+        }
       }
     } catch (err) {
       showVaultPinError('Decryption error: ' + err.message);
     } finally {
-      if (btnSubmitVaultPin) {
-        btnSubmitVaultPin.textContent = 'Unlock Vault';
+      if (btnSubmitVaultPin && !checkAndApplyLockoutUI()) {
+        btnSubmitVaultPin.textContent = isVaultSetupMode ? 'Set Up & Encrypt Vault' : 'Unlock Vault';
         btnSubmitVaultPin.disabled = false;
       }
     }
@@ -3849,20 +4093,19 @@ document.addEventListener('DOMContentLoaded', async () => {
       vaultPinError.textContent = msg;
       vaultPinError.style.display = 'block';
     }
-    if (inputVaultPin) {
-      inputVaultPin.classList.add('error');
-      setTimeout(() => inputVaultPin && inputVaultPin.classList.remove('error'), 1000);
-      inputVaultPin.focus();
-    }
   }
 
   async function lockVault() {
     isVaultUnlocked = false;
     currentDecryptedVault = null;
     currentVaultPin = null;
+    if (window.TelmyCryptoVault) {
+      window.TelmyCryptoVault.clearSessionVaultSecret();
+    }
     await chrome.storage.local.remove(['telmy_vault_session_cache']);
     updateVaultHeaderUI(false);
     renderVaultFieldsList();
+    showToast('🔒 Brankas dikunci kembali.');
   }
 
   async function saveAndReEncryptVault() {

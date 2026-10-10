@@ -63,7 +63,7 @@ export async function synthesizeSpeechStream({ text, language = 'en' }) {
   const requestHeaders = {
     'Content-Type': 'application/json'
   };
-  const allowedReferer = process.env.GOOGLE_TTS_REFERER || process.env.ALLOWED_REFERER || 'https://telmy.web.app/';
+  const allowedReferer = process.env.GOOGLE_TTS_REFERER || process.env.ALLOWED_REFERER || 'https://telmy-ai.cloud.run/';
   if (allowedReferer) {
     requestHeaders['Referer'] = allowedReferer;
   }

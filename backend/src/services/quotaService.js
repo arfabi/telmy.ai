@@ -12,6 +12,7 @@ const DEFAULT_QUOTA = {
     subscriptionStatus: 'none', // 'none' | 'active' | 'canceled'
     subscriptionExpiresAt: null
   },
+  activeFormSessions: [],
   usageStats: {
     totalFormsProcessed: 0,
     lastActiveAt: new Date().toISOString()
@@ -48,6 +49,7 @@ export async function getUserQuota(uid = 'guest_user') {
             uid,
             plan: data.plan || 'free',
             quota: data.quota,
+            activeFormSessions: data.activeFormSessions || [],
             usageStats: data.usageStats || { totalFormsProcessed: 0, lastActiveAt: new Date().toISOString() }
           };
         }
@@ -81,37 +83,205 @@ export async function getUserQuota(uid = 'guest_user') {
   return { uid, ...memoryData };
 }
 
+const SESSION_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+const MAX_PAGES_PER_SESSION = 20;
+
 /**
- * Priority 8.2: Expiring-First Quota Consumption
- * 1. Pro Subscription (expiring monthly) first
- * 2. Permanent PAYG credits second
- * 3. Initial Free Tier credits third
+ * Helper to extract unique session key for web form or PDF
+ * @param {object} context
+ * @returns {string} sessionKey
+ */
+function extractFormSessionKey(context = {}) {
+  if (context.type === 'pdf') {
+    const filename = (context.filename || 'document.pdf').toLowerCase().trim();
+    return `pdf:${filename}`;
+  }
+
+  let rawUrl = context.url || context.origin || 'https://default-portal.com';
+  try {
+    if (!rawUrl.startsWith('http://') && !rawUrl.startsWith('https://')) {
+      rawUrl = 'https://' + rawUrl;
+    }
+    const parsed = new URL(rawUrl);
+    const origin = parsed.origin.toLowerCase();
+    
+    // Public shared form domains (e.g. Google Forms, Tally, Typeform) -> group by form root path
+    const SHARED_DOMAINS = ['forms.google.com', 'docs.google.com', 'typeform.com', 'tally.so', 'airtable.com', 'jotform.com'];
+    if (SHARED_DOMAINS.some(d => parsed.hostname.includes(d))) {
+      const pathSegments = parsed.pathname.split('/').filter(Boolean).slice(0, 3).join('/');
+      return `web:${origin}/${pathSegments}`;
+    }
+    
+    return `web:${origin}`;
+  } catch (e) {
+    return `web:${String(rawUrl).toLowerCase().substring(0, 60)}`;
+  }
+}
+
+async function saveUserQuotaData(uid, current) {
+  const { db, isFirebaseConnected } = getFirestore();
+  if (isFirebaseConnected && db) {
+    try {
+      await db.collection('users').doc(uid).set({
+        plan: current.plan,
+        quota: current.quota,
+        usageStats: current.usageStats,
+        activeFormSessions: current.activeFormSessions || []
+      }, { merge: true });
+    } catch (dbErr) {
+      console.warn(`[QuotaService] Firestore update error for ${uid}:`, dbErr.message);
+    }
+  } else {
+    inMemoryQuotaMap.set(uid, current);
+  }
+}
+
+/**
+ * Form Quota Consumption Engine:
+ * - 1 Form = 1 situs/portal, hingga 20 halaman/step, dalam 24 jam.
+ * - 1 Form PDF = 1 file PDF.
+ * - Upload ke Vault (KTP, Paspor, Ijazah) = 0 Kuota (bebas biaya, murni penyimpanan).
+ * - Priority: 1. Pro Subscription -> 2. Permanent PAYG -> 3. Free Tier
  * 
  * @param {string} uid - User ID
- * @returns {Promise<{allowed: boolean, quota?: object, consumedFrom?: string, reason?: string}>}
+ * @param {object} context - { type: 'web'|'pdf'|'vault', url?: string, origin?: string, path?: string, filename?: string }
+ * @returns {Promise<{allowed: boolean, quota?: object, consumedFrom?: string, reason?: string, sessionInfo?: object}>}
  */
-export async function consumeFormQuota(uid = 'guest_user') {
+export async function consumeFormQuota(uid = 'guest_user', context = {}) {
+  // 1. Vault storage exemption (KTP/Passport backup does NOT consume quota)
+  if (context.type === 'vault') {
+    const current = await getUserQuota(uid);
+    const q = current.quota;
+    const totalRemaining = (q.subscriptionQuotaRemaining || 0) + (q.purchasedCreditsRemaining || 0) + (q.freeRemaining || 0);
+    return {
+      allowed: true,
+      quotaExempt: true,
+      reason: 'VAULT_STORAGE_EXEMPT',
+      uid,
+      plan: current.plan,
+      quota: q,
+      totalRemaining
+    };
+  }
+
   const current = await getUserQuota(uid);
   const q = current.quota;
 
+  if (!current.activeFormSessions) {
+    current.activeFormSessions = [];
+  }
+
+  const now = Date.now();
+  // 2. Clean expired sessions (> 24 hours)
+  current.activeFormSessions = current.activeFormSessions.filter(s => {
+    return s.expiresAt && new Date(s.expiresAt).getTime() > now;
+  });
+
+  const sessionKey = extractFormSessionKey(context);
+  let currentPath = context.path;
+  if (!currentPath && context.url) {
+    try {
+      currentPath = new URL(context.url, 'https://dummy.com').pathname;
+    } catch (e) {
+      currentPath = '/';
+    }
+  }
+  if (!currentPath) currentPath = '/';
+
+  // 3. Check for existing active 24-hour session
+  let existingSession = current.activeFormSessions.find(s => s.sessionKey === sessionKey);
+
+  if (existingSession) {
+    // A. For PDF: same file within 24h is exempt
+    if (context.type === 'pdf') {
+      const totalRemaining = (q.subscriptionQuotaRemaining || 0) + (q.purchasedCreditsRemaining || 0) + (q.freeRemaining || 0);
+      return {
+        allowed: true,
+        quotaExempt: true,
+        isSessionContinuation: true,
+        sessionId: existingSession.id,
+        sessionKey,
+        pageCount: existingSession.pageCount || 1,
+        pagesRemaining: 0,
+        consumedFrom: 'existing_pdf_session',
+        uid,
+        plan: current.plan,
+        quota: q,
+        totalRemaining
+      };
+    }
+
+    // B. For Web: multi-step pages tracking (up to 20 pages within 24h)
+    if (!existingSession.pagesVisited) existingSession.pagesVisited = [];
+    const isNewPage = !existingSession.pagesVisited.includes(currentPath);
+
+    if (isNewPage) {
+      if ((existingSession.pageCount || existingSession.pagesVisited.length) < MAX_PAGES_PER_SESSION) {
+        existingSession.pagesVisited.push(currentPath);
+        existingSession.pageCount = existingSession.pagesVisited.length;
+        existingSession.lastActiveAt = new Date().toISOString();
+
+        await saveUserQuotaData(uid, current);
+
+        const totalRemaining = (q.subscriptionQuotaRemaining || 0) + (q.purchasedCreditsRemaining || 0) + (q.freeRemaining || 0);
+        return {
+          allowed: true,
+          quotaExempt: true,
+          isSessionContinuation: true,
+          sessionId: existingSession.id,
+          sessionKey,
+          pageCount: existingSession.pageCount,
+          pagesRemaining: Math.max(0, MAX_PAGES_PER_SESSION - existingSession.pageCount),
+          consumedFrom: 'existing_web_session',
+          uid,
+          plan: current.plan,
+          quota: q,
+          totalRemaining
+        };
+      } else {
+        // Exceeded 20 pages limit! Proceed to deduct 1 form credit for next 20 pages
+        existingSession = null;
+      }
+    } else {
+      // Re-query or multiple fields on the same page -> always exempt!
+      existingSession.lastActiveAt = new Date().toISOString();
+      const totalRemaining = (q.subscriptionQuotaRemaining || 0) + (q.purchasedCreditsRemaining || 0) + (q.freeRemaining || 0);
+      return {
+        allowed: true,
+        quotaExempt: true,
+        isSessionContinuation: true,
+        sessionId: existingSession.id,
+        sessionKey,
+        pageCount: existingSession.pageCount || 1,
+        pagesRemaining: Math.max(0, MAX_PAGES_PER_SESSION - (existingSession.pageCount || 1)),
+        consumedFrom: 'existing_web_session',
+        uid,
+        plan: current.plan,
+        quota: q,
+        totalRemaining
+      };
+    }
+  }
+
+  // 4. Consume 1 Form Credit for New Form Session
   let consumedFrom = null;
 
-  // 1. Priority 1: Expiring Subscription Quota
+  // Priority 1: Expiring Subscription Quota
   if (q.subscriptionStatus === 'active' && q.subscriptionQuotaRemaining > 0) {
     q.subscriptionQuotaRemaining -= 1;
     consumedFrom = 'subscription';
   }
-  // 2. Priority 2: Permanent PAYG Credits
+  // Priority 2: Permanent PAYG Credits
   else if (q.purchasedCreditsRemaining > 0) {
     q.purchasedCreditsRemaining -= 1;
     consumedFrom = 'payg';
   }
-  // 3. Priority 3: Initial Free Tier
+  // Priority 3: Initial Free Tier
   else if (q.freeRemaining > 0) {
     q.freeRemaining -= 1;
     consumedFrom = 'free';
   }
-  // 4. Quota Exhausted
+  // Quota Exhausted
   else {
     return {
       allowed: false,
@@ -123,30 +293,35 @@ export async function consumeFormQuota(uid = 'guest_user') {
     };
   }
 
+  // 5. Register new 24h active form session
+  const newSession = {
+    id: 'form_sess_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 6),
+    sessionKey,
+    type: context.type || 'web',
+    startedAt: new Date().toISOString(),
+    expiresAt: new Date(now + SESSION_TTL_MS).toISOString(),
+    lastActiveAt: new Date().toISOString(),
+    pagesVisited: [currentPath],
+    pageCount: 1
+  };
+  current.activeFormSessions.push(newSession);
+
   current.usageStats.totalFormsProcessed = (current.usageStats.totalFormsProcessed || 0) + 1;
   current.usageStats.lastActiveAt = new Date().toISOString();
 
-  // Persist updated quota
-  const { db, isFirebaseConnected } = getFirestore();
-  if (isFirebaseConnected && db) {
-    try {
-      await db.collection('users').doc(uid).set({
-        plan: current.plan,
-        quota: q,
-        usageStats: current.usageStats
-      }, { merge: true });
-    } catch (dbErr) {
-      console.warn(`[QuotaService] Firestore update error for ${uid}:`, dbErr.message);
-    }
-  } else {
-    inMemoryQuotaMap.set(uid, current);
-  }
+  // Persist updated quota & session
+  await saveUserQuotaData(uid, current);
 
   const totalRemaining = (q.subscriptionQuotaRemaining || 0) + (q.purchasedCreditsRemaining || 0) + (q.freeRemaining || 0);
 
   return {
     allowed: true,
     consumedFrom,
+    isNewSession: true,
+    sessionId: newSession.id,
+    sessionKey,
+    pageCount: 1,
+    pagesRemaining: MAX_PAGES_PER_SESSION - 1,
     uid,
     plan: current.plan,
     quota: q,

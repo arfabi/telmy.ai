@@ -264,19 +264,26 @@
 
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+  <script src="/firebase-config.js"></script>
   <script>
-    // Initialize Firebase Client SDK
-    const firebaseConfig = {
-      apiKey: "AIzaSyBibds09YOwLFUaEk8p_W-vEP1OI1RNwkk",
-      authDomain: "guidemeto-bdf36.firebaseapp.com",
-      projectId: "guidemeto-bdf36",
-      storageBucket: "guidemeto-bdf36.firebasestorage.app",
-      messagingSenderId: "1055819077227",
-      appId: "1:1055819077227:web:80c85025a1f6a1e360f786"
-    };
+    // Initialize Firebase Client SDK dynamically from environment
+    const firebaseConfig = (window.__FIREBASE_CONFIG__ && window.__FIREBASE_CONFIG__.apiKey)
+      ? window.__FIREBASE_CONFIG__
+      : {
+          apiKey: "",
+          authDomain: "",
+          projectId: "",
+          storageBucket: "",
+          messagingSenderId: "",
+          appId: ""
+        };
 
-    if (typeof firebase !== 'undefined' && !firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
+    if (typeof firebase !== 'undefined' && !firebase.apps.length && firebaseConfig.apiKey) {
+      try {
+        firebase.initializeApp(firebaseConfig);
+      } catch (e) {
+        console.warn('[Firebase] Client initialization warning:', e.message);
+      }
     }
 
     const btnGoogle = document.getElementById('btn-google-login');

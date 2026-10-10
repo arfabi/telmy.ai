@@ -145,8 +145,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       const settings = res.settings || DEFAULT_SETTINGS;
       const user = res.user || null;
       const apiUrl = settings.apiUrl || DEFAULT_SETTINGS.apiUrl;
-      const { metadata, language, pageContext } = message.payload;
+      const { metadata, language, pageContext, url } = message.payload || {};
       const userId = user?.uid || 'guest_user';
+
+      let formUrl = url || sender.tab?.url;
+      if (!formUrl) {
+        try {
+          const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+          if (activeTab?.url) formUrl = activeTab.url;
+        } catch (e) {}
+      }
 
       try {
         const response = await fetchWithTimeout(`${apiUrl}/explain`, {
@@ -155,7 +163,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             'Content-Type': 'application/json',
             'x-user-id': userId
           },
-          body: JSON.stringify({ metadata, language, pageContext, userId })
+          body: JSON.stringify({ metadata, language, pageContext, userId, url: formUrl })
         }, 30000);
 
         if (response.ok) {
@@ -702,7 +710,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 });
 
-// External message listener (e.g. from telmy.id or localhost web dashboard)
+// External message listener (e.g. from telmy-ai.cloud.run web dashboard)
 if (chrome.runtime.onMessageExternal) {
   chrome.runtime.onMessageExternal.addListener((message, sender, sendResponse) => {
     if (message.type === 'PING') {

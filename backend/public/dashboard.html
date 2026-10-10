@@ -761,6 +761,206 @@
         padding: 20px 16px 40px;
       }
     }
+
+    /* =========================================================
+       Dual-Lock Vault UI (Password 6-12 vs 12 Seed Words)
+       ========================================================= */
+    .vault-container-box {
+      background: #f8fafc;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    .vault-lockout-alert {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #fee2e2;
+      border: 1px solid #fca5a5;
+      color: #991b1b;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 14px;
+      animation: pulseAlert 1.5s infinite;
+    }
+    @keyframes pulseAlert {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.75; }
+    }
+    .vault-mode-tabs {
+      display: flex;
+      gap: 8px;
+      background: #e2e8f0;
+      padding: 4px;
+      border-radius: 10px;
+      margin-bottom: 14px;
+      max-width: 440px;
+    }
+    .vault-tab-btn {
+      flex: 1;
+      padding: 8px 14px;
+      font-size: 12.5px;
+      font-weight: 700;
+      border: none;
+      background: transparent;
+      color: #64748b;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+    .vault-tab-btn.active {
+      background: #ffffff;
+      color: var(--text-main);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+    .vault-input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+      max-width: 380px;
+    }
+    .vault-password-input {
+      width: 100%;
+      padding: 10px 42px 10px 14px;
+      font-size: 14px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: var(--radius-sm);
+      outline: none;
+      font-family: inherit;
+      background: #ffffff;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .vault-password-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.15);
+    }
+    .btn-pwd-eye {
+      position: absolute;
+      right: 12px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 15px;
+      opacity: 0.6;
+      transition: opacity 0.15s;
+    }
+    .btn-pwd-eye:hover { opacity: 1; }
+    .vault-strength-wrap {
+      margin-top: 8px;
+      max-width: 380px;
+    }
+    .vault-strength-track {
+      height: 5px;
+      background: #e2e8f0;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 5px;
+    }
+    .vault-strength-bar {
+      height: 100%;
+      width: 0%;
+      border-radius: 999px;
+      transition: width 0.25s ease, background-color 0.25s ease;
+    }
+    .vault-strength-labels {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11.5px;
+    }
+    .vault-seed-chips-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+      max-width: 600px;
+    }
+    @media (max-width: 640px) {
+      .vault-seed-chips-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    .vault-seed-chip {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-family: monospace;
+      font-weight: 600;
+      color: #1e293b;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .vault-seed-num {
+      color: #94a3b8;
+      font-size: 10.5px;
+      min-width: 18px;
+    }
+    .vault-seed-actions {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .btn-seed-action {
+      padding: 7px 12px;
+      font-size: 11.5px;
+      font-weight: 600;
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      border-radius: 8px;
+      color: #334155;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-seed-action:hover {
+      background: #f1f5f9;
+      border-color: #94a3b8;
+    }
+    .vault-seed-confirm-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #475569;
+      cursor: pointer;
+      margin-bottom: 8px;
+    }
+    .vault-seed-textarea {
+      width: 100%;
+      max-width: 540px;
+      padding: 10px 12px;
+      font-size: 13px;
+      font-family: monospace;
+      border: 1.5px solid #cbd5e1;
+      border-radius: var(--radius-sm);
+      outline: none;
+      resize: vertical;
+      box-sizing: border-box;
+      background: #ffffff;
+    }
+    .vault-seed-textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.15);
+    }
+    .vault-session-hint {
+      font-size: 11.5px;
+      color: #64748b;
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .vault-pin-error-msg {
+      color: #dc2626;
+      font-size: 12px;
+      margin-top: 8px;
+      font-weight: 600;
+    }
   </style>
 </head>
 <body>
@@ -1084,31 +1284,91 @@
             </div>
           </div>
 
-          <!-- Zero-Knowledge Security Vault Card -->
+          <!-- Zero-Knowledge Security Vault Card (Dual-Lock: Password 6-12 chars OR 12 Seed Words) -->
           <div class="apple-card" style="margin-bottom: 20px;">
             <div class="card-header">
               <div>
-                <h3 class="card-title">🔐 Zero-Knowledge Profile Vault (6-Digit PIN)</h3>
-                <p class="card-subtitle">Encrypted on your device using PBKDF2 (100,000 iterations) and AES-GCM 256-bit before syncing to Firestore</p>
+                <h3 class="card-title">🔐 Zero-Knowledge Profile Vault (Master Key Dipegang Pengguna)</h3>
+                <p class="card-subtitle">Dienkripsi di browser lokal dengan AES-GCM 256-bit & PBKDF2 (100.000 iterasi). Server & Firestore hanya menyimpan ciphertext acak.</p>
               </div>
-              <span id="vault-status-badge" style="font-size: 11.5px; font-weight: 700; color: #16a34a; background: #dcfce7; padding: 4px 12px; border-radius: var(--radius-full);">
-                🔓 Vault Unlocked in Memory
+              <span id="vault-status-badge" style="font-size: 11.5px; font-weight: 700; color: #dc2626; background: #fee2e2; padding: 4px 12px; border-radius: var(--radius-full);">
+                🔒 Vault Locked
               </span>
             </div>
 
-            <!-- PIN Unlock / Lock Section -->
-            <div style="background: #f8fafc; border: 1px solid var(--card-border); border-radius: var(--radius-sm); padding: 16px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
-              <div style="display: flex; align-items: center; gap: 12px;">
-                <span style="font-size: 28px;">🛡️</span>
-                <div>
-                  <strong style="font-size: 13.5px; color: var(--text-main); display: block;">Client-Side Encryption Standard</strong>
-                  <span style="font-size: 12px; color: var(--text-secondary);">Server and database hold Zero Plaintext. Only your 6-Digit PIN can decrypt this data.</span>
+            <!-- Vault Interactive Control Box -->
+            <div class="vault-container-box">
+              <!-- Lockout Alert Banner -->
+              <div id="vault-lockout-banner" class="vault-lockout-alert" style="display: none;">
+                <span style="font-size: 16px;">⏳</span>
+                <span id="vault-lockout-text">Terlalu banyak percobaan gagal (3x). Brankas terkunci selama 30 detik.</span>
+              </div>
+
+              <div style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 16px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <span style="font-size: 28px;">🛡️</span>
+                  <div>
+                    <strong style="font-size: 13.5px; color: var(--text-main); display: block;">Standar Enkripsi Zero-Knowledge</strong>
+                    <span style="font-size: 12px; color: var(--text-secondary);">Pilih metode kunci Anda: Password (6–12 karakter) atau 12 Seed Words rahasia.</span>
+                  </div>
+                </div>
+
+                <div style="display: flex; gap: 8px;">
+                  <button type="button" id="btn-unlock-vault" class="btn-apple-primary" style="padding: 8px 18px; font-size: 12.5px;">Unlock Vault</button>
+                  <button type="button" id="btn-lock-vault" class="btn-apple-secondary" style="padding: 8px 14px; font-size: 12.5px;">Lock</button>
                 </div>
               </div>
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <input type="password" id="vault-pin-input" maxlength="6" placeholder="6-Digit PIN" style="width: 120px; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: monospace; font-size: 14px; text-align: center; letter-spacing: 2px;">
-                <button type="button" id="btn-unlock-vault" class="btn-apple-primary" style="padding: 8px 16px; font-size: 12.5px;">Unlock Vault</button>
-                <button type="button" id="btn-lock-vault" class="btn-apple-secondary" style="padding: 8px 14px; font-size: 12.5px;">Lock</button>
+
+              <!-- Mode Selector Tabs -->
+              <div class="vault-mode-tabs" id="dash-vault-tabs">
+                <button type="button" class="vault-tab-btn active" id="tab-dash-password">🔑 Password (6–12 Karakter)</button>
+                <button type="button" class="vault-tab-btn" id="tab-dash-seed">🛡️ 12 Seed Words</button>
+              </div>
+
+              <!-- Mode A: Password View -->
+              <div id="dash-view-password" class="vault-mode-view">
+                <div class="vault-input-wrap">
+                  <input type="password" maxlength="12" id="vault-pin-input" class="vault-password-input" placeholder="Masukkan password (6–12 karakter)" autocomplete="off">
+                  <button type="button" id="btn-toggle-dash-pwd" class="btn-pwd-eye" title="Tampilkan / Sembunyikan Password">👁️</button>
+                </div>
+                <!-- Password Strength Meter -->
+                <div id="vault-pwd-strength-wrap" class="vault-strength-wrap">
+                  <div class="vault-strength-track">
+                    <div id="vault-strength-bar" class="vault-strength-bar"></div>
+                  </div>
+                  <div class="vault-strength-labels">
+                    <span style="color: #64748b;">Kekuatan Password:</span>
+                    <span id="vault-strength-text" style="font-weight: 700; color: #94a3b8;">Minimal 6 karakter</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Mode B: Seed Phrase View -->
+              <div id="dash-view-seed" class="vault-mode-view" style="display: none;">
+                <!-- Setup Mode Seed Phrase Grid -->
+                <div id="dash-seed-setup-box" style="display: none;">
+                  <p style="font-size: 12px; color: #64748b; margin-bottom: 10px;">Catat 12 kata rahasia berikut berurutan. Jangan pernah bagikan ke siapapun.</p>
+                  <div id="dash-seed-chips" class="vault-seed-chips-grid"></div>
+                  <div class="vault-seed-actions">
+                    <button type="button" id="btn-generate-dash-seed" class="btn-seed-action">⚡ Re-generate</button>
+                    <button type="button" id="btn-copy-dash-seed" class="btn-seed-action">📋 Salin Semua</button>
+                    <button type="button" id="btn-download-dash-seed" class="btn-seed-action">📥 Unduh .txt</button>
+                  </div>
+                  <label class="vault-seed-confirm-label">
+                    <input type="checkbox" id="chk-dash-seed-saved"> Saya telah mencatat/menyimpan 12 kata rahasia ini dengan aman.
+                  </label>
+                </div>
+
+                <!-- Unlock Mode Seed Phrase Input -->
+                <div id="dash-seed-unlock-box">
+                  <textarea id="textarea-dash-seed" class="vault-seed-textarea" placeholder="Tempelkan atau ketik 12 kata rahasia Anda dipisahkan spasi..." rows="3"></textarea>
+                </div>
+              </div>
+
+              <div id="dash-vault-error" class="vault-pin-error-msg" style="display: none;"></div>
+
+              <div class="vault-session-hint">
+                <span>✨ <strong>Session Unlock:</strong> Buka kunci sekali per sesi browser. Plaintext tidak pernah disimpan di disk atau database.</span>
               </div>
             </div>
 
@@ -1444,20 +1704,27 @@
 
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+  <script src="/firebase-config.js"></script>
   <script src="crypto-vault.js"></script>
   <script>
-    // Initialize Firebase Client SDK
-    const firebaseConfig = {
-      apiKey: "AIzaSyBibds09YOwLFUaEk8p_W-vEP1OI1RNwkk",
-      authDomain: "guidemeto-bdf36.firebaseapp.com",
-      projectId: "guidemeto-bdf36",
-      storageBucket: "guidemeto-bdf36.firebasestorage.app",
-      messagingSenderId: "1055819077227",
-      appId: "1:1055819077227:web:80c85025a1f6a1e360f786"
-    };
+    // Initialize Firebase Client SDK dynamically from environment
+    const firebaseConfig = (window.__FIREBASE_CONFIG__ && window.__FIREBASE_CONFIG__.apiKey)
+      ? window.__FIREBASE_CONFIG__
+      : {
+          apiKey: "",
+          authDomain: "",
+          projectId: "",
+          storageBucket: "",
+          messagingSenderId: "",
+          appId: ""
+        };
 
-    if (typeof firebase !== 'undefined' && !firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
+    if (typeof firebase !== 'undefined' && !firebase.apps.length && firebaseConfig.apiKey) {
+      try {
+        firebase.initializeApp(firebaseConfig);
+      } catch (e) {
+        console.warn('[Firebase] Client initialization warning:', e.message);
+      }
     }
 
     // Languages Matrix (11 JAPAC languages)
@@ -1732,9 +1999,12 @@
       }).catch(() => {});
     }
 
-    // 3. Zero-Knowledge Profile Vault Engine (Web Crypto API + 6-Digit PIN)
+    // 3. Zero-Knowledge Profile Vault Engine (Web Crypto API + Dual-Lock + Session Unlock)
     let currentVaultPin = '';
     let decryptedVaultData = null;
+    let activeDashVaultMode = 'password';
+    let currentGeneratedDashSeed = '';
+    let dashLockoutInterval = null;
 
     function populateVaultFields(d) {
       if (!d) return;
@@ -1755,6 +2025,25 @@
 
     function setupAutoFill() {
       const pinInput = document.getElementById('vault-pin-input');
+      const btnTogglePwd = document.getElementById('btn-toggle-dash-pwd');
+      const vaultPwdStrengthWrap = document.getElementById('vault-pwd-strength-wrap');
+      const vaultStrengthBar = document.getElementById('vault-strength-bar');
+      const vaultStrengthText = document.getElementById('vault-strength-text');
+      const tabPassword = document.getElementById('tab-dash-password');
+      const tabSeed = document.getElementById('tab-dash-seed');
+      const viewPassword = document.getElementById('dash-view-password');
+      const viewSeed = document.getElementById('dash-view-seed');
+      const seedSetupBox = document.getElementById('dash-seed-setup-box');
+      const seedUnlockBox = document.getElementById('dash-seed-unlock-box');
+      const seedChips = document.getElementById('dash-seed-chips');
+      const btnGenerateSeed = document.getElementById('btn-generate-dash-seed');
+      const btnCopySeed = document.getElementById('btn-copy-dash-seed');
+      const btnDownloadSeed = document.getElementById('btn-download-dash-seed');
+      const chkSeedSaved = document.getElementById('chk-dash-seed-saved');
+      const textareaSeed = document.getElementById('textarea-dash-seed');
+      const lockoutBanner = document.getElementById('vault-lockout-banner');
+      const lockoutText = document.getElementById('vault-lockout-text');
+      const errorMsg = document.getElementById('dash-vault-error');
       const btnUnlock = document.getElementById('btn-unlock-vault');
       const btnLock = document.getElementById('btn-lock-vault');
       const vaultBadge = document.getElementById('vault-status-badge');
@@ -1771,40 +2060,239 @@
         if (extStatus) extStatus.textContent = '✓ Telmy Chrome Extension Connected & Synchronized';
       }
 
+      function showVaultError(msg) {
+        if (!errorMsg) return;
+        errorMsg.textContent = msg;
+        errorMsg.style.display = 'block';
+        setTimeout(() => {
+          if (errorMsg) errorMsg.style.display = 'none';
+        }, 5000);
+      }
+
+      function checkAndApplyDashLockoutUI() {
+        if (!window.TelmyCryptoVault) return false;
+        const status = window.TelmyCryptoVault.getAttemptStatus();
+        if (status.isLocked) {
+          if (lockoutBanner) {
+            lockoutBanner.style.display = 'flex';
+            if (lockoutText) {
+              lockoutText.textContent = `⚠️ Terlalu banyak percobaan gagal (3x). Brankas terkunci selama ${status.remainingSeconds} detik.`;
+            }
+          }
+          if (btnUnlock) btnUnlock.disabled = true;
+
+          if (dashLockoutInterval) clearInterval(dashLockoutInterval);
+          dashLockoutInterval = setInterval(() => {
+            const fresh = window.TelmyCryptoVault.getAttemptStatus();
+            if (!fresh.isLocked) {
+              clearInterval(dashLockoutInterval);
+              dashLockoutInterval = null;
+              if (lockoutBanner) lockoutBanner.style.display = 'none';
+              if (btnUnlock) btnUnlock.disabled = false;
+            } else if (lockoutText) {
+              lockoutText.textContent = `⚠️ Terlalu banyak percobaan gagal (3x). Brankas terkunci selama ${fresh.remainingSeconds} detik.`;
+            }
+          }, 1000);
+          return true;
+        } else {
+          if (lockoutBanner) lockoutBanner.style.display = 'none';
+          if (btnUnlock) btnUnlock.disabled = false;
+          return false;
+        }
+      }
+
+      function updatePasswordStrengthUI() {
+        if (!pinInput || !window.TelmyCryptoVault) return;
+        const val = pinInput.value;
+        const st = window.TelmyCryptoVault.calculatePasswordStrength(val);
+        if (vaultStrengthBar) {
+          vaultStrengthBar.style.width = st.percent + '%';
+          vaultStrengthBar.style.backgroundColor = st.color;
+        }
+        if (vaultStrengthText) {
+          vaultStrengthText.textContent = st.label;
+          vaultStrengthText.style.color = st.color;
+        }
+      }
+
+      function togglePasswordVisibility() {
+        if (!pinInput) return;
+        const isPwd = pinInput.type === 'password';
+        pinInput.type = isPwd ? 'text' : 'password';
+        if (btnTogglePwd) btnTogglePwd.textContent = isPwd ? '🙈' : '👁️';
+      }
+
+      function generateAndRenderDashSeedChips() {
+        if (!window.TelmyCryptoVault) return;
+        currentGeneratedDashSeed = window.TelmyCryptoVault.generateSeedPhrase();
+        const words = currentGeneratedDashSeed.split(' ');
+        if (seedChips) {
+          seedChips.innerHTML = words.map((w, idx) => `
+            <div class="vault-seed-chip">
+              <span class="vault-seed-num">${idx + 1}.</span>
+              <span>${w}</span>
+            </div>
+          `).join('');
+        }
+        if (chkSeedSaved) chkSeedSaved.checked = false;
+      }
+
+      function copySeedWordsToClipboard() {
+        if (!currentGeneratedDashSeed) return;
+        navigator.clipboard.writeText(currentGeneratedDashSeed).then(() => {
+          showToast('📋 12 seed words berhasil disalin ke clipboard!');
+        });
+      }
+
+      function downloadSeedTxtFile() {
+        if (!currentGeneratedDashSeed) return;
+        const txtContent = `TELMY.AI — EMERGENCY ZERO-KNOWLEDGE SEED PHRASE\n` +
+          `Generated: ${new Date().toISOString()}\n\n` +
+          `12 Kata Kunci Rahasia Anda (Simpan offline di tempat aman):\n` +
+          `${currentGeneratedDashSeed}\n\n` +
+          `PENTING: Jangan berikan 12 kata ini kepada siapa pun. Jika hilang, brankas terenkripsi Anda tidak dapat dipulihkan.`;
+        const blob = new Blob([txtContent], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `telmy-vault-seed-${Date.now().toString(36)}.txt`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('📥 File darurat seed phrase .txt berhasil diunduh!');
+      }
+
+      function switchDashVaultTab(mode) {
+        activeDashVaultMode = mode;
+        if (mode === 'password') {
+          if (tabPassword) tabPassword.classList.add('active');
+          if (tabSeed) tabSeed.classList.remove('active');
+          if (viewPassword) viewPassword.style.display = 'block';
+          if (viewSeed) viewSeed.style.display = 'none';
+        } else {
+          if (tabPassword) tabPassword.classList.remove('active');
+          if (tabSeed) tabSeed.classList.add('active');
+          if (viewPassword) viewPassword.style.display = 'none';
+          if (viewSeed) viewSeed.style.display = 'block';
+          if (!savedEnvelopeStr && !currentGeneratedDashSeed) {
+            generateAndRenderDashSeedChips();
+          }
+        }
+      }
+
+      // Event Listeners for UI
+      if (tabPassword) tabPassword.addEventListener('click', () => switchDashVaultTab('password'));
+      if (tabSeed) tabSeed.addEventListener('click', () => switchDashVaultTab('seed_phrase'));
+      if (btnTogglePwd) btnTogglePwd.addEventListener('click', togglePasswordVisibility);
+      if (pinInput) pinInput.addEventListener('input', updatePasswordStrengthUI);
+      if (btnGenerateSeed) btnGenerateSeed.addEventListener('click', generateAndRenderDashSeedChips);
+      if (btnCopySeed) btnCopySeed.addEventListener('click', copySeedWordsToClipboard);
+      if (btnDownloadSeed) btnDownloadSeed.addEventListener('click', downloadSeedTxtFile);
+
+      // Setup Seed Mode display
+      if (savedEnvelopeStr) {
+        if (seedSetupBox) seedSetupBox.style.display = 'none';
+        if (seedUnlockBox) seedUnlockBox.style.display = 'block';
+      } else {
+        if (seedSetupBox) seedSetupBox.style.display = 'block';
+        if (seedUnlockBox) seedUnlockBox.style.display = 'none';
+        generateAndRenderDashSeedChips();
+      }
+
+      // Check Lockout on init
+      checkAndApplyDashLockoutUI();
+
+      // Check Session Unlock on init (cukup buka kunci sekali per sesi browser)
+      if (window.TelmyCryptoVault) {
+        const sessionSecret = window.TelmyCryptoVault.getSessionVaultSecret();
+        if (sessionSecret && savedEnvelopeStr) {
+          try {
+            const envelope = JSON.parse(savedEnvelopeStr);
+            window.TelmyCryptoVault.decryptVaultData(envelope, sessionSecret).then((decrypted) => {
+              decryptedVaultData = decrypted;
+              currentVaultPin = sessionSecret;
+              populateVaultFields(decrypted);
+              if (vaultBadge) {
+                vaultBadge.textContent = '🔓 Vault Unlocked (Session Active)';
+                vaultBadge.style.background = '#dcfce7';
+                vaultBadge.style.color = '#16a34a';
+              }
+              showToast('🔓 Session Unlock aktif — profil terbuka otomatis.');
+            }).catch(() => {
+              window.TelmyCryptoVault.clearSessionVaultSecret();
+            });
+          } catch (e) {}
+        }
+      }
+
       // Unlock Handler
       if (btnUnlock) {
         btnUnlock.addEventListener('click', async () => {
-          const pin = pinInput.value.trim();
-          if (!/^\d{6}$/.test(pin)) {
-            alert('Please enter a valid 6-Digit Master PIN (numbers only).');
-            return;
+          if (checkAndApplyDashLockoutUI()) return;
+
+          let secret = '';
+          if (activeDashVaultMode === 'password') {
+            secret = pinInput ? pinInput.value.trim() : '';
+            if (!secret || secret.length < 6 || secret.length > 12) {
+              showVaultError('Password harus antara 6 hingga 12 karakter.');
+              if (pinInput) pinInput.focus();
+              return;
+            }
+          } else {
+            if (!savedEnvelopeStr) {
+              secret = currentGeneratedDashSeed.trim();
+              if (!chkSeedSaved || !chkSeedSaved.checked) {
+                showVaultError('Harap centang konfirmasi bahwa Anda telah mencatat 12 kata rahasia.');
+                return;
+              }
+            } else {
+              secret = textareaSeed ? textareaSeed.value.trim() : '';
+              const words = secret.split(/\s+/).filter(Boolean);
+              if (words.length !== 12) {
+                showVaultError('Harap masukkan 12 kata seed phrase dipisahkan spasi.');
+                if (textareaSeed) textareaSeed.focus();
+                return;
+              }
+            }
           }
 
           if (savedEnvelopeStr && window.TelmyCryptoVault) {
             try {
               const envelope = JSON.parse(savedEnvelopeStr);
-              const decrypted = await window.TelmyCryptoVault.decryptVaultData(envelope, pin);
+              const decrypted = await window.TelmyCryptoVault.decryptVaultData(envelope, secret);
               decryptedVaultData = decrypted;
-              currentVaultPin = pin;
+              currentVaultPin = secret;
+              window.TelmyCryptoVault.setSessionVaultSecret(secret);
               populateVaultFields(decrypted);
               if (vaultBadge) {
-                vaultBadge.textContent = '🔓 Vault Unlocked in Memory';
+                vaultBadge.textContent = '🔓 Vault Unlocked (Session Active)';
                 vaultBadge.style.background = '#dcfce7';
                 vaultBadge.style.color = '#16a34a';
               }
-              showToast('🔓 Vault decrypted successfully with Master PIN!');
+              showToast('🔓 Brankas berhasil dibuka! (Session Unlock aktif)');
             } catch (err) {
-              alert('❌ Incorrect 6-Digit Master PIN. Unable to decrypt ciphertext.');
+              if (err.message && err.message.startsWith('VAULT_LOCKED')) {
+                checkAndApplyDashLockoutUI();
+                showVaultError('⚠️ Brankas diblokir selama 30 detik karena 3x salah.');
+              } else {
+                const attemptStatus = window.TelmyCryptoVault.getAttemptStatus();
+                const remaining = Math.max(0, 3 - (attemptStatus.failedAttempts || 0));
+                if (attemptStatus.isLocked) {
+                  checkAndApplyDashLockoutUI();
+                } else {
+                  showVaultError(`❌ Kunci tidak cocok. Sisa ${remaining} percobaan lagi sebelum diblokir.`);
+                }
+              }
             }
           } else {
-            // First time setup with this PIN
-            currentVaultPin = pin;
+            // First time setup with this secret
+            currentVaultPin = secret;
+            if (window.TelmyCryptoVault) window.TelmyCryptoVault.setSessionVaultSecret(secret);
             if (vaultBadge) {
-              vaultBadge.textContent = '🔓 Vault Ready (New PIN Set)';
+              vaultBadge.textContent = '🔓 Vault Ready (Kunci Baru Siap)';
               vaultBadge.style.background = '#dcfce7';
               vaultBadge.style.color = '#16a34a';
             }
-            showToast(`Master PIN set. Enter your details below and click Encrypt & Sync.`);
+            showToast('Master Key disetel. Silakan isi data di bawah lalu klik Encrypt & Sync Vault.');
           }
         });
       }
@@ -1815,13 +2303,15 @@
           clearVaultFields();
           currentVaultPin = '';
           decryptedVaultData = null;
+          if (window.TelmyCryptoVault) window.TelmyCryptoVault.clearSessionVaultSecret();
           if (pinInput) pinInput.value = '';
+          if (textareaSeed) textareaSeed.value = '';
           if (vaultBadge) {
             vaultBadge.textContent = '🔒 Vault Locked';
             vaultBadge.style.background = '#fee2e2';
             vaultBadge.style.color = '#dc2626';
           }
-          showToast('🔒 Vault locked. Plaintext cleared from browser RAM.');
+          showToast('🔒 Vault dikunci. Kunci dan plaintext dibersihkan dari RAM browser.');
         });
       }
 
@@ -1829,10 +2319,15 @@
       if (form) {
         form.addEventListener('submit', async (e) => {
           e.preventDefault();
-          let pin = currentVaultPin || (pinInput ? pinInput.value.trim() : '');
-          if (!/^\d{6}$/.test(pin)) {
-            alert('A 6-digit Master PIN is required to encrypt your Zero-Knowledge Vault.');
-            if (pinInput) pinInput.focus();
+          let secret = currentVaultPin || (window.TelmyCryptoVault ? window.TelmyCryptoVault.getSessionVaultSecret() : '') || (pinInput ? pinInput.value.trim() : '');
+          
+          if (!secret) {
+            showVaultError('Silakan masukkan Password (6–12 karakter) atau 12 Seed Words terlebih dahulu.');
+            return;
+          }
+
+          if (activeDashVaultMode === 'password' && (secret.length < 6 || secret.length > 12)) {
+            showVaultError('Password harus antara 6 dan 12 karakter.');
             return;
           }
 
@@ -1850,10 +2345,15 @@
 
           if (window.TelmyCryptoVault) {
             try {
-              const envelope = await window.TelmyCryptoVault.encryptVaultData(payload, pin);
-              currentVaultPin = pin;
+              const envelope = await window.TelmyCryptoVault.encryptVaultData(payload, secret, null, activeDashVaultMode);
+              currentVaultPin = secret;
+              window.TelmyCryptoVault.setSessionVaultSecret(secret);
               localStorage.setItem('telmy_vault_envelope', JSON.stringify(envelope));
               localStorage.setItem('telmy_autofill', JSON.stringify(payload));
+
+              // Update Seed UI to unlock mode for future sessions
+              if (seedSetupBox) seedSetupBox.style.display = 'none';
+              if (seedUnlockBox) seedUnlockBox.style.display = 'block';
 
               // Sync ciphertext envelope to Cloud Run / Firestore
               fetch(`/api/user/vault/${currentUser.uid}`, {
@@ -1870,11 +2370,11 @@
               }
 
               if (vaultBadge) {
-                vaultBadge.textContent = '🔓 Vault Unlocked in Memory';
+                vaultBadge.textContent = '🔓 Vault Unlocked (Session Active)';
                 vaultBadge.style.background = '#dcfce7';
                 vaultBadge.style.color = '#16a34a';
               }
-              showToast('🔒 Profile encrypted with AES-GCM (256-bit) and synced to Cloud Vault!');
+              showToast('🔒 Profil berhasil dienkripsi dengan AES-GCM (256-bit) & disinkronkan!');
             } catch (encErr) {
               alert('Encryption failed: ' + encErr.message);
             }
@@ -1889,7 +2389,9 @@
             clearVaultFields();
             currentVaultPin = '';
             decryptedVaultData = null;
+            if (window.TelmyCryptoVault) window.TelmyCryptoVault.clearSessionVaultSecret();
             if (pinInput) pinInput.value = '';
+            if (textareaSeed) textareaSeed.value = '';
             localStorage.removeItem('telmy_vault_envelope');
             localStorage.removeItem('telmy_autofill');
 

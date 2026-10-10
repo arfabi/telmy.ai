@@ -480,10 +480,8 @@ window.addEventListener('message', (event) => {
 try {
   const host = window.location.hostname || '';
   const isTelmyDomain = host.includes('telmy') || 
-                        host.includes('guidemeto') ||
-                        host.includes('firebaseapp.com') ||
-                        host.includes('localhost') ||
-                        host === '127.0.0.1';
+                        host.includes('cloud.run') ||
+                        host.includes('firebaseapp.com');
   if (isTelmyDomain) {
     const syncLocalSession = () => {
       try {

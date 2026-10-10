@@ -29,14 +29,40 @@ export async function verifyAndDeductQuota(req, res, next) {
       uid = 'guest_user';
     }
 
-    // 2. Consume quota according to expiring-first rule
-    const result = await consumeFormQuota(uid);
+    // 2. Extract Session Context (1 Form = 1 site up to 20 pages in 24h; PDF = 1 file; Vault = 0)
+    const isPdf = req.originalUrl?.includes('pdf') || req.body?.pdfBase64 || req.body?.filename;
+    let context = {};
+
+    if (isPdf) {
+      context = {
+        type: 'pdf',
+        filename: req.body?.filename || 'document.pdf'
+      };
+    } else {
+      const formUrl = req.body?.url || 
+                      req.body?.pageUrl || 
+                      req.headers['referer'] || 
+                      req.headers['origin'] || 
+                      req.body?.pageContext;
+
+      context = {
+        type: 'web',
+        url: formUrl || 'https://unknown-form-site.com',
+        path: req.body?.path
+      };
+    }
+
+    // 3. Consume quota or reuse active 24h session
+    const result = await consumeFormQuota(uid, context);
 
     if (result.allowed) {
       req.userQuota = result;
-      // Also attach remaining quota header for client visibility
       res.setHeader('X-Quota-Remaining', result.totalRemaining);
-      res.setHeader('X-Quota-Consumed-From', result.consumedFrom);
+      res.setHeader('X-Quota-Consumed-From', result.consumedFrom || 'none');
+      res.setHeader('X-Quota-Exempt', result.quotaExempt ? 'true' : 'false');
+      if (result.pagesRemaining !== undefined) {
+        res.setHeader('X-Form-Pages-Remaining', result.pagesRemaining);
+      }
       return next();
     }
 

@@ -1,0 +1,150 @@
+================================================================================
+TELMY.AI — CHROME WEB STORE OFFICIAL SUBMISSION METADATA KIT
+Manifest Version: V3 | Extension Version: 1.0.0
+================================================================================
+
+--------------------------------------------------------------------------------
+1. LISTING BASICS & IDENTITY
+--------------------------------------------------------------------------------
+Item Name:
+Telmy.ai: Form Filling Assistant & Smart Auditor
+(Length: 48 / 75 characters)
+
+Short Description:
+Your AI companion to understand, safely autofill with Zero-Knowledge encryption, and audit complex web forms with ease.
+(Length: 120 / 132 characters)
+
+Category:
+Productivity (Primary) / Workflow & Planning
+
+Default Language:
+English (en)
+
+Official Website:
+https://telmy-ai.cloud.run
+
+Privacy Policy URL:
+https://telmy-ai.cloud.run/privacy
+
+Support & FAQ URL:
+https://telmy-ai.cloud.run#faq
+
+Developer / Support Email:
+support@telmy-ai.cloud.run
+
+
+--------------------------------------------------------------------------------
+2. DETAILED DESCRIPTION (Store Front Copy)
+--------------------------------------------------------------------------------
+Fill out any official form with confidence. Telmy.ai is your friendly, empathetic AI companion that sits right beside you in the Chrome Side Panel, breaking down intimidating bureaucracy, ambiguous legal terms, and foreign language visa forms into simple human conversation.
+
+Whether you are applying for a foreign visa, international university scholarship, government permit, tax declaration, or embassy paperwork, Telmy helps you understand every single question step-by-step, catches costly typos before you submit, and autofills your verified details in 1 click.
+
+
+🌟 6 CORE CAPABILITIES
+
+1. 🎙️ WARM & CONVERSATIONAL AUDIO GUIDANCE
+Listen to clear, step-by-step guidance spoken aloud in natural Google WaveNet neural voices across 11 Asia-Pacific languages (English, Bahasa Indonesia, Japanese, Korean, Simplified Chinese, Traditional Chinese, Vietnamese, Thai, Hindi, Filipino, and Malay). Perfect for non-native speakers and multilingual applicants.
+
+2. 🛡️ ZERO-KNOWLEDGE CLIENT-SIDE ENCRYPTION (CSE) VAULT
+Your personal identity is 100% yours. Your profile data is mathematically encrypted on your own device using Web Crypto API (PBKDF2 with 100,000 iterations + AES-GCM 256-bit) before syncing. Telmy developers, admins, and databases hold zero plaintext.
+• Dual-Lock Options: Choose between a Master Password (6–12 characters with real-time strength meter) or a 12-Word Cryptographic Seed Phrase.
+• Session Unlock: Unlock once per browser session for maximum convenience without compromising security.
+• Anti-Brute-Force: Automatically locks for 30 seconds after 3 consecutive failed attempts.
+
+3. ⚡ 1-CLICK SAFE AUTOFILL
+Fill 20+ fields in one second with smart canonical keyword matching. Telmy strictly ignores sensitive authentication inputs: passwords, CVVs, credit cards, OTPs, and security pins are NEVER captured, stored, or filled.
+
+4. 🚦 PRE-SUBMISSION TRAFFIC LIGHT AUDITOR
+Never get rejected over a simple typo. Run an instant pre-submission check that highlights errors visually:
+• 🟢 Green: Data is verified and ready for submission.
+• 🟡 Yellow: Warning detected (e.g. passport validity less than 6 months, inverted date format).
+• 🔴 Red: Critical error detected (e.g. missing required attachment or corrupted national ID format).
+
+5. 📄 UNIVERSAL PDF FORM INTELLIGENCE
+Open downloaded official visa or scholarship PDFs directly in Chrome or drop them into Telmy. Powered by Gemini multimodal analysis, Telmy extracts form prerequisites, page-by-page instructions, and helps you prepare error-free answers.
+
+6. 📑 AUDIT TRAIL CERTIFIED EXPORTER
+Generate an official PDF audit summary of your form-filling session with timestamped verification for your personal records or scholarship advisers.
+
+
+🚀 HOW TO GET STARTED IN 3 EASY STEPS
+
+1. Navigate to any online form (visa portal, embassy website, university application, or government permit).
+2. Click the Telmy icon in your Chrome toolbar or press Alt + G to open the Side Panel.
+3. Telmy automatically detects form fields and highlights questions. Click any field or ask a question to receive instant, friendly guidance.
+
+
+🔒 BUILT FOR ABSOLUTE TRUST & PRIVACY
+
+• No Always-Listening Microphones: Audio recording is strictly Push-to-Talk (PTT).
+• Zero Document Retention: Uploaded KTP, Passport, and Diploma scans are processed ephemerally in RAM and shredded immediately after entity extraction.
+• No Third-Party Data Selling: We never sell or monetize user data.
+• No Tracking: Browsing history outside of active form pages is strictly ignored.
+
+
+--------------------------------------------------------------------------------
+3. SINGLE PURPOSE JUSTIFICATION (For CWS Reviewers)
+--------------------------------------------------------------------------------
+Telmy.ai has a single unified purpose: assisting users in understanding, accurately filling, and error-auditing complex online forms and application documents directly within their browser side panel.
+
+
+--------------------------------------------------------------------------------
+4. PERMISSION JUSTIFICATIONS (For CWS Reviewers)
+--------------------------------------------------------------------------------
+1. storage:
+   Used strictly on-device to persist non-sensitive user preferences (selected language, font size, audio toggle state) and the client-side encrypted Zero-Knowledge vault envelope (ciphertext, iv, salt). No plain personal identity is stored unencrypted.
+
+2. activeTab:
+   Used to detect input element schemas, labels, and form structure on the currently active tab ONLY when the user explicitly opens or invokes the Telmy Side Panel. Does not access inactive tabs or general browsing history.
+
+3. scripting:
+   Used to inject visual focus highlighters and accessibility overlays onto the active page's input elements, allowing users to easily follow step-by-step form guidance without confusion.
+
+4. sidePanel:
+   Used to display the companion interface, multilingual translations, voice narration controls, and pre-submission audit cards inside Chrome's native Side Panel, ensuring form pages remain unobstructed.
+
+5. host_permissions (https://telmy-ai.cloud.run/*):
+   Required strictly to communicate with the Telmy backend API hosted on Google Cloud Run for AI field translation, multimodal PDF form parsing, and secure synchronization of ciphertext vault envelopes. No other external hosts are requested or accessed.
+
+
+--------------------------------------------------------------------------------
+5. DATA USAGE & PRIVACY PRACTICES DISCLOSURE
+--------------------------------------------------------------------------------
+• Personally Identifiable Information (PII): Collected only with explicit user consent and encrypted client-side using AES-GCM 256-bit Zero-Knowledge encryption.
+• Authentication Credentials: Never collected. Passwords, credit cards, CVVs, and OTPs are explicitly ignored and filtered by DOM scanners.
+• Financial & Health Information: Never collected or analyzed for creditworthiness.
+• Web History: Not collected. Only active form element structures on user-invoked pages are scanned.
+• User Data Selling: We certify that Telmy.ai does NOT sell, rent, or transfer user personal data to third parties.
+• Advertising: We certify that Telmy.ai does NOT use user data for targeted advertising or marketing.
+
+
+--------------------------------------------------------------------------------
+6. REVIEWER TESTING INSTRUCTIONS & DEMO CREDENTIALS
+--------------------------------------------------------------------------------
+Dear Chrome Web Store Review Team,
+
+Thank you for reviewing Telmy.ai! To make your evaluation as smooth and rapid as possible, we have deployed a live, interactive test portal with pre-configured dummy credentials:
+
+1. Interactive Simulator Web Portal:
+   URL: https://telmy-ai.cloud.run/demo
+   (Contains a realistic multi-language Visa Application Form with date inputs, passport numbers, and file upload fields).
+
+2. Test Account Credentials:
+   • Email: reviewer@telmy-ai.cloud.run
+   • Test Master Password: Reviewer2026!
+   • Backup 12 Seed Words:
+     abandon ability able about above absent absorb abstract absurd abuse access accident
+
+3. Steps to Verify Extension Functionality:
+   a. Install the extension unpacked and pin the Telmy icon to Chrome toolbar.
+   b. Navigate to https://telmy-ai.cloud.run/demo.
+   c. Press Alt + G or click the Telmy extension icon. The Side Panel will open on the right side.
+   d. Click on "Full Legal Name" or "Passport Number". Telmy will display a friendly field explanation card with examples and pitfalls to avoid.
+   e. Click "🔊 Listen" to test WaveNet neural voice playback in the selected language.
+   f. Click "🚦 Check Before Submit" to test the Pre-Submission Traffic Light Auditor. It will highlight formatted vs invalid fields.
+   g. Open the "Vault" tab to test Zero-Knowledge unlocking with either the Master Password or the 12 Seed Words above.
+   h. Test 1-Click AutoFill to populate the demo visa form instantly.
+
+If you have any questions or require additional information, please contact us immediately at support@telmy-ai.cloud.run. We appreciate your assistance!
+================================================================================

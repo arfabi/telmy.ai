@@ -3908,27 +3908,192 @@ body {
   line-height: 1.4;
 }
 
-.vault-pin-input {
-  width: 100%;
-  font-size: 26px;
-  letter-spacing: 12px;
-  text-align: center;
-  padding: 10px;
-  border: 2px solid #cbd5e1;
-  border-radius: 12px;
-  outline: none;
-  font-weight: 700;
-  box-sizing: border-box;
+.vault-lockout-alert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  text-align: left;
 }
 
-.vault-pin-input:focus {
-  border-color: #0284c7;
-  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+.vault-mode-tabs {
+  display: flex;
+  background: #f1f5f9;
+  padding: 3px;
+  border-radius: 10px;
+  margin-bottom: 14px;
+}
+
+.vault-tab-btn {
+  flex: 1;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.vault-tab-btn.active {
+  background: white;
+  color: #0f172a;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.vault-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.vault-password-input {
+  width: 100%;
+  padding: 10px 38px 10px 12px;
+  font-size: 14px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 10px;
+  outline: none;
+  font-family: inherit;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+
+.vault-password-input:focus {
+  border-color: #0071e3;
+  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.12);
+}
+
+.btn-pwd-eye {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  opacity: 0.6;
+}
+.btn-pwd-eye:hover { opacity: 1; }
+
+.vault-strength-wrap {
+  margin-top: 8px;
+  text-align: left;
+}
+
+.vault-strength-track {
+  height: 5px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.vault-strength-bar {
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+  transition: width 0.25s ease, background-color 0.25s ease;
+}
+
+.vault-strength-labels {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.vault-seed-chips-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.vault-seed-chip {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 4px 6px;
+  font-size: 11px;
+  font-family: monospace;
+  font-weight: 600;
+  color: #1e293b;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.vault-seed-num {
+  color: #94a3b8;
+  font-size: 9.5px;
+  min-width: 14px;
+}
+
+.vault-seed-actions {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.btn-seed-action {
+  flex: 1;
+  padding: 6px 8px;
+  font-size: 10.5px;
+  font-weight: 600;
+  border: 1px solid #cbd5e1;
+  background: white;
+  border-radius: 8px;
+  color: #334155;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-seed-action:hover { background: #f1f5f9; }
+
+.vault-seed-confirm-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  color: #475569;
+  cursor: pointer;
+  text-align: left;
+}
+
+.vault-seed-textarea {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 12px;
+  font-family: monospace;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 10px;
+  outline: none;
+  resize: vertical;
+  box-sizing: border-box;
+}
+.vault-seed-textarea:focus {
+  border-color: #0071e3;
+  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.12);
+}
+
+.vault-session-hint {
+  font-size: 10.5px;
+  color: #64748b;
+  margin-top: 10px;
+  line-height: 1.3;
 }
 
 .vault-pin-error-msg {
   color: #ef4444;
-  font-size: 12px;
+  font-size: 11.5px;
   margin-top: 8px;
   font-weight: 600;
 }

@@ -66,16 +66,51 @@ Cek kesehatan server di: `http://localhost:8080/health`
 
 ---
 
-## ☁️ Production URL di Google Cloud Run
-Backend ini saat ini telah aktif di Google Cloud Run:
-* **Production Endpoint:** `https://telmy-ai.cloud.run`
-* **Health Check:** `https://telmy-ai.cloud.run/health`
-* **Region:** `asia-northeast1` (Tokyo)
+## ☁️ Deploy ke Google Cloud Run Mandiri (Self-Hosting Guide)
+
+Teman atau kolaborator Anda dapat men-deploy backend ini ke akun Google Cloud mereka sendiri dengan langkah mudah:
+
+### Opsi 1: Deploy langsung via Google Cloud CLI (GCP Source Deploy)
+```bash
+# Dari root project (pastikan gcloud CLI sudah login)
+gcloud auth login
+gcloud config set project YOUR_GCP_PROJECT_ID
+
+# Deploy langsung dari source code ke Cloud Run
+gcloud run deploy telmy-backend \
+  --source . \
+  --region asia-northeast1 \
+  --allow-unauthenticated \
+  --set-env-vars GEMINI_API_KEY="AIzaSy...",FIREBASE_PROJECT_ID="YOUR_PROJECT_ID",EXPLAIN_STRATEGY="AI_FIRST"
+```
+
+### Opsi 2: Deploy dengan Docker Container
+```bash
+# 1. Build image dari root
+docker build -t telmy-backend .
+
+# 2. Jalankan container lokal dengan env file
+docker run -p 8080:8080 --env-file backend/.env telmy-backend
+```
 
 ---
 
+## 🧩 Menghubungkan Ekstensi Chrome ke Environment Anda Sendiri
+
+Jika Anda menjalankan backend di lokal (`http://localhost:8080`) atau di Cloud Run Anda sendiri:
+1. Buka file `extension/background/service-worker.js`.
+2. Ubah `apiUrl` pada `DEFAULT_SETTINGS` ke endpoint Anda:
+   ```javascript
+   const DEFAULT_SETTINGS = {
+     // ...
+     apiUrl: 'http://localhost:8080/api' // atau 'https://your-cloud-run-url/api'
+   };
+   ```
+3. Di Chrome, buka `chrome://extensions`, aktifkan **Developer mode**, klik **Load unpacked**, dan pilih folder `extension/`.
+4. Ekstensi akan langsung terhubung ke backend dan environment database Anda sendiri!
+
 ## 🛠️ Google Technology Stack (100% Google AI & Cloud Native)
-1. **Google Gemini API (`gemini-3.1-flash-lite`)**: Core LLM untuk analisis formulir, chat, dan translasi.
+1. **Google Gemini API (`gemini-3.5-flash-lite`)**: Core LLM untuk analisis formulir, chat, dan translasi.
 2. **Google Gemini Embedding (`gemini-embedding-001`)**: Vektor semantik 3.072 dimensi untuk zero-token cache matching.
 3. **Google Cloud Text-to-Speech (TTS WaveNet)**: Sintesis suara alami multibahasa.
 4. **Google Cloud Run**: Serverless container host produksi (`https://telmy-ai.cloud.run`).

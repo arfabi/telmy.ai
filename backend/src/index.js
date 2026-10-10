@@ -61,6 +61,35 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Dynamic Firebase Web Client Config (Supports self-hosting & multi-environment deployment)
+app.get('/firebase-config.js', (req, res) => {
+  res.type('application/javascript');
+  const clientConfig = {
+    apiKey: process.env.FIREBASE_WEB_API_KEY || process.env.FIREBASE_API_KEY || '',
+    authDomain: process.env.FIREBASE_AUTH_DOMAIN || (process.env.FIREBASE_PROJECT_ID ? `${process.env.FIREBASE_PROJECT_ID}.firebaseapp.com` : ''),
+    projectId: process.env.FIREBASE_PROJECT_ID || '',
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET || (process.env.FIREBASE_PROJECT_ID ? `${process.env.FIREBASE_PROJECT_ID}.firebasestorage.app` : ''),
+    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || '',
+    appId: process.env.FIREBASE_APP_ID || ''
+  };
+  res.send(`window.__FIREBASE_CONFIG__ = ${JSON.stringify(clientConfig)};`);
+});
+
+app.get('/api/config', (req, res) => {
+  res.json({
+    service: 'Telmy.ai',
+    version: '1.0.0',
+    firebase: {
+      apiKey: process.env.FIREBASE_WEB_API_KEY || process.env.FIREBASE_API_KEY || '',
+      authDomain: process.env.FIREBASE_AUTH_DOMAIN || (process.env.FIREBASE_PROJECT_ID ? `${process.env.FIREBASE_PROJECT_ID}.firebaseapp.com` : ''),
+      projectId: process.env.FIREBASE_PROJECT_ID || '',
+      storageBucket: process.env.FIREBASE_STORAGE_BUCKET || (process.env.FIREBASE_PROJECT_ID ? `${process.env.FIREBASE_PROJECT_ID}.firebasestorage.app` : ''),
+      messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || '',
+      appId: process.env.FIREBASE_APP_ID || ''
+    }
+  });
+});
+
 // Serve Static Web Platform (Landing Page, Privacy, Demo, Download)
 const publicDir = path.resolve(__dirname, '../public');
 app.use(express.static(publicDir));
