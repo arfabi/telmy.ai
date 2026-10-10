@@ -291,21 +291,187 @@
 
     .frame-content {
       display: grid;
-      grid-template-columns: 1.4fr 1fr;
-      min-height: 340px;
+      grid-template-columns: 1.25fr 1fr;
+      min-height: 400px;
     }
 
     .mock-form-area {
-      padding: 28px;
+      padding: 24px 28px;
       background: #ffffff;
       border-right: 1px solid var(--card-border);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
     }
 
     .mock-sidepanel-area {
-      padding: 24px;
+      padding: 22px;
       background: #fafafc;
       display: flex;
       flex-direction: column;
+      gap: 14px;
+    }
+
+    .sim-form-group {
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1.5px solid transparent;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      background: #fdfdfd;
+    }
+
+    .sim-form-group:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+    }
+
+    .sim-form-group.active {
+      background: #eff6ff;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.12);
+    }
+
+    .sim-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: #334155;
+      margin-bottom: 5px;
+    }
+
+    .sim-badge-num {
+      background: var(--accent);
+      color: white;
+      border-radius: 999px;
+      padding: 1px 7px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .sim-input {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      background: #ffffff;
+      font-family: inherit;
+      font-size: 13px;
+      color: #0f172a;
+      transition: all 0.25s ease;
+    }
+
+    .sim-input.filled {
+      background: #f0fdf4;
+      border-color: #86efac;
+      color: #166534;
+      font-weight: 600;
+    }
+
+    .sim-hint {
+      display: block;
+      font-size: 11px;
+      color: #64748b;
+      margin-top: 3px;
+    }
+
+    .sim-audit-banner {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 8px;
+      padding: 9px 12px;
+      font-size: 12px;
+      color: #166534;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: auto;
+    }
+
+    .sim-sp-card {
+      background: #ffffff;
+      border: 1.5px solid var(--accent);
+      border-radius: 12px;
+      padding: 14px;
+      box-shadow: var(--shadow-subtle);
+    }
+
+    .sim-sp-title {
+      font-weight: 700;
+      color: var(--accent);
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+
+    .sim-sp-desc {
+      color: #475569;
+      font-size: 12px;
+      line-height: 1.45;
+      margin-bottom: 8px;
+    }
+
+    .sim-sp-example {
+      background: #f8fafc;
+      border-left: 3px solid var(--accent);
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 11.5px;
+      color: #334155;
+    }
+
+    .sim-actions-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn-sim-action {
+      flex: 1;
+      min-width: 90px;
+      padding: 7px 10px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #334155;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+    }
+
+    .btn-sim-action:hover {
+      background: #f8fafc;
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .btn-sim-action.btn-sim-highlight {
+      background: var(--accent);
+      color: #ffffff;
+      border-color: var(--accent);
+    }
+
+    .btn-sim-action.btn-sim-highlight:hover {
+      background: var(--accent-hover);
+    }
+
+    .sim-traffic-report {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 9px 12px;
+      font-size: 11.5px;
+      color: #334155;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-top: auto;
     }
 
     /* Section Styling */
@@ -881,63 +1047,100 @@
         No credit card needed. Your passwords are never read or saved.
       </div>
 
-      <!-- Demo preview: Browser mock frame -->
-      <div class="showcase-frame">
+      <!-- Demo preview: Browser mock frame with Interactive Live Simulator -->
+      <div class="showcase-frame" id="live-simulator">
         <div class="frame-topbar">
           <div class="frame-dots"><span></span><span></span><span></span></div>
-          <div class="frame-url-bar">https://immigration.gov.example/visa-application</div>
-          <span style="font-size: 11px; font-weight: 700; color: #059669; background: #d1fae5; padding: 2px 8px; border-radius: 4px;">Live Side Panel</span>
+          <div class="frame-url-bar">https://immigration.gov.example/visa-scholarship-portal</div>
+          <span style="font-size: 11px; font-weight: 700; color: #059669; background: #d1fae5; padding: 2px 8px; border-radius: 4px;">🎮 Interactive Live Simulator</span>
         </div>
         <div class="frame-content">
-          <!-- Web Form Side -->
+          <!-- Web Form Side (Clickable fields 1, 2, 3) -->
           <div class="mock-form-area">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
-              <h3 style="font-size: 16px; color: #1e3a8a;">Official Visa Application Portal</h3>
-              <span style="font-size: 11px; background: #eff6ff; color: #1d4ed8; padding: 2px 8px; border-radius: 4px; font-weight: 600;">Government Service</span>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+              <h3 style="font-size: 15px; color: #1e3a8a;" id="sim-form-title">Official Visa & Scholarship Application Portal</h3>
+              <span style="font-size: 10.5px; background: #eff6ff; color: #1d4ed8; padding: 2px 8px; border-radius: 4px; font-weight: 600;">Government Service</span>
             </div>
 
-            <div style="margin-bottom: 16px;">
-              <label style="font-size: 12px; font-weight: 700; display: block; margin-bottom: 6px;">
-                National ID Number <span style="background: #0071e3; color: white; border-radius: 50%; padding: 1px 7px; font-size: 10px;">1</span>
+            <!-- Field 1 -->
+            <div class="sim-form-group active" data-field="1" id="sim-group-1">
+              <label class="sim-label">
+                <span id="txt-sim-f1-label">National ID Number (NIK / TIN)</span>
+                <span class="sim-badge-num">1</span>
               </label>
-              <input type="text" value="3171012304950001" readonly style="width: 100%; padding: 10px 12px; border: 2px solid #0071e3; border-radius: 8px; background: #eff6ff; font-family: monospace; font-size: 13.5px;">
-              <div style="font-size: 11.5px; color: #64748b; margin-top: 4px;">
-                Enter your 16-digit ID number exactly as it appears on your certificate. Do not use spaces, dots, or dashes.
-              </div>
+              <input type="text" id="sim-input-1" value="" placeholder="e.g. 3171012304950001" class="sim-input" readonly>
+              <small class="sim-hint" id="txt-sim-f1-hint">Click field to activate Telmy guide</small>
             </div>
 
-            <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 10px 14px; font-size: 12.5px; color: #166534; display: flex; align-items: center; gap: 8px;">
-              <span>✅</span>
-              <strong>Form check: Everything looks ready.</strong>
+            <!-- Field 2 -->
+            <div class="sim-form-group" data-field="2" id="sim-group-2">
+              <label class="sim-label">
+                <span id="txt-sim-f2-label">Full Legal Name (as shown on Passport)</span>
+                <span class="sim-badge-num">2</span>
+              </label>
+              <input type="text" id="sim-input-2" value="" placeholder="e.g. SITI NURHALIZA" class="sim-input" readonly>
+              <small class="sim-hint" id="txt-sim-f2-hint">Click field to activate Telmy guide</small>
+            </div>
+
+            <!-- Field 3 -->
+            <div class="sim-form-group" data-field="3" id="sim-group-3">
+              <label class="sim-label">
+                <span id="txt-sim-f3-label">Passport Expiration Date</span>
+                <span class="sim-badge-num">3</span>
+              </label>
+              <input type="text" id="sim-input-3" value="" placeholder="e.g. 2030-08-15" class="sim-input" readonly>
+              <small class="sim-hint" id="txt-sim-f3-hint">Click field to activate Telmy guide</small>
+            </div>
+
+            <!-- Bottom Form Check Banner -->
+            <div id="sim-audit-banner" class="sim-audit-banner">
+              <span id="sim-audit-icon">🟢</span>
+              <strong id="sim-audit-text">Pre-Submission Check: All 3 fields verified and ready.</strong>
             </div>
           </div>
 
           <!-- Side Panel Helper Side -->
           <div class="mock-sidepanel-area">
-            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px;">
-              <img src="telmy_icon.png" style="width: 32px; height: 32px; border-radius: 8px;" alt="Telmy Companion">
+            <div style="display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px;">
+              <img src="telmy_icon.png" style="width: 30px; height: 30px; border-radius: 8px;" alt="Telmy Companion">
               <div>
                 <strong style="font-size: 13px; color: #1d1d1f; display: block;">Telmy Companion</strong>
-                <small style="color: #059669; font-size: 11px; font-weight: 600;">● Active on this page</small>
+                <small style="color: #059669; font-size: 11px; font-weight: 600;">● Active Companion</small>
               </div>
-              <span style="margin-left: auto; font-size: 11px; font-weight: 700; background: #e8f2fc; color: #0071e3; padding: 2px 8px; border-radius: 999px;">5 Forms Free</span>
+              <span style="margin-left: auto; font-size: 10.5px; font-weight: 700; background: #e8f2fc; color: #0071e3; padding: 2px 8px; border-radius: 999px;">5 Forms Free</span>
             </div>
 
-            <div style="background: #ffffff; border: 1.5px solid #0071e3; border-radius: 12px; padding: 14px; box-shadow: var(--shadow-subtle);">
-              <div style="font-weight: 700; color: #0071e3; font-size: 12.5px; margin-bottom: 6px;">
+            <!-- Active Field Guide Card -->
+            <div class="sim-sp-card" id="sim-sp-card">
+              <div class="sim-sp-title" id="sim-sp-field-title">
                 🎯 Field 1: National ID Number
               </div>
-              <p style="color: #475569; font-size: 12px; line-height: 1.45; margin-bottom: 8px;">
+              <p class="sim-sp-desc" id="sim-sp-field-desc">
                 Enter your 16-digit ID number exactly as it appears on your certificate. Do not use spaces, dots, or dashes.
               </p>
-              <div style="background: #f8fafc; border-left: 3px solid #0071e3; padding: 6px 10px; border-radius: 4px; font-size: 11.5px; color: #334155;">
+              <div class="sim-sp-example" id="sim-sp-field-ex">
                 <strong>Example:</strong> 3171012304950001
               </div>
             </div>
 
-            <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 8px 12px; font-size: 11.5px; color: #065f46; display: flex; align-items: center; justify-content: space-between; margin-top: auto;">
-              <span>🟢 Form check: Looks ready</span>
-              <span style="font-weight: 700;">Verified</span>
+            <!-- Actions Row -->
+            <div class="sim-actions-row">
+              <button type="button" id="btn-sim-listen" class="btn-sim-action">
+                <span>🔊</span> <span id="txt-sim-listen">Listen Voice</span>
+              </button>
+              <button type="button" id="btn-sim-autofill" class="btn-sim-action btn-sim-highlight">
+                <span>⚡</span> <span id="txt-sim-autofill">1-Click AutoFill</span>
+              </button>
+              <button type="button" id="btn-sim-audit" class="btn-sim-action">
+                <span>🚦</span> <span id="txt-sim-audit">Check Form</span>
+              </button>
+            </div>
+
+            <!-- Live Traffic Light Auditor Report -->
+            <div class="sim-traffic-report" id="sim-traffic-report">
+              <div>🟢 <strong>National ID:</strong> Valid 16-digit structure</div>
+              <div>🟢 <strong>Full Name:</strong> Matches passport format</div>
+              <div>🟢 <strong>Passport Expiry:</strong> Valid &gt; 6 months for travel</div>
             </div>
           </div>
         </div>
@@ -1415,44 +1618,119 @@
       });
     });
 
-    // Multi-Language Support (English Default)
-    const LANDING_TRANSLATIONS = {
-      en: {
-        metaTitle: "Telmy.ai — Fill out any official form with confidence",
-        navHome: "Home",
-        navHow: "How It Works",
-        navFeatures: "Features",
-        navPricing: "Pricing",
-        navFaq: "FAQ",
-        navDemo: "Try the Demo",
-        navCta: "Add to Chrome (Free)",
-        heroBadge: "Your AI Form Filling Companion",
-        heroTitle: "Fill out any official form with confidence.",
-        heroSubtitle: "Telmy explains every form field in plain words. Ask anything, check your answers, and get guided step by step, like a best friend sitting beside you.",
-        heroAdd: "Add to Chrome (Free)",
-        heroDemo: "Try the Demo",
-        heroFootnote: "No credit card needed. Your passwords are never read or saved."
+  <script src="landing-i18n.js"></script>
+  <script>
+    // FAQ Accordion Interaction
+    document.querySelectorAll('.faq-question').forEach(button => {
+      button.addEventListener('click', () => {
+        const item = button.parentElement;
+        item.classList.toggle('open');
+      });
+    });
+
+    // Interactive Live Simulator Logic
+    const SIMULATOR_FIELDS = {
+      1: {
+        title: "🎯 Field 1: National ID Number (NIK / TIN)",
+        desc: "Enter your 16-digit ID number exactly as it appears on your certificate. Do not use spaces, dots, or dashes.",
+        example: "3171012304950001",
+        speech: "Field 1. National ID Number. Enter your 16 digit ID number exactly as shown on your certificate without spaces or dashes."
       },
-      id: {
-        metaTitle: "Telmy.ai — Isi formulir resmi apa pun dengan percaya diri",
-        navHome: "Beranda",
-        navHow: "Cara Kerja",
-        navFeatures: "Fitur",
-        navPricing: "Harga",
-        navFaq: "Tanya Jawab",
-        navDemo: "Coba Demo",
-        navCta: "Pasang di Chrome (Gratis)",
-        heroBadge: "Your AI Form Filling Companion",
-        heroTitle: "Isi formulir resmi apa pun dengan percaya diri.",
-        heroSubtitle: "Telmy menjelaskan setiap kolom formulir dengan bahasa sederhana. Tanyakan apa saja, periksa jawaban Anda, dan dapatkan bimbingan langkah demi langkah, seperti sahabat yang duduk mendampingi Anda.",
-        heroAdd: "Pasang di Chrome (Gratis)",
-        heroDemo: "Coba Demo",
-        heroFootnote: "Tanpa kartu kredit. Kata sandi Anda tidak pernah dibaca atau disimpan."
+      2: {
+        title: "🎯 Field 2: Full Legal Name",
+        desc: "Must match the machine-readable zone of your passport. Exclude academic or noble titles (e.g., Dr., Ir., S.E.).",
+        example: "SITI NURHALIZA",
+        speech: "Field 2. Full Legal Name. Enter your name as written in your passport, without honorary or academic titles."
+      },
+      3: {
+        title: "🎯 Field 3: Passport Expiration Date",
+        desc: "Must be valid for at least 6 months beyond your planned date of entry to avoid border refusal.",
+        example: "2030-08-15",
+        speech: "Field 3. Passport Expiry Date. Your passport must have at least 6 months remaining from the date of your intended arrival."
       }
     };
 
+    let activeSimField = 1;
+
+    function selectSimField(fieldNum) {
+      activeSimField = fieldNum;
+      document.querySelectorAll('.sim-form-group').forEach(el => {
+        el.classList.toggle('active', parseInt(el.dataset.field) === fieldNum);
+      });
+      const data = SIMULATOR_FIELDS[fieldNum];
+      if (data) {
+        const titleEl = document.getElementById('sim-sp-field-title');
+        const descEl = document.getElementById('sim-sp-field-desc');
+        const exEl = document.getElementById('sim-sp-field-ex');
+        if (titleEl) titleEl.textContent = data.title;
+        if (descEl) descEl.textContent = data.desc;
+        if (exEl) exEl.innerHTML = `<strong>Example:</strong> ${data.example}`;
+      }
+    }
+
+    document.querySelectorAll('.sim-form-group').forEach(el => {
+      el.addEventListener('click', () => {
+        selectSimField(parseInt(el.dataset.field));
+      });
+    });
+
+    // 1-Click AutoFill Simulator Button
+    const btnSimAutofill = document.getElementById('btn-sim-autofill');
+    if (btnSimAutofill) {
+      btnSimAutofill.addEventListener('click', () => {
+        const input1 = document.getElementById('sim-input-1');
+        const input2 = document.getElementById('sim-input-2');
+        const input3 = document.getElementById('sim-input-3');
+        if (input1) { input1.value = "3171012304950001"; input1.classList.add('filled'); }
+        if (input2) { input2.value = "SITI NURHALIZA"; input2.classList.add('filled'); }
+        if (input3) { input3.value = "2030-08-15"; input3.classList.add('filled'); }
+
+        const banner = document.getElementById('sim-audit-banner');
+        if (banner) {
+          banner.style.background = "#dcfce7";
+          banner.style.borderColor = "#86efac";
+          banner.innerHTML = `<span>⚡</span><strong>1-Click AutoFill Complete! 3 fields populated from Zero-Knowledge Vault.</strong>`;
+        }
+      });
+    }
+
+    // Voice Speech Simulator Button
+    const btnSimListen = document.getElementById('btn-sim-listen');
+    if (btnSimListen) {
+      btnSimListen.addEventListener('click', () => {
+        const currentField = SIMULATOR_FIELDS[activeSimField];
+        if ('speechSynthesis' in window && currentField) {
+          window.speechSynthesis.cancel();
+          const utterance = new SpeechSynthesisUtterance(currentField.speech);
+          const currentLang = localStorage.getItem('telmy_landing_lang') || 'en';
+          utterance.lang = currentLang === 'id' ? 'id-ID' : currentLang === 'ja' ? 'ja-JP' : 'en-US';
+          window.speechSynthesis.speak(utterance);
+        }
+      });
+    }
+
+    // Pre-Submission Audit Simulator Button
+    const btnSimAudit = document.getElementById('btn-sim-audit');
+    if (btnSimAudit) {
+      btnSimAudit.addEventListener('click', () => {
+        const report = document.getElementById('sim-traffic-report');
+        if (report) {
+          report.style.borderColor = "#22c55e";
+          report.style.background = "#f0fdf4";
+          report.innerHTML = `
+            <div>🟢 <strong>Traffic Light Audit:</strong> PASSED</div>
+            <div>🟢 <strong>National ID:</strong> Valid checksum (16 digits)</div>
+            <div>🟢 <strong>Legal Name:</strong> Clean, no academic prefix</div>
+            <div>🟢 <strong>Passport Expiry:</strong> Valid until 2030 (>6 months)</div>
+          `;
+        }
+      });
+    }
+
+    // Comprehensive 11-Language Translator
     function setLandingLanguage(lang) {
-      const data = LANDING_TRANSLATIONS[lang] || LANDING_TRANSLATIONS['en'];
+      const i18n = window.LANDING_I18N || {};
+      const data = i18n[lang] || i18n['en'] || {};
       document.documentElement.lang = lang;
       
       const setText = (id, val) => {
@@ -1475,6 +1753,18 @@
       setText('txt-hero-add', data.heroAdd);
       setText('txt-hero-demo', data.heroDemo);
       setText('hero-footnote', data.heroFootnote);
+
+      // Simulator Elements
+      setText('sim-form-title', data.simTitle);
+      setText('txt-sim-f1-label', data.simField1Label);
+      setText('txt-sim-f1-hint', data.simField1Desc);
+      setText('txt-sim-f2-label', data.simField2Label);
+      setText('txt-sim-f2-hint', data.simField2Desc);
+      setText('txt-sim-f3-label', data.simField3Label);
+      setText('txt-sim-f3-hint', data.simField3Desc);
+      setText('txt-sim-listen', data.simBtnListen);
+      setText('txt-sim-autofill', data.simBtnAutofill);
+      setText('txt-sim-audit', data.simBtnAudit);
 
       localStorage.setItem('telmy_landing_lang', lang);
     }
