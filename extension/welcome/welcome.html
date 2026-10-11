@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to Telmy.ai — AI Form Filling Assistant</title>
+  <link rel="icon" type="image/png" href="../assets/icons/icon32.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="welcome.css">
+</head>
+<body>
+  <div class="ambient-glow glow-top"></div>
+  <div class="ambient-glow glow-bottom"></div>
+
+  <main class="welcome-container">
+    <!-- Header -->
+    <header class="welcome-header">
+      <div class="brand-badge">
+        <img src="../assets/icons/icon32.png" alt="Telmy" class="brand-icon">
+        <span class="brand-name">Telmy.ai</span>
+        <span class="badge-status">Installed Successfully 🎉</span>
+      </div>
+      <h1 class="hero-title">Your AI Form Assistant is Ready</h1>
+      <p class="hero-subtitle">
+        Understand complex government, visa, and scholarship forms effortlessly with instant AI explanations in 11 languages.
+      </p>
+    </header>
+
+    <!-- Essential Step: Pin Guidance -->
+    <section class="pin-card">
+      <div class="pin-card-header">
+        <div class="pin-icon-wrap">📌</div>
+        <div class="pin-header-text">
+          <h2>Step 1: Pin Telmy to Your Chrome Toolbar</h2>
+          <p>Keep Telmy 1-click away on every web form you visit.</p>
+        </div>
+      </div>
+
+      <!-- Animated Browser Chrome Bar Mockup -->
+      <div class="browser-mockup">
+        <div class="mockup-bar">
+          <div class="mockup-dots">
+            <span class="dot red"></span>
+            <span class="dot yellow"></span>
+            <span class="dot green"></span>
+          </div>
+          <div class="mockup-omnibox">
+            <span class="mockup-lock">🔒</span>
+            <span class="mockup-url">https://official-government-form.gov/apply</span>
+          </div>
+          <div class="mockup-actions">
+            <div class="mockup-btn puzzle-btn pulse-glow" id="mockup-puzzle">
+              <span class="puzzle-emoji">🧩</span>
+              <div class="pointer-arrow-wrap">
+                <span class="pointer-arrow">👆</span>
+                <span class="pointer-label">Click here first</span>
+              </div>
+            </div>
+            <div class="mockup-dropdown-preview" id="mockup-dropdown">
+              <div class="dropdown-item active-ext">
+                <img src="../assets/icons/icon16.png" class="dropdown-ext-icon" alt="Telmy">
+                <span class="dropdown-ext-name">Telmy.ai</span>
+                <button class="mockup-pin-btn pulse-pin" title="Pin Telmy">📌</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3 Quick Step Badges -->
+      <div class="steps-grid">
+        <div class="step-item">
+          <span class="step-num">1</span>
+          <p>Click the <strong>Puzzle 🧩</strong> icon in Chrome's top right corner.</p>
+        </div>
+        <div class="step-item">
+          <span class="step-num">2</span>
+          <p>Find <strong>Telmy.ai</strong> in your extensions list.</p>
+        </div>
+        <div class="step-item">
+          <span class="step-num">3</span>
+          <p>Click the <strong>Pin 📌</strong> button to keep Telmy visible anytime.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3 Ways to Activate -->
+    <section class="activation-section">
+      <div class="section-badge">How to Use Telmy</div>
+      <h2 class="section-title">3 Easy Ways to Activate on Any Form</h2>
+      <p class="section-subtitle">No page reload needed — activate smoothly whenever you need assistance.</p>
+
+      <div class="activation-grid">
+        <!-- Way 1 -->
+        <div class="activation-card">
+          <div class="card-icon-tag">Way 1</div>
+          <div class="card-hero-icon">🖱️</div>
+          <h3>Right-Click on the Page</h3>
+          <p>Right-click anywhere on a webpage form and choose <strong>"Analyze This Page with Telmy AI 🤖"</strong>.</p>
+          <div class="card-badge">Instant Side Panel Scan</div>
+        </div>
+
+        <!-- Way 2 -->
+        <div class="activation-card highlight">
+          <div class="card-icon-tag popular">Most Popular</div>
+          <div class="card-hero-icon">🔍</div>
+          <h3>Click "Analyze This Form"</h3>
+          <p>Open the Telmy Side Panel and click <strong>"🔍 Analyze This Form"</strong>. All fields are mapped in 1 second.</p>
+          <div class="card-badge">Zero Refresh Needed</div>
+        </div>
+
+        <!-- Way 3 -->
+        <div class="activation-card">
+          <div class="card-icon-tag">Way 3</div>
+          <div class="card-hero-icon">⌨️</div>
+          <h3>Shortcut or Toolbar Click</h3>
+          <p>Press <kbd>Alt</kbd> + <kbd>T</kbd> on Windows or click the Telmy icon to open the copilot assistant instantly.</p>
+          <div class="card-badge">Always Accessible</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Interactive Test / Next Actions -->
+    <section class="cta-banner">
+      <div class="cta-content">
+        <h2>Ready to try it out?</h2>
+        <p>Open any online registration, visa application, or government form to see Telmy in action.</p>
+      </div>
+      <div class="cta-actions">
+        <a href="https://telmy-ai.cloud.run/demo.html" target="_blank" class="btn-primary" id="btn-try-demo">
+          Try Sample Form →
+        </a>
+        <a href="https://telmy-ai.cloud.run/dashboard" target="_blank" class="btn-secondary">
+          Open User Dashboard
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <script src="welcome.js"></script>
+</body>
+</html>

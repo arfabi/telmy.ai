@@ -32,7 +32,7 @@ Pada versi v2.1, arsitektur Telmy diselaraskan 100% dengan standar **Google AI E
 | **Distribusi** | Chrome Web Store (Visibilitas: *Unlisted*) | File ZIP *Load Unpacked* di `telmy.id/download` |
 | **Izin Manifest** | Minimal: `activeTab`, `scripting`, `sidePanel`, `storage` | Izin yang sama + flag demo lokal |
 | **Host Permissions** | Sempit: `https://api.telmy.id/*`, `https://telmyai.com/*` | Sempit + izin localhost |
-| **Injeksi Skrip** | *On-demand* (saat klik ikon / shortcut `Alt+G`) | *On-demand* & auto-load di halaman demo |
+| **Injeksi Skrip** | *On-demand* (saat klik ikon / shortcut `Alt+T`) | *On-demand* & auto-load di halaman demo |
 | **Otomasi Klik** | **Ditahan** (murni panduan visual: spotlight, badge, scroll) | Diaktifkan dengan tombol konfirmasi di halaman simulasi |
 | **Waktu Rilis** | Diajukan pada Hari ke-4 untuk lolos tepat waktu | Disertakan di submission form & video demo 3 menit |
 
@@ -93,7 +93,7 @@ Pada versi v2.1, arsitektur Telmy diselaraskan 100% dengan standar **Google AI E
 
 ```mermaid
 graph TD
-    User([Pengguna / Juri]) -->|Klik Ekstensi / Alt+G| SidePanel[Chrome Native Side Panel<br/>sidepanel/sidepanel.html]
+    User([Pengguna / Juri]) -->|Klik Ekstensi / Alt+T| SidePanel[Chrome Native Side Panel<br/>sidepanel/sidepanel.html]
     User -->|Kunjungi Web| WebApp[Firebase Web App<br/>telmy.id / telmyai.com]
 
     subgraph ChromeExtension ["Ekstensi Chrome (MV3 Lite)"]

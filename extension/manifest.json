@@ -14,7 +14,8 @@
     "storage",
     "activeTab",
     "scripting",
-    "sidePanel"
+    "sidePanel",
+    "contextMenus"
   ],
   "host_permissions": [
     "https://telmy-ai.cloud.run/*"
@@ -35,7 +36,7 @@
   "commands": {
     "_execute_action": {
       "suggested_key": {
-        "default": "Alt+G"
+        "default": "Alt+T"
       },
       "description": "Open Telmy.ai Side Panel"
     }

@@ -48,7 +48,7 @@ Dokumen dan aset yang wajib disiapkan sebelum mengisi formulir di Chrome Web Sto
      - 📑 **Certified PDF Exporter:** Cetak bukti rekam jejak audit pengisian form berstandar resmi.
   4. **Panduan Cara Menggunakan (3 Langkah Cepat):**
      - Buka halaman web berformulir.
-     - Klik ikon Telmy di toolbar atau tekan `Alt+G` untuk membuka Side Panel.
+     - Klik ikon Telmy di toolbar atau tekan `Alt+T` untuk membuka Side Panel.
      - Telmy otomatis mendeteksi kolom dan siap memandu Anda lewat teks maupun suara.
   5. **Komitmen Privasi & Keamanan:** Tanpa wake-word selalu aktif (*no always-listening*), tanpa penjualan data pihak ketiga, tanpa pelacakan browsing history.
 

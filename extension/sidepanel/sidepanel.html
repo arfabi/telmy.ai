@@ -47,9 +47,6 @@
           <span id="sp-user-avatar-text">👤</span>
           <img id="sp-user-avatar-img" class="sp-avatar-img" style="display: none;" alt="User">
         </button>
-        <button id="sp-btn-rescan" class="sp-icon-btn" title="Rescan Form Fields">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>
-        </button>
         <button id="sp-btn-close" class="sp-icon-btn sp-close-btn" title="Turn Off Badges / Close">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
         </button>
@@ -96,24 +93,39 @@
       </div>
     </div>
 
-    <!-- Navigation Tabs (4 Core Pillars: Priority 6.2) -->
-    <nav class="sp-nav-tabs">
+    <!-- Login Required Gate (Shown when user has NOT signed in yet) -->
+    <div id="auth-required-gate" class="auth-required-gate" style="display: none;">
+      <div class="auth-gate-card">
+        <div class="auth-gate-icon-wrap">
+          <img src="../assets/telmy-avatar.svg" alt="Telmy" class="auth-gate-avatar" style="width: 56px; height: 56px;">
+          <span class="auth-gate-badge">🔒</span>
+        </div>
+        <h3 class="auth-gate-title">Login Diperlukan</h3>
+        <p class="auth-gate-desc">
+          Silakan hubungkan akun Google Anda terlebih dahulu untuk mengaktifkan pemindaian formulir otomatis, penjelasan bimbingan AI, dan brankas profil aman.
+        </p>
+        <button id="btn-gate-login" class="btn-gate-login">
+          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+          <span>Connect with Google</span>
+        </button>
+        <span class="auth-gate-note">Aman & Terenkripsi Client-Side (Zero-Knowledge)</span>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs: 3 Main Pillars -->
+    <nav class="sp-nav-tabs" id="sp-nav-tabs">
       <button class="sp-tab-btn active" data-tab="chat" id="tab-btn-chat" title="AI Assistant (Chat & Voice)">
         <span class="tab-icon">💬</span>
         <span class="tab-label" id="lbl-tab-chat">Assistant</span>
-      </button>
-      <button class="sp-tab-btn" data-tab="vault" id="tab-btn-vault" title="1-Click AutoFill & Encrypted Profile Vault">
-        <span class="tab-icon">⚡</span>
-        <span class="tab-label" id="lbl-tab-vault">AutoFill</span>
-      </button>
-      <button class="sp-tab-btn" data-tab="pdf" id="tab-btn-pdf" title="Official PDF Form Guide & Certified Writer">
-        <span class="tab-icon">📄</span>
-        <span class="tab-label" id="lbl-tab-pdf">PDF Form</span>
       </button>
       <button class="sp-tab-btn" data-tab="fields" id="tab-btn-fields" title="Web Form Fields Inspection & Audit">
         <span class="tab-icon">📋</span>
         <span class="tab-label" id="lbl-tab-fields">Fields & Audit</span>
         <span class="sp-badge" id="badge-fields-count">0</span>
+      </button>
+      <button class="sp-tab-btn" data-tab="vault" id="tab-btn-vault" title="1-Click AutoFill & Encrypted Profile Vault">
+        <span class="tab-icon">⚡</span>
+        <span class="tab-label" id="lbl-tab-vault">Auto Fill</span>
       </button>
     </nav>
 
@@ -290,9 +302,15 @@
       </div>
     </section>
 
-    <!-- TAB 3: PDF Document Form Guidance & Certified Writer (Priority 6.2 & 7) -->
+    <!-- PDF Document Form Guidance & Certified Writer (Accessed via Onboarding Menu) -->
     <section id="pane-pdf" class="sp-pane">
       <div id="pdf-mode-container" class="pdf-mode-view">
+        <div class="pdf-nav-back-row" style="padding: 12px 14px 6px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(0,0,0,0.06); margin-bottom: 12px;">
+          <button type="button" id="btn-back-from-pdf" class="btn-reset-pdf-action" style="display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 5px 12px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.12); background: #ffffff; cursor: pointer; font-weight: 600; color: #1e293b;">
+            ← Back to Assistant
+          </button>
+          <span style="font-size: 11px; font-weight: 700; color: #0284c7; background: #e0f2fe; padding: 2px 8px; border-radius: 6px;">PDF Copilot</span>
+        </div>
         <!-- PDF / Photo Dropzone Card -->
         <div id="sp-pdf-dropzone" class="sp-pdf-dropzone">
           <input type="file" id="sp-pdf-file-input" accept="application/pdf,image/jpeg,image/png,image/webp" style="display: none;">
@@ -369,10 +387,15 @@
           <div id="active-field-card" class="sp-active-card">
             <div class="sp-card-empty" id="fields-empty-state">
               <div class="sp-empty-icon" id="icon-empty-fields">📋</div>
-              <h3 id="lbl-empty-fields-title">Select a Form Field</h3>
-              <p id="lbl-empty-fields-desc">Hover or click any field badge on the page to view detailed guidelines, requirements, and examples.</p>
-              <div id="box-guide-cta" style="margin-top: 14px; display: none;">
-                <button type="button" id="btn-start-form-guide" class="btn-guide-me-cta">
+              <h3 id="lbl-empty-fields-title">Form Analysis Ready</h3>
+              <p id="lbl-empty-fields-desc">Click below to scan and analyze this webpage form, or click any field on the page.</p>
+              <div style="margin-top: 14px; width: 100%;">
+                <button type="button" id="btn-manual-analyze-form" class="btn-guide-me-cta" style="width: 100%; justify-content: center; margin-bottom: 8px;">
+                  <span id="lbl-btn-analyze-now">🔍 Analyze This Form</span>
+                </button>
+              </div>
+              <div id="box-guide-cta" style="margin-top: 6px; display: none;">
+                <button type="button" id="btn-start-form-guide" class="btn-guide-me-cta" style="width: 100%; justify-content: center;">
                   <span id="lbl-btn-guide-me">🚀 Guide Me (Field by Field)</span>
                 </button>
                 <div class="guide-quota-hint" id="lbl-guide-quota-hint">
@@ -478,8 +501,15 @@
           <div class="onboarding-feat-item">
             <span class="feat-icon">🌐</span>
             <div>
-              <strong>JAPAC Multilingual Support</strong>
+              <strong>Translate This Page</strong>
               <small>Read explanations in English or 10 Asian-Pacific languages</small>
+            </div>
+          </div>
+          <div class="onboarding-feat-item" id="onboarding-feat-pdf" style="cursor: pointer; background: rgba(14,165,233,0.06); border: 1px solid rgba(14,165,233,0.25); border-radius: 12px; padding: 10px 12px;">
+            <span class="feat-icon">📄</span>
+            <div>
+              <strong style="color: #0284c7;">PDF Form Guide & Certified Writer</strong>
+              <small>Analyze official visa or scholarship PDF documents & export filled PDF</small>
             </div>
           </div>
           <div class="onboarding-feat-item">

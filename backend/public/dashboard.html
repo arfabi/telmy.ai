@@ -1727,9 +1727,9 @@
       }
     }
 
-    // Languages Matrix (11 JAPAC languages)
+    // Languages Matrix (11 JAPAC languages) — US English as International Default
     const LANGUAGES = [
-      { code: 'en', name: 'English', flag: '🇬🇧' },
+      { code: 'en', name: 'English (US)', flag: '🇺🇸' },
       { code: 'id', name: 'Indonesia', flag: '🇮🇩' },
       { code: 'ja', name: '日本語', flag: '🇯🇵' },
       { code: 'ko', name: '한국어', flag: '🇰🇷' },
@@ -1741,6 +1741,21 @@
       { code: 'fil', name: 'Filipino', flag: '🇵🇭' },
       { code: 'ms', name: 'Melayu', flag: '🇲🇾' }
     ];
+
+    // High-Resolution SVG Flags (Guarantees colored flags on Windows where emoji flags render as text codes)
+    const LANG_SVGS = {
+      en: '<svg viewBox="0 0 640 480" width="22" height="16" style="border-radius:2px;vertical-align:middle;"><rect width="640" height="480" fill="#bd3d44"/><path stroke="#fff" stroke-width="37" d="M0 55.4h640m0 73.8h-640m0 73.8h640m0 73.8h-640m0 73.8h640m0 73.8h-640"/><rect width="256" height="258" fill="#192f5d"/><g fill="#fff"><circle cx="40" cy="35" r="10"/><circle cx="100" cy="35" r="10"/><circle cx="160" cy="35" r="10"/><circle cx="220" cy="35" r="10"/><circle cx="70" cy="70" r="10"/><circle cx="130" cy="70" r="10"/><circle cx="190" cy="70" r="10"/><circle cx="40" cy="105" r="10"/><circle cx="100" cy="105" r="10"/><circle cx="160" cy="105" r="10"/><circle cx="220" cy="105" r="10"/><circle cx="70" cy="140" r="10"/><circle cx="130" cy="140" r="10"/><circle cx="190" cy="140" r="10"/><circle cx="40" cy="175" r="10"/><circle cx="100" cy="175" r="10"/><circle cx="160" cy="175" r="10"/><circle cx="220" cy="175" r="10"/><circle cx="70" cy="210" r="10"/><circle cx="130" cy="210" r="10"/><circle cx="190" cy="210" r="10"/></g></svg>',
+      id: '<svg viewBox="0 0 640 480" width="22" height="16" style="border-radius:2px;vertical-align:middle;box-shadow:0 0 1px rgba(0,0,0,0.3);"><path fill="#e70011" d="M0 0h640v240H0z"/><path fill="#ffffff" d="M0 240h640v240H0z"/></svg>',
+      ja: '<svg viewBox="0 0 640 480" width="22" height="16" style="border-radius:2px;vertical-align:middle;box-shadow:0 0 1px rgba(0,0,0,0.3);"><path fill="#ffffff" d="M0 0h640v480H0z"/><circle fill="#bc002d" cx="320" cy="240" r="144"/></svg>',
+      ko: '<svg viewBox="0 0 640 480" width="22" height="16" style="border-radius:2px;vertical-align:middle;box-shadow:0 0 1px rgba(0,0,0,0.3);"><path fill="#ffffff" d="M0 0h640v480H0z"/><g transform="translate(320,240)"><path fill="#cd2e3a" d="M0-120a120 120 0 0 1 120 120 60 60 0 0 1-60 60 60 60 0 0 0-60-60 60 60 0 0 0-60 60 60 60 0 0 1-60-60A120 120 0 0 1 0-120z"/><path fill="#0047a0" d="M0 120a120 120 0 0 1-120-120 60 60 0 0 1 60-60 60 60 0 0 0 60 60 60 60 0 0 0 60-60 60 60 0 0 1 60 60A120 120 0 0 1 0 120z"/></g><g fill="#000"><rect x="90" y="80" width="30" height="90" transform="rotate(-34 105 125)"/><rect x="130" y="80" width="30" height="90" transform="rotate(-34 145 125)"/><rect x="480" y="80" width="30" height="90" transform="rotate(34 495 125)"/><rect x="520" y="80" width="30" height="90" transform="rotate(34 535 125)"/></g></svg>',
+      zh: '<svg viewBox="0 0 640 480" width="22" height="16" style="border-radius:2px;vertical-align:middle;"><path fill="#ee1c25" d="M0 0h640v480H0z"/><polygon fill="#ffde00" points="120,60 133,100 175,100 141,125 154,165 120,140 86,165 99,125 65,100 107,100"/></svg>',
+      'zh-TW': '<svg viewBox="0 0 640 480" width="22" height="16" style="border-radius:2px;vertical-align:middle;"><path fill="#fe0000" d="M0 0h640v480H0z"/><path fill="#000095" d="M0 0h320v240H0z"/><circle fill="#fff" cx="160" cy="120" r="50"/><circle fill="#000095" cx="160" cy="120" r="34"/><circle fill="#fff" cx="160" cy="120" r="26"/></svg>',
+      vi: '<svg viewBox="0 0 640 480" width="22" height="16" style="border-radius:2px;vertical-align:middle;"><path fill="#da251d" d="M0 0h640v480H0z"/><polygon fill="#ffff00" points="320,90 357,204 477,204 380,274 417,388 320,318 223,388 260,274 163,204 283,204"/></svg>',
+      th: '<svg viewBox="0 0 640 480" width="22" height="16" style="border-radius:2px;vertical-align:middle;"><path fill="#a51931" d="M0 0h640v480H0z"/><path fill="#f4f5f8" d="M0 80h640v320H0z"/><path fill="#2d2a4a" d="M0 160h640v160H0z"/></svg>',
+      hi: '<svg viewBox="0 0 640 480" width="22" height="16" style="border-radius:2px;vertical-align:middle;"><path fill="#ff9933" d="M0 0h640v160H0z"/><path fill="#ffffff" d="M0 160h640v160H0z"/><path fill="#128807" d="M0 320h640v160H0z"/><circle fill="#000088" cx="320" cy="240" r="45"/><circle fill="#ffffff" cx="320" cy="240" r="37"/><circle fill="#000088" cx="320" cy="240" r="14"/></svg>',
+      fil: '<svg viewBox="0 0 640 480" width="22" height="16" style="border-radius:2px;vertical-align:middle;"><path fill="#0038a8" d="M0 0h640v240H0z"/><path fill="#ce1126" d="M0 240h640v240H0z"/><polygon fill="#ffffff" points="0,0 280,240 0,480"/><circle fill="#fcd116" cx="95" cy="240" r="32"/></svg>',
+      ms: '<svg viewBox="0 0 640 480" width="22" height="16" style="border-radius:2px;vertical-align:middle;"><g fill="#cc0000"><rect width="640" height="34" y="0"/><rect width="640" height="34" y="68"/><rect width="640" height="34" y="137"/><rect width="640" height="34" y="205"/><rect width="640" height="34" y="274"/><rect width="640" height="34" y="342"/><rect width="640" height="34" y="411"/></g><g fill="#ffffff"><rect width="640" height="34" y="34"/><rect width="640" height="34" y="102"/><rect width="640" height="34" y="171"/><rect width="640" height="34" y="239"/><rect width="640" height="34" y="308"/><rect width="640" height="34" y="377"/><rect width="640" height="34" y="446"/></g><rect width="320" height="274" fill="#000066"/><circle cx="160" cy="137" r="75" fill="#ffcc00"/><circle cx="185" cy="137" r="62" fill="#000066"/><polygon points="210,137 190,120 195,145 175,130 195,150 180,165 200,155 210,175 215,155 235,165 220,150 240,130 220,145 225,120" fill="#ffcc00"/></svg>'
+    };
 
     // Current User State (Default 5 credits for new Free tier user)
     let currentUser = {
@@ -1833,7 +1848,9 @@
 
       const langObj = LANGUAGES.find(l => l.code === currentUser.language) || LANGUAGES[0];
       const kpiLang = document.getElementById('kpi-lang-val');
-      if (kpiLang) kpiLang.textContent = `${langObj.flag} ${langObj.name}`;
+      if (kpiLang) {
+        kpiLang.innerHTML = `<span style="display:inline-flex;margin-right:6px;vertical-align:middle;">${LANG_SVGS[langObj.code] || langObj.flag}</span> ${langObj.name}`;
+      }
 
       // Live Credits KPIs & Usage Balance
       const kpiCredits = document.getElementById('kpi-credits-val');
@@ -1859,8 +1876,8 @@
         const item = document.createElement('div');
         item.className = `lang-item-card ${lang.code === currentUser.language ? 'active' : ''}`;
         item.innerHTML = `
-          <span style="font-size: 16px;">${lang.flag}</span>
-          <span style="font-size: 12.5px;">${lang.name}</span>
+          <span style="display:flex;align-items:center;justify-content:center;margin-bottom:2px;">${LANG_SVGS[lang.code] || lang.flag}</span>
+          <span style="font-size: 12.5px; font-weight: 600;">${lang.name}</span>
         `;
         item.addEventListener('click', () => {
           currentUser.language = lang.code;

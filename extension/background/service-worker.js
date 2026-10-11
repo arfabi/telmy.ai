@@ -53,23 +53,84 @@ async function sanitizeSettings() {
 // Run immediately on service worker boot
 sanitizeSettings();
 
+// Setup Right-Click Context Menu (Plan v6)
+function setupContextMenus() {
+  if (!chrome.contextMenus) return;
+  try {
+    chrome.contextMenus.removeAll(() => {
+      chrome.contextMenus.create({
+        id: 'telmy_analyze_page',
+        title: 'Analyze This Page with Telmy AI 🤖',
+        contexts: ['page', 'frame', 'editable', 'selection']
+      });
+    });
+  } catch (e) {}
+}
+
 chrome.runtime.onInstalled.addListener(async (details) => {
   console.log('[Telmy] Extension installed/updated:', details.reason);
   await sanitizeSettings();
+  setupContextMenus();
 
   // Open side panel automatically on action toolbar click
   if (chrome.sidePanel && chrome.sidePanel.setPanelBehavior) {
     chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch(() => {});
   }
+
+  // First-time install: open onboarding welcome page with Pin 📌 guidance (Plan v6)
+  if (details.reason === 'install') {
+    try {
+      chrome.tabs.create({
+        url: chrome.runtime.getURL('welcome/welcome.html')
+      });
+    } catch (e) {}
+  }
 });
 
 chrome.runtime.onStartup?.addListener(async () => {
   await sanitizeSettings();
+  setupContextMenus();
 });
 
 // Configure side panel behavior on startup as well
 if (chrome.sidePanel && chrome.sidePanel.setPanelBehavior) {
   chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch(() => {});
+}
+
+// Handle Context Menu Clicks: Open Side Panel and Analyze Tab (Method 1)
+if (chrome.contextMenus && chrome.contextMenus.onClicked) {
+  chrome.contextMenus.onClicked.addListener(async (info, tab) => {
+    if (!tab || !tab.id) return;
+    if (info.menuItemId === 'telmy_analyze_page') {
+      try {
+        if (chrome.sidePanel && chrome.sidePanel.open) {
+          await chrome.sidePanel.open({ tabId: tab.id });
+        }
+      } catch (e) {}
+
+      // Enforce Login Gate: If user has not signed in, do not trigger scanner!
+      const stored = await chrome.storage.local.get(['user']);
+      if (!stored.user || (!stored.user.uid && !stored.user.email)) {
+        console.log('[Telmy SW] User not signed in. Opening side panel in login-required mode.');
+        return;
+      }
+
+      // Trigger instant scanner on the active tab (no refresh needed)
+      chrome.tabs.sendMessage(tab.id, { type: 'ACTIVATE_SCANNER' }, () => {
+        if (chrome.runtime.lastError) {
+          // If content script was not loaded yet, inject into main frame dynamically
+          chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            files: ['content/scanner.js', 'content/highlighter.js', 'content/translator.js', 'content/content-main.js']
+          }).then(() => {
+            setTimeout(() => {
+              chrome.tabs.sendMessage(tab.id, { type: 'ACTIVATE_SCANNER' });
+            }, 150);
+          }).catch(() => {});
+        }
+      });
+    }
+  });
 }
 
 // Helper: fetch with timeout directly to Cloud Run
@@ -229,6 +290,41 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       }
 
       sendResponse({ success: false, fallback: true });
+    });
+    return true;
+  }
+
+  // Full-Page Form Batch Analysis (Gemini -> Firestore & Vector Cache)
+  if (message.type === 'ANALYZE_FORM_PAGE') {
+    chrome.storage.local.get(['settings', 'user']).then(async (res) => {
+      const settings = res.settings || DEFAULT_SETTINGS;
+      const user = res.user || null;
+      const apiUrl = getEffectiveApiUrl(settings);
+      const { domain, url, title, fields, instructions, language } = message.payload || {};
+      const userId = user?.uid || 'guest_user';
+
+      try {
+        const response = await fetchWithTimeout(`${apiUrl}/forms/analyze`, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'x-user-id': userId
+          },
+          body: JSON.stringify({ domain, url, title, fields, instructions, language, userId })
+        }, 45000);
+
+        if (response.ok) {
+          const json = await response.json();
+          if (json.success && json.data) {
+            sendResponse({ success: true, data: json.data, quota: json.quota });
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn('[Telmy SW] Analyze form API error:', err.message);
+      }
+
+      sendResponse({ success: false, error: 'Form analysis backend unavailable' });
     });
     return true;
   }

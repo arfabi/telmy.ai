@@ -1,5 +1,19 @@
 // Telmy — Main Content Script Orchestrator (Optimized for On-Demand Chrome Native Side Panel)
 (function () {
+  // Strict Exclusion: Never scan Telmy's own internal auth/login or dashboard portals
+  const currentPath = (window.location.pathname || '').toLowerCase();
+  const pageTitle = (document.title || '').toLowerCase();
+  const isAuthOrDashboard = currentPath.includes('connect') ||
+                            currentPath.includes('dashboard') ||
+                            currentPath.includes('privacy') ||
+                            document.querySelector('.connect-card') ||
+                            document.getElementById('telmy-app-root') ||
+                            (pageTitle.includes('connect') && pageTitle.includes('telmy')) ||
+                            (pageTitle.includes('dashboard') && pageTitle.includes('telmy'));
+  if (isAuthOrDashboard) {
+    return;
+  }
+
   // Ensure any in-page floating panel or launcher pill elements are purged
   function cleanupFloatingDOM() {
     const oldPanel = document.getElementById('gmt-side-panel-container');
@@ -35,14 +49,37 @@
   let domObserver = null;
   let debounceTimer = null;
 
+  function getSerializableFields() {
+    return (scannedItems || []).map(item => ({
+      metadata: {
+        scanIndex: item.metadata.scanIndex,
+        id: item.metadata.id,
+        name: item.metadata.name,
+        type: item.metadata.type,
+        options: item.metadata.options,
+        placeholder: item.metadata.placeholder,
+        label: item.metadata.label
+      },
+      dictEntry: item.dictEntry,
+      isCustomAi: item.isCustomAi
+    }));
+  }
+
   // 1. Listen for runtime messages from Side Panel & Background
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    // A. Explicit Activation (User opened Side Panel / clicked icon)
-    if (message.type === 'ACTIVATE_SCANNER') {
+    // A. Explicit Activation & Trigger Rescan (both execute full scan and return full fields)
+    if (message.type === 'ACTIVATE_SCANNER' || message.type === 'TRIGGER_RESCAN') {
       isScannerActivated = true;
       gmtSettings.isActive = true;
       startScanWorkflow(() => {
-        sendResponse({ success: true, count: scannedItems.length, isActive: true });
+        const fields = getSerializableFields();
+        sendResponse({
+          success: true,
+          count: fields.length,
+          fields: fields,
+          summary: cachedPageSummary,
+          isActive: true
+        });
       });
       return true; // async sendResponse
     }
@@ -77,18 +114,6 @@
         isActive: isScannerActivated && gmtSettings.isActive !== false
       });
       return false;
-    }
-
-    // E. Trigger Rescan
-    if (message.type === 'TRIGGER_RESCAN') {
-      if (!isScannerActivated) {
-        isScannerActivated = true;
-        gmtSettings.isActive = true;
-      }
-      startScanWorkflow(() => {
-        sendResponse({ count: scannedItems.length, success: true });
-      });
-      return true;
     }
 
     // F. Highlight Field by Index
@@ -324,10 +349,11 @@
       if (!isScannerActivated || gmtSettings.isActive === false) return;
       let shouldRescan = false;
       for (const m of mutations) {
-        if (m.target && m.target.closest && m.target.closest('.gmt-ui-container')) continue;
+        if (m.target && m.target.closest && (m.target.closest('.gmt-ui-container') || m.target.closest('.gmt-field-badge'))) continue;
         if (m.type === 'childList' && m.addedNodes.length > 0) {
           for (const node of m.addedNodes) {
             if (node.nodeType === 1) {
+              if (node.classList && (node.classList.contains('gmt-field-badge') || node.classList.contains('gmt-ui-container'))) continue;
               if (
                 (node.matches && node.matches('input, select, textarea, [role="textbox"], [role="radiogroup"], [role="group"], [role="combobox"], [role="listbox"], form, .form-group, .card, [class*="form"], [class*="field"], [class*="step"], [class*="tab"]')) ||
                 (node.querySelector && node.querySelector('input, select, textarea, [role="textbox"], [role="combobox"]'))
@@ -338,6 +364,12 @@
             }
           }
         } else if (m.type === 'attributes') {
+          // Ignore Telmy's own highlight and badge class toggles
+          if (m.attributeName === 'class' && m.target && m.target.classList) {
+            if (m.target.classList.contains('gmt-highlighted-field') || m.target.classList.contains('gmt-badge-active')) {
+              continue;
+            }
+          }
           // Detect visibility change on step wizards, modals, tabs
           if (m.target && m.target.nodeType === 1) {
             const el = m.target;

@@ -212,6 +212,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   let cachedPageSummary = null;
   let currentUser = null;
   let isScannerRunning = true;
+  let isCurrentPageAnalyzed = false;
   let isPageTranslated = false;
   let isTranslating = false;
   let translatedElementCount = 0;
@@ -998,7 +999,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   };
 
   const LANG_SVGS = {
-    en: '<svg viewBox="0 0 640 480"><path fill="#012169" d="M0 0h640v480H0z"/><path fill="#FFF" d="m75 0 244 181L562 0h78v62L400 241l240 178v61h-80L320 301 81 480H0v-60l239-179L0 64V0h75z"/><path fill="#C8102E" d="m424 288 216 160v32l-258-192h42zm-208-96L0 32V0l258 192h-42zM640 32 384 224h42l214-160V32zM0 448l256-192h-42L0 416v32z"/><path fill="#FFF" d="M240 0h160v480H240zM0 160h640v160H0z"/><path fill="#C8102E" d="M267 0h107v480H267zM0 187h640v107H0z"/></svg>',
+    en: '<svg viewBox="0 0 640 480"><rect width="640" height="480" fill="#bd3d44"/><path stroke="#fff" stroke-width="37" d="M0 55.4h640m0 73.8h-640m0 73.8h640m0 73.8h-640m0 73.8h640m0 73.8h-640"/><rect width="256" height="258" fill="#192f5d"/><g fill="#fff"><circle cx="40" cy="35" r="10"/><circle cx="100" cy="35" r="10"/><circle cx="160" cy="35" r="10"/><circle cx="220" cy="35" r="10"/><circle cx="70" cy="70" r="10"/><circle cx="130" cy="70" r="10"/><circle cx="190" cy="70" r="10"/><circle cx="40" cy="105" r="10"/><circle cx="100" cy="105" r="10"/><circle cx="160" cy="105" r="10"/><circle cx="220" cy="105" r="10"/><circle cx="70" cy="140" r="10"/><circle cx="130" cy="140" r="10"/><circle cx="190" cy="140" r="10"/><circle cx="40" cy="175" r="10"/><circle cx="100" cy="175" r="10"/><circle cx="160" cy="175" r="10"/><circle cx="220" cy="175" r="10"/><circle cx="70" cy="210" r="10"/><circle cx="130" cy="210" r="10"/><circle cx="190" cy="210" r="10"/></g></svg>',
     id: '<svg viewBox="0 0 640 480"><path fill="#e70011" d="M0 0h640v240H0z"/><path fill="#ffffff" d="M0 240h640v240H0z"/></svg>',
     ja: '<svg viewBox="0 0 640 480"><path fill="#ffffff" d="M0 0h640v480H0z"/><circle fill="#bc002d" cx="320" cy="240" r="144"/></svg>',
     ko: '<svg viewBox="0 0 640 480"><path fill="#ffffff" d="M0 0h640v480H0z"/><g transform="translate(320,240)"><path fill="#cd2e3a" d="M0-120a120 120 0 0 1 120 120 60 60 0 0 1-60 60 60 60 0 0 0-60-60 60 60 0 0 0-60 60 60 60 0 0 1-60-60A120 120 0 0 1 0-120z"/><path fill="#0047a0" d="M0 120a120 120 0 0 1-120-120 60 60 0 0 1 60-60 60 60 0 0 0 60 60 60 60 0 0 0 60-60 60 60 0 0 1 60 60A120 120 0 0 1 0 120z"/></g><g fill="#000"><rect x="90" y="80" width="30" height="90" transform="rotate(-34 105 125)"/><rect x="130" y="80" width="30" height="90" transform="rotate(-34 145 125)"/><rect x="480" y="80" width="30" height="90" transform="rotate(34 495 125)"/><rect x="520" y="80" width="30" height="90" transform="rotate(34 535 125)"/></g></svg>',
@@ -1012,7 +1013,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   };
 
   const LANG_OPTIONS = [
-    { code: 'en', label: 'English', short: 'EN' },
+    { code: 'en', label: 'English (US)', short: 'EN' },
     { code: 'id', label: 'Indonesia', short: 'ID' },
     { code: 'ja', label: '日本語', short: 'JA' },
     { code: 'ko', label: '한국어', short: 'KO' },
@@ -1137,6 +1138,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
+  async function getActiveWebTab() {
+    try {
+      let [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+      if (!tab || !tab.id || tab.url?.startsWith('chrome-extension://')) {
+        [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      }
+      return tab || null;
+    } catch (e) {
+      return null;
+    }
+  }
+
   // 1. Initialize Active Tab, User & Onboarding
   async function init() {
     // Load Settings & User
@@ -1175,17 +1188,38 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupModeToggleCards();
 
     // Determine current active tab
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    const tab = await getActiveWebTab();
     if (tab && tab.id) {
       currentTabId = tab.id;
       await loadSessionChat(tab.url);
       checkPdfTab(tab.url);
-      if (isScannerRunning) {
-        activateScannerOnTab(tab.id);
-      }
+      // Passive check: only read status if already scanned; NEVER attach badges on unprompted/login pages
+      checkTabScannerStatus(tab.id);
       checkPageTranslationStatus(tab.id);
     } else {
       renderWelcome();
+    }
+
+    // Connect Manual Analyze and Rescan Buttons (Method 2: 1-Click with Zero Browser Reload)
+    const btnManualAnalyze = document.getElementById('btn-manual-analyze-form');
+    if (btnManualAnalyze) {
+      btnManualAnalyze.addEventListener('click', () => {
+        triggerFullFormAnalysis(btnManualAnalyze);
+      });
+    }
+
+    if (btnRescan) {
+      btnRescan.addEventListener('click', () => {
+        triggerFullFormAnalysis();
+      });
+    }
+
+    if (btnClose) {
+      btnClose.addEventListener('click', () => {
+        if (currentTabId) {
+          deactivateScannerOnTab(currentTabId);
+        }
+      });
     }
 
     // Initialize Interactive Talking Avatar Companion (Priority 2)
@@ -1304,6 +1338,17 @@ document.addEventListener('DOMContentLoaded', async () => {
           onboardingUserAvatarText.textContent = initial;
         }
       }
+      // Hide auth required gate & show tabs
+      const authGate = document.getElementById('auth-required-gate');
+      const navTabs = document.getElementById('sp-nav-tabs');
+      if (authGate) authGate.style.display = 'none';
+      if (navTabs) navTabs.style.display = 'flex';
+      // Restore active pane
+      const activeBtn = document.querySelector('.sp-tab-btn.active');
+      const activeTab = activeBtn ? activeBtn.getAttribute('data-tab') : 'chat';
+      panes.forEach(p => p.classList.toggle('active', p.id === `pane-${activeTab}`));
+      const chatFooter = document.querySelector('.sp-chat-footer');
+      if (chatFooter && activeTab === 'chat') chatFooter.style.display = 'flex';
     } else {
       userAvatarText.textContent = '👤';
       userAvatarText.style.display = 'block';
@@ -1315,7 +1360,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       popoverUserName.textContent = 'Guest User';
       popoverUserEmail.textContent = 'Not signed in';
-      popoverAuthBadge.textContent = 'Guest Mode';
+      popoverAuthBadge.textContent = 'Login Required';
       popoverAuthBadge.className = 'badge-auth-status';
 
       btnPopoverAuth.style.display = 'block';
@@ -1325,11 +1370,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         onboardingUnauthed.style.display = 'flex';
         onboardingAuthed.style.display = 'none';
       }
+
+      // Show auth required gate & hide tabs and panes
+      const authGate = document.getElementById('auth-required-gate');
+      const navTabs = document.getElementById('sp-nav-tabs');
+      if (authGate) authGate.style.display = 'flex';
+      if (navTabs) navTabs.style.display = 'none';
+      panes.forEach(p => { p.classList.remove('active'); });
+      const chatFooter = document.querySelector('.sp-chat-footer');
+      if (chatFooter) chatFooter.style.display = 'none';
     }
   }
 
   // 3. User Controls & Onboarding Events
   function setupUserControlsAndOnboarding() {
+    const btnGateLogin = document.getElementById('btn-gate-login');
+    if (btnGateLogin) {
+      btnGateLogin.addEventListener('click', () => {
+        handleUserAuthConnect();
+      });
+    }
+
     // A. Profile Popover Toggle
     btnUser.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -1410,6 +1471,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         activateScannerOnTab(currentTabId);
       }
     });
+
+    const onboardingFeatPdf = document.getElementById('onboarding-feat-pdf');
+    if (onboardingFeatPdf) {
+      onboardingFeatPdf.addEventListener('click', () => {
+        closeOnboardingModal();
+        openPdfMode();
+      });
+    }
   }
 
   function showOnboardingModal() {
@@ -1446,12 +1515,188 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  // 4. Activate Scanner on Active Tab (On-Demand)
-  async function activateScannerOnTab(tabId) {
+  // Helper: check if URL belongs to Telmy's internal auth/dashboard pages (should never be scanned)
+  function isTelmyInternalUrl(urlStr) {
+    if (!urlStr) return false;
+    try {
+      const u = new URL(urlStr);
+      const path = u.pathname.toLowerCase();
+      // Only exclude Telmy's own internal auth/dashboard portals (e.g. connect.html, dashboard.html)
+      return (
+        path.includes('connect') ||
+        path.includes('dashboard') ||
+        path.includes('privacy')
+      );
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // Check scanner status on active tab passively without attaching badges
+  async function checkTabScannerStatus(tabId) {
     if (!tabId) return;
     try {
       const tab = await chrome.tabs.get(tabId).catch(() => null);
-      if (!tab || !tab.url || tab.url.startsWith('chrome://') || tab.url.startsWith('chrome-extension://') || tab.url.startsWith('edge://') || tab.url.startsWith('about:') || tab.url.startsWith('view-source:')) {
+      if (!tab || !tab.url || 
+          tab.url.startsWith('chrome://') || 
+          tab.url.startsWith('chrome-extension://') || 
+          tab.url.startsWith('edge://') || 
+          tab.url.startsWith('about:') || 
+          isTelmyInternalUrl(tab.url)) {
+        badgeFieldsCount.textContent = '0';
+        fieldsCountPill.textContent = `0 ${t('tab_fields') || 'Fields'}`;
+        return;
+      }
+      chrome.tabs.sendMessage(tabId, { type: 'QUERY_PAGE_STATUS' }, (res) => {
+        if (!chrome.runtime.lastError && res && res.isActive && res.detectedFieldsCount !== undefined) {
+          badgeFieldsCount.textContent = res.detectedFieldsCount;
+          fieldsCountPill.textContent = `${res.detectedFieldsCount} ${t('tab_fields') || 'Fields'}`;
+        }
+      });
+    } catch (e) {}
+  }
+
+  // Direct Handler function to update UI immediately from scanned response
+  function applyScannedData(data) {
+    if (!data) return;
+    if (data.fields && Array.isArray(data.fields) && data.fields.length > 0) {
+      detectedFields = data.fields;
+      cachedPageSummary = data.summary || null;
+      renderFieldsList(detectedFields);
+      renderSummaryPane(cachedPageSummary, detectedFields);
+      badgeFieldsCount.textContent = detectedFields.length;
+      fieldsCountPill.textContent = `${detectedFields.length} ${t('tab_fields') || 'Fields'}`;
+
+      // Trigger Batch Form Analysis to Backend (Gemini -> DB -> Vector Cache)
+      triggerBatchBackendAnalysis(detectedFields);
+    } else if (data.count !== undefined) {
+      badgeFieldsCount.textContent = data.count;
+      fieldsCountPill.textContent = `${data.count} ${t('tab_fields') || 'Fields'}`;
+    }
+  }
+
+  async function triggerBatchBackendAnalysis(fields) {
+    if (!currentTabId || !fields || fields.length === 0) return;
+    try {
+      const tab = await chrome.tabs.get(currentTabId).catch(() => null);
+      if (!tab || !tab.url || isTelmyInternalUrl(tab.url)) return;
+
+      const domain = new URL(tab.url).hostname;
+      const serializableFields = fields.map((f, idx) => {
+        const meta = f.metadata || f;
+        return {
+          index: idx,
+          id: meta.id || `f_${idx}`,
+          name: meta.name || '',
+          label: meta.label || meta.name || `Field ${idx + 1}`,
+          type: meta.type || 'text',
+          placeholder: meta.placeholder || '',
+          section: meta.section || ''
+        };
+      });
+
+      chrome.runtime.sendMessage({
+        type: 'ANALYZE_FORM_PAGE',
+        payload: {
+          domain,
+          url: tab.url,
+          title: tab.title || document.title || 'Web Form',
+          fields: serializableFields,
+          language: currentLanguage
+        }
+      }, (resp) => {
+        if (!chrome.runtime.lastError && resp && resp.success && resp.data) {
+          isCurrentPageAnalyzed = true;
+          const analyzed = resp.data;
+          if (Array.isArray(analyzed.fields)) {
+            analyzed.fields.forEach((af, idx) => {
+              const cacheKey = getFieldCacheKey(af, idx, currentLanguage);
+              globalExplanationCache.set(cacheKey, af);
+              if (detectedFields[idx]) {
+                detectedFields[idx]._aiExplanation = detectedFields[idx]._aiExplanation || {};
+                detectedFields[idx]._aiExplanation[currentLanguage] = af;
+              }
+            });
+          }
+
+          if (analyzed.summary) {
+            appendChatMessage({
+              role: 'assistant',
+              text: `📋 **Form Analysis Overview (${analyzed.fields?.length || detectedFields.length} Kolom Dikenali)**\n\n${analyzed.summary}\n\n✓ *Seluruh penjelasan kolom telah disimpan di database & siap memandu Anda!*`,
+              time: formatTime(new Date())
+            });
+          }
+
+          if (activeFieldIndex >= 0 && detectedFields[activeFieldIndex]) {
+            renderFieldDetail(detectedFields[activeFieldIndex]);
+          }
+        }
+      });
+    } catch (e) {
+      console.warn('[Telmy] Batch backend analysis notice:', e.message);
+    }
+  }
+
+  // Unified Full Form Analysis & Rescan (Inherits all capabilities of the refresh button!)
+  async function triggerFullFormAnalysis(triggerBtn = null) {
+    // 1. Visual feedback on refresh button icon
+    if (btnRescan) {
+      btnRescan.style.transform = 'rotate(180deg)';
+      setTimeout(() => { if (btnRescan) btnRescan.style.transform = ''; }, 400);
+    }
+
+    const btnManual = triggerBtn || document.getElementById('btn-manual-analyze-form');
+    if (btnManual) {
+      btnManual.innerHTML = '<span>⏳ Analyzing form...</span>';
+    }
+
+    // 2. Resolve active webpage tab
+    const tab = await getActiveWebTab();
+    const tabId = (tab && tab.id) ? tab.id : currentTabId;
+    if (!tabId) {
+      if (btnManual) btnManual.innerHTML = '<span id="lbl-btn-analyze-now">🔍 Analyze This Form</span>';
+      return;
+    }
+    currentTabId = tabId;
+
+    // 3. Send TRIGGER_RESCAN directly to content script (exact same as refresh button!)
+    chrome.tabs.sendMessage(tabId, { type: 'TRIGGER_RESCAN' }, (res) => {
+      const lastErr = chrome.runtime.lastError;
+      if (!lastErr && res) {
+        applyScannedData(res);
+      } else {
+        // If content script was not ready yet, inject and retry TRIGGER_RESCAN
+        injectContentScript(tabId, () => {
+          chrome.tabs.sendMessage(tabId, { type: 'TRIGGER_RESCAN' }, (res2) => {
+            if (res2) applyScannedData(res2);
+          });
+        });
+      }
+    });
+
+    // 4. Also call activateScannerOnTab for redundancy and ladder progressive scan
+    activateScannerOnTab(tabId, applyScannedData);
+
+    setTimeout(() => {
+      if (btnManual) {
+        btnManual.innerHTML = '<span id="lbl-btn-analyze-now">🔍 Analyze This Form</span>';
+      }
+    }, 1200);
+  }
+
+  // 4. Activate Scanner on Active Tab (On-Demand 1-Click with Zero Browser Reload)
+  async function activateScannerOnTab(tabId, onDone = null) {
+    if (!tabId) return;
+    try {
+      const tab = await chrome.tabs.get(tabId).catch(() => null);
+      if (!tab || !tab.url || 
+          tab.url.startsWith('chrome://') || 
+          tab.url.startsWith('chrome-extension://') || 
+          tab.url.startsWith('edge://') || 
+          tab.url.startsWith('about:') || 
+          tab.url.startsWith('view-source:') ||
+          isTelmyInternalUrl(tab.url)
+      ) {
         badgeFieldsCount.textContent = '0';
         fieldsCountPill.textContent = `0 ${t('tab_fields') || 'Fields'}`;
         return;
@@ -1460,20 +1705,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       chrome.tabs.sendMessage(tabId, { type: 'ACTIVATE_SCANNER' }, (res) => {
         const lastErr = chrome.runtime.lastError;
         if (lastErr || !res) {
+          // Robust top-frame dynamic injection (no page refresh required!)
           injectContentScript(tabId, () => {
             chrome.tabs.sendMessage(tabId, { type: 'ACTIVATE_SCANNER' }, (res2) => {
-              const lastErr2 = chrome.runtime.lastError;
-              if (res2 && res2.count !== undefined) {
-                badgeFieldsCount.textContent = res2.count;
-                fieldsCountPill.textContent = `${res2.count} ${t('tab_fields') || 'Fields'}`;
+              if (res2) {
+                applyScannedData(res2);
+                if (onDone) onDone(res2);
               }
             });
           });
         } else {
-          if (res && res.count !== undefined) {
-            badgeFieldsCount.textContent = res.count;
-            fieldsCountPill.textContent = `${res.count} ${t('tab_fields') || 'Fields'}`;
-          }
+          applyScannedData(res);
+          if (onDone) onDone(res);
         }
       });
     } catch (err) {}
@@ -1489,21 +1732,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     fieldsCountPill.textContent = `0 ${t('tab_fields') || 'Fields'}`;
   }
 
-  // On-demand injection into active tab
+  // On-demand injection into active tab (targets top frame reliably without failing on subframes)
   async function injectContentScript(tabId, onInjected) {
     try {
       const tab = await chrome.tabs.get(tabId).catch(() => null);
-      if (!tab || !tab.url || tab.url.startsWith('chrome://') || tab.url.startsWith('chrome-extension://') || tab.url.startsWith('edge://') || tab.url.startsWith('about:') || tab.url.startsWith('view-source:')) {
+      if (!tab || !tab.url || tab.url.startsWith('chrome://') || tab.url.startsWith('chrome-extension://') || tab.url.startsWith('edge://') || tab.url.startsWith('about:') || tab.url.startsWith('view-source:') || isTelmyInternalUrl(tab.url)) {
         return;
       }
 
       await chrome.scripting.insertCSS({
-        target: { tabId, allFrames: true },
+        target: { tabId },
         files: ['content/overlay.css']
       }).catch(() => {});
 
       await chrome.scripting.executeScript({
-        target: { tabId, allFrames: true },
+        target: { tabId },
         files: [
           'content/scanner.js',
           'content/highlighter.js',
@@ -1512,9 +1755,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         ]
       });
 
-      if (onInjected) setTimeout(onInjected, 200);
+      if (onInjected) setTimeout(onInjected, 150);
     } catch (e) {
-      // Internal system page or frame restricted
+      console.warn('[Telmy] On-demand injection notice:', e.message);
     }
   }
 
@@ -1642,16 +1885,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // Rescan Button: Forces full scan ladder & tab rescan
-  btnRescan.addEventListener('click', () => {
-    btnRescan.style.transform = 'rotate(180deg)';
-    setTimeout(() => { btnRescan.style.transform = ''; }, 300);
-    if (currentTabId) {
-      chrome.tabs.sendMessage(currentTabId, { type: 'TRIGGER_RESCAN' }, () => {
-        const err = chrome.runtime.lastError;
-      });
-      activateScannerOnTab(currentTabId);
-    }
-  });
+  if (btnRescan) {
+    btnRescan.addEventListener('click', () => {
+      triggerFullFormAnalysis();
+    });
+  }
 
   // 5. Chat & AI Interaction
   function renderWelcome() {
@@ -1688,19 +1926,32 @@ document.addEventListener('DOMContentLoaded', async () => {
         </div>
         <h3 class="welcome-title">${escapeHTML(t('welcome_hero_title'))}</h3>
         <p class="welcome-subtitle">${escapeHTML(t('welcome_hero_desc'))}</p>
-        <div class="welcome-chips-grid">
-          <button type="button" class="welcome-action-chip" data-action="ABOUT_FORM">
-            <span class="chip-icon">📄</span>
-            <span class="chip-label">${escapeHTML(t('welcome_chip_about'))}</span>
-          </button>
-          <button type="button" class="welcome-action-chip" data-action="GUIDE_FIELDS">
-            <span class="chip-icon">📝</span>
-            <span class="chip-label">${escapeHTML(t('welcome_chip_guide'))}</span>
-          </button>
-          <button type="button" class="welcome-action-chip" data-action="TRANSLATE_PAGE">
-            <span class="chip-icon">🌐</span>
-            <span class="chip-label">${escapeHTML(t('welcome_chip_translate'))}</span>
-          </button>
+        <div class="welcome-section-group">
+          <div class="welcome-group-title">ONLINE FORM</div>
+          <div class="welcome-chips-grid">
+            <button type="button" class="welcome-action-chip" data-action="ANALYZE_FORM" style="background: rgba(37,99,235,0.08); border-color: rgba(37,99,235,0.3); color: #1d4ed8; font-weight: 600;">
+              <span class="chip-icon">🔍</span>
+              <span class="chip-label">1. Analyze This Form</span>
+            </button>
+            <button type="button" class="welcome-action-chip" data-action="TRANSLATE_PAGE">
+              <span class="chip-icon">🌐</span>
+              <span class="chip-label">2. Translate</span>
+            </button>
+            <button type="button" class="welcome-action-chip" data-action="AUTOFILL_FORM" style="background: rgba(16,185,129,0.08); border-color: rgba(16,185,129,0.3); color: #047857; font-weight: 600;">
+              <span class="chip-icon">⚡</span>
+              <span class="chip-label">3. 1-Click Auto Fill</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="welcome-section-group" style="margin-top: 10px;">
+          <div class="welcome-group-title">OFFLINE FORM</div>
+          <div class="welcome-chips-grid">
+            <button type="button" class="welcome-action-chip" data-action="OPEN_PDF" style="background: rgba(14,165,233,0.08); border-color: rgba(14,165,233,0.3); color: #0284c7; font-weight: 600;">
+              <span class="chip-icon">📄</span>
+              <span class="chip-label">4. Upload File</span>
+            </button>
+          </div>
         </div>
       `;
 
@@ -1851,16 +2102,27 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function handleActionChip(act) {
-    if (act.type === 'ABOUT_FORM') {
+    if (act.type === 'ANALYZE_FORM') {
+      const tabFields = document.getElementById('tab-btn-fields');
+      if (tabFields) tabFields.click();
+      triggerFullFormAnalysis();
+    } else if (act.type === 'ABOUT_FORM') {
       handleSendMessage(t('msg_about_form'));
     } else if (act.type === 'GUIDE_FIELDS') {
       const tabFields = document.getElementById('tab-btn-fields');
       if (tabFields) tabFields.click();
+      triggerFullFormAnalysis();
       if (detectedFields && detectedFields.length > 0) {
         selectFieldByIndex(0, true);
       }
+    } else if (act.type === 'AUTOFILL_FORM') {
+      const tabVault = document.getElementById('tab-btn-vault');
+      if (tabVault) tabVault.click();
+      handleTrigger1ClickAutoFill();
     } else if (act.type === 'TRANSLATE_PAGE' || act.type === 'REVERT_PAGE') {
       handleTogglePageTranslation();
+    } else if (act.type === 'OPEN_PDF') {
+      openPdfMode();
     } else if (act.type === 'TAB_FIELDS') {
       document.getElementById('tab-btn-fields').click();
     } else if (act.type === 'TAB_SUMMARY') {
@@ -1869,6 +2131,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       selectFieldByIndex(act.index, true);
       document.getElementById('tab-btn-fields').click();
     }
+  }
+
+  function openPdfMode() {
+    tabBtns.forEach((b) => b.classList.remove('active'));
+    panes.forEach((p) => p.classList.toggle('active', p.id === 'pane-pdf'));
   }
 
   async function handleTrigger1ClickAutoFill() {
@@ -2083,9 +2350,14 @@ document.addEventListener('DOMContentLoaded', async () => {
           updateTranslateBannerUI();
 
           const langUpper = currentLanguage.toUpperCase();
+          const isGeminiAi = response.data.source === 'ai_gemini';
+          const aiNote = isGeminiAi 
+            ? 'using **Google Gemini**.' 
+            : '*(Notice: Gemini monthly spend cap limit reached / 429, used basic local dictionary fallback).*';
+
           appendChatMessage({
             role: 'assistant',
-            text: t('page_translated_msg', { count: translatedElementCount, lang: langUpper }),
+            text: `🌐 **Full Page Translated (${translatedElementCount} elements)**\n\nThe webpage has been translated into **${langUpper}** ${aiNote}\n\n✓ **Official Bureaucracy Terms Preserved** (e.g., NIK, KTP, NPWP, SKCK)\n✓ **UI/UX Standards Applied** (Button & navigation actions mapped professionally)\n\nYou can click **Show Original** at any time to revert.`,
             actions: [
               { type: 'REVERT_PAGE', label: '🔙 ' + t('btn_revert_page') },
               { type: 'TAB_FIELDS', label: '📋 ' + t('tab_fields') }
@@ -2642,6 +2914,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
   }
 
+  const globalExplanationCache = new Map();
+  let currentExplainRequestId = 0;
+
+  function getFieldCacheKey(meta, index, lang) {
+    const rawKey = meta.id || meta.name || meta.label || `idx_${index}`;
+    return `${String(rawKey).toLowerCase().trim()}:${lang}`;
+  }
+
   function renderFieldDetail(field) {
     fieldsEmptyState.style.display = 'none';
     fieldDetailContent.style.display = 'block';
@@ -2650,11 +2930,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const meta = field.metadata || {};
     const dict = field.dictEntry || {};
     const trans = (dict.translations && dict.translations[currentLanguage]) || null;
+    const cacheKey = getFieldCacheKey(meta, index, currentLanguage);
 
     field._aiExplanation = field._aiExplanation || {};
-    const cached = field._aiExplanation[currentLanguage];
+    const cached = field._aiExplanation[currentLanguage] || globalExplanationCache.get(cacheKey);
 
     if (cached) {
+      field._aiExplanation[currentLanguage] = cached;
       renderDetailCard(field, cached);
       return;
     }
@@ -2666,7 +2948,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         source: dict.verified ? 'verified' : 'ai_draft'
       };
       field._aiExplanation[currentLanguage] = entryData;
+      globalExplanationCache.set(cacheKey, entryData);
       renderDetailCard(field, entryData);
+      return;
+    }
+
+    // Check if form was never analyzed by user
+    if (!isCurrentPageAnalyzed) {
+      fieldDetailContent.innerHTML = `
+        <div class="field-not-analyzed-box" style="padding: 28px 16px; text-align: center; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; margin-top: 8px;">
+          <span style="font-size: 32px; display: block; margin-bottom: 8px;">🔍</span>
+          <h4 style="margin: 0 0 6px; font-weight: 800; font-size: 14.5px; color: #0f172a;">Form Belum Pernah Di-Analyze</h4>
+          <p style="font-size: 12px; color: #64748b; line-height: 1.5; margin: 0 0 16px;">
+            Maaf, halaman dan form ini belum pernah kamu analyze.<br>Silakan klik tombol di bawah untuk menganalisa seluruh formulir.
+          </p>
+          <button id="btn-unscanned-analyze" class="btn-primary-action" style="padding: 9px 18px; font-size: 12.5px; font-weight: 700; border-radius: 8px; background: #2563eb; color: #ffffff; border: none; cursor: pointer; box-shadow: 0 2px 6px rgba(37,99,235,0.2);">
+            🔍 Analyze This Form
+          </button>
+        </div>
+      `;
+      const btnUnscanned = document.getElementById('btn-unscanned-analyze');
+      if (btnUnscanned) {
+        btnUnscanned.addEventListener('click', () => {
+          triggerFullFormAnalysis();
+        });
+      }
       return;
     }
 
@@ -2692,6 +2998,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       </div>
     `;
 
+    // Increment request token for race-condition protection
+    const thisRequestId = ++currentExplainRequestId;
+
     // Request AI explanation from background service worker
     chrome.runtime.sendMessage({
       type: 'EXPLAIN_FIELD',
@@ -2701,6 +3010,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         pageContext: document.title || 'Pendaftaran Permohonan Apostille'
       }
     }, (resp) => {
+      // Discard stale response if another field was focused while waiting
+      if (thisRequestId !== currentExplainRequestId) {
+        return;
+      }
+      if (activeFieldIndex !== index) {
+        return;
+      }
+
       let finalData;
       if (!chrome.runtime.lastError && resp && resp.success && resp.data) {
         finalData = resp.data;
@@ -2708,15 +3025,18 @@ document.addEventListener('DOMContentLoaded', async () => {
           refreshUserQuota(resp.quota);
         }
       } else {
-        finalData = generateClientSmartFallback(meta, currentLanguage);
+        // If we already have cached/Gemini data, never overwrite with fallback
+        if (globalExplanationCache.has(cacheKey)) {
+          finalData = globalExplanationCache.get(cacheKey);
+        } else {
+          finalData = generateClientSmartFallback(meta, currentLanguage);
+        }
       }
 
       field._aiExplanation[currentLanguage] = finalData;
+      globalExplanationCache.set(cacheKey, finalData);
 
-      // Only render into DOM if user is still viewing this field
-      if (activeFieldIndex === index) {
-        renderDetailCard(field, finalData);
-      }
+      renderDetailCard(field, finalData);
     });
   }
 
@@ -2951,6 +3271,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   function setupPdfMode() {
     if (btnModeWeb) btnModeWeb.addEventListener('click', () => switchSourceMode('web'));
     if (btnModePdf) btnModePdf.addEventListener('click', () => switchSourceMode('pdf'));
+
+    const btnBackFromPdf = document.getElementById('btn-back-from-pdf');
+    if (btnBackFromPdf) {
+      btnBackFromPdf.addEventListener('click', () => {
+        const tabChat = document.getElementById('tab-btn-chat');
+        if (tabChat) tabChat.click();
+      });
+    }
 
     // Priority 7.5: 1-Click Native Viewer Ingestion (Tanpa Re-Upload)
     if (btnPdfBannerAction) {

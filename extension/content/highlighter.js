@@ -79,15 +79,21 @@ window.GMTHighlighter = (function () {
     });
   }
 
-  function setActiveField(index, scannedFields, callback, shouldFocusInput = true) {
-    // Remove previous active classes
-    document.querySelectorAll(`.${HIGHLIGHT_CLASS}`).forEach(el => el.classList.remove(HIGHLIGHT_CLASS));
-    document.querySelectorAll(`.${BADGE_CLASS}.gmt-badge-active`).forEach(b => b.classList.remove('gmt-badge-active'));
+  let lastActiveIndex = -1;
+  let lastActiveTimestamp = 0;
 
+  function setActiveField(index, scannedFields, callback, shouldFocusInput = true) {
     const targetItem = scannedFields[index];
     if (!targetItem) return;
 
     const el = targetItem.metadata.element;
+
+    // Remove previous active classes
+    document.querySelectorAll(`.${HIGHLIGHT_CLASS}`).forEach(e => {
+      if (e !== el) e.classList.remove(HIGHLIGHT_CLASS);
+    });
+    document.querySelectorAll(`.${BADGE_CLASS}.gmt-badge-active`).forEach(b => b.classList.remove('gmt-badge-active'));
+
     el.classList.add(HIGHLIGHT_CLASS);
 
     const badge = document.querySelector(`.${BADGE_CLASS}[data-gmt-index="${index}"]`);
@@ -99,12 +105,20 @@ window.GMTHighlighter = (function () {
       el.focus();
     }
 
+    // Deduplicate rapid focus/click events within 350ms for the same field
+    const now = Date.now();
     if (callback) {
+      if (index === lastActiveIndex && (now - lastActiveTimestamp < 350)) {
+        return; // Skip duplicate trigger
+      }
+      lastActiveIndex = index;
+      lastActiveTimestamp = now;
       callback(targetItem, index);
     }
   }
 
   function clearBadges() {
+    lastActiveIndex = -1;
     document.querySelectorAll(`.${BADGE_CLASS}`).forEach(b => b.remove());
     document.querySelectorAll(`.${HIGHLIGHT_CLASS}`).forEach(el => el.classList.remove(HIGHLIGHT_CLASS));
   }
