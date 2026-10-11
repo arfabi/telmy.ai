@@ -55,14 +55,52 @@ document.addEventListener('DOMContentLoaded', async () => {
   const lblChipWhat = document.getElementById('lbl-chip-what');
   const lblChipDocs = document.getElementById('lbl-chip-docs');
 
-  // Fields Elements
+  // Fields Elements & 5 Flow States
   const fieldsEmptyState = document.getElementById('fields-empty-state');
+  const fieldsAnalyzingState = document.getElementById('fields-analyzing-state');
+  const fieldsAnalyzedState = document.getElementById('fields-analyzed-state');
   const fieldDetailContent = document.getElementById('field-detail-content');
+  const fieldsCompletionState = document.getElementById('fields-completion-state');
+  const spStepperFooter = document.getElementById('sp-stepper-footer');
+  const analyzedSummaryText = document.getElementById('analyzed-summary-text');
+  const btnStartFormGuide = document.getElementById('btn-start-form-guide');
+  const btnTriggerPreAudit = document.getElementById('btn-trigger-pre-audit');
+  const boxAuditChecklistResults = document.getElementById('box-audit-checklist-results');
+  const auditChecklistItems = document.getElementById('audit-checklist-items');
   const fieldsQuickList = document.getElementById('fields-quick-list');
   const fieldsCountPill = document.getElementById('fields-count-pill');
   const btnStepperPrev = document.getElementById('btn-stepper-prev');
   const btnStepperNext = document.getElementById('btn-stepper-next');
   const stepperIndicator = document.getElementById('stepper-indicator');
+
+  let currentFieldsState = 'empty'; // 'empty' | 'analyzing' | 'analyzed' | 'detail' | 'completion'
+
+  function showFieldsState(state) {
+    currentFieldsState = state;
+    if (fieldsEmptyState) fieldsEmptyState.style.display = (state === 'empty') ? 'block' : 'none';
+    if (fieldsAnalyzingState) fieldsAnalyzingState.style.display = (state === 'analyzing') ? 'block' : 'none';
+    if (fieldsAnalyzedState) fieldsAnalyzedState.style.display = (state === 'analyzed') ? 'block' : 'none';
+    if (fieldDetailContent) fieldDetailContent.style.display = (state === 'detail') ? 'block' : 'none';
+    if (fieldsCompletionState) fieldsCompletionState.style.display = (state === 'completion') ? 'block' : 'none';
+
+    if (spStepperFooter) {
+      spStepperFooter.style.display = (state === 'detail' || state === 'completion') ? 'flex' : 'none';
+    }
+  }
+
+  // Safe wrapper for chrome.tabs.sendMessage that prevents "Unchecked runtime.lastError"
+  function safeSendTabMessage(tabId, message, callback = null) {
+    if (!tabId) {
+      if (callback) callback(new Error('No tabId provided'), null);
+      return;
+    }
+    chrome.tabs.sendMessage(tabId, message, (response) => {
+      const err = chrome.runtime.lastError;
+      if (callback) {
+        callback(err, response);
+      }
+    });
+  }
 
   // PDF Mode Elements (Priority 7)
   const spPdfAlertBanner = document.getElementById('sp-pdf-alert-banner');
@@ -1243,7 +1281,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Clean up active tab badges when sidepanel is closed/unloaded
     window.addEventListener('beforeunload', () => {
       if (currentTabId) {
-        chrome.tabs.sendMessage(currentTabId, { type: 'DEACTIVATE_SCANNER' }, () => {});
+        safeSendTabMessage(currentTabId, { type: 'DEACTIVATE_SCANNER' });
       }
     });
 
@@ -1262,7 +1300,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (chrome.tabs && chrome.tabs.onActivated) {
       chrome.tabs.onActivated.addListener(async (activeInfo) => {
         if (currentTabId && currentTabId !== activeInfo.tabId) {
-          chrome.tabs.sendMessage(currentTabId, { type: 'DEACTIVATE_SCANNER' }, () => {});
+          safeSendTabMessage(currentTabId, { type: 'DEACTIVATE_SCANNER' });
         }
         currentTabId = activeInfo.tabId;
         const [newTab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -1547,8 +1585,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         fieldsCountPill.textContent = `0 ${t('tab_fields') || 'Fields'}`;
         return;
       }
-      chrome.tabs.sendMessage(tabId, { type: 'QUERY_PAGE_STATUS' }, (res) => {
-        if (!chrome.runtime.lastError && res && res.isActive && res.detectedFieldsCount !== undefined) {
+      safeSendTabMessage(tabId, { type: 'QUERY_PAGE_STATUS' }, (err, res) => {
+        if (!err && res && res.isActive && res.detectedFieldsCount !== undefined) {
           badgeFieldsCount.textContent = res.detectedFieldsCount;
           fieldsCountPill.textContent = `${res.detectedFieldsCount} ${t('tab_fields') || 'Fields'}`;
         }
@@ -1556,36 +1594,45 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (e) {}
   }
 
-  // Direct Handler function to update UI immediately from scanned response
+  // Direct Handler function to update UI from scanned response
   function applyScannedData(data) {
     if (!data) return;
     if (data.fields && Array.isArray(data.fields) && data.fields.length > 0) {
       detectedFields = data.fields;
       cachedPageSummary = data.summary || null;
-      renderFieldsList(detectedFields);
-      renderSummaryPane(cachedPageSummary, detectedFields);
       badgeFieldsCount.textContent = detectedFields.length;
       fieldsCountPill.textContent = `${detectedFields.length} ${t('tab_fields') || 'Fields'}`;
+
+      // User requested: during analysis, show ONLY loading animation!
+      // No Guide Me button, no audit, no detected fields list.
+      showFieldsState('analyzing');
 
       // Trigger Batch Form Analysis to Backend (Gemini -> DB -> Vector Cache)
       triggerBatchBackendAnalysis(detectedFields);
     } else if (data.count !== undefined) {
       badgeFieldsCount.textContent = data.count;
       fieldsCountPill.textContent = `${data.count} ${t('tab_fields') || 'Fields'}`;
+      if (data.count === 0) {
+        showFieldsState('empty');
+      }
     }
   }
 
   async function triggerBatchBackendAnalysis(fields, forceRefresh = false) {
-    if (!currentTabId || !fields || fields.length === 0) return;
-    const btnManual = document.getElementById('btn-manual-analyze-form');
-    if (btnManual) {
-      btnManual.innerHTML = '<span>⏳ Gemini AI sedang menganalisis form...</span>';
-      btnManual.disabled = true;
+    if (!currentTabId || !fields || fields.length === 0) {
+      showFieldsState('empty');
+      return;
     }
+
+    // Ensure we are in pure loading animation state
+    showFieldsState('analyzing');
 
     try {
       const tab = await chrome.tabs.get(currentTabId).catch(() => null);
-      if (!tab || !tab.url || isTelmyInternalUrl(tab.url)) return;
+      if (!tab || !tab.url || isTelmyInternalUrl(tab.url)) {
+        showFieldsState('empty');
+        return;
+      }
 
       const domain = new URL(tab.url).hostname;
       const serializableFields = fields.map((f, idx) => {
@@ -1612,11 +1659,8 @@ document.addEventListener('DOMContentLoaded', async () => {
           language: currentLanguage
         }
       }, (resp) => {
-        if (btnManual) {
-          btnManual.disabled = false;
-        }
-
-        if (!chrome.runtime.lastError && resp && resp.success && resp.data) {
+        const lastErr = chrome.runtime.lastError;
+        if (!lastErr && resp && resp.success && resp.data) {
           isCurrentPageAnalyzed = true;
           const analyzed = resp.data;
           if (resp.quota) {
@@ -1634,82 +1678,73 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
           }
 
-          if (analyzed.summary) {
-            if (summaryDescText) {
-              summaryDescText.textContent = analyzed.summary;
-            }
-            appendChatMessage({
-              role: 'assistant',
-              text: `📋 **Form Analysis Overview (${analyzed.fields?.length || detectedFields.length} Kolom Dikenali)**\n\n${analyzed.summary}\n\n✓ *Seluruh penjelasan kolom telah dianalisis & tersimpan di database. Anda dapat mengeklik kolom mana saja untuk panduan instan!*`,
-              actions: [
-                { type: 'GUIDE_FIELDS', label: '🚀 Pandu Field by Field' }
-              ],
-              time: formatTime(new Date())
-            });
+          // Format summary description
+          const summaryStr = analyzed.summary || (cachedPageSummary?.description) || 'Formulir online resmi untuk pendaftaran layanan.';
+          if (analyzedSummaryText) {
+            analyzedSummaryText.textContent = summaryStr;
           }
 
-          if (btnManual) {
-            btnManual.innerHTML = `<span>✓ Formulir Selesai Dianalisis (${detectedFields.length} Kolom)</span>`;
-          }
+          // Transition from Loading Animation -> Analyzed Result Ready State!
+          showFieldsState('analyzed');
 
-          // If a field is currently open, render it immediately with the new data
-          if (activeFieldIndex >= 0 && detectedFields[activeFieldIndex]) {
-            renderFieldDetail(detectedFields[activeFieldIndex]);
-          }
-        } else {
-          if (btnManual) {
-            btnManual.innerHTML = '<span id="lbl-btn-analyze-now">🔄 Coba Analisis Formulir Lagi</span>';
-          }
-          const errDetail = resp?.error || chrome.runtime.lastError?.message || 'Gemini AI tidak dapat merespons';
           appendChatMessage({
             role: 'assistant',
-            text: `⚠️ **Gagal Menganalisis Struktur Formulir Secara Penuh**\n\n${errDetail}\n\n*Catatan: Anda tetap dapat mengeklik kolom satu per satu untuk panduan on-demand.*`,
+            text: `📋 **Form Berhasil Dianalisis (${analyzed.fields?.length || detectedFields.length} Kolom Dikenali)**\n\n📌 *${summaryStr}*\n\n✓ *Silakan klik pada kolom di halaman web yang ingin kamu isi, atau klik tombol **Guide Me (Field by Field)** di tab Fields & Audit.*`,
+            actions: [
+              { type: 'GUIDE_FIELDS', label: '🚀 Guide Me (Field by Field)' }
+            ],
+            time: formatTime(new Date())
+          });
+        } else {
+          // Failure handling: revert to empty state with honest error and retry
+          const errDetail = resp?.error || lastErr?.message || 'Gemini AI tidak dapat merespons';
+          showFieldsState('empty');
+
+          const lblEmptyTitle = document.getElementById('lbl-empty-fields-title');
+          if (lblEmptyTitle) lblEmptyTitle.textContent = 'Analisis Formulir Gagal';
+
+          const lblEmptyDesc = document.getElementById('lbl-empty-fields-desc');
+          if (lblEmptyDesc) {
+            lblEmptyDesc.textContent = `Gagal menganalisis formulir: ${errDetail}. Silakan klik tombol di bawah untuk mencoba kembali.`;
+          }
+
+          const lblBtnAnalyzeNow = document.getElementById('lbl-btn-analyze-now');
+          if (lblBtnAnalyzeNow) lblBtnAnalyzeNow.textContent = '🔄 Coba Analisis Formulir Lagi';
+
+          appendChatMessage({
+            role: 'assistant',
+            text: `⚠️ **Gagal Menganalisis Struktur Formulir Secara Penuh**\n\n${errDetail}\n\n*Silakan klik tombol Coba Analisis Formulir Lagi.*`,
             time: formatTime(new Date())
           });
         }
       });
     } catch (e) {
       console.warn('[Telmy] Batch backend analysis notice:', e.message);
-      if (btnManual) {
-        btnManual.disabled = false;
-        btnManual.innerHTML = '<span id="lbl-btn-analyze-now">🔍 Analyze This Form</span>';
-      }
+      showFieldsState('empty');
     }
   }
 
-  // Unified Full Form Analysis & Rescan (Inherits all capabilities of the refresh button!)
+  // Unified Full Form Analysis & Rescan
   async function triggerFullFormAnalysis(triggerBtn = null) {
     if (btnRescan) {
       btnRescan.style.transform = 'rotate(180deg)';
       setTimeout(() => { if (btnRescan) btnRescan.style.transform = ''; }, 400);
     }
 
-    const btnManual = triggerBtn || document.getElementById('btn-manual-analyze-form');
-    if (btnManual) {
-      btnManual.innerHTML = '<span>⏳ Memindai formulir...</span>';
-    }
+    // Immediately show ONLY pure loading animation!
+    showFieldsState('analyzing');
 
     // Resolve active webpage tab
     const tab = await getActiveWebTab();
     const tabId = (tab && tab.id) ? tab.id : currentTabId;
     if (!tabId) {
-      if (btnManual) btnManual.innerHTML = '<span id="lbl-btn-analyze-now">🔍 Analyze This Form</span>';
+      showFieldsState('empty');
       return;
     }
     currentTabId = tabId;
     isCurrentPageAnalyzed = false;
 
-    // Send TRIGGER_RESCAN directly to content script
-    chrome.tabs.sendMessage(tabId, { type: 'TRIGGER_RESCAN' }, (res) => {
-      const lastErr = chrome.runtime.lastError;
-      if (lastErr || !res) {
-        // If content script was not ready yet, inject and retry TRIGGER_RESCAN
-        injectContentScript(tabId, () => {
-          chrome.tabs.sendMessage(tabId, { type: 'TRIGGER_RESCAN' }, () => {});
-        });
-      }
-    });
-
+    // Activate scanner on tab safely without unhandled runtime.lastError
     activateScannerOnTab(tabId);
   }
 
@@ -1728,18 +1763,20 @@ document.addEventListener('DOMContentLoaded', async () => {
       ) {
         badgeFieldsCount.textContent = '0';
         fieldsCountPill.textContent = `0 ${t('tab_fields') || 'Fields'}`;
+        showFieldsState('empty');
         return;
       }
 
-      chrome.tabs.sendMessage(tabId, { type: 'ACTIVATE_SCANNER' }, (res) => {
-        const lastErr = chrome.runtime.lastError;
-        if (lastErr || !res) {
+      safeSendTabMessage(tabId, { type: 'ACTIVATE_SCANNER' }, (err, res) => {
+        if (err || !res) {
           // Robust top-frame dynamic injection (no page refresh required!)
           injectContentScript(tabId, () => {
-            chrome.tabs.sendMessage(tabId, { type: 'ACTIVATE_SCANNER' }, (res2) => {
+            safeSendTabMessage(tabId, { type: 'ACTIVATE_SCANNER' }, (err2, res2) => {
               if (res2) {
                 applyScannedData(res2);
                 if (onDone) onDone(res2);
+              } else {
+                showFieldsState('empty');
               }
             });
           });
@@ -1748,15 +1785,15 @@ document.addEventListener('DOMContentLoaded', async () => {
           if (onDone) onDone(res);
         }
       });
-    } catch (err) {}
+    } catch (err) {
+      showFieldsState('empty');
+    }
   }
 
   // Deactivate Scanner on Active Tab (Total DOM Cleanup)
   function deactivateScannerOnTab(tabId) {
     if (!tabId) return;
-    chrome.tabs.sendMessage(tabId, { type: 'DEACTIVATE_SCANNER' }, () => {
-      const lastErr = chrome.runtime.lastError;
-    });
+    safeSendTabMessage(tabId, { type: 'DEACTIVATE_SCANNER' });
     badgeFieldsCount.textContent = '0';
     fieldsCountPill.textContent = `0 ${t('tab_fields') || 'Fields'}`;
   }
@@ -1800,11 +1837,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (message.type === 'GMT_PAGE_MAPPED') {
       detectedFields = message.fields || [];
       cachedPageSummary = message.summary || null;
-      renderFieldsList(detectedFields);
-      renderSummaryPane(cachedPageSummary, detectedFields);
+      badgeFieldsCount.textContent = detectedFields.length;
+      fieldsCountPill.textContent = `${detectedFields.length} ${t('tab_fields') || 'Fields'}`;
 
       // Automatically run full batch analysis on backend if not yet analyzed
       if (!isCurrentPageAnalyzed && detectedFields.length > 0) {
+        showFieldsState('analyzing');
         triggerBatchBackendAnalysis(detectedFields);
       }
 
@@ -2204,10 +2242,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     if (currentTabId) {
-      chrome.tabs.sendMessage(currentTabId, {
+      safeSendTabMessage(currentTabId, {
         type: 'AUTOFILL_FORM_FIELDS',
         data: afData
-      }, (res) => {
+      }, (err, res) => {
+        if (err) return;
         const count = (res && res.filledCount !== undefined) ? res.filledCount : 0;
         appendChatMessage({
           role: 'assistant',
@@ -2278,8 +2317,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function checkPageTranslationStatus(tabId) {
     if (!tabId) return;
-    chrome.tabs.sendMessage(tabId, { type: 'TRANSLATOR_GET_STATUS' }, (res) => {
-      if (!chrome.runtime.lastError && res) {
+    safeSendTabMessage(tabId, { type: 'TRANSLATOR_GET_STATUS' }, (err, res) => {
+      if (!err && res) {
         isPageTranslated = Boolean(res.isTranslated);
         translatedElementCount = res.elementCount || 0;
         updateTranslateBannerUI();
@@ -2298,7 +2337,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 1. Revert mode
     if (isPageTranslated) {
-      chrome.tabs.sendMessage(currentTabId, { type: 'TRANSLATOR_REVERT_TRANSLATIONS' }, (res) => {
+      safeSendTabMessage(currentTabId, { type: 'TRANSLATOR_REVERT_TRANSLATIONS' }, (err, res) => {
         isPageTranslated = false;
         translatedElementCount = 0;
         updateTranslateBannerUI();
@@ -2320,12 +2359,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     isTranslating = true;
     updateTranslateBannerUI();
 
-    // Extract texts from active tab
-    chrome.tabs.sendMessage(currentTabId, { type: 'TRANSLATOR_EXTRACT_TEXTS' }, async (extractRes) => {
+    // Extract texts from active tab safely
+    safeSendTabMessage(currentTabId, { type: 'TRANSLATOR_EXTRACT_TEXTS' }, async (err, extractRes) => {
       // If error (e.g. content script not injected yet), inject & retry
-      if (chrome.runtime.lastError || !extractRes || !extractRes.texts) {
+      if (err || !extractRes || !extractRes.texts) {
         await injectContentScript(currentTabId, () => {
-          chrome.tabs.sendMessage(currentTabId, { type: 'TRANSLATOR_EXTRACT_TEXTS' }, (retryRes) => {
+          safeSendTabMessage(currentTabId, { type: 'TRANSLATOR_EXTRACT_TEXTS' }, (err2, retryRes) => {
             if (retryRes && retryRes.texts) {
               executeTranslationPayload(retryRes);
             } else {
@@ -2373,12 +2412,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
 
       if (response && response.success && response.data && response.data.translations) {
-        // Send translation mapping back to content script
-        chrome.tabs.sendMessage(currentTabId, {
+        // Send translation mapping back to content script safely
+        safeSendTabMessage(currentTabId, {
           type: 'TRANSLATOR_APPLY_TRANSLATIONS',
           translations: response.data.translations,
           targetLanguage: currentLanguage
-        }, (applyRes) => {
+        }, (err, applyRes) => {
           isTranslating = false;
           isPageTranslated = true;
           translatedElementCount = applyRes?.appliedCount || Object.keys(response.data.translations).length;
@@ -2823,33 +2862,33 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function selectFieldByIndex(index, notifyPage = true) {
-    if (!detectedFields[index]) return;
+    if (!detectedFields || !detectedFields[index]) return;
     activeFieldIndex = index;
 
-    // Switch display from empty CTA state to field detail
-    fieldsEmptyState.style.display = 'none';
-    fieldDetailContent.style.display = 'block';
-    const boxGuideCta = document.getElementById('box-guide-cta');
-    if (boxGuideCta) boxGuideCta.style.display = 'none';
-
-    // Highlight in quick list
-    const items = fieldsQuickList.querySelectorAll('.quick-field-item');
-    items.forEach((el, i) => el.classList.toggle('active', i === index));
+    // Switch display to field detail state
+    showFieldsState('detail');
 
     // Update stepper
-    stepperIndicator.textContent = `${index + 1} / ${detectedFields.length}`;
-    btnStepperPrev.disabled = index <= 0;
-    btnStepperNext.disabled = index >= detectedFields.length - 1;
+    if (stepperIndicator) {
+      stepperIndicator.textContent = `${index + 1} / ${detectedFields.length}`;
+    }
+    if (btnStepperPrev) {
+      btnStepperPrev.disabled = index <= 0;
+    }
+    if (btnStepperNext) {
+      // Enabled because at last field, clicking Next takes user to completion state
+      btnStepperNext.disabled = false;
+    }
 
     // Render detail card
     renderFieldDetail(detectedFields[index]);
 
-    // Notify tab to highlight and scroll to field
+    // Notify tab to highlight and scroll to field safely
     if (notifyPage && currentTabId) {
-      chrome.tabs.sendMessage(currentTabId, {
+      safeSendTabMessage(currentTabId, {
         type: 'GMT_ACTIVATE_FIELD_BY_INDEX',
         index: index
-      }, () => { if (chrome.runtime.lastError) {} });
+      });
     }
   }
 
@@ -2884,8 +2923,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function renderFieldDetail(field) {
-    fieldsEmptyState.style.display = 'none';
-    fieldDetailContent.style.display = 'block';
+    showFieldsState('detail');
 
     const index = activeFieldIndex;
     const meta = field.metadata || {};
@@ -3097,25 +3135,72 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // Stepper Buttons
+  // Stepper Buttons & Completion State Navigation
   btnStepperPrev.addEventListener('click', () => {
-    if (activeFieldIndex > 0) selectFieldByIndex(activeFieldIndex - 1, true);
-  });
-  btnStepperNext.addEventListener('click', () => {
-    if (activeFieldIndex < 0 && detectedFields && detectedFields.length > 0) {
-      selectFieldByIndex(0, true);
-    } else if (activeFieldIndex < detectedFields.length - 1) {
-      selectFieldByIndex(activeFieldIndex + 1, true);
+    if (currentFieldsState === 'completion') {
+      // Returning from completion screen goes back to the last field
+      if (detectedFields && detectedFields.length > 0) {
+        selectFieldByIndex(detectedFields.length - 1, true);
+      }
+      return;
+    }
+    if (activeFieldIndex > 0) {
+      selectFieldByIndex(activeFieldIndex - 1, true);
     }
   });
 
+  btnStepperNext.addEventListener('click', () => {
+    if (!detectedFields || detectedFields.length === 0) return;
+    if (activeFieldIndex < 0) {
+      selectFieldByIndex(0, true);
+    } else if (activeFieldIndex < detectedFields.length - 1) {
+      selectFieldByIndex(activeFieldIndex + 1, true);
+    } else if (activeFieldIndex === detectedFields.length - 1) {
+      // Last field clicked Next -> Switch to Completion State!
+      showFormCompletionState();
+    }
+  });
+
+  function showFormCompletionState() {
+    showFieldsState('completion');
+    if (btnStepperPrev) btnStepperPrev.disabled = false;
+    if (btnStepperNext) btnStepperNext.disabled = true;
+    if (stepperIndicator) stepperIndicator.textContent = 'All Done ✓';
+    if (boxAuditChecklistResults) boxAuditChecklistResults.style.display = 'none';
+  }
+
   // Explicit Guide Me CTA button listener
-  const btnStartGuide = document.getElementById('btn-start-form-guide');
-  if (btnStartGuide) {
-    btnStartGuide.addEventListener('click', () => {
+  if (btnStartFormGuide) {
+    btnStartFormGuide.addEventListener('click', () => {
       if (detectedFields && detectedFields.length > 0) {
         selectFieldByIndex(0, true);
       }
+    });
+  }
+
+  // Pre-Submission Audit button listener in completion state
+  if (btnTriggerPreAudit) {
+    btnTriggerPreAudit.addEventListener('click', () => {
+      if (!detectedFields || detectedFields.length === 0) return;
+      if (boxAuditChecklistResults) {
+        boxAuditChecklistResults.style.display = 'block';
+      }
+      if (auditChecklistItems) {
+        auditChecklistItems.innerHTML = detectedFields.map((f, idx) => {
+          const meta = f.metadata || {};
+          const label = meta.label || meta.name || `${t('field_label_prefix') || 'Field'} #${idx + 1}`;
+          return `
+            <div class="audit-checklist-row">
+              <div class="audit-field-left">
+                <span class="audit-check-icon">✓</span>
+                <span class="audit-field-name">${escapeHTML(label)}</span>
+              </div>
+              <span class="audit-status-tag">Lolos Audit</span>
+            </div>
+          `;
+        }).join('');
+      }
+      boxAuditChecklistResults.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     });
   }
 

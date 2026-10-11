@@ -379,93 +379,87 @@
       </div>
     </section>
 
-    <!-- TAB 4: Web Form Fields List & Pre-Submission Auditor (Priority 6.2 & 9.2) -->
+    <!-- TAB 4: Web Form Fields List & Guidance -->
     <section id="pane-fields" class="sp-pane">
       <div id="web-mode-container" class="web-mode-view">
         <div class="sp-fields-container">
-          <!-- Active Field Card -->
+          <!-- Active Field Card Container -->
           <div id="active-field-card" class="sp-active-card">
+
+            <!-- 1. INITIAL READY STATE -->
             <div class="sp-card-empty" id="fields-empty-state">
               <div class="sp-empty-icon" id="icon-empty-fields">📋</div>
               <h3 id="lbl-empty-fields-title">Form Analysis Ready</h3>
-              <p id="lbl-empty-fields-desc">Click below to scan and analyze this webpage form, or click any field on the page.</p>
+              <p id="lbl-empty-fields-desc">Klik tombol di bawah untuk menganalisis seluruh formulir ini dengan Google Gemini AI.</p>
               <div style="margin-top: 14px; width: 100%;">
-                <button type="button" id="btn-manual-analyze-form" class="btn-guide-me-cta" style="width: 100%; justify-content: center; margin-bottom: 8px;">
+                <button type="button" id="btn-manual-analyze-form" class="btn-guide-me-cta" style="width: 100%; justify-content: center;">
                   <span id="lbl-btn-analyze-now">🔍 Analyze This Form</span>
                 </button>
               </div>
-              <div id="box-guide-cta" style="margin-top: 6px; display: none;">
-                <button type="button" id="btn-start-form-guide" class="btn-guide-me-cta" style="width: 100%; justify-content: center;">
-                  <span id="lbl-btn-guide-me">🚀 Guide Me (Field by Field)</span>
-                </button>
-                <div class="guide-quota-hint" id="lbl-guide-quota-hint">
-                  <small>💡 Uses 1 form quota for 24-hour full assistance on this form</small>
+            </div>
+
+            <!-- 2. ANALYZING / LOADING ANIMATION STATE (Shown while Gemini is analyzing) -->
+            <div id="fields-analyzing-state" class="sp-card-empty fields-analyzing-card" style="display: none;">
+              <div class="analyzing-orbit-icon">✨</div>
+              <h3 class="analyzing-title">Gemini AI Sedang Menganalisis Formulir...</h3>
+              <p class="analyzing-desc">Membaca seluruh struktur input, aturan resmi, dan persyaratan dokumen.</p>
+              <div class="skeleton-shimmer-box" style="margin-top: 18px; width: 100%;">
+                <div class="skeleton-line shimmer-anim" style="width: 85%;"></div>
+                <div class="skeleton-line shimmer-anim" style="width: 95%;"></div>
+                <div class="skeleton-line shimmer-anim" style="width: 70%;"></div>
+                <div class="skeleton-box shimmer-anim" style="height: 52px; margin-top: 8px;"></div>
+              </div>
+            </div>
+
+            <!-- 3. RESULT READY STATE (Shown when backend returns full batch analysis) -->
+            <div id="fields-analyzed-state" class="sp-card-empty fields-analyzed-card" style="display: none;">
+              <div class="analyzed-success-icon">🎉</div>
+              <h3 class="analyzed-title">Form Berhasil Dianalisis!</h3>
+              <div class="form-analyzed-summary-box">
+                <span class="summary-box-label">📌 Formulir ini adalah:</span>
+                <p id="analyzed-summary-text" class="summary-box-desc">Memuat ringkasan formulir...</p>
+              </div>
+              <p class="analyzed-hint-text">
+                Silakan klik pada field di halaman web yang ingin kamu isi, atau klik tombol di bawah untuk panduan langkah demi langkah:
+              </p>
+              <button type="button" id="btn-start-form-guide" class="btn-guide-me-cta" style="width: 100%; justify-content: center; margin-top: 6px;">
+                <span id="lbl-btn-guide-me">🚀 Guide Me (Field by Field)</span>
+              </button>
+            </div>
+
+            <!-- 4. ACTIVE FIELD GUIDANCE CONTENT (Exact screenshot view with all 5 sections) -->
+            <div id="field-detail-content" style="display: none;"></div>
+
+            <!-- 5. COMPLETION / PRE-SUBMISSION AUDIT STATE (When user clicks Next at last field) -->
+            <div id="fields-completion-state" class="sp-card-empty fields-completion-card" style="display: none;">
+              <div class="completion-hero-icon">✅</div>
+              <h2 class="completion-title">All Done!</h2>
+              <p class="completion-subtitle">Semua form berhasil kamu isi.</p>
+              
+              <button type="button" id="btn-trigger-pre-audit" class="btn-guide-me-cta" style="width: 100%; justify-content: center; margin-top: 14px;">
+                <span>🔍 Pre-Submission Form Audit</span>
+              </button>
+
+              <div id="box-audit-checklist-results" class="audit-checklist-container" style="display: none; margin-top: 16px;">
+                <div class="audit-checklist-header">
+                  <strong>📋 Checklist Verifikasi Kolom</strong>
+                </div>
+                <div id="audit-checklist-items" class="audit-checklist-items"></div>
+                <div class="audit-passed-banner">
+                  <div style="font-size: 24px;">🎉</div>
+                  <div>
+                    <strong>Semua sudah lolos Audit!</strong>
+                    <p style="margin: 4px 0 0; font-size: 11.5px; opacity: 0.9;">Silakan periksa kembali dan klik tombol <b>Submit / Kirim</b> pada formulir.</p>
+                  </div>
                 </div>
               </div>
             </div>
-            <div id="field-detail-content" style="display: none;"></div>
-          </div>
 
-          <!-- AI Pre-Submission Auditor Trigger (hidden when 0 fields) -->
-          <div class="sp-audit-trigger-card" id="sp-audit-trigger-card" style="display: none;">
-            <button type="button" class="btn-run-audit" id="btn-run-form-audit">
-              <span class="audit-btn-icon">🔍</span>
-              <div class="audit-btn-text">
-                <strong id="lbl-audit-btn-title">Pre-Submission Form Audit</strong>
-                <small id="lbl-audit-btn-sub">Sanity check completeness & format</small>
-              </div>
-            </button>
-            <div id="sp-audit-report-box" class="sp-audit-report-box" style="display: none;">
-              <div class="audit-report-header">
-                <div class="audit-status-pill" id="audit-status-pill">🟢 Ready to Submit</div>
-                <strong id="lbl-audit-report-heading">Form Audit Report</strong>
-                <button type="button" id="btn-close-audit-report" class="btn-audit-close" title="Close report">✕</button>
-              </div>
-              <div id="audit-report-items" class="audit-report-items"></div>
-            </div>
-          </div>
-
-          <!-- Detected Fields Accordion / Quick List -->
-          <div class="sp-fields-list-box">
-            <div class="sp-section-heading">
-              <span id="lbl-detected-fields-header">Detected Form Fields</span>
-              <span id="fields-count-pill" class="sp-pill">0 Fields</span>
-            </div>
-            <div id="fields-quick-list" class="sp-quick-list"></div>
-          </div>
-
-          <!-- Form Overview & Completion Progress -->
-          <div class="sp-summary-container" style="padding: 10px 0;">
-            <div class="sp-progress-card">
-              <div class="sp-progress-header">
-                <span id="lbl-progress-title">Form Completion Progress</span>
-                <span id="progress-percent" class="sp-progress-num">0%</span>
-              </div>
-              <div class="sp-progress-bar-bg">
-                <div id="progress-bar-fill" class="sp-progress-bar-fill" style="width: 0%;"></div>
-              </div>
-              <div class="sp-progress-sub" id="progress-sub-text">0 of 0 fields filled</div>
-            </div>
-
-            <div class="sp-summary-card">
-              <div class="sp-summary-item">
-                <h4 id="lbl-summary-title">📌 Form Overview</h4>
-                <p id="summary-desc-text">Scanning page to analyze form context...</p>
-              </div>
-              <div class="sp-summary-item" id="box-prerequisites" style="display: none;">
-                <h4 id="lbl-prereq-title">📑 Prerequisites & Documents</h4>
-                <ul id="summary-prereq-list" class="sp-prereq-list"></ul>
-              </div>
-              <div class="sp-summary-item">
-                <h4 id="lbl-tips-title">💡 Helpful Tips</h4>
-                <p id="summary-tips-text">Ensure all information matches your official physical documents. Avoid fictitious or estimated values.</p>
-              </div>
-            </div>
           </div>
         </div>
 
-        <!-- Footer Stepper for Web Fields -->
-        <footer class="sp-stepper-footer">
+        <!-- Footer Stepper for Web Fields (Shown only during field guidance & completion) -->
+        <footer class="sp-stepper-footer" id="sp-stepper-footer" style="display: none;">
           <button id="btn-stepper-prev" class="sp-stepper-btn" disabled>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
             <span id="lbl-stepper-prev">Previous</span>

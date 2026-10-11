@@ -124,7 +124,9 @@ if (chrome.contextMenus && chrome.contextMenus.onClicked) {
             files: ['content/scanner.js', 'content/highlighter.js', 'content/translator.js', 'content/content-main.js']
           }).then(() => {
             setTimeout(() => {
-              chrome.tabs.sendMessage(tab.id, { type: 'ACTIVATE_SCANNER' });
+              chrome.tabs.sendMessage(tab.id, { type: 'ACTIVATE_SCANNER' }, () => {
+                if (chrome.runtime.lastError) { /* safe ignore */ }
+              });
             }, 150);
           }).catch(() => {});
         }
