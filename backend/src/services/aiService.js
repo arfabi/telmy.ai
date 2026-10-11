@@ -207,74 +207,10 @@ export async function generateFieldExplanation(fieldMetadata, targetLanguage = '
       console.log(`[AI Service] Calling Google Gemini API (${process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite'})...`);
       return await callGemini(fieldMetadata, targetLanguage, pageContext);
     } catch (err) {
-      console.warn(`[AI Service] Gemini call notice: ${err.message}. Using localized fallback...`);
+      console.error(`[AI Service] Gemini call failed: ${err.message}`);
+      throw new Error(`Google Gemini analysis failed: ${err.message}`);
     }
   }
 
-  // 4. Robust localized template fallback
-  console.log(`[AI Service] Using localized template fallback for "${rawLabel}" in ${targetLanguage}`);
-  return createSmartFallback(fieldMetadata, targetLanguage);
-}
-
-function createSmartFallback(metadata, lang) {
-  const raw = metadata.label || metadata.name || 'Kolom Isian';
-
-  // Smart heuristic translations for common words
-  let labelEn = raw;
-  let exampleEn = 'Sample Official Entry';
-  const lower = raw.toLowerCase();
-
-  if (lower.includes('tempat') && lower.includes('lahir')) {
-    labelEn = 'Place of Birth';
-    exampleEn = 'New York, USA';
-  } else if (lower.includes('tanggal') && lower.includes('lahir')) {
-    labelEn = 'Date of Birth';
-    exampleEn = '15-08-1990';
-  } else if (lower.includes('nama')) {
-    labelEn = 'Full Name';
-    exampleEn = 'JOHN MICHAEL DOE';
-  } else if (lower.includes('alamat')) {
-    labelEn = 'Address / Domicile';
-    exampleEn = '123 Fifth Avenue, New York';
-  }
-
-  const templates = {
-    en: {
-      label: labelEn,
-      meaning: `This field requires the official details for "${labelEn}". Please verify against your registered legal documents.`,
-      howToFill: `Type details accurately as stated in your physical document or legal identification. Ensure correct spelling.`,
-      example: exampleEn,
-      commonMistakes: [
-        'Typographical error or mismatched spelling with physical document',
-        'Entering informal abbreviation or nickname'
-      ],
-      tipsForForeigners: 'For foreign applicants, ensure the spelling matches your international passport or active KITAS.',
-      confidence: 0.85
-    },
-    zh: {
-      label: lower.includes('tempat') && lower.includes('lahir') ? '出生地点' : raw,
-      meaning: `该输入栏用于采集“${raw}”的法定信息。请核对官方公证书或身份证件。`,
-      howToFill: `请严格按照您的纸质文件或有效身份证件上的原始记录录入，切勿简写。`,
-      example: lower.includes('tempat') && lower.includes('lahir') ? '纽约，美国' : '示例数据',
-      commonMistakes: ['拼写存在错别字', '与护照上的记录不一致'],
-      tipsForForeigners: '外籍人员请核对护照或合法居留签证上的原始拼写与编号。',
-      confidence: 0.85
-    },
-    id: {
-      label: raw,
-      meaning: `Kolom "${raw}". Periksa lembar dokumen resmi yang Anda miliki.`,
-      howToFill: `Ketikkan data persis seperti yang tertera di dokumen fisik atau kartu identitas Anda.`,
-      example: lower.includes('tempat') && lower.includes('lahir') ? 'Jakarta / Surabaya / New York' : 'Contoh Isian Sesuai Berkas',
-      commonMistakes: ['Salah ketik angka/huruf atau mengosongkan kolom penting ini'],
-      tipsForForeigners: 'Bagi WNA, pastikan data yang dimasukkan sesuai dengan paspor atau dokumen resmi yang disahkan.',
-      confidence: 0.85
-    }
-  };
-
-  return {
-    ...(templates[lang] || templates['en']),
-    originalLabel: raw,
-    source: 'ai_draft',
-    generatedAt: new Date().toISOString()
-  };
+  throw new Error('GEMINI_API_KEY is not configured on backend.');
 }

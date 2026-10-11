@@ -430,7 +430,9 @@ window.GMTScanner = (function () {
         mask: mask,
         maxLength: el.maxLength > 0 ? el.maxLength : null,
         pattern: el.getAttribute ? (el.getAttribute('pattern') || null) : null,
-        label: label
+        label: label,
+        pageTitle: document.title || '',
+        domain: window.location.hostname || ''
       };
 
       const matchedDict = matchFieldToDictionary(metadata, dictionaryFields);
@@ -466,14 +468,16 @@ window.GMTScanner = (function () {
 
 // Listen for session sync broadcasts from Telmy web app (/connect & /dashboard)
 window.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'TELMY_USER_SESSION_SYNC' && event.data.user) {
-    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
-      chrome.runtime.sendMessage({
-        type: 'SET_USER_SESSION',
-        user: event.data.user
-      }, () => {});
+  try {
+    if (event.data && event.data.type === 'TELMY_USER_SESSION_SYNC' && event.data.user) {
+      if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.runtime.sendMessage) {
+        chrome.runtime.sendMessage({
+          type: 'SET_USER_SESSION',
+          user: event.data.user
+        }, () => { if (chrome.runtime.lastError) {} });
+      }
     }
-  }
+  } catch (e) {}
 });
 
 // Auto-detect Telmy session from localStorage on Telmy web domains
@@ -489,11 +493,11 @@ try {
         if (raw) {
           const user = JSON.parse(raw);
           if (user && (user.uid || user.email)) {
-            if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
+            if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.runtime.sendMessage) {
               chrome.runtime.sendMessage({
                 type: 'SET_USER_SESSION',
                 user: user
-              }, () => {});
+              }, () => { if (chrome.runtime.lastError) {} });
             }
           }
         }

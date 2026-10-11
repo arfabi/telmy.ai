@@ -281,15 +281,26 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             quotaExhausted: true,
             quota: errJson.quota,
             pricingTiers: errJson.pricingTiers,
-            error: errJson.message || 'Form analysis quota exhausted'
+            error: errJson.message || 'Batas kuota analisis formulir tercapai'
+          });
+          return;
+        } else {
+          const errJson = await response.json().catch(() => ({}));
+          sendResponse({
+            success: false,
+            error: errJson.error || `Server error (${response.status})`
           });
           return;
         }
       } catch (err) {
-        // Backend offline or timeout
+        sendResponse({
+          success: false,
+          error: err.message || 'Koneksi ke server backend gagal'
+        });
+        return;
       }
 
-      sendResponse({ success: false, fallback: true });
+      sendResponse({ success: false, error: 'Respon dari backend tidak valid' });
     });
     return true;
   }
@@ -319,9 +330,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             sendResponse({ success: true, data: json.data, quota: json.quota });
             return;
           }
+        } else {
+          const errJson = await response.json().catch(() => ({}));
+          sendResponse({ success: false, error: errJson.error || `Server error (${response.status})` });
+          return;
         }
       } catch (err) {
         console.warn('[Telmy SW] Analyze form API error:', err.message);
+        sendResponse({ success: false, error: err.message || 'Form analysis backend unavailable' });
+        return;
       }
 
       sendResponse({ success: false, error: 'Form analysis backend unavailable' });

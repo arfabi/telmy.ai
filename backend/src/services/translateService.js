@@ -100,60 +100,8 @@ async function callGeminiTranslation(pageContext, targetLanguage, texts) {
 }
 
 /**
- * Smart Local Heuristic Fallback
- * Translates known common Indonesian bureaucratic and UI words if AI endpoints are unreachable.
- */
-function createHeuristicTranslation(texts, targetLanguage) {
-  const isEn = targetLanguage === 'en';
-  const dictionary = {
-    'daftar': isEn ? 'Register' : 'Daftar',
-    'masuk': isEn ? 'Log In' : 'Masuk',
-    'keluar': isEn ? 'Log Out' : 'Keluar',
-    'simpan': isEn ? 'Save' : 'Simpan',
-    'batal': isEn ? 'Cancel' : 'Batal',
-    'kembali': isEn ? 'Back' : 'Kembali',
-    'lanjut': isEn ? 'Continue' : 'Lanjut',
-    'selanjutnya': isEn ? 'Next' : 'Selanjutnya',
-    'kirim': isEn ? 'Submit' : 'Kirim',
-    'unggah': isEn ? 'Upload' : 'Unggah',
-    'unduh': isEn ? 'Download' : 'Unduh',
-    'nama lengkap': isEn ? 'Full Name' : 'Nama Lengkap',
-    'tempat lahir': isEn ? 'Place of Birth' : 'Tempat Lahir',
-    'tanggal lahir': isEn ? 'Date of Birth' : 'Tanggal Lahir',
-    'nomor induk kependudukan': isEn ? 'National ID Number (NIK)' : 'Nomor Induk Kependudukan (NIK)',
-    'nik': isEn ? 'NIK (National ID Number)' : 'NIK',
-    'ktp': isEn ? 'Identity Card (KTP)' : 'KTP',
-    'paspor': isEn ? 'Passport' : 'Paspor',
-    'alamat': isEn ? 'Address' : 'Alamat',
-    'email': 'Email',
-    'nomor telepon': isEn ? 'Phone Number' : 'Nomor Telepon',
-    'unggah berkas': isEn ? 'Upload Document' : 'Unggah Berkas',
-    'permohonan': isEn ? 'Application / Request' : 'Permohonan'
-  };
-
-  const translations = {};
-  for (const [key, val] of Object.entries(texts)) {
-    const lower = String(val).toLowerCase().trim();
-    let replaced = val;
-    for (const [dictWord, transWord] of Object.entries(dictionary)) {
-      if (lower === dictWord) {
-        replaced = transWord;
-        break;
-      }
-    }
-    translations[key] = replaced;
-  }
-
-  return {
-    translations,
-    provider: 'local_heuristic_fallback',
-    source: 'heuristic'
-  };
-}
-
-/**
  * Main Translate Page Handler
- * 100% Google Gemini (Google AI Native) with Smart Local Heuristic Fallback
+ * 100% Google Gemini (Google AI Native)
  */
 export async function translatePageTexts({ pageContext = {}, targetLanguage = 'en', texts = {} }) {
   const tokenCount = Object.keys(texts).length;
@@ -175,17 +123,10 @@ export async function translatePageTexts({ pageContext = {}, targetLanguage = 'e
         generatedAt: new Date().toISOString()
       };
     } catch (err) {
-      console.warn(`[Translate Service] Gemini translation notice: ${err.message}. Using heuristic fallback...`);
+      console.error(`[Translate Service] Gemini translation error: ${err.message}`);
+      throw new Error(`Google Gemini translation failed: ${err.message}`);
     }
   }
 
-  // 2. Fallback to smart local heuristic dictionary
-  console.log(`[Translate Service] Using smart heuristic fallback dictionary`);
-  const heuristic = createHeuristicTranslation(texts, targetLanguage);
-  return {
-    ...heuristic,
-    count: Object.keys(heuristic.translations).length,
-    targetLanguage,
-    generatedAt: new Date().toISOString()
-  };
+  throw new Error('GEMINI_API_KEY is not configured on backend.');
 }

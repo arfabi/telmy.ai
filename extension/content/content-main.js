@@ -49,6 +49,19 @@
   let domObserver = null;
   let debounceTimer = null;
 
+  function safeSendMessage(msg, callback = null) {
+    try {
+      if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id) {
+        chrome.runtime.sendMessage(msg, (resp) => {
+          const err = chrome.runtime.lastError;
+          if (!err && callback) callback(resp);
+        });
+      }
+    } catch (e) {
+      // Extension context invalidated due to unpacked reload
+    }
+  }
+
   function getSerializableFields() {
     return (scannedItems || []).map(item => ({
       metadata: {
@@ -415,10 +428,10 @@
       if (scannedItems.length > 0 && window.GMTHighlighter) {
         // Attach numbered badges on form inputs
         window.GMTHighlighter.attachBadges(scannedItems, (item, index) => {
-          chrome.runtime.sendMessage({
+          safeSendMessage({
             type: 'GMT_FIELD_FOCUSED',
             index: index
-          }, () => { if (chrome.runtime.lastError) {} });
+          });
         });
       } else if (window.GMTHighlighter && prevCount > 0) {
         window.GMTHighlighter.clearBadges();
@@ -440,12 +453,12 @@
           isCustomAi: item.isCustomAi
         }));
 
-        chrome.runtime.sendMessage({
+        safeSendMessage({
           type: 'GMT_PAGE_MAPPED',
           fields: serializableFields,
           summary: pageSummary || cachedPageSummary,
           count: serializableFields.length
-        }, () => { if (chrome.runtime.lastError) {} });
+        });
       } catch (e) {}
     } finally {
       isScanning = false;

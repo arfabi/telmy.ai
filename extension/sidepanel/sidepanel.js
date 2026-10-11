@@ -1575,8 +1575,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  async function triggerBatchBackendAnalysis(fields) {
+  async function triggerBatchBackendAnalysis(fields, forceRefresh = false) {
     if (!currentTabId || !fields || fields.length === 0) return;
+    const btnManual = document.getElementById('btn-manual-analyze-form');
+    if (btnManual) {
+      btnManual.innerHTML = '<span>⏳ Gemini AI sedang menganalisis form...</span>';
+      btnManual.disabled = true;
+    }
+
     try {
       const tab = await chrome.tabs.get(currentTabId).catch(() => null);
       if (!tab || !tab.url || isTelmyInternalUrl(tab.url)) return;
@@ -1590,6 +1596,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           name: meta.name || '',
           label: meta.label || meta.name || `Field ${idx + 1}`,
           type: meta.type || 'text',
+          options: meta.options || null,
           placeholder: meta.placeholder || '',
           section: meta.section || ''
         };
@@ -1605,9 +1612,17 @@ document.addEventListener('DOMContentLoaded', async () => {
           language: currentLanguage
         }
       }, (resp) => {
+        if (btnManual) {
+          btnManual.disabled = false;
+        }
+
         if (!chrome.runtime.lastError && resp && resp.success && resp.data) {
           isCurrentPageAnalyzed = true;
           const analyzed = resp.data;
+          if (resp.quota) {
+            refreshUserQuota(resp.quota);
+          }
+
           if (Array.isArray(analyzed.fields)) {
             analyzed.fields.forEach((af, idx) => {
               const cacheKey = getFieldCacheKey(af, idx, currentLanguage);
@@ -1620,26 +1635,50 @@ document.addEventListener('DOMContentLoaded', async () => {
           }
 
           if (analyzed.summary) {
+            if (summaryDescText) {
+              summaryDescText.textContent = analyzed.summary;
+            }
             appendChatMessage({
               role: 'assistant',
-              text: `📋 **Form Analysis Overview (${analyzed.fields?.length || detectedFields.length} Kolom Dikenali)**\n\n${analyzed.summary}\n\n✓ *Seluruh penjelasan kolom telah disimpan di database & siap memandu Anda!*`,
+              text: `📋 **Form Analysis Overview (${analyzed.fields?.length || detectedFields.length} Kolom Dikenali)**\n\n${analyzed.summary}\n\n✓ *Seluruh penjelasan kolom telah dianalisis & tersimpan di database. Anda dapat mengeklik kolom mana saja untuk panduan instan!*`,
+              actions: [
+                { type: 'GUIDE_FIELDS', label: '🚀 Pandu Field by Field' }
+              ],
               time: formatTime(new Date())
             });
           }
 
+          if (btnManual) {
+            btnManual.innerHTML = `<span>✓ Formulir Selesai Dianalisis (${detectedFields.length} Kolom)</span>`;
+          }
+
+          // If a field is currently open, render it immediately with the new data
           if (activeFieldIndex >= 0 && detectedFields[activeFieldIndex]) {
             renderFieldDetail(detectedFields[activeFieldIndex]);
           }
+        } else {
+          if (btnManual) {
+            btnManual.innerHTML = '<span id="lbl-btn-analyze-now">🔄 Coba Analisis Formulir Lagi</span>';
+          }
+          const errDetail = resp?.error || chrome.runtime.lastError?.message || 'Gemini AI tidak dapat merespons';
+          appendChatMessage({
+            role: 'assistant',
+            text: `⚠️ **Gagal Menganalisis Struktur Formulir Secara Penuh**\n\n${errDetail}\n\n*Catatan: Anda tetap dapat mengeklik kolom satu per satu untuk panduan on-demand.*`,
+            time: formatTime(new Date())
+          });
         }
       });
     } catch (e) {
       console.warn('[Telmy] Batch backend analysis notice:', e.message);
+      if (btnManual) {
+        btnManual.disabled = false;
+        btnManual.innerHTML = '<span id="lbl-btn-analyze-now">🔍 Analyze This Form</span>';
+      }
     }
   }
 
   // Unified Full Form Analysis & Rescan (Inherits all capabilities of the refresh button!)
   async function triggerFullFormAnalysis(triggerBtn = null) {
-    // 1. Visual feedback on refresh button icon
     if (btnRescan) {
       btnRescan.style.transform = 'rotate(180deg)';
       setTimeout(() => { if (btnRescan) btnRescan.style.transform = ''; }, 400);
@@ -1647,10 +1686,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const btnManual = triggerBtn || document.getElementById('btn-manual-analyze-form');
     if (btnManual) {
-      btnManual.innerHTML = '<span>⏳ Analyzing form...</span>';
+      btnManual.innerHTML = '<span>⏳ Memindai formulir...</span>';
     }
 
-    // 2. Resolve active webpage tab
+    // Resolve active webpage tab
     const tab = await getActiveWebTab();
     const tabId = (tab && tab.id) ? tab.id : currentTabId;
     if (!tabId) {
@@ -1658,30 +1697,20 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
     currentTabId = tabId;
+    isCurrentPageAnalyzed = false;
 
-    // 3. Send TRIGGER_RESCAN directly to content script (exact same as refresh button!)
+    // Send TRIGGER_RESCAN directly to content script
     chrome.tabs.sendMessage(tabId, { type: 'TRIGGER_RESCAN' }, (res) => {
       const lastErr = chrome.runtime.lastError;
-      if (!lastErr && res) {
-        applyScannedData(res);
-      } else {
+      if (lastErr || !res) {
         // If content script was not ready yet, inject and retry TRIGGER_RESCAN
         injectContentScript(tabId, () => {
-          chrome.tabs.sendMessage(tabId, { type: 'TRIGGER_RESCAN' }, (res2) => {
-            if (res2) applyScannedData(res2);
-          });
+          chrome.tabs.sendMessage(tabId, { type: 'TRIGGER_RESCAN' }, () => {});
         });
       }
     });
 
-    // 4. Also call activateScannerOnTab for redundancy and ladder progressive scan
-    activateScannerOnTab(tabId, applyScannedData);
-
-    setTimeout(() => {
-      if (btnManual) {
-        btnManual.innerHTML = '<span id="lbl-btn-analyze-now">🔍 Analyze This Form</span>';
-      }
-    }, 1200);
+    activateScannerOnTab(tabId);
   }
 
   // 4. Activate Scanner on Active Tab (On-Demand 1-Click with Zero Browser Reload)
@@ -1773,6 +1802,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       cachedPageSummary = message.summary || null;
       renderFieldsList(detectedFields);
       renderSummaryPane(cachedPageSummary, detectedFields);
+
+      // Automatically run full batch analysis on backend if not yet analyzed
+      if (!isCurrentPageAnalyzed && detectedFields.length > 0) {
+        triggerBatchBackendAnalysis(detectedFields);
+      }
+
       sendResponse({ success: true });
       return false;
     }
@@ -2350,14 +2385,10 @@ document.addEventListener('DOMContentLoaded', async () => {
           updateTranslateBannerUI();
 
           const langUpper = currentLanguage.toUpperCase();
-          const isGeminiAi = response.data.source === 'ai_gemini';
-          const aiNote = isGeminiAi 
-            ? 'using **Google Gemini**.' 
-            : '*(Notice: Gemini monthly spend cap limit reached / 429, used basic local dictionary fallback).*';
 
           appendChatMessage({
             role: 'assistant',
-            text: `🌐 **Full Page Translated (${translatedElementCount} elements)**\n\nThe webpage has been translated into **${langUpper}** ${aiNote}\n\n✓ **Official Bureaucracy Terms Preserved** (e.g., NIK, KTP, NPWP, SKCK)\n✓ **UI/UX Standards Applied** (Button & navigation actions mapped professionally)\n\nYou can click **Show Original** at any time to revert.`,
+            text: `🌐 **Full Page Translated (${translatedElementCount} elements)**\n\nThe webpage has been translated into **${langUpper}** using **Google Gemini AI**.\n\n✓ **Official Bureaucracy Terms Preserved** (e.g., NIK, KTP, NPWP, SKCK)\n✓ **UI/UX Standards Applied** (Button & navigation actions mapped professionally)\n\nYou can click **Show Original** at any time to revert.`,
             actions: [
               { type: 'REVERT_PAGE', label: '🔙 ' + t('btn_revert_page') },
               { type: 'TAB_FIELDS', label: '📋 ' + t('tab_fields') }
@@ -2375,7 +2406,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       appendChatMessage({
         role: 'assistant',
-        text: t('translate_error_msg'),
+        text: `❌ **Gagal Menerjemahkan Halaman**\n\n${err.message || 'Gemini AI tidak dapat merespons atau batas kuota API tercapai.'}\n\nTidak ada terjemahan tebakan/lokal yang diterapkan. Silakan periksa pengaturan kuota atau coba lagi.`,
         time: formatTime(new Date())
       });
     }
@@ -2844,76 +2875,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     return escapeHTML(text);
   }
 
-  function generateClientSmartFallback(metadata, lang) {
-    const raw = (metadata.label || metadata.name || 'Kolom Isian').trim();
-    const lower = raw.toLowerCase();
-
-    let labelEn = raw;
-    let exampleEn = 'Official data matching identity document';
-    let meaningEn = `This field collects official information for "${raw}". The agency requires this to verify legal identity and process your application.`;
-    let howEn = `Step 1: Check your official legal document (KTP, passport, or birth certificate). Step 2: Type or select the exact details without typos. Step 3: Verify consistency across all uploaded pages.`;
-    let mistakesEn = ['Typo in spelling or discrepancy with official physical documents', 'Entering informal nicknames or abbreviations'];
-    let foreignEn = 'For foreign citizens, ensure details match your valid international passport and legalization stamps.';
-
-    if (lower.includes('diri') && lower.includes('sendiri')) {
-      labelEn = 'Myself';
-      meaningEn = 'This option declares that you are submitting the application for your own documents or records, rather than on behalf of another person. Ditjen AHU asks this to confirm you are legally authorized and to know whose identity must be verified.';
-      howEn = `Step 1: Confirm the application concerns your own personal documents (e.g. birth certificate, marriage certificate, or diploma). Step 2: Select 'Diri Sendiri' (Myself). Step 3: If applying for someone else, choose 'Orang Lain' and prepare authorization documents.`;
-      exampleEn = `Selected: 'Diri Sendiri' - Applicant requests an Apostille excerpt for personal use.`;
-      mistakesEn = ['Selecting "Myself" while uploading identity documents belonging to another person, leading to rejection.'];
-      foreignEn = 'Choose "Myself" only if the request is about your own personal records. Foreign nationals must upload valid passport copies.';
-    } else if (lower.includes('tempat') && lower.includes('lahir')) {
-      labelEn = 'Place of Birth';
-      meaningEn = 'The official city, town, or municipality where the applicant was born as stated in official records. Ditjen AHU verifies this against civil registry records.';
-      howEn = `Step 1: Check your official birth certificate or passport. Step 2: Enter the exact city or regency name. Step 3: Do not write hospital or clinic names.`;
-      exampleEn = 'Jakarta, Indonesia (or New York, USA)';
-      mistakesEn = ['Entering the hospital or clinic name instead of the official city', 'Typo in city spelling compared to passport'];
-      foreignEn = 'Ensure the spelling matches exactly what is written on your international passport to avoid Apostille verification delays.';
-    } else if (lower.includes('tanggal') && lower.includes('lahir')) {
-      labelEn = 'Date of Birth';
-      meaningEn = 'Official calendar date of birth of the applicant as recorded on government identification.';
-      howEn = `Step 1: Enter date in DD-MM-YYYY format or use the date picker. Step 2: Verify against your official passport.`;
-      exampleEn = '15-08-1990';
-      mistakesEn = ['Swapping month and day order', 'Year typo'];
-      foreignEn = 'Ensure date strictly matches the Gregorian calendar date in your passport.';
-    } else if (lower.includes('nama')) {
-      labelEn = 'Full Name';
-      meaningEn = 'Complete legal name of the applicant as recorded on government identification.';
-      howEn = `Step 1: Type full legal name in capital letters. Step 2: Include all middle names. Step 3: Do not use abbreviations unless recorded in your passport.`;
-      exampleEn = 'JOHN MICHAEL DOE';
-      mistakesEn = ['Omitting middle name present on passport', 'Spelling discrepancy'];
-      foreignEn = 'Write your full name in Latin letters exactly as printed on the machine-readable zone of your passport.';
-    }
-
-    if (lang === 'id') {
-      return {
-        label: raw,
-        originalLabel: raw,
-        meaning: `Kolom untuk mengisi data "${raw}". Instansi terkait memerlukan data ini untuk verifikasi keabsahan dokumen resmi.`,
-        howToFill: `Langkah 1: Periksa dokumen resmi (KTP/Akta/Paspor). Langkah 2: Masukkan data secara lengkap dan akurat. Langkah 3: Pastikan tidak ada kesalahan ketik.`,
-        example: metadata.placeholder && metadata.placeholder.length < 40 ? metadata.placeholder : `Contoh data resmi sesuai berkas`,
-        commonMistakes: ['Salah ketik angka/huruf atau ketidaksesuaian dengan dokumen fisik', 'Mengosongkan kolom wajib'],
-        tipsForForeigners: 'Bagi WNA, pastikan data yang dimasukkan sesuai dengan paspor internasional atau visa/KITAS aktif.',
-        confidence: 0.85,
-        source: 'ai_draft',
-        provider: 'fallback'
-      };
-    }
-
-    return {
-      label: labelEn,
-      originalLabel: raw,
-      meaning: meaningEn,
-      howToFill: howEn,
-      example: exampleEn,
-      commonMistakes: mistakesEn,
-      tipsForForeigners: foreignEn,
-      confidence: 0.85,
-      source: 'ai_draft',
-      provider: 'fallback'
-    };
-  }
-
   const globalExplanationCache = new Map();
   let currentExplainRequestId = 0;
 
@@ -2928,51 +2889,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const index = activeFieldIndex;
     const meta = field.metadata || {};
-    const dict = field.dictEntry || {};
-    const trans = (dict.translations && dict.translations[currentLanguage]) || null;
     const cacheKey = getFieldCacheKey(meta, index, currentLanguage);
 
     field._aiExplanation = field._aiExplanation || {};
     const cached = field._aiExplanation[currentLanguage] || globalExplanationCache.get(cacheKey);
 
-    if (cached) {
+    // Only use cached data if it was successfully fetched from AI or verified backend
+    if (cached && !cached.isError) {
       field._aiExplanation[currentLanguage] = cached;
       renderDetailCard(field, cached);
-      return;
-    }
-
-    if (trans && (trans.confidence >= 0.95 || trans.meaning)) {
-      const entryData = {
-        ...trans,
-        originalLabel: meta.label || meta.name || trans.label,
-        source: dict.verified ? 'verified' : 'ai_draft'
-      };
-      field._aiExplanation[currentLanguage] = entryData;
-      globalExplanationCache.set(cacheKey, entryData);
-      renderDetailCard(field, entryData);
-      return;
-    }
-
-    // Check if form was never analyzed by user
-    if (!isCurrentPageAnalyzed) {
-      fieldDetailContent.innerHTML = `
-        <div class="field-not-analyzed-box" style="padding: 28px 16px; text-align: center; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; margin-top: 8px;">
-          <span style="font-size: 32px; display: block; margin-bottom: 8px;">🔍</span>
-          <h4 style="margin: 0 0 6px; font-weight: 800; font-size: 14.5px; color: #0f172a;">Form Belum Pernah Di-Analyze</h4>
-          <p style="font-size: 12px; color: #64748b; line-height: 1.5; margin: 0 0 16px;">
-            Maaf, halaman dan form ini belum pernah kamu analyze.<br>Silakan klik tombol di bawah untuk menganalisa seluruh formulir.
-          </p>
-          <button id="btn-unscanned-analyze" class="btn-primary-action" style="padding: 9px 18px; font-size: 12.5px; font-weight: 700; border-radius: 8px; background: #2563eb; color: #ffffff; border: none; cursor: pointer; box-shadow: 0 2px 6px rgba(37,99,235,0.2);">
-            🔍 Analyze This Form
-          </button>
-        </div>
-      `;
-      const btnUnscanned = document.getElementById('btn-unscanned-analyze');
-      if (btnUnscanned) {
-        btnUnscanned.addEventListener('click', () => {
-          triggerFullFormAnalysis();
-        });
-      }
       return;
     }
 
@@ -3002,12 +2927,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     const thisRequestId = ++currentExplainRequestId;
 
     // Request AI explanation from background service worker
+    const resolvedPageContext = meta.pageTitle || meta.domain || 'Digital Web Form';
+
     chrome.runtime.sendMessage({
       type: 'EXPLAIN_FIELD',
       payload: {
         metadata: meta,
         language: currentLanguage,
-        pageContext: document.title || 'Pendaftaran Permohonan Apostille'
+        pageContext: resolvedPageContext
       }
     }, (resp) => {
       // Discard stale response if another field was focused while waiting
@@ -3018,26 +2945,62 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
       }
 
-      let finalData;
       if (!chrome.runtime.lastError && resp && resp.success && resp.data) {
-        finalData = resp.data;
+        const finalData = resp.data;
         if (resp.quota) {
           refreshUserQuota(resp.quota);
         }
+        field._aiExplanation[currentLanguage] = finalData;
+        globalExplanationCache.set(cacheKey, finalData);
+        renderDetailCard(field, finalData);
       } else {
-        // If we already have cached/Gemini data, never overwrite with fallback
-        if (globalExplanationCache.has(cacheKey)) {
-          finalData = globalExplanationCache.get(cacheKey);
-        } else {
-          finalData = generateClientSmartFallback(meta, currentLanguage);
-        }
+        const errMsg = resp?.error || chrome.runtime.lastError?.message || 'Gagal memuat analisis dari Gemini AI (Koneksi terputus atau batas kuota habis).';
+        renderErrorCard(field, errMsg);
       }
-
-      field._aiExplanation[currentLanguage] = finalData;
-      globalExplanationCache.set(cacheKey, finalData);
-
-      renderDetailCard(field, finalData);
     });
+  }
+
+  function renderErrorCard(field, errorMessage) {
+    const meta = field.metadata || {};
+    const rawLabel = meta.label || meta.name || `${t('field_label_prefix')} #${activeFieldIndex + 1}`;
+    
+    fieldDetailContent.innerHTML = `
+      <div class="field-detail-header">
+        <div class="field-title-group">
+          <div class="field-title-row">
+            <span class="field-badge-num">#${activeFieldIndex + 1}</span>
+            <h3 class="field-detail-title">${escapeHTML(rawLabel)}</h3>
+          </div>
+          <div class="field-original-subtitle" style="color: #dc2626;">Koneksi / Analisis AI Gagal</div>
+        </div>
+        <span class="ai-badge-pill" style="background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5;">❌ Gagal</span>
+      </div>
+
+      <div class="field-error-notice-box" style="margin-top: 16px; padding: 18px 16px; background: rgba(239, 68, 68, 0.05); border: 1.5px dashed rgba(239, 68, 68, 0.35); border-radius: 12px; text-align: center;">
+        <div style="font-size: 30px; margin-bottom: 8px;">⚠️</div>
+        <h4 style="margin: 0 0 6px 0; font-size: 14px; font-weight: 700; color: #991b1b;">Gagal Mendapatkan Analisis Gemini AI</h4>
+        <p style="margin: 0 0 16px 0; font-size: 12px; color: #7f1d1d; line-height: 1.5;">
+          ${escapeHTML(errorMessage || 'Server Gemini AI tidak merespons atau batas kuota tercapai. Tidak ada data tebakan lokal yang ditampilkan agar tidak menyesatkan.')}
+        </p>
+        <button id="btn-retry-field-explain" class="sp-btn-primary" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 20px; font-size: 12.5px; font-weight: 600; cursor: pointer; border-radius: 8px; background: #2563eb; color: #fff; border: none; box-shadow: 0 2px 6px rgba(37,99,235,0.25);">
+          <span>🔄</span>
+          <span>Analisis Ulang</span>
+        </button>
+      </div>
+    `;
+
+    const btnRetry = document.getElementById('btn-retry-field-explain');
+    if (btnRetry) {
+      btnRetry.addEventListener('click', () => {
+        const meta = field.metadata || {};
+        const cacheKey = getFieldCacheKey(meta, activeFieldIndex, currentLanguage);
+        globalExplanationCache.delete(cacheKey);
+        if (field._aiExplanation) {
+          delete field._aiExplanation[currentLanguage];
+        }
+        renderFieldDetail(field);
+      });
+    }
   }
 
   function renderDetailCard(field, data) {
@@ -3049,7 +3012,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const example = data.example || meta.placeholder || 'Example entry';
     const mistakes = data.commonMistakes || data.common_mistakes || null;
     const foreigners = data.tipsForForeigners || data.tips_for_foreigners || data.foreign_note || null;
-    const sourceBadge = data.source === 'verified' ? '✓ Verified' : (t('ai_draft_badge') || 'AI Draft');
+    
+    const sourceBadge = data.source === 'verified' ? '✓ Verified' : (t('ai_draft_badge') || '✨ Gemini AI');
+    const badgeClass = data.source === 'verified' ? 'verified' : 'draft';
 
     const showSubtitle = origLabel && (origLabel.toLowerCase() !== translatedLabel.toLowerCase());
 
@@ -3062,7 +3027,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           </div>
           ${showSubtitle ? `<div class="field-original-subtitle">${escapeHTML(origLabel)}</div>` : ''}
         </div>
-        <span class="ai-badge-pill ${data.source === 'verified' ? 'verified' : 'draft'}">${escapeHTML(sourceBadge)}</span>
+        <span class="ai-badge-pill ${badgeClass}">${escapeHTML(sourceBadge)}</span>
       </div>
 
       <!-- 1. MEANING & PURPOSE -->

@@ -148,45 +148,11 @@ OUTPUT FORMAT (JSON ONLY, NO MARKDOWN):
       geminiResult = JSON.parse(rawText);
       console.log(`[Form Analyzer] Successfully analyzed ${fields.length} fields with Gemini!`);
     } catch (err) {
-      console.warn(`[Form Analyzer] Gemini call failed (${err.message}). Using smart fallback...`);
-      if (err.message.includes('429') || err.message.includes('spending cap')) {
-        quotaWarning = 'Gemini monthly spending cap reached (429). Using verified smart fallback.';
-      } else {
-        quotaWarning = err.message;
-      }
-      usedSource = 'smart_fallback';
+      console.error(`[Form Analyzer] Gemini batch analysis error: ${err.message}`);
+      throw new Error(`Google Gemini batch analysis failed: ${err.message}`);
     }
   } else {
-    usedSource = 'smart_fallback';
-  }
-
-  // If Gemini failed or returned incomplete, construct from individual smart fallbacks
-  if (!geminiResult || !Array.isArray(geminiResult.fields) || geminiResult.fields.length === 0) {
-    const fallbackFields = await Promise.all(
-      fields.map(async (f, idx) => {
-        const meta = {
-          label: f.label || f.name || `Field ${idx + 1}`,
-          name: f.name || '',
-          id: f.id || '',
-          type: f.type || 'text',
-          placeholder: f.placeholder || '',
-          section: f.section || '',
-          domain: cDomain
-        };
-        const singleExpl = await generateFieldExplanation(meta, language, title);
-        return {
-          index: idx,
-          id: f.id || `f_${idx}`,
-          name: f.name || '',
-          ...singleExpl
-        };
-      })
-    );
-
-    geminiResult = {
-      summary: `Formulir resmi di portal ${cDomain} (${title || 'Layanan Digital'}). Pastikan seluruh data dan dokumen identitas dipersiapkan sebelum mengisi.`,
-      fields: fallbackFields
-    };
+    throw new Error('GEMINI_API_KEY is not configured on backend.');
   }
 
   const finalData = {

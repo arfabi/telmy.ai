@@ -1120,6 +1120,12 @@ body {
   animation: pulse-badge 1.5s infinite;
 }
 
+.ai-badge-pill.fallback-badge {
+  background: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
 @keyframes pulse-badge {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.75; transform: scale(0.98); }
