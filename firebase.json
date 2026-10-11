@@ -40,6 +40,13 @@
       ],
       "rewrites": [
         {
+          "source": "/firebase-config.js",
+          "run": {
+            "serviceId": "telmy-ai-git",
+            "region": "asia-northeast1"
+          }
+        },
+        {
           "source": "/api/**",
           "run": {
             "serviceId": "telmy-ai-git",

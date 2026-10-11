@@ -7,23 +7,64 @@ const DEFAULT_SETTINGS = {
   apiUrl: 'https://telmy-ai.cloud.run/api'
 };
 
+// Helper: resolve safe API URL (strips legacy localhost or stale domains)
+function getEffectiveApiUrl(settings) {
+  const url = settings?.apiUrl;
+  if (!url || url.includes('localhost') || url.includes('127.0.0.1') || url.includes('telmy.web.app') || url.includes('asia-northeast1.run.app')) {
+    return DEFAULT_SETTINGS.apiUrl;
+  }
+  return url;
+}
+
+// Proactive sanitization to purge any stale localhost:8080 from browser storage
+async function sanitizeSettings() {
+  try {
+    const stored = await chrome.storage.local.get(['settings', 'suggestions_history']);
+    let needsUpdate = false;
+    let settings = stored.settings;
+
+    if (!settings) {
+      settings = { ...DEFAULT_SETTINGS };
+      needsUpdate = true;
+    } else if (
+      !settings.apiUrl ||
+      settings.apiUrl.includes('localhost') ||
+      settings.apiUrl.includes('127.0.0.1') ||
+      settings.apiUrl.includes('telmy.web.app') ||
+      settings.apiUrl.includes('asia-northeast1.run.app')
+    ) {
+      settings = { ...settings, apiUrl: DEFAULT_SETTINGS.apiUrl };
+      needsUpdate = true;
+    }
+
+    if (needsUpdate) {
+      await chrome.storage.local.set({ settings });
+      console.log('[Telmy] Storage migrated to production Cloud Run API:', settings.apiUrl);
+    }
+    if (!stored.suggestions_history) {
+      await chrome.storage.local.set({ suggestions_history: [] });
+    }
+    return settings;
+  } catch (e) {
+    return DEFAULT_SETTINGS;
+  }
+}
+
+// Run immediately on service worker boot
+sanitizeSettings();
+
 chrome.runtime.onInstalled.addListener(async (details) => {
   console.log('[Telmy] Extension installed/updated:', details.reason);
-  const stored = await chrome.storage.local.get(['settings', 'suggestions_history']);
-  if (!stored.settings) {
-    await chrome.storage.local.set({ settings: DEFAULT_SETTINGS });
-  } else if (!stored.settings.apiUrl || stored.settings.apiUrl.includes('telmy.web.app') || stored.settings.apiUrl.includes('asia-northeast1.run.app')) {
-    // Migrate to live Cloud Run domain
-    await chrome.storage.local.set({ settings: { ...stored.settings, apiUrl: DEFAULT_SETTINGS.apiUrl } });
-  }
-  if (!stored.suggestions_history) {
-    await chrome.storage.local.set({ suggestions_history: [] });
-  }
+  await sanitizeSettings();
 
   // Open side panel automatically on action toolbar click
   if (chrome.sidePanel && chrome.sidePanel.setPanelBehavior) {
     chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch(() => {});
   }
+});
+
+chrome.runtime.onStartup?.addListener(async () => {
+  await sanitizeSettings();
 });
 
 // Configure side panel behavior on startup as well
@@ -90,7 +131,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     chrome.storage.local.get(['user', 'settings']).then(async (res) => {
       const user = res.user;
       const settings = res.settings || DEFAULT_SETTINGS;
-      const apiUrl = settings.apiUrl || DEFAULT_SETTINGS.apiUrl;
+      const apiUrl = getEffectiveApiUrl(settings);
 
       if (!user || !user.uid) {
         sendResponse({
@@ -144,7 +185,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     chrome.storage.local.get(['settings', 'user']).then(async (res) => {
       const settings = res.settings || DEFAULT_SETTINGS;
       const user = res.user || null;
-      const apiUrl = settings.apiUrl || DEFAULT_SETTINGS.apiUrl;
+      const apiUrl = getEffectiveApiUrl(settings);
       const { metadata, language, pageContext, url } = message.payload || {};
       const userId = user?.uid || 'guest_user';
 
@@ -196,7 +237,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'SUBMIT_SUGGESTION') {
     chrome.storage.local.get(['settings', 'suggestions_history']).then(async (res) => {
       const settings = res.settings || DEFAULT_SETTINGS;
-      const apiUrl = settings.apiUrl || DEFAULT_SETTINGS.apiUrl;
+      const apiUrl = getEffectiveApiUrl(settings);
       const list = res.suggestions_history || [];
 
       const newEntry = {
@@ -245,7 +286,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'SEND_CHAT_MESSAGE') {
     chrome.storage.local.get(['settings']).then(async (res) => {
       const settings = res.settings || DEFAULT_SETTINGS;
-      const apiUrl = settings.apiUrl || DEFAULT_SETTINGS.apiUrl;
+      const apiUrl = getEffectiveApiUrl(settings);
       const { message: chatMsg, history, language, formContext } = message.payload;
 
       try {
@@ -285,7 +326,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'VOICE_TTS') {
     chrome.storage.local.get(['settings']).then(async (res) => {
       const settings = res.settings || DEFAULT_SETTINGS;
-      const apiUrl = settings.apiUrl || DEFAULT_SETTINGS.apiUrl;
+      const apiUrl = getEffectiveApiUrl(settings);
       const { text, language, voiceId } = message.payload;
 
       try {
@@ -320,7 +361,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'CHECK_VOICE_STATUS') {
     chrome.storage.local.get(['settings']).then(async (res) => {
       const settings = res.settings || DEFAULT_SETTINGS;
-      const apiUrl = settings.apiUrl || DEFAULT_SETTINGS.apiUrl;
+      const apiUrl = getEffectiveApiUrl(settings);
 
       try {
         const response = await fetchWithTimeout(`${apiUrl}/voice/status`, {}, 5000);
@@ -339,7 +380,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'TRANSLATE_PAGE') {
     chrome.storage.local.get(['settings']).then(async (res) => {
       const settings = res.settings || DEFAULT_SETTINGS;
-      const apiUrl = settings.apiUrl || DEFAULT_SETTINGS.apiUrl;
+      const apiUrl = getEffectiveApiUrl(settings);
       const { pageContext, targetLanguage, texts } = message.payload;
 
       try {
@@ -370,7 +411,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     chrome.storage.local.get(['settings', 'user']).then(async (res) => {
       const settings = res.settings || DEFAULT_SETTINGS;
       const user = res.user || null;
-      const apiUrl = settings.apiUrl || DEFAULT_SETTINGS.apiUrl;
+      const apiUrl = getEffectiveApiUrl(settings);
       const { pdfBase64, filename, language, mimeType = 'application/pdf' } = message.payload;
       const userId = user?.uid || 'guest_user';
 
@@ -419,7 +460,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     chrome.storage.local.get(['settings', 'user']).then(async (res) => {
       const settings = res.settings || DEFAULT_SETTINGS;
       const user = res.user || null;
-      const apiUrl = settings.apiUrl || DEFAULT_SETTINGS.apiUrl;
+      const apiUrl = getEffectiveApiUrl(settings);
       const userId = user?.uid || 'guest_user';
       try {
         const response = await fetchWithTimeout(`${apiUrl}/payment/quota/${userId}`, {}, 10000);
@@ -441,7 +482,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     chrome.storage.local.get(['settings', 'user']).then(async (res) => {
       const settings = res.settings || DEFAULT_SETTINGS;
       const user = res.user || null;
-      const apiUrl = settings.apiUrl || DEFAULT_SETTINGS.apiUrl;
+      const apiUrl = getEffectiveApiUrl(settings);
       const userId = user?.uid || 'guest_user';
       const planId = message.planId || 'payg_10';
       try {
@@ -570,7 +611,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         let envelope = stored.telmy_vault_envelope || null;
         const user = stored.user;
         const settings = stored.settings || DEFAULT_SETTINGS;
-        const apiUrl = settings.apiUrl || DEFAULT_SETTINGS.apiUrl;
+        const apiUrl = getEffectiveApiUrl(settings);
 
         // If authenticated, check cloud Firestore for cross-device sync
         if (user && user.uid) {
@@ -622,7 +663,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         const stored = await chrome.storage.local.get(['user', 'settings']);
         const user = stored.user;
         const settings = stored.settings || DEFAULT_SETTINGS;
-        const apiUrl = settings.apiUrl || DEFAULT_SETTINGS.apiUrl;
+        const apiUrl = getEffectiveApiUrl(settings);
 
         if (user && user.uid) {
           try {
@@ -657,7 +698,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         const stored = await chrome.storage.local.get(['user', 'settings']);
         const user = stored.user;
         const settings = stored.settings || DEFAULT_SETTINGS;
-        const apiUrl = settings.apiUrl || DEFAULT_SETTINGS.apiUrl;
+        const apiUrl = getEffectiveApiUrl(settings);
 
         if (user && user.uid) {
           try {
@@ -682,7 +723,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       try {
         const stored = await chrome.storage.local.get(['settings']);
         const settings = stored.settings || DEFAULT_SETTINGS;
-        const apiUrl = settings.apiUrl || DEFAULT_SETTINGS.apiUrl;
+        const apiUrl = getEffectiveApiUrl(settings);
 
         const resp = await fetchWithTimeout(`${apiUrl}/pdf/extract-vault`, {
           method: 'POST',

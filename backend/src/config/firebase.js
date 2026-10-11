@@ -26,28 +26,29 @@ export function initFirebase() {
       ? envKeyPath 
       : (fs.existsSync(defaultKeyPath) ? defaultKeyPath : null);
 
-    const storageBucket = process.env.FIREBASE_STORAGE_BUCKET || (process.env.FIREBASE_PROJECT_ID ? `${process.env.FIREBASE_PROJECT_ID}.firebasestorage.app` : undefined);
+    const projectId = process.env.FIREBASE_PROJECT_ID || process.env.GOOGLE_CLOUD_PROJECT || process.env.GCLOUD_PROJECT;
+    const storageBucket = process.env.FIREBASE_STORAGE_BUCKET || (projectId ? `${projectId}.firebasestorage.app` : undefined);
 
     if (keyPath) {
       const serviceAccount = JSON.parse(fs.readFileSync(keyPath, 'utf8'));
-      const projectId = serviceAccount.project_id || process.env.FIREBASE_PROJECT_ID;
+      const activeProjectId = serviceAccount.project_id || projectId;
       admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),
-        projectId,
-        storageBucket: process.env.FIREBASE_STORAGE_BUCKET || (projectId ? `${projectId}.firebasestorage.app` : undefined)
+        projectId: activeProjectId,
+        storageBucket: process.env.FIREBASE_STORAGE_BUCKET || (activeProjectId ? `${activeProjectId}.firebasestorage.app` : undefined)
       });
       db = admin.firestore();
       db.settings({ ignoreUndefinedProperties: true });
       storage = admin.storage();
       auth = admin.auth();
       isFirebaseConnected = true;
-    } else if (process.env.NODE_ENV === 'production' || process.env.FIREBASE_PROJECT_ID) {
+    } else if (process.env.NODE_ENV === 'production' || projectId) {
       // 2. Running in Firebase Functions / Cloud Run / GCP with Application Default Credentials (ADC)
       admin.initializeApp({
-        projectId: process.env.FIREBASE_PROJECT_ID,
+        projectId: projectId || undefined,
         storageBucket
       });
-      console.log('[Firebase] Initialized using Google Cloud ADC.');
+      console.log(`[Firebase] Initialized using Google Cloud ADC (Project: ${projectId || 'auto-detected'}).`);
       db = admin.firestore();
       db.settings({ ignoreUndefinedProperties: true });
       storage = admin.storage();

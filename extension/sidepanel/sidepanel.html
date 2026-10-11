@@ -368,9 +368,17 @@
           <!-- Active Field Card -->
           <div id="active-field-card" class="sp-active-card">
             <div class="sp-card-empty" id="fields-empty-state">
-              <div class="sp-empty-icon">📋</div>
+              <div class="sp-empty-icon" id="icon-empty-fields">📋</div>
               <h3 id="lbl-empty-fields-title">Select a Form Field</h3>
               <p id="lbl-empty-fields-desc">Hover or click any field badge on the page to view detailed guidelines, requirements, and examples.</p>
+              <div id="box-guide-cta" style="margin-top: 14px; display: none;">
+                <button type="button" id="btn-start-form-guide" class="btn-guide-me-cta">
+                  <span id="lbl-btn-guide-me">🚀 Guide Me (Field by Field)</span>
+                </button>
+                <div class="guide-quota-hint" id="lbl-guide-quota-hint">
+                  <small>💡 Uses 1 form quota for 24-hour full assistance on this form</small>
+                </div>
+              </div>
             </div>
             <div id="field-detail-content" style="display: none;"></div>
           </div>

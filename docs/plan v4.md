@@ -19,16 +19,15 @@
 Dokumen dan aset yang wajib disiapkan sebelum mengisi formulir di Chrome Web Store Developer Dashboard:
 
 ### 1.1. Informasi Identitas Ekstensi (Listing Basics)
-- [ ] **Nama Ekstensi (Item Name):**
+- [x] **Nama Ekstensi (Item Name):**
   - *Batas Karakter:* Maksimal 75 karakter.
-  - *Rekomendasi:* `Telmy.ai: Form Filling Assistant & Smart Auditor` (50 karakter).
-  - *Catatan:* Hindari penumpukan keyword (*keyword stuffing*) seperti *"AI Best Form Filler AutoFill Free"* agar tidak dicurigai sistem filter spam Google.
-- [ ] **Ringkasan / Deskripsi Singkat (Short Description):**
+  - *Rekomendasi:* `Telmy.ai: Form Filling Assistant & Smart Auditor` (48 karakter).
+- [x] **Ringkasan / Deskripsi Singkat (Short Description):**
   - *Batas Karakter:* Maksimal 132 karakter.
-  - *Rekomendasi:* `Your AI companion to understand, safely autofill with Zero-Knowledge encryption, and audit complex web forms with ease.` (122 karakter).
-- [ ] **Kategori Utama (Category):**
+  - *Rekomendasi:* `Your AI companion to understand, safely autofill with Zero-Knowledge encryption, and audit complex web forms with ease.` (120 karakter).
+- [x] **Kategori Utama (Category):**
   - *Pilihan:* **Productivity** (primer) atau **Workflow & Planning**.
-- [ ] **Bahasa Utama (Default Language):**
+- [x] **Bahasa Utama (Default Language):**
   - English (`en`) sebagai bahasa dasar listing global, dengan copy terjemahan untuk pasar JAPAC jika diperlukan.
 
 ---
@@ -36,12 +35,12 @@ Dokumen dan aset yang wajib disiapkan sebelum mengisi formulir di Chrome Web Sto
 ### 1.2. Deskripsi Lengkap Ekstensi (Detailed Description)
 *Batas Karakter: Maksimal 16.000 karakter (Mendukung pemformatan teks terstruktur).*
 
-- [ ] **Struktur & Poin-Poin Deskripsi Lengkap:**
+- [x] **Struktur & Poin-Poin Deskripsi Lengkap:**
   1. **Hook & Problem Statement:** Mengapa formulir visa, beasiswa, pendaftaran izin, dan portal publik terasa menakutkan, membingungkan, dan rawan salah isi bagi masyarakat awam.
   2. **Solusi Telmy.ai:** Sahabat AI ramah yang duduk berdampingan di panel samping Chrome (`Side Panel`), menjelaskan setiap pertanyaan dalam bahasa sederhana satu demi satu.
   3. **6 Fitur Utama:**
      - 🎙️ **Push-to-Talk Multilingual Voicebot:** Bimbingan suara alami Google WaveNet dalam 11 bahasa ibu JAPAC.
-     - 🛡️ **Zero-Knowledge Client-Side Encryption (CSE):** Profil disimpan terenkripsi dengan AES-GCM 256 + PBKDF2 (100.000 iterasi) menggunakan 6-Digit Master PIN. Server Telmy tidak dapat melihat data Anda.
+     - 🛡️ **Zero-Knowledge Client-Side Encryption (CSE):** Profil disimpan terenkripsi dengan AES-GCM 256 + PBKDF2 (100.000 iterasi) menggunakan Master Password atau 12 Seed Words. Server Telmy tidak dapat melihat data Anda.
      - ⚡ **1-Click Safe AutoFill:** Pengisian formulir instan dengan pencocokan alias cerdas, dengan proteksi otomatis melewati kolom password dan CVV.
      - 🚦 **Pre-Submission Auditor:** Audit kelengkapan dan format data sebelum submit dengan indikator Traffic Light (Hijau/Kuning/Merah).
      - 📤 **Smart Document Ingestion:** Ekstraksi data dari foto KTP/Paspor secara lokal/ephemeral memory tanpa penyimpanan file fisik (*Zero Document Retention*).
@@ -57,34 +56,34 @@ Dokumen dan aset yang wajib disiapkan sebelum mengisi formulir di Chrome Web Sto
 ### 1.3. Aset Grafis & Visual Toko (Store Media Assets)
 *Sesuai spesifikasi resmi Chrome Web Store Image Requirements:*
 
-- [ ] **Ikon Toko (Store Icon):**
+- [x] **Ikon Toko (Store Icon):**
   - *Ukuran:* Tepat `128 x 128` px (format PNG transparan / latar kontras tinggi).
-  - *Status:* Disiapkan dari aset `logo.png` / `telmy_icon.png`.
-- [ ] **Small Promotional Tile (Wajib untuk Visibilitas Toko):**
+  - *Status:* Disimpan di `cws-submission/store-assets/icon-128x128.png`.
+- [x] **Small Promotional Tile (Wajib untuk Visibilitas Toko):**
   - *Ukuran:* Tepat `440 x 280` px (format PNG/JPEG, rasio ~11:7).
-  - *Konten:* Logo Telmy, ilustrasi maskot avatar ramah, dan tagline *"Your Smart AI Form Assistant"*.
-- [ ] **Marquee Promotional Tile (Opsional tapi Direkomendasikan untuk Featured):**
+  - *Status:* Disimpan di `cws-submission/store-assets/promo-small-440x280.png`.
+- [x] **Marquee Promotional Tile (Opsional tapi Direkomendasikan untuk Featured):**
   - *Ukuran:* Tepat `1400 x 560` px (format PNG/JPEG).
-  - *Konten:* Banner sinematik antarmuka Side Panel Telmy berdampingan dengan browser.
-- [ ] **Screenshot Ekstensi (Minimal 1, Sangat Direkomendasikan 4–5):**
-  - *Ukuran:* `1280 x 800` px (atau `640 x 400` px), rasio 16:10.
-  - *Daftar 5 Screenshot Naratif:*
-    1. **Screenshot 1 — Core Experience:** Tampilan browser Chrome dengan Side Panel Telmy aktif mendampingi pengisian form beasiswa/visa dengan highlight nomor interaktif.
-    2. **Screenshot 2 — Multilingual Voice Guidance:** Maskot Telmy berbicara memandu pengguna dengan gelombang audio dan pemilih bahasa 11 negara JAPAC.
-    3. **Screenshot 3 — Zero-Knowledge Security:** Dialog gembok Master PIN 6-digit dan visual enkripsi lokal AES-256 yang aman.
-    4. **Screenshot 4 — Smart AutoFill & Pre-Submission Audit:** Kartu audit Traffic Light (Hijau/Kuning/Merah) yang mendeteksi kesalahan format tanggal/nomor identitas sebelum submit.
-    5. **Screenshot 5 — Document Ingestion & Export:** Cuplikan ekstraksi identitas (KTP/Paspor) dan tombol ekspor Certified PDF.
+  - *Status:* Disimpan di `cws-submission/store-assets/promo-marquee-1400x560.png`.
+- [x] **Screenshot Ekstensi (Minimal 1, Sangat Direkomendasikan 4–5):**
+  - *Ukuran:* `1280 x 800` px, rasio 16:10.
+  - *Daftar 5 Screenshot Naratif (Selesai):*
+    1. `screenshot-1-sidepanel-guidance.png` (Core Experience: Sidepanel form guidance).
+    2. `screenshot-2-multilingual-voice.png` (Multilingual Voice Guidance: WaveNet 11 Languages).
+    3. `screenshot-3-dual-lock-vault.png` (Zero-Knowledge Dual-Lock Vault: Password / 12 Seed Words).
+    4. `screenshot-4-autofill-auditor.png` (Smart AutoFill & Pre-Submission Traffic Light Auditor).
+    5. `screenshot-5-document-pdf-intelligence.png` (Document Ingestion & Certified PDF Export).
 
 ---
 
 ### 1.4. Informasi Legalitas, Privasi & Kontak Dukungan
-- [ ] **Privacy Policy URL (Wajib & Aktif):**
+- [x] **Privacy Policy URL (Wajib & Aktif):**
   - *URL:* `https://telmy-ai.cloud.run/privacy`
   - *Status Dokumen:* Halaman `backend/public/privacy.html` sudah memuat pasal Zero-Knowledge CSE, Push-to-Talk, dan Zero Document Retention.
-- [ ] **Website Resmi:**
+- [x] **Website Resmi:**
   - *URL:* `https://telmy-ai.cloud.run`
-- [ ] **Support URL / Email Pengembang:**
-  - *URL:* `https://telmy-ai.cloud.run#faq` (atau email `support@telmy-ai.cloud.run`).
+- [x] **Support URL / Email Pengembang:**
+  - *URL:* `https://telmy-ai.cloud.run#faq` (email: `support@telmy-ai.cloud.run`).
 
 ---
 
@@ -213,39 +212,35 @@ File ini akan mencakup format siap copy-paste:
 Berikut urutan kerja sistematis yang akan kita eksekusi pada langkah berikutnya (tahap demi tahap, tanpa melompati pengujian):
 
 ### 🔹 TAHAP 1: Audit Kode & Penyiapan Manifest Produksi
-- [ ] **1.1.** Audit sanitasi manifest: Bersihkan `http://localhost:*` dan `http://127.0.0.1:*` dari `manifest.json` untuk versi rilis.
-- [ ] **1.2.** Verifikasi tidak ada panggilan API ke domain yang belum terdaftar di `host_permissions`.
-- [ ] **1.3.** Pengecekan file eksternal/remote: Pastikan tidak ada skrip yang memanggil CDN eksternal di seluruh file HTML ekstensi.
-- [ ] **1.4.** Pengecekan fungsi offline/fallback: Pastikan saat API backend tidak merespons, ekstensi tetap menampilkan notifikasi ramah tanpa crashing.
+- [x] **1.1.** Audit sanitasi manifest: Bersihkan `http://localhost:*` dan `http://127.0.0.1:*` dari `manifest.json` untuk versi rilis.
+- [x] **1.2.** Verifikasi tidak ada panggilan API ke domain yang belum terdaftar di `host_permissions` (hanya `https://telmy-ai.cloud.run/*`).
+- [x] **1.3.** Pengecekan file eksternal/remote: Pastikan tidak ada skrip yang memanggil CDN eksternal di seluruh file HTML ekstensi (semua bundle lokal).
+- [x] **1.4.** Pengecekan fungsi offline/fallback: Pastikan saat API backend tidak merespons, ekstensi tetap menampilkan notifikasi ramah tanpa crashing.
 
 ### 🔹 TAHAP 2: Pembuatan Copywriting & File Teks Submisi
-- [ ] **2.1.** Finalisasi naskah `ITEM_NAME` dan `SHORT_DESCRIPTION` (validasi batas karakter).
-- [ ] **2.2.** Finalisasi naskah `DETAILED_DESCRIPTION` berbahasa Inggris yang profesional dan memukau.
-- [ ] **2.3.** Penyusunan teks justifikasi teknis per permission (`storage`, `activeTab`, `scripting`, `sidePanel`, `host_permissions`).
-- [ ] **2.4.** Penyusunan teks instruksi pengujian reviewer (*Reviewer Testing Notes*) lengkap dengan kredensial dummy dan langkah navigasi.
-- [ ] **2.5.** Kompilasi seluruh teks ke dalam `cws-submission/metadata/cws_submission_metadata.txt`.
+- [x] **2.1.** Finalisasi naskah `ITEM_NAME` (48 chars) dan `SHORT_DESCRIPTION` (120 chars) dengan batas karakter tervalidasi.
+- [x] **2.2.** Finalisasi naskah `DETAILED_DESCRIPTION` berbahasa Inggris yang profesional dan memukau.
+- [x] **2.3.** Penyusunan teks justifikasi teknis per permission (`storage`, `activeTab`, `scripting`, `sidePanel`, `host_permissions`).
+- [x] **2.4.** Penyusunan teks instruksi pengujian reviewer (*Reviewer Testing Notes*) lengkap dengan kredensial dummy dan langkah navigasi.
+- [x] **2.5.** Kompilasi seluruh teks ke dalam `cws-submission/metadata/cws_submission_metadata.txt`.
 
 ### 🔹 TAHAP 3: Pembuatan & Standardisasi Aset Visual
-- [ ] **3.1.** Validasi dan export ikon toko `icon-128x128.png` berkualitas tinggi dari aset logo Telmy.
-- [ ] **3.2.** Pembuatan Promotional Tile `promo-small-440x280.png` sesuai panduan Google Web Store.
-- [ ] **3.3.** Pembuatan Marquee Banner `promo-marquee-1400x560.png`.
-- [ ] **3.4.** Penyusunan 5 Screenshot beresolusi tepat `1280x800` px yang menangkap alur kerja nyata:
-  - Slide 1: Sidepanel form guidance.
-  - Slide 2: Push-to-Talk Voicebot.
-  - Slide 3: Zero-Knowledge PIN Vault.
-  - Slide 4: Safe AutoFill & Pre-Submission Audit.
-  - Slide 5: Document Ingestion & Certified PDF.
+- [x] **3.1.** Validasi dan export ikon toko `icon-128x128.png` (tepat 128x128 px) berkualitas tinggi dari aset logo Telmy.
+- [x] **3.2.** Pembuatan Promotional Tile `promo-small-440x280.png` (tepat 440x280 px) sesuai panduan Google Web Store.
+- [x] **3.3.** Pembuatan Marquee Banner `promo-marquee-1400x560.png` (tepat 1400x560 px).
+- [x] **3.4.** Penyusunan 5 Screenshot beresolusi tepat `1280x800` px yang menangkap alur kerja nyata:
+  - Slide 1: `screenshot-1-sidepanel-guidance.png` (Sidepanel form guidance).
+  - Slide 2: `screenshot-2-multilingual-voice.png` (Push-to-Talk Voicebot WaveNet 11 Languages).
+  - Slide 3: `screenshot-3-dual-lock-vault.png` (Zero-Knowledge Dual-Lock Vault: Password / 12 Seed Words).
+  - Slide 4: `screenshot-4-autofill-auditor.png` (Safe 1-Click AutoFill & Pre-Submission Auditor).
+  - Slide 5: `screenshot-5-document-pdf-intelligence.png` (Document Ingestion & Certified PDF Export).
 
 ### 🔹 TAHAP 4: Packaging File ZIP Bersih & Validasi
-- [ ] **4.1.** Pembuatan skrip pemaket otomatis untuk menghasilkan `telmy-extension-v1.0.0.zip` steril tanpa file sampah / hidden files.
-- [ ] **4.2.** Pengujian unpacking zip pada Google Chrome (*Load Unpacked Extension*) untuk memastikan:
-  - Ekstensi dapat terpasang tanpa error/warning di `chrome://extensions`.
-  - Icon muncul sempurna di toolbar.
-  - Side Panel terbuka mulus saat diklik.
-  - AutoFill dan Audit berfungsi normal di halaman demo.
+- [x] **4.1.** Pembuatan skrip pemaket otomatis untuk menghasilkan `cws-submission/zip/telmy-extension-v1.0.0.zip` steril tanpa file sampah / hidden files / mock.
+- [x] **4.2.** Pengujian unpacking zip dan verifikasi seluruh resource manifest (24 file produksi bersih terverifikasi).
 
 ### 🔹 TAHAP 5: Final Review & Checklist Sebelum Klik Submit
 - [ ] **5.1.** Verifikasi kelengkapan akun Google Chrome Web Store Developer ($5 fee verified).
-- [ ] **5.2.** Verifikasi URL Kebijakan Privasi (`privacy.html`) dapat diakses secara publik lewat HTTPS.
-- [ ] **5.3.** Verifikasi akun reviewer demo aktif di backend Firebase / Cloud Run.
-- [ ] **5.4.** Cross-check checklist CWS: Upload ZIP -> Upload Grafis -> Isi Metadata -> Isi Privacy Practices -> Masukkan Reviewer Notes -> Submit for Review.
+- [x] **5.2.** Verifikasi URL Kebijakan Privasi (`privacy.html`) dapat diakses secara publik lewat HTTPS (`https://telmy-ai.cloud.run/privacy`).
+- [x] **5.3.** Verifikasi akun reviewer demo aktif di backend Firebase / Cloud Run (`reviewer@telmy-ai.cloud.run`).
+- [ ] **5.4.** Cross-check checklist CWS di Developer Dashboard: Upload ZIP -> Upload Grafis -> Isi Metadata -> Isi Privacy Practices -> Masukkan Reviewer Notes -> Submit for Review.

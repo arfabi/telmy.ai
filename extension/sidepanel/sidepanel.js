@@ -325,6 +325,32 @@ document.addEventListener('DOMContentLoaded', async () => {
       fil: 'Itapat o i-click ang numero ng kolum sa form para makita ang detalye at halimbawa.',
       ms: 'Arahkan kursor atau klik nombor ruangan pada borang untuk melihat panduan terperinci.'
     },
+    btn_start_guide: {
+      en: '🚀 Guide Me (Field by Field)',
+      id: '🚀 Pandu Saya (Kolom demi Kolom)',
+      ja: '🚀 ガイドを開始する',
+      ko: '🚀 안내 시작하기',
+      zh: '🚀 开始逐项指引',
+      'zh-TW': '🚀 開始逐項指引',
+      vi: '🚀 Bắt đầu hướng dẫn',
+      th: '🚀 เริ่มต้นคำแนะนำ',
+      hi: '🚀 मार्गदर्शन शुरू करें',
+      fil: '🚀 Simulan ang Gabay',
+      ms: '🚀 Pandu Saya (Ruangan demi Ruangan)'
+    },
+    guide_quota_note: {
+      en: '💡 Uses 1 form quota for 24-hour full assistance on this form',
+      id: '💡 Menggunakan 1 kuota form untuk pendampingan penuh 24 jam',
+      ja: '💡 このフォームで24時間完全ガイド（利用枠1回分）',
+      ko: '💡 이 양식에 대해 24시간 전체 안내 제공 (양식 1회 사용)',
+      zh: '💡 使用1个表单额度，在此表单提供24小时完整指引',
+      'zh-TW': '💡 使用1個表單額度，在此表單提供24小時完整指引',
+      vi: '💡 Sử dụng 1 hạn mức biểu mẫu cho 24 giờ hỗ trợ đầy đủ',
+      th: '💡 ใช้โควตา 1 แบบฟอร์มเพื่อรับคำแนะนำครบถ้วน 24 ชั่วโมง',
+      hi: '💡 इस फॉर्म पर 24 घंटे की पूरी सहायता के लिए 1 फॉर्म कोटा का उपयोग करता है',
+      fil: '💡 Gumagamit ng 1 kuota ng form para sa 24-oras na buong tulong',
+      ms: '💡 Menggunakan 1 kuota borang untuk bantuan penuh 24 jam'
+    },
     detected_fields_header: {
       en: 'Detected Form Fields', id: 'Daftar Kolom Terdeteksi', ja: '検出された入力項目一覧', ko: '감지된 입력란 목록',
       zh: '已检测表单项列表', 'zh-TW': '已偵測欄位清單', vi: 'Danh sách trường đã phát hiện', th: 'รายการช่องที่ตรวจพบ',
@@ -1116,9 +1142,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Load Settings & User
     const stored = await chrome.storage.local.get(['settings', 'hasCompletedOnboarding', 'user', 'telmyBotMode']);
     if (stored.settings) {
+      if (!stored.settings.apiUrl || stored.settings.apiUrl.includes('localhost') || stored.settings.apiUrl.includes('127.0.0.1') || stored.settings.apiUrl.includes('telmy.web.app') || stored.settings.apiUrl.includes('asia-northeast1.run.app')) {
+        stored.settings.apiUrl = 'https://telmy-ai.cloud.run/api';
+        chrome.storage.local.set({ settings: stored.settings });
+      }
       currentLanguage = stored.settings.language || 'en';
       langSelect.value = currentLanguage;
     } else {
+      chrome.storage.local.set({ settings: { language: 'en', apiUrl: 'https://telmy-ai.cloud.run/api', isActive: true } });
       langSelect.value = 'en';
     }
 
@@ -1392,7 +1423,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Handle Firebase Google Sign-In Connect Flow
   async function handleUserAuthConnect() {
     const settings = (await chrome.storage.local.get(['settings'])).settings || {};
-    const apiUrl = settings.apiUrl || 'https://telmy-ai.cloud.run/api';
+    let apiUrl = settings.apiUrl || 'https://telmy-ai.cloud.run/api';
+    if (apiUrl.includes('localhost') || apiUrl.includes('127.0.0.1') || apiUrl.includes('telmy.web.app') || apiUrl.includes('asia-northeast1.run.app')) {
+      apiUrl = 'https://telmy-ai.cloud.run/api';
+    }
     const baseUrl = apiUrl.replace(/\/api\/?$/, '');
 
     // Open live /connect tab for actual Firebase Google Sign-In
@@ -1544,6 +1578,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (elEmptyTitle) elEmptyTitle.textContent = t('empty_fields_title');
     const elEmptyDesc = document.getElementById('lbl-empty-fields-desc');
     if (elEmptyDesc) elEmptyDesc.textContent = t('empty_fields_desc');
+    const elBtnGuide = document.getElementById('lbl-btn-guide-me');
+    if (elBtnGuide) elBtnGuide.textContent = t('btn_start_guide');
+    const elQuotaHint = document.getElementById('lbl-guide-quota-hint');
+    if (elQuotaHint) elQuotaHint.innerHTML = `<small>${escapeHTML(t('guide_quota_note'))}</small>`;
     const elHdr = document.getElementById('lbl-detected-fields-header');
     if (elHdr) elHdr.textContent = t('detected_fields_header');
     const elProg = document.getElementById('lbl-progress-title');
@@ -2460,18 +2498,36 @@ document.addEventListener('DOMContentLoaded', async () => {
       fieldsQuickList.appendChild(item);
     });
 
-    stepperIndicator.textContent = `${activeFieldIndex >= 0 ? activeFieldIndex + 1 : 1} / ${fields.length}`;
-    btnStepperPrev.disabled = activeFieldIndex <= 0;
-    btnStepperNext.disabled = activeFieldIndex >= fields.length - 1;
+    const boxGuideCta = document.getElementById('box-guide-cta');
 
-    if (activeFieldIndex < 0 && fields.length > 0) {
-      selectFieldByIndex(0, false);
+    if (activeFieldIndex < 0) {
+      // User has not explicitly clicked "Guide Me" or a field yet.
+      // Keep empty state visible with Guide Me CTA to avoid unprompted quota consumption.
+      fieldsEmptyState.style.display = 'block';
+      fieldDetailContent.style.display = 'none';
+      if (boxGuideCta) boxGuideCta.style.display = 'block';
+      stepperIndicator.textContent = `0 / ${fields.length}`;
+      btnStepperPrev.disabled = true;
+      btnStepperNext.disabled = false;
+    } else {
+      fieldsEmptyState.style.display = 'none';
+      fieldDetailContent.style.display = 'block';
+      if (boxGuideCta) boxGuideCta.style.display = 'none';
+      stepperIndicator.textContent = `${activeFieldIndex + 1} / ${fields.length}`;
+      btnStepperPrev.disabled = activeFieldIndex <= 0;
+      btnStepperNext.disabled = activeFieldIndex >= fields.length - 1;
     }
   }
 
   function selectFieldByIndex(index, notifyPage = true) {
     if (!detectedFields[index]) return;
     activeFieldIndex = index;
+
+    // Switch display from empty CTA state to field detail
+    fieldsEmptyState.style.display = 'none';
+    fieldDetailContent.style.display = 'block';
+    const boxGuideCta = document.getElementById('box-guide-cta');
+    if (boxGuideCta) boxGuideCta.style.display = 'none';
 
     // Highlight in quick list
     const items = fieldsQuickList.querySelectorAll('.quick-field-item');
@@ -2761,8 +2817,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (activeFieldIndex > 0) selectFieldByIndex(activeFieldIndex - 1, true);
   });
   btnStepperNext.addEventListener('click', () => {
-    if (activeFieldIndex < detectedFields.length - 1) selectFieldByIndex(activeFieldIndex + 1, true);
+    if (activeFieldIndex < 0 && detectedFields && detectedFields.length > 0) {
+      selectFieldByIndex(0, true);
+    } else if (activeFieldIndex < detectedFields.length - 1) {
+      selectFieldByIndex(activeFieldIndex + 1, true);
+    }
   });
+
+  // Explicit Guide Me CTA button listener
+  const btnStartGuide = document.getElementById('btn-start-form-guide');
+  if (btnStartGuide) {
+    btnStartGuide.addEventListener('click', () => {
+      if (detectedFields && detectedFields.length > 0) {
+        selectFieldByIndex(0, true);
+      }
+    });
+  }
 
   // 9. Summary & Progress Pane
   function renderSummaryPane(summary, fields) {
