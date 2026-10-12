@@ -129,6 +129,87 @@
       </button>
     </nav>
 
+    <!-- Accessibility Quick Toolbar (Plan V7: WCAG 2.2 Inclusivity Bridge) -->
+    <div class="sp-a11y-toolbar" id="sp-a11y-toolbar" role="toolbar" aria-label="Aksesibilitas dan Bantuan Khusus">
+      <div class="a11y-toolbar-inner">
+        <!-- 1. Form Spotlight Toggle -->
+        <button type="button" class="a11y-quick-btn" id="btn-a11y-spotlight" title="Form Spotlight (Alt+S) — Meredupkan web dan hanya menyorot kolom aktif">
+          <span class="a11y-btn-icon">🔦</span>
+          <span class="a11y-btn-text">Spotlight</span>
+          <span class="a11y-status-dot" id="dot-a11y-spotlight"></span>
+        </button>
+
+        <!-- 2. Click-to-Speak Toggle -->
+        <button type="button" class="a11y-quick-btn" id="btn-a11y-speak" title="Click-to-Speak — Klik teks apa pun di web untuk mendengarkan suara">
+          <span class="a11y-btn-icon">🔊</span>
+          <span class="a11y-btn-text">Baca Teks</span>
+          <span class="a11y-status-dot" id="dot-a11y-speak"></span>
+        </button>
+
+        <!-- 3. Visual & Contrast Drawer Toggle -->
+        <button type="button" class="a11y-quick-btn" id="btn-a11y-display" title="Pengaturan Tampilan & Kontras (WCAG)">
+          <span class="a11y-btn-icon">♿</span>
+          <span class="a11y-btn-text">Tampilan</span>
+        </button>
+      </div>
+
+      <!-- Accessibility Settings Dropdown Popover -->
+      <div class="a11y-drawer-popover" id="a11y-drawer-popover" style="display: none;">
+        <div class="a11y-popover-header">
+          <strong>♿ Bantuan Penglihatan & Suara</strong>
+          <button type="button" id="btn-close-a11y-popover" class="a11y-popover-close">✕</button>
+        </div>
+
+        <div class="a11y-setting-group">
+          <label class="a11y-setting-label">Ukuran Huruf Panel</label>
+          <div class="a11y-segmented-control" id="ctrl-a11y-font">
+            <button type="button" class="a11y-seg-btn active" data-scale="100">Standar</button>
+            <button type="button" class="a11y-seg-btn" data-scale="125">+25%</button>
+            <button type="button" class="a11y-seg-btn" data-scale="150">+50%</button>
+          </div>
+        </div>
+
+        <div class="a11y-setting-group">
+          <label class="a11y-setting-label">Tema Kontras (WCAG AA/AAA)</label>
+          <div class="a11y-theme-grid" id="ctrl-a11y-theme">
+            <button type="button" class="a11y-theme-btn active" data-theme="default" title="Default Modern">
+              <span class="theme-swatch default"></span>
+              <span class="theme-name">Normal</span>
+            </button>
+            <button type="button" class="a11y-theme-btn" data-theme="yellow-black" title="Kuning di atas Hitam (Standar Katarak/Low-Vision)">
+              <span class="theme-swatch yellow-black"></span>
+              <span class="theme-name">Kuning-Hitam</span>
+            </button>
+            <button type="button" class="a11y-theme-btn" data-theme="sepia" title="Sepia Hangat (Mata Sensitif Silau)">
+              <span class="theme-swatch sepia"></span>
+              <span class="theme-name">Sepia</span>
+            </button>
+            <button type="button" class="a11y-theme-btn" data-theme="dark" title="Dark Mode Nyaman">
+              <span class="theme-swatch dark"></span>
+              <span class="theme-name">Gelap</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="a11y-setting-group">
+          <label class="a11y-setting-label">Kecepatan Suara Panduan</label>
+          <div class="a11y-segmented-control" id="ctrl-a11y-speed">
+            <button type="button" class="a11y-seg-btn" data-rate="0.75">0.75x</button>
+            <button type="button" class="a11y-seg-btn active" data-rate="1.0">1.0x</button>
+            <button type="button" class="a11y-seg-btn" data-rate="1.25">1.25x</button>
+          </div>
+        </div>
+
+        <div class="a11y-toggle-row">
+          <label for="chk-a11y-thick-focus" class="a11y-toggle-label">
+            <span>Garis Fokus Tebal di Website</span>
+            <small>Memperjelas kolom aktif di web pemerintah</small>
+          </label>
+          <input type="checkbox" id="chk-a11y-thick-focus" class="a11y-checkbox">
+        </div>
+      </div>
+    </div>
+
     <!-- Speaking / Audio Live Indicator -->
     <div id="sp-audio-bar" class="sp-audio-bar" style="display: none;">
       <div class="sp-audio-waves">

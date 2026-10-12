@@ -1464,6 +1464,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupVaultController();
     setupQuotaAndPaywall();
     refreshUserQuota();
+    setupAccessibilityToolbar();
 
     // Initialize Mode Toggle Cards (Chatbot vs Voicebot)
     const initialMode = stored.telmyBotMode || 'chat';
@@ -2164,6 +2165,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           'content/scanner.js',
           'content/highlighter.js',
           'content/translator.js',
+          'content/a11y-manager.js',
           'content/content-main.js'
         ]
       });
@@ -5894,6 +5896,199 @@ document.addEventListener('DOMContentLoaded', async () => {
         const planId = btn.getAttribute('data-plan') || 'payg_10';
         triggerPurchase(planId, btn);
       });
+    });
+  }
+
+  // =========================================================
+  // Plan V7: Accessibility Toolbar & Inclusivity Bridge (WCAG 2.1/2.2 AA)
+  // =========================================================
+  function setupAccessibilityToolbar() {
+    const btnSpotlight = document.getElementById('btn-a11y-spotlight');
+    const btnSpeak = document.getElementById('btn-a11y-speak');
+    const btnDisplay = document.getElementById('btn-a11y-display');
+    const popover = document.getElementById('a11y-drawer-popover');
+    const btnClosePopover = document.getElementById('btn-close-a11y-popover');
+    const fontBtns = document.querySelectorAll('#ctrl-a11y-font .a11y-seg-btn');
+    const themeBtns = document.querySelectorAll('#ctrl-a11y-theme .a11y-theme-btn');
+    const speedBtns = document.querySelectorAll('#ctrl-a11y-speed .a11y-seg-btn');
+    const chkThickFocus = document.getElementById('chk-a11y-thick-focus');
+    const rootEl = document.querySelector('.sidepanel-root');
+
+    let isSpotlightOn = false;
+    let isSpeakOn = false;
+
+    // 1. Load saved preferences from chrome.storage.local
+    chrome.storage.local.get([
+      'a11y_spotlight_enabled',
+      'a11y_speak_enabled',
+      'a11y_font_scale',
+      'a11y_contrast_theme',
+      'a11y_thick_focus',
+      'a11y_speech_rate'
+    ], (res) => {
+      if (res.a11y_spotlight_enabled) {
+        isSpotlightOn = true;
+        updateSpotlightUI(true);
+      }
+      if (res.a11y_speak_enabled) {
+        isSpeakOn = true;
+        updateSpeakUI(true);
+      }
+      if (res.a11y_font_scale) {
+        applyFontScale(res.a11y_font_scale);
+      }
+      if (res.a11y_contrast_theme) {
+        applyContrastTheme(res.a11y_contrast_theme);
+      }
+      if (res.a11y_thick_focus && chkThickFocus) {
+        chkThickFocus.checked = true;
+      }
+      if (res.a11y_speech_rate) {
+        speedBtns.forEach(b => {
+          if (b.getAttribute('data-rate') === String(res.a11y_speech_rate)) {
+            speedBtns.forEach(btn => btn.classList.remove('active'));
+            b.classList.add('active');
+          }
+        });
+      }
+    });
+
+    function updateSpotlightUI(active) {
+      if (!btnSpotlight) return;
+      btnSpotlight.classList.toggle('active', active);
+    }
+
+    function updateSpeakUI(active) {
+      if (!btnSpeak) return;
+      btnSpeak.classList.toggle('active', active);
+    }
+
+    // Toggle Spotlight
+    if (btnSpotlight) {
+      btnSpotlight.addEventListener('click', () => {
+        isSpotlightOn = !isSpotlightOn;
+        updateSpotlightUI(isSpotlightOn);
+        chrome.storage.local.set({ a11y_spotlight_enabled: isSpotlightOn });
+        if (currentTabId) {
+          safeSendTabMessage(currentTabId, { type: 'A11Y_SET_SPOTLIGHT', enabled: isSpotlightOn });
+        }
+      });
+    }
+
+    // Toggle Click-to-Speak
+    if (btnSpeak) {
+      btnSpeak.addEventListener('click', () => {
+        isSpeakOn = !isSpeakOn;
+        updateSpeakUI(isSpeakOn);
+        chrome.storage.local.set({ a11y_speak_enabled: isSpeakOn });
+        if (currentTabId) {
+          safeSendTabMessage(currentTabId, { type: 'A11Y_SET_CLICK_TO_SPEAK', enabled: isSpeakOn });
+        }
+      });
+    }
+
+    // Popover Open / Close
+    if (btnDisplay && popover) {
+      btnDisplay.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = popover.style.display === 'block';
+        popover.style.display = isOpen ? 'none' : 'block';
+        btnDisplay.classList.toggle('active', !isOpen);
+      });
+    }
+
+    if (btnClosePopover && popover) {
+      btnClosePopover.addEventListener('click', () => {
+        popover.style.display = 'none';
+        if (btnDisplay) btnDisplay.classList.remove('active');
+      });
+    }
+
+    // Close popover when clicking outside
+    document.addEventListener('click', (e) => {
+      if (popover && popover.style.display === 'block' && !popover.contains(e.target) && e.target !== btnDisplay) {
+        popover.style.display = 'none';
+        if (btnDisplay) btnDisplay.classList.remove('active');
+      }
+    });
+
+    // Font Scale
+    function applyFontScale(scale) {
+      if (!rootEl) return;
+      rootEl.classList.remove('font-scale-125', 'font-scale-150');
+      if (scale === '125') rootEl.classList.add('font-scale-125');
+      if (scale === '150') rootEl.classList.add('font-scale-150');
+
+      fontBtns.forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-scale') === scale);
+      });
+    }
+
+    fontBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const scale = btn.getAttribute('data-scale') || '100';
+        applyFontScale(scale);
+        chrome.storage.local.set({ a11y_font_scale: scale });
+      });
+    });
+
+    // Contrast Themes
+    function applyContrastTheme(theme) {
+      if (!rootEl) return;
+      rootEl.classList.remove('theme-yellow-black', 'theme-sepia', 'theme-dark');
+      if (theme === 'yellow-black') rootEl.classList.add('theme-yellow-black');
+      if (theme === 'sepia') rootEl.classList.add('theme-sepia');
+      if (theme === 'dark') rootEl.classList.add('theme-dark');
+
+      themeBtns.forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-theme') === theme);
+      });
+    }
+
+    themeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const theme = btn.getAttribute('data-theme') || 'default';
+        applyContrastTheme(theme);
+        chrome.storage.local.set({ a11y_contrast_theme: theme });
+      });
+    });
+
+    // Speech Rate
+    speedBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const rate = parseFloat(btn.getAttribute('data-rate')) || 1.0;
+        speedBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        chrome.storage.local.set({ a11y_speech_rate: rate });
+        if (currentTabId) {
+          safeSendTabMessage(currentTabId, { type: 'A11Y_SET_SPEECH_RATE', rate });
+        }
+      });
+    });
+
+    // Thick Focus Checkbox
+    if (chkThickFocus) {
+      chkThickFocus.addEventListener('change', () => {
+        const enabled = chkThickFocus.checked;
+        chrome.storage.local.set({ a11y_thick_focus: enabled });
+        if (currentTabId) {
+          safeSendTabMessage(currentTabId, { type: 'A11Y_SET_THICK_FOCUS', enabled });
+        }
+      });
+    }
+
+    // Sync state if content script sends updates (e.g. from Alt+S or in-page wand bar)
+    chrome.runtime.onMessage.addListener((msg) => {
+      if (msg.type === 'A11Y_STATE_CHANGED' && msg.state) {
+        if (typeof msg.state.spotlightEnabled === 'boolean') {
+          isSpotlightOn = msg.state.spotlightEnabled;
+          updateSpotlightUI(isSpotlightOn);
+        }
+        if (typeof msg.state.clickToSpeakEnabled === 'boolean') {
+          isSpeakOn = msg.state.clickToSpeakEnabled;
+          updateSpeakUI(isSpeakOn);
+        }
+      }
     });
   }
 

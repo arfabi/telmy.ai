@@ -59,6 +59,7 @@
         "content/scanner.js",
         "content/highlighter.js",
         "content/translator.js",
+        "content/a11y-manager.js",
         "content/content-main.js"
       ],
       "css": [

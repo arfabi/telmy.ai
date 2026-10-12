@@ -96,6 +96,11 @@ window.GMTHighlighter = (function () {
 
     el.classList.add(HIGHLIGHT_CLASS);
 
+    // Plan V7: Move Form Spotlight if enabled
+    if (window.TelmyA11y && typeof window.TelmyA11y.onFieldActive === 'function') {
+      window.TelmyA11y.onFieldActive(el);
+    }
+
     const badge = document.querySelector(`.${BADGE_CLASS}[data-gmt-index="${index}"]`);
     if (badge) {
       badge.classList.add('gmt-badge-active');

@@ -475,6 +475,55 @@
       sendResponse({ success: true, fields: auditPayload });
       return false;
     }
+
+    // I. Plan V7: Accessibility Bridge Runtime Handlers
+    if (message.type === 'A11Y_TOGGLE_SPOTLIGHT') {
+      const enabled = window.TelmyA11y ? window.TelmyA11y.toggleSpotlight() : false;
+      sendResponse({ success: true, enabled });
+      return false;
+    }
+
+    if (message.type === 'A11Y_SET_SPOTLIGHT') {
+      if (window.TelmyA11y) window.TelmyA11y.setSpotlight(message.enabled);
+      sendResponse({ success: true, enabled: message.enabled });
+      return false;
+    }
+
+    if (message.type === 'A11Y_TOGGLE_CLICK_TO_SPEAK') {
+      const enabled = window.TelmyA11y ? window.TelmyA11y.toggleClickToSpeak() : false;
+      sendResponse({ success: true, enabled });
+      return false;
+    }
+
+    if (message.type === 'A11Y_SET_CLICK_TO_SPEAK') {
+      if (window.TelmyA11y) window.TelmyA11y.setClickToSpeak(message.enabled);
+      sendResponse({ success: true, enabled: message.enabled });
+      return false;
+    }
+
+    if (message.type === 'A11Y_SET_THICK_FOCUS') {
+      if (window.TelmyA11y) window.TelmyA11y.setThickFocus(message.enabled);
+      sendResponse({ success: true, enabled: message.enabled });
+      return false;
+    }
+
+    if (message.type === 'A11Y_SET_SPEECH_RATE') {
+      if (window.TelmyA11y) window.TelmyA11y.setSpeechRate(message.rate);
+      sendResponse({ success: true, rate: message.rate });
+      return false;
+    }
+
+    if (message.type === 'A11Y_SET_LANGUAGE') {
+      if (window.TelmyA11y) window.TelmyA11y.setLanguage(message.lang);
+      sendResponse({ success: true, lang: message.lang });
+      return false;
+    }
+
+    if (message.type === 'A11Y_GET_STATE') {
+      const state = window.TelmyA11y ? window.TelmyA11y.getState() : {};
+      sendResponse({ success: true, state });
+      return false;
+    }
   });
 
   let scanLadderTimers = [];

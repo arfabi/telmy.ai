@@ -121,7 +121,7 @@ if (chrome.contextMenus && chrome.contextMenus.onClicked) {
           // If content script was not loaded yet, inject into main frame dynamically
           chrome.scripting.executeScript({
             target: { tabId: tab.id },
-            files: ['content/scanner.js', 'content/highlighter.js', 'content/translator.js', 'content/content-main.js']
+            files: ['content/scanner.js', 'content/highlighter.js', 'content/translator.js', 'content/a11y-manager.js', 'content/content-main.js']
           }).then(() => {
             setTimeout(() => {
               chrome.tabs.sendMessage(tab.id, { type: 'ACTIVATE_SCANNER' }, () => {
