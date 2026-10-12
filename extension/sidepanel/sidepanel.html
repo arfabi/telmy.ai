@@ -115,17 +115,17 @@
     <!-- Navigation Tabs: 3 Main Pillars -->
     <nav class="sp-nav-tabs" id="sp-nav-tabs">
       <button class="sp-tab-btn active" data-tab="chat" id="tab-btn-chat" title="AI Assistant (Chat & Voice)">
-        <span class="tab-icon">💬</span>
-        <span class="tab-label" id="lbl-tab-chat">Assistant</span>
+        <span class="tab-icon"><img src="../assets/telmy_icon.png" alt="AI" class="tab-logo-icon"></span>
+        <span class="tab-label" id="lbl-tab-chat">AI Assistant</span>
       </button>
-      <button class="sp-tab-btn" data-tab="fields" id="tab-btn-fields" title="Web Form Fields Inspection & Audit">
+      <button class="sp-tab-btn" data-tab="fields" id="tab-btn-fields" title="Forms Guide">
         <span class="tab-icon">📋</span>
-        <span class="tab-label" id="lbl-tab-fields">Fields & Audit</span>
+        <span class="tab-label" id="lbl-tab-fields">Forms Guide</span>
         <span class="sp-badge" id="badge-fields-count">0</span>
       </button>
       <button class="sp-tab-btn" data-tab="vault" id="tab-btn-vault" title="1-Click AutoFill & Encrypted Profile Vault">
         <span class="tab-icon">⚡</span>
-        <span class="tab-label" id="lbl-tab-vault">Auto Fill</span>
+        <span class="tab-label" id="lbl-tab-vault">AutoFill</span>
       </button>
     </nav>
 
@@ -223,6 +223,14 @@
 
           <button id="btn-send" class="btn-send" title="Send Message">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+
+        <!-- Start Over / Start New Session bar right below the chatbox -->
+        <div class="sp-chat-sub-bar" id="sp-chat-sub-bar">
+          <button type="button" id="btn-start-over" class="btn-chat-start-over" title="Clear chat history and reset session">
+            <span class="start-over-icon">🔄</span>
+            <span class="start-over-text">Start Over / Start New Session</span>
           </button>
         </div>
       </div>
@@ -389,11 +397,14 @@
             <!-- 1. INITIAL READY STATE -->
             <div class="sp-card-empty" id="fields-empty-state">
               <div class="sp-empty-icon" id="icon-empty-fields">📋</div>
-              <h3 id="lbl-empty-fields-title">Form Analysis Ready</h3>
-              <p id="lbl-empty-fields-desc">Klik tombol di bawah untuk menganalisis seluruh formulir ini dengan Google Gemini AI.</p>
-              <div style="margin-top: 14px; width: 100%;">
+              <h3 id="lbl-empty-fields-title">Form Not Yet Analyzed</h3>
+              <p id="lbl-empty-fields-desc">This page has not been analyzed yet. Please click the button below to analyze this page to find forms, or you can upload a local PDF / image form.</p>
+              <div style="margin-top: 14px; width: 100%; display: flex; flex-direction: column; gap: 8px;">
                 <button type="button" id="btn-manual-analyze-form" class="btn-guide-me-cta" style="width: 100%; justify-content: center;">
                   <span id="lbl-btn-analyze-now">🔍 Analyze This Form</span>
+                </button>
+                <button type="button" id="btn-empty-upload-local" class="btn-guide-me-secondary-cta" style="width: 100%; justify-content: center;">
+                  <span id="lbl-btn-upload-local">📄 Upload Local File Form</span>
                 </button>
               </div>
             </div>
@@ -401,8 +412,8 @@
             <!-- 2. ANALYZING / LOADING ANIMATION STATE (Shown while Gemini is analyzing) -->
             <div id="fields-analyzing-state" class="sp-card-empty fields-analyzing-card" style="display: none;">
               <div class="analyzing-orbit-icon">✨</div>
-              <h3 class="analyzing-title">Gemini AI Sedang Menganalisis Formulir...</h3>
-              <p class="analyzing-desc">Membaca seluruh struktur input, aturan resmi, dan persyaratan dokumen.</p>
+              <h3 class="analyzing-title" id="lbl-analyzing-title">Gemini AI is Analyzing Form...</h3>
+              <p class="analyzing-desc" id="lbl-analyzing-desc">Reading input structure, official bureaucracy guidelines, and document requirements.</p>
               <div class="skeleton-shimmer-box" style="margin-top: 18px; width: 100%;">
                 <div class="skeleton-line shimmer-anim" style="width: 85%;"></div>
                 <div class="skeleton-line shimmer-anim" style="width: 95%;"></div>
@@ -414,13 +425,13 @@
             <!-- 3. RESULT READY STATE (Shown when backend returns full batch analysis) -->
             <div id="fields-analyzed-state" class="sp-card-empty fields-analyzed-card" style="display: none;">
               <div class="analyzed-success-icon">🎉</div>
-              <h3 class="analyzed-title">Form Berhasil Dianalisis!</h3>
+              <h3 class="analyzed-title" id="lbl-analyzed-title">Form Successfully Analyzed!</h3>
               <div class="form-analyzed-summary-box">
-                <span class="summary-box-label">📌 Formulir ini adalah:</span>
-                <p id="analyzed-summary-text" class="summary-box-desc">Memuat ringkasan formulir...</p>
+                <span class="summary-box-label" id="lbl-analyzed-summary-box-label">📌 This form is for:</span>
+                <p id="analyzed-summary-text" class="summary-box-desc">Loading form overview...</p>
               </div>
-              <p class="analyzed-hint-text">
-                Silakan klik pada field di halaman web yang ingin kamu isi, atau klik tombol di bawah untuk panduan langkah demi langkah:
+              <p class="analyzed-hint-text" id="lbl-analyzed-hint-text">
+                Click any input field on the page to view guidelines, or click the button below for step-by-step guidance:
               </p>
               <button type="button" id="btn-start-form-guide" class="btn-guide-me-cta" style="width: 100%; justify-content: center; margin-top: 6px;">
                 <span id="lbl-btn-guide-me">🚀 Guide Me (Field by Field)</span>
@@ -433,8 +444,8 @@
             <!-- 5. COMPLETION / PRE-SUBMISSION AUDIT STATE (When user clicks Next at last field) -->
             <div id="fields-completion-state" class="sp-card-empty fields-completion-card" style="display: none;">
               <div class="completion-hero-icon">✅</div>
-              <h2 class="completion-title">All Done!</h2>
-              <p class="completion-subtitle">Semua form berhasil kamu isi.</p>
+              <h2 class="completion-title" id="lbl-completion-title">All Done!</h2>
+              <p class="completion-subtitle" id="lbl-completion-subtitle">All form fields have been reviewed and filled.</p>
               
               <button type="button" id="btn-trigger-pre-audit" class="btn-guide-me-cta" style="width: 100%; justify-content: center; margin-top: 14px;">
                 <span>🔍 Pre-Submission Form Audit</span>

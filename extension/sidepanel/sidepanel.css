@@ -711,6 +711,11 @@ body {
 
 /* Chat Footer & Input Bar */
 .sp-chat-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  box-sizing: border-box;
   padding: 8px 12px 14px 12px;
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: var(--sp-glass);
@@ -730,6 +735,8 @@ body {
   padding: 4px 8px;
   border-radius: var(--sp-radius-sm);
   margin-bottom: 6px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .pulse-dot {
@@ -749,7 +756,9 @@ body {
 .sp-input-bar {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* Push-to-Talk Button */
@@ -793,6 +802,8 @@ body {
   position: relative;
   display: flex;
   align-items: center;
+  min-width: 0;
+  width: 100%;
 }
 
 .sp-input {
@@ -806,6 +817,7 @@ body {
   outline: none;
   transition: all 0.15s ease;
   font-family: inherit;
+  box-sizing: border-box;
 }
 
 .sp-input:focus {
@@ -815,14 +827,15 @@ body {
 }
 
 .sp-textarea {
-  min-height: 58px;
+  min-height: 52px;
   max-height: 140px;
-  padding: 12px 38px 12px 14px;
+  padding: 10px 38px 10px 14px;
   border-radius: 16px;
-  resize: vertical;
+  resize: none;
   line-height: 1.45;
   box-sizing: border-box;
-  font-size: 13.5px;
+  font-size: 13px;
+  width: 100%;
 }
 
 /* Onboarding Hero Welcome Card */
@@ -4559,5 +4572,186 @@ body {
   display: block;
 }
 
+/* =========================================================
+   Live Translation Progressive Checklist Card
+   ========================================================= */
+.telmy-translate-progress-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 250px;
+  padding: 4px 0;
+}
 
+.ttp-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 13px;
+  color: #0369a1;
+}
 
+.ttp-header-spinner {
+  display: inline-block;
+  animation: ttpSpin 1.4s linear infinite;
+  font-size: 15px;
+}
+
+@keyframes ttpSpin {
+  100% { transform: rotate(360deg); }
+}
+
+.ttp-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ttp-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #64748b;
+  transition: all 0.25s ease;
+}
+
+.ttp-step.active {
+  color: #0284c7;
+  font-weight: 600;
+}
+
+.ttp-step.completed {
+  color: #059669;
+  font-weight: 500;
+}
+
+.ttp-step-icon {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+.ttp-step.completed .ttp-step-icon {
+  color: #10b981;
+}
+
+.ttp-step.active .ttp-step-icon {
+  color: #0284c7;
+  animation: ttpPulse 0.8s infinite alternate ease-in-out;
+}
+
+@keyframes ttpPulse {
+  0% { transform: scale(0.9); opacity: 0.7; }
+  100% { transform: scale(1.25); opacity: 1; }
+}
+
+/* Zero-Knowledge Password Security Box */
+.alert-password-security {
+  margin-top: 14px;
+  padding: 12px 14px;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1.5px solid rgba(16, 185, 129, 0.35);
+  border-radius: 10px;
+}
+
+.alert-password-security-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+  color: #065f46;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.alert-password-security-desc {
+  margin: 0;
+  font-size: 11px;
+  color: #047857;
+  line-height: 1.45;
+}
+
+/* Tab Icon for AI Assistant */
+.tab-logo-icon {
+  width: 15px;
+  height: 15px;
+  object-fit: contain;
+  vertical-align: middle;
+  border-radius: 3px;
+}
+
+/* Chat Sub-bar with Start Over / Start New Session button */
+.sp-chat-sub-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 12px 6px;
+  background: transparent;
+}
+
+.btn-chat-start-over {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.18s ease-in-out;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.btn-chat-start-over:hover {
+  background: rgba(37, 99, 235, 0.06);
+  border-color: rgba(37, 99, 235, 0.3);
+  color: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.12);
+}
+
+.btn-chat-start-over .start-over-icon {
+  font-size: 11.5px;
+  transition: transform 0.3s ease;
+}
+
+.btn-chat-start-over:hover .start-over-icon {
+  transform: rotate(180deg);
+}
+
+/* Forms Guide Secondary CTA (Upload Local File Form) */
+.btn-guide-me-secondary-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 9px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.btn-guide-me-secondary-cta:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: #0f172a;
+  transform: translateY(-1px);
+}

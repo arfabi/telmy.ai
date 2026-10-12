@@ -273,8 +273,48 @@
     return revertedCount;
   }
 
+  /**
+   * Page-wide scanning beam animation (loop scan up & down)
+   */
+  function showScanAnimation() {
+    if (document.getElementById('telmy-page-scan-overlay')) return;
+    const overlay = document.createElement('div');
+    overlay.id = 'telmy-page-scan-overlay';
+    overlay.innerHTML = `
+      <div class="telmy-page-scan-haze"></div>
+      <div class="telmy-page-scan-beam"></div>
+      <div class="telmy-page-scan-badge">
+        <span class="telmy-scan-spin">✨</span>
+        <span>Telmy.ai Scanning & Translating...</span>
+      </div>
+    `;
+    document.documentElement.appendChild(overlay);
+  }
+
+  function hideScanAnimation() {
+    const overlay = document.getElementById('telmy-page-scan-overlay');
+    if (overlay) {
+      overlay.style.opacity = '0';
+      setTimeout(() => {
+        if (overlay.parentNode) overlay.remove();
+      }, 400);
+    }
+  }
+
   // Runtime message listener
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === 'START_PAGE_SCAN_ANIMATION') {
+      showScanAnimation();
+      sendResponse({ success: true });
+      return false;
+    }
+
+    if (message.type === 'STOP_PAGE_SCAN_ANIMATION') {
+      hideScanAnimation();
+      sendResponse({ success: true });
+      return false;
+    }
+
     if (message.type === 'TRANSLATOR_EXTRACT_TEXTS') {
       const data = extractPageTexts(message.maxTokens || 140);
       sendResponse({ success: true, ...data });
@@ -282,6 +322,7 @@
     }
 
     if (message.type === 'TRANSLATOR_APPLY_TRANSLATIONS') {
+      hideScanAnimation();
       const count = applyTranslations(message.translations, message.targetLanguage);
       sendResponse({
         success: true,
@@ -293,6 +334,7 @@
     }
 
     if (message.type === 'TRANSLATOR_REVERT_TRANSLATIONS') {
+      hideScanAnimation();
       const count = revertTranslations();
       sendResponse({
         success: true,
@@ -316,6 +358,8 @@
     extractPageTexts,
     applyTranslations,
     revertTranslations,
+    showScanAnimation,
+    hideScanAnimation,
     isTranslated: () => isPageTranslated,
     getLanguage: () => translatedLanguage
   };

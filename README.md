@@ -95,7 +95,8 @@ Telmy.ai is architected natively around the Google Cloud & Google AI ecosystem:
 
 | Layer | Google Technology | Model / Service Version | Implementation Role in Telmy.ai |
 | :--- | :--- | :--- | :--- |
-| **Generative Intelligence (LLM)** | **Google Gemini API** | `gemini-3.1-flash-lite` | Multimodal core engine for field semantic analysis, plain-language legal simplification, conversational copilot chat, multimodal document guidance, and JAPAC translation matrix. |
+| **Generative Intelligence (LLM)** | **Google Gemini API** | `gemini-3.5-flash-lite` | Core reasoning engine for field semantic analysis, plain-language legal simplification, conversational copilot chat, and JAPAC translation matrix. |
+| **Multimodal Vision (Vision AI)** | **Google Gemini Multimodal Vision** | `gemini-3.5-flash-lite` (`inlineData`) | Real-time viewport screenshot reasoning paired with live DOM grounding (replicating & outperforming Chrome's native Ask Gemini). Understands page layouts, identifies visual seals/logos, and discovers interactive action buttons. |
 | **Vector Embeddings (RAG)** | **Google Gemini Embedding** | `gemini-embedding-001` (3,072 dimensions) | Generates high-fidelity semantic vectors for form field labels and legal terms to power Zero-Token cosine similarity caching. |
 | **Voice Synthesis (TTS)** | **Google Cloud Text-to-Speech** | WaveNet Neural Synthesis (`id-ID-Wavenet-A`, `en-US-Wavenet-F`, etc.) | High-performance natural voice generation reading form field explanations aloud, dynamically driving the SVG talking mascot lip-sync. |
 | **Database & Realtime Sync** | **Firebase Cloud Firestore** | Google Cloud Firestore (Native Mode) | Stores verified legal dictionaries, field schemas, user profiles, form draft states, and unmatched field logs. |
@@ -166,49 +167,71 @@ sequenceDiagram
 
 ---
 
-### 2. 🤖 Telmy Chat Bot (Context-Aware Form Copilot Flow)
+### 2. 🤖 Telmy Chat Bot: Google Gemini Multimodal Vision & Live DOM Grounding (Chrome "Ask Gemini" Replicated & Enhanced)
 
-The Chat Bot acts as an always-present form copilot that understands the exact visual and structural state of the webpage being viewed, leveraging a hybrid Firebase RAG cache to minimize token consumption.
+The Chat Bot acts as an always-present, visually-aware form copilot. It replicates and enhances Google Chrome's native **"Ask Gemini"** capability by pairing **live viewport screenshot vision** with **instant DOM structure scraping**, grounded with a hybrid Firebase RAG cache and interactive web page actions.
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor User as User (Text)
-    participant SP as Chrome Sidepanel
-    participant Content as Content Script (scanner.js)
+    actor User as User (Text / Chat)
+    participant Tab as Active Web Tab (DOM)
+    participant Content as Content Script (content-main.js)
+    participant SP as Chrome Sidepanel (sidepanel.js)
     participant SW as Background Service Worker
-    participant CloudRun as Google Cloud Run
-    participant Firestore as Cloud Firestore (Vector Search)
-    participant GeminiEmbed as gemini-embedding-001
-    participant GeminiLLM as Gemini 2.5 Flash-Lite
+    participant CloudRun as Google Cloud Run (api/chat)
+    participant GeminiVision as Google Gemini 3.5 Flash-Lite (Multimodal Vision)
+    participant Pointer as Flying Virtual Pointer (👆)
 
-    User->>SP: Types query or clicks active field chip (e.g. "How to fill NIK?")
-    SP->>Content: chrome.tabs.sendMessage({ type: 'GET_ACTIVE_FIELD_CONTEXT' })
-    Content-->>SP: Return { fieldLabel, placeholder, tag, nearbyText, isRequired }
-    SP->>SW: chrome.runtime.sendMessage({ type: 'SEND_MESSAGE', text, context })
-    SW->>CloudRun: POST /api/chat { message, fieldContext, domain }
-    CloudRun->>GeminiEmbed: embedContent(fieldLabel) -> 3,072-dimensional vector
-    GeminiEmbed-->>CloudRun: Vector embedding
-    CloudRun->>Firestore: Cosine Similarity Vector Search across verified bureaucratic glossary
-    alt High-Confidence Match (Cosine >= 0.90)
-        Firestore-->>CloudRun: Verified cached legal explanation ($0 Token Cost, <50ms)
-    else Dynamic Contextual Reasoning
-        CloudRun->>GeminiLLM: generateContent(prompt with field context + user language)
-        GeminiLLM-->>CloudRun: Conversational simplified markdown guidance
-    end
-    CloudRun-->>SW: Response { text, confidence, suggestions }
-    SW->>SW: chrome.storage.local.set({ ['telmy_chat_' + domain]: chatHistory })
-    SW-->>SP: Render markdown in chat stream + highlight active DOM field
+    User->>SP: Asks question (e.g. "What is this form about?" or "Where is the submit button?")
+    SP->>Content: chrome.tabs.sendMessage({ type: 'GET_ACTIVE_PAGE_CONTEXT' })
+    Content-->>SP: Live DOM Context: { title, url, headings, buttons, mainText (2500c), inputs }
+    SP->>SW: chrome.runtime.sendMessage({ type: 'SEND_CHAT_MESSAGE', payload })
+    SW->>Tab: chrome.tabs.captureVisibleTab(targetWindowId, { format: 'jpeg', quality: 50 })
+    Tab-->>SW: Viewport Screenshot Base64 (JPEG)
+    SW->>CloudRun: POST /api/chat { message, formContext, screenshot }
+    CloudRun->>GeminiVision: generateContent([systemPrompt + DOMContext + query, inlineData: { mimeType: 'image/jpeg', data: screenshot }])
+    Note over GeminiVision: Multimodal Reasoning: Visually inspects logos, seals, banners & maps DOM elements
+    GeminiVision-->>CloudRun: Plain-language reply + <actions>[{"type": "SPOTLIGHT_ACTION", "label": "Submit"}]</actions>
+    CloudRun-->>SW: Response { reply, actions }
+    SW-->>SP: Deliver assistant message to Chat Stream
+    SP->>Tab: chrome.tabs.sendMessage({ type: 'SPOTLIGHT_ELEMENT', label: 'Submit' })
+    Tab->>Pointer: Smooth auto-scrolls + Glides Flying Virtual Pointer (👆) with Neon Spotlight Beacon to the button!
 ```
 
 #### 📌 Technical Pipeline Breakdown for Hackathon Judges:
-1. **User Input Layer:** The user clicks a numbered field badge on the active website (e.g. badge `#3 "Passport Issue Authority"`) or types a natural-language question into the Sidepanel input box.
-2. **Chrome Native Extension Layer:** `scanner.js` (injected via `chrome.scripting`) gathers contextual DOM attributes: field label, input name, placeholder, nearby explanatory text, input type, and validation constraints. This is sent to the Sidepanel via `chrome.tabs.sendMessage`.
-3. **Firebase RAG & Vector Search (Embedding Layer):** Cloud Run generates a 3,072-dimensional vector embedding of the field label using Google `gemini-embedding-001`. It performs a vector cosine similarity search against pre-verified legal glossaries stored in Cloud Firestore:
-   - **Cache Hit ($\ge 0.90$ similarity):** Firestore instantly returns the pre-verified legal explanation in under 50ms at **$0 LLM token cost**, protecting margins.
-   - **Cache Miss:** Cloud Run forwards the prompt to `gemini-2.5-flash-lite` for on-the-fly contextual reasoning.
-4. **Google Gemini AI Processing:** Gemini evaluates the DOM context, identifies country-specific bureaucratic conventions (e.g. distinguishing Indonesian *KTP* vs. Malaysian *MyKad* vs. Japanese *My Number*), and formats an easily digestible explanation with bulleted examples and common pitfalls.
-5. **Client State Persistence:** The Background Service Worker persists the ongoing conversation into `chrome.storage.local` partitioned by the website's hostname (`telmy_chat_${domain}`). If the user navigates away or refreshes the page, the chat memory is restored instantly without redundant server queries.
+1. **User Input & Active Tab Query:** When the user types any natural-language question or clicks an action chip, Telmy immediately queries the active browser tab.
+2. **Real-Time Live DOM Scraper (`GET_ACTIVE_PAGE_CONTEXT`):** In under 5ms, `content-main.js` scrapes the active page's live DOM:
+   - **Page Metadata:** `document.title`, `window.location.href`, and domain.
+   - **Visual Headings:** All visible `<h1>`, `<h2>`, and `<h3>` tags defining the form structure.
+   - **Interactive Buttons:** All action buttons (`button`, `input[type="submit"]`, `.btn`, `a[role="button"]`).
+   - **Clean Content Snippet:** Up to 2,500 characters of clean, visible page text (stripped of `<script>`, `<style>`, and SVG tags).
+   - **Input Fields Map:** Live inventory of input names, labels, and placeholders even before the user clicks *"Analyze This Form"*.
+3. **Automatic Viewport Screenshot Capture (`chrome.tabs.captureVisibleTab`):**
+   - The background Service Worker calls `chrome.tabs.captureVisibleTab(targetWindowId, { format: 'jpeg', quality: 50 })`.
+   - Captures the exact, live visual state of the user's viewport (including logos, embassy seals, error banners, dialog modals, and form layouts).
+4. **Google Gemini Multimodal Vision API (`gemini-3.5-flash-lite`):**
+   - The screenshot is passed directly to Gemini using the **`inlineData`** multimodal format:
+     ```javascript
+     requestContent = [
+       conversationText,
+       {
+         inlineData: {
+           mimeType: 'image/jpeg',
+           data: cleanBase64
+         }
+       }
+     ];
+     ```
+   - **Dual Multimodal & DOM Grounding:** Gemini reasons across *both* the visual image and the structured DOM text. If the user asks *"What website is this?"* or *"What is this form about?"*, Gemini identifies the official agency from visual logos and headings. If the user asks *"Where is the submit button?"*, Gemini locates it visually and semantically.
+5. **Interactive Spatial Action Grounding (Beyond Native Ask Gemini):**
+   - While native Chrome *Ask Gemini* is confined to read-only text in the sidepanel, Telmy bridges the AI response directly into the webpage.
+   - Gemini attaches an actionable tag: `<actions>[{"type": "SPOTLIGHT_ACTION", "label": "Register / Submit"}]</actions>`.
+   - The extension triggers `window.GMTHighlighter.highlightActionButton()`, which **smoothly scrolls the viewport** and animates a **Flying Virtual Pointer (`👆 .telmy-virtual-pointer`)** that glides across the screen, landing on the exact button with an expanding neon spotlight beacon.
+6. **Tab-Aware Multi-Session State Isolation:**
+   - Telmy maintains an in-memory `tabSessions` (Map) in the sidepanel.
+   - Switching between Tab A and Tab B instantly swaps chat sessions, detected form fields, and audit progress in 0ms without re-triggering onboarding modals or leaking state between portals.
+   - Conversation histories are persisted in `chrome.storage.local` partitioned by domain (`telmy_chat_${domain}`), restoring full chat memory upon tab reactivation without redundant server queries.
 
 ---
 

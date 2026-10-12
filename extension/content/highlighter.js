@@ -117,15 +117,114 @@ window.GMTHighlighter = (function () {
     }
   }
 
+  let currentActionBeacon = null;
+  let currentActionTarget = null;
+  let currentVirtualPointer = null;
+  let actionHighlightTimeout = null;
+
+  function highlightActionButton(targetElement, labelText = 'Klik tombol ini untuk memulai!') {
+    clearActionButtonHighlight();
+
+    if (!targetElement) return;
+    currentActionTarget = targetElement;
+
+    targetElement.classList.add('telmy-action-spotlight');
+    try {
+      targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } catch (e) {}
+
+    // Calculate position
+    const rect = targetElement.getBoundingClientRect();
+    const targetTop = Math.max(10, rect.top + window.scrollY);
+    const targetLeft = Math.max(10, rect.left + window.scrollX);
+
+    // 1. Create Beacon Tooltip
+    const beacon = document.createElement('div');
+    beacon.className = 'telmy-action-beacon';
+    beacon.innerHTML = `<span>👉</span> <span>${labelText}</span>`;
+    beacon.style.top = `${targetTop - 44}px`;
+    beacon.style.left = `${targetLeft}px`;
+    document.body.appendChild(beacon);
+    currentActionBeacon = beacon;
+
+    // 2. Create Flying Virtual Pointer (Glides from right side toward target button)
+    const pointer = document.createElement('div');
+    pointer.className = 'telmy-virtual-pointer';
+    // Start position near top-right
+    pointer.style.top = `${window.scrollY + 100}px`;
+    pointer.style.left = `${window.scrollX + window.innerWidth - 80}px`;
+    pointer.innerHTML = `
+      <div class="telmy-pointer-ripple"></div>
+      <div class="telmy-pointer-hand">👆</div>
+    `;
+    document.body.appendChild(pointer);
+    currentVirtualPointer = pointer;
+
+    // Glide smoothly into position above target element
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        if (currentVirtualPointer && targetElement.isConnected) {
+          const freshRect = targetElement.getBoundingClientRect();
+          currentVirtualPointer.style.top = `${freshRect.top + window.scrollY + freshRect.height + 4}px`;
+          currentVirtualPointer.style.left = `${freshRect.left + window.scrollX + Math.min(freshRect.width / 2, 60)}px`;
+        }
+      }, 60);
+    });
+
+    // Auto-clear after 9 seconds or when element is clicked
+    if (actionHighlightTimeout) clearTimeout(actionHighlightTimeout);
+    actionHighlightTimeout = setTimeout(() => {
+      clearActionButtonHighlight();
+    }, 9000);
+
+    const onUserInteract = () => {
+      clearActionButtonHighlight();
+      targetElement.removeEventListener('click', onUserInteract);
+    };
+    targetElement.addEventListener('click', onUserInteract, { once: true });
+  }
+
+  function clearActionButtonHighlight() {
+    if (actionHighlightTimeout) {
+      clearTimeout(actionHighlightTimeout);
+      actionHighlightTimeout = null;
+    }
+    document.querySelectorAll('.telmy-action-spotlight').forEach(el => el.classList.remove('telmy-action-spotlight'));
+    if (currentActionBeacon) {
+      currentActionBeacon.remove();
+      currentActionBeacon = null;
+    }
+    if (currentVirtualPointer) {
+      currentVirtualPointer.style.opacity = '0';
+      const ptr = currentVirtualPointer;
+      currentVirtualPointer = null;
+      setTimeout(() => ptr.remove(), 350);
+    }
+    currentActionTarget = null;
+  }
+
+  function clickHighlightedActionButton() {
+    if (currentActionTarget) {
+      currentActionTarget.click();
+      clearActionButtonHighlight();
+      return true;
+    }
+    return false;
+  }
+
   function clearBadges() {
     lastActiveIndex = -1;
     document.querySelectorAll(`.${BADGE_CLASS}`).forEach(b => b.remove());
     document.querySelectorAll(`.${HIGHLIGHT_CLASS}`).forEach(el => el.classList.remove(HIGHLIGHT_CLASS));
+    clearActionButtonHighlight();
   }
 
   return {
     attachBadges,
     setActiveField,
-    clearBadges
+    clearBadges,
+    highlightActionButton,
+    clearActionButtonHighlight,
+    clickHighlightedActionButton
   };
 })();

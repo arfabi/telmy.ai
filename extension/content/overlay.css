@@ -12,6 +12,65 @@
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
+/* Spotlight highlight for CTA / Application Action Buttons */
+.telmy-action-spotlight {
+  outline: 3.5px solid #0071e3 !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 6px rgba(0, 113, 227, 0.35), 0 0 25px rgba(0, 113, 227, 0.6) !important;
+  animation: telmySpotlightPulse 1.2s infinite alternate !important;
+  position: relative !important;
+  z-index: 2147483641 !important;
+}
+
+@keyframes telmySpotlightPulse {
+  0% {
+    box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.25), 0 0 15px rgba(0, 113, 227, 0.4);
+    transform: scale(1);
+  }
+  100% {
+    box-shadow: 0 0 0 8px rgba(0, 113, 227, 0.45), 0 0 30px rgba(0, 113, 227, 0.7);
+    transform: scale(1.02);
+  }
+}
+
+/* Floating beacon tooltip pointing at the button */
+.telmy-action-beacon {
+  position: absolute !important;
+  background: linear-gradient(135deg, #0071e3, #1d4ed8) !important;
+  color: #ffffff !important;
+  padding: 6px 14px !important;
+  border-radius: 20px !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.2px !important;
+  white-space: nowrap !important;
+  box-shadow: 0 4px 16px rgba(0, 113, 227, 0.4), 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  z-index: 2147483645 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  pointer-events: none !important;
+  animation: telmyBeaconBounce 1.5s infinite ease-in-out !important;
+}
+
+.telmy-action-beacon::after {
+  content: '' !important;
+  position: absolute !important;
+  bottom: -6px !important;
+  left: 20px !important;
+  width: 0 !important;
+  height: 0 !important;
+  border-left: 6px solid transparent !important;
+  border-right: 6px solid transparent !important;
+  border-top: 6px solid #1d4ed8 !important;
+}
+
+@keyframes telmyBeaconBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
 @keyframes gmt-spin-anim {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
@@ -990,5 +1049,129 @@
 .telmy-translated-field:not(input):not(button):not(select) {
   animation: telmy-translate-glow 1.2s ease-out;
 }
+
+/* =========================================================
+   Telmy Page-Wide Loop Scan Laser Beam Animation
+   ========================================================= */
+#telmy-page-scan-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  pointer-events: none !important;
+  z-index: 2147483640 !important;
+  overflow: hidden !important;
+  transition: opacity 0.4s ease !important;
+}
+
+.telmy-page-scan-beam {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 3.5px !important;
+  background: linear-gradient(90deg, rgba(2, 132, 199, 0) 0%, rgba(56, 189, 248, 0.8) 20%, #38bdf8 50%, rgba(56, 189, 248, 0.8) 80%, rgba(2, 132, 199, 0) 100%) !important;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.95), 0 0 35px rgba(2, 132, 199, 0.7), 0 0 60px rgba(14, 165, 233, 0.4) !important;
+  animation: telmyScanLaserSweep 2.2s ease-in-out infinite alternate !important;
+}
+
+.telmy-page-scan-haze {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100px !important;
+  background: linear-gradient(180deg, rgba(56, 189, 248, 0.12) 0%, rgba(56, 189, 248, 0) 100%) !important;
+  animation: telmyScanLaserSweep 2.2s ease-in-out infinite alternate !important;
+}
+
+.telmy-page-scan-badge {
+  position: fixed !important;
+  top: 18px !important;
+  right: 24px !important;
+  background: rgba(15, 23, 42, 0.9) !important;
+  backdrop-filter: blur(10px) !important;
+  color: #38bdf8 !important;
+  border: 1px solid rgba(56, 189, 248, 0.45) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 16px rgba(56, 189, 248, 0.35) !important;
+  border-radius: 20px !important;
+  padding: 7px 16px !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  letter-spacing: 0.3px !important;
+  animation: telmyScanBadgePulse 1.5s infinite alternate ease-in-out !important;
+}
+
+.telmy-scan-spin {
+  display: inline-block !important;
+  animation: telmyScanRotate 1.5s linear infinite !important;
+}
+
+@keyframes telmyScanLaserSweep {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(calc(100vh - 4px)); }
+}
+
+@keyframes telmyScanBadgePulse {
+  0% { transform: scale(1); opacity: 0.92; }
+  100% { transform: scale(1.03); opacity: 1; }
+}
+
+@keyframes telmyScanRotate {
+  100% { transform: rotate(360deg); }
+}
+
+/* =========================================================
+   Telmy Flying Virtual Pointer & Guided Cursor
+   ========================================================= */
+.telmy-virtual-pointer {
+  position: absolute !important;
+  z-index: 2147483646 !important;
+  pointer-events: none !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  transition: top 0.75s cubic-bezier(0.22, 1, 0.36, 1), left 0.75s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease !important;
+  will-change: left, top !important;
+}
+
+.telmy-pointer-hand {
+  font-size: 32px !important;
+  line-height: 1 !important;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.38)) !important;
+  animation: telmyPointerTap 1.2s infinite ease-in-out !important;
+  transform-origin: top left !important;
+  user-select: none !important;
+}
+
+@keyframes telmyPointerTap {
+  0%, 100% { transform: scale(1) translate(0, 0); }
+  50% { transform: scale(0.85) translate(3px, 3px); }
+}
+
+.telmy-pointer-ripple {
+  position: absolute !important;
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 50% !important;
+  border: 2.5px solid #0071e3 !important;
+  box-shadow: 0 0 14px rgba(0, 113, 227, 0.6) !important;
+  top: -4px !important;
+  left: -4px !important;
+  animation: telmyPointerRippleAnim 1.3s infinite ease-out !important;
+  pointer-events: none !important;
+}
+
+@keyframes telmyPointerRippleAnim {
+  0% { transform: scale(0.3); opacity: 1; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+
+
 
 

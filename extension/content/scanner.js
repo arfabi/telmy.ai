@@ -276,13 +276,10 @@ window.GMTScanner = (function () {
     return false;
   }
 
-  // Strict Privacy: Exclude sensitive fields (password, credit card, CVV, OTP, PIN)
-  function isSensitiveField(el, label) {
-    const type = (el.type || '').toLowerCase();
-    if (type === 'password') return true;
-
+  // Strictly exclude financial & auth token secrets (Credit card, CVV, OTP, auth tokens)
+  function isStrictPaymentOrTokenField(el, label) {
     const autocomplete = (el.getAttribute('autocomplete') || '').toLowerCase();
-    if (autocomplete.includes('password') || autocomplete.includes('cc-') || autocomplete.includes('cvv') || autocomplete.includes('csc')) {
+    if (autocomplete.includes('cc-') || autocomplete.includes('cvv') || autocomplete.includes('csc')) {
       return true;
     }
 
@@ -295,8 +292,30 @@ window.GMTScanner = (function () {
       label || ''
     ].join(' ').toLowerCase();
 
-    const sensitivePattern = /(password|pin\b|kata[_\s-]?sandi|cvv|cvc|credit[_\s-]?card|kartu[_\s-]?kredit|card[_\s-]?number|kode[_\s-]?keamanan|otp\b|token[_\s-]?auth)/i;
-    return sensitivePattern.test(haystack);
+    const paymentPattern = /(pin\b|cvv|cvc|credit[_\s-]?card|kartu[_\s-]?kredit|card[_\s-]?number|kode[_\s-]?keamanan|otp\b|token[_\s-]?auth)/i;
+    return paymentPattern.test(haystack);
+  }
+
+  // Detect Password fields (Preserved for form guidance under Zero-Knowledge policy)
+  function isPasswordField(el, label) {
+    const type = (el.type || '').toLowerCase();
+    if (type === 'password') return true;
+
+    const autocomplete = (el.getAttribute('autocomplete') || '').toLowerCase();
+    if (autocomplete.includes('password') || autocomplete.includes('current-password') || autocomplete.includes('new-password')) {
+      return true;
+    }
+
+    const haystack = [
+      el.id || '',
+      el.name || '',
+      el.getAttribute('placeholder') || '',
+      el.getAttribute('aria-label') || '',
+      typeof el.className === 'string' ? el.className : '',
+      label || ''
+    ].join(' ').toLowerCase();
+
+    return /(password|kata[_\s-]?sandi)/i.test(haystack);
   }
 
   function isSecurityOrCaptchaField(el, label) {
@@ -315,7 +334,7 @@ window.GMTScanner = (function () {
 
   function scanForms(dictionaryFields) {
     const candidateSelector = `
-      input:not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="password"]),
+      input:not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"]),
       select,
       textarea,
       div[role="radiogroup"],
@@ -377,9 +396,10 @@ window.GMTScanner = (function () {
       }
 
       const label = findAssociatedLabel(el);
+      const isPwd = isPasswordField(el, label);
 
-      // Exclude sensitive fields (password, credit card, CVV, OTP, PIN)
-      if (isSensitiveField(el, label)) {
+      // Exclude strict payment / financial / OTP secrets (Credit card, CVV, OTP, auth tokens)
+      if (!isPwd && isStrictPaymentOrTokenField(el, label)) {
         return;
       }
 
@@ -388,19 +408,21 @@ window.GMTScanner = (function () {
         return;
       }
 
-      let rawType = 'text';
-      if (el.tagName === 'SELECT') {
-        rawType = 'select';
-      } else if (el.tagName === 'TEXTAREA') {
-        rawType = 'textarea';
-      } else if (el.getAttribute('role') === 'radiogroup' || (el.tagName === 'INPUT' && el.type === 'radio')) {
-        rawType = 'radio';
-      } else if ((el.getAttribute('role') === 'group') || (el.tagName === 'INPUT' && el.type === 'checkbox')) {
-        rawType = 'checkbox';
-      } else if (el.getAttribute('role') === 'listbox') {
-        rawType = 'select';
-      } else if (el.type) {
-        rawType = el.type.toLowerCase();
+      let rawType = isPwd ? 'password' : 'text';
+      if (!isPwd) {
+        if (el.tagName === 'SELECT') {
+          rawType = 'select';
+        } else if (el.tagName === 'TEXTAREA') {
+          rawType = 'textarea';
+        } else if (el.getAttribute('role') === 'radiogroup' || (el.tagName === 'INPUT' && el.type === 'radio')) {
+          rawType = 'radio';
+        } else if ((el.getAttribute('role') === 'group') || (el.tagName === 'INPUT' && el.type === 'checkbox')) {
+          rawType = 'checkbox';
+        } else if (el.getAttribute('role') === 'listbox') {
+          rawType = 'select';
+        } else if (el.type) {
+          rawType = el.type.toLowerCase();
+        }
       }
 
       // Extract options if it's a choice field
@@ -416,7 +438,7 @@ window.GMTScanner = (function () {
 
       const placeholder = el.getAttribute ? (el.getAttribute('placeholder') || '') : '';
       const mask = detectInputMask(el);
-      const isNumeric = detectNumericNature(el, mask);
+      const isNumeric = isPwd ? false : detectNumericNature(el, mask);
 
       const metadata = {
         scanIndex: counter++,
@@ -424,6 +446,8 @@ window.GMTScanner = (function () {
         id: el.id || '',
         name: el.name || '',
         type: rawType,
+        isPassword: isPwd,
+        isSensitiveField: isPwd,
         options: options.length > 0 ? options : null,
         isNumeric: isNumeric,
         placeholder: placeholder,
@@ -440,7 +464,8 @@ window.GMTScanner = (function () {
       matchedList.push({
         metadata,
         dictEntry: matchedDict || null,
-        isCustomAi: !matchedDict
+        isCustomAi: !matchedDict,
+        isPassword: isPwd
       });
     });
 
@@ -458,8 +483,87 @@ window.GMTScanner = (function () {
       .replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b/g, '[MASKED_EMAIL]');
   }
 
+  // Priority: Detect Action Buttons on Page (e.g. "Ajukan Permohonan", "New Application", "Submit", "Kirim")
+  const ACTION_BUTTON_KEYWORDS = [
+    'ajukan permohonan',
+    'permohonan baru',
+    'buat permohonan',
+    'tambah permohonan',
+    'daftar permohonan',
+    'pengajuan baru',
+    'mulai pengajuan',
+    'daftar baru',
+    'buat baru',
+    'tambah',
+    'new application',
+    'apply now',
+    'submit application',
+    'create application',
+    'start application',
+    'new request',
+    'apply',
+    'kirim permohonan',
+    'submit',
+    'kirim',
+    'daftar',
+    'register',
+    'lanjut',
+    'next',
+    'simpan',
+    'save',
+    'continue',
+    'sign in',
+    'sign up',
+    'login',
+    'masuk'
+  ];
+
+  function findActionButtons() {
+    const candidates = document.querySelectorAll('button, a, [role="button"], input[type="submit"], input[type="button"], .btn, [class*="btn-"], [class*="button"]');
+    const matches = [];
+
+    candidates.forEach((el) => {
+      // Must be visible
+      if (el.offsetParent === null && el.offsetWidth === 0 && el.offsetHeight === 0) return;
+      const style = window.getComputedStyle(el);
+      if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') return;
+
+      const rawText = (el.innerText || el.textContent || el.getAttribute('aria-label') || el.title || el.value || '').trim();
+      const norm = rawText.toLowerCase().replace(/[\n\r\t]+/g, ' ').replace(/\s+/g, ' ').trim();
+
+      // Check if it's an explicit submit input/button
+      const isSubmitType = (el.type === 'submit' || el.getAttribute('type') === 'submit');
+      if (isSubmitType && !norm) {
+        matches.push({
+          element: el,
+          text: 'Submit',
+          keyword: 'submit',
+          tagName: el.tagName.toLowerCase()
+        });
+        return;
+      }
+
+      if (!rawText || rawText.length > 50) return;
+
+      for (const kw of ACTION_BUTTON_KEYWORDS) {
+        if (norm === kw || norm.includes(kw) || kw.includes(norm)) {
+          matches.push({
+            element: el,
+            text: rawText.replace(/[\n\r\t]+/g, ' ').trim(),
+            keyword: kw,
+            tagName: el.tagName.toLowerCase()
+          });
+          break;
+        }
+      }
+    });
+
+    return matches;
+  }
+
   return {
     scanForms,
+    findActionButtons,
     matchFieldToDictionary,
     findAssociatedLabel,
     maskPiiLocally

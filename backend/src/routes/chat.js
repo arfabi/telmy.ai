@@ -9,7 +9,7 @@ const router = express.Router();
  */
 router.post('/chat', async (req, res) => {
   try {
-    const { message, history = [], language = 'en', formContext = {} } = req.body;
+    const { message, history = [], language = 'en', formContext = {}, screenshot = null } = req.body;
 
     if (!message || typeof message !== 'string' || message.trim() === '') {
       return res.status(400).json({ success: false, error: 'Message cannot be empty.' });
@@ -19,7 +19,8 @@ router.post('/chat', async (req, res) => {
       message: message.trim(),
       history,
       language,
-      formContext
+      formContext,
+      screenshot
     });
 
     return res.json({

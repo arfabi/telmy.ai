@@ -404,11 +404,32 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       const apiUrl = getEffectiveApiUrl(settings);
       const { message: chatMsg, history, language, formContext } = message.payload;
 
+      // Capture lightweight viewport screenshot for Gemini Multimodal Vision reasoning
+      let screenshot = null;
+      try {
+        const [activeTab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+        const targetWindowId = (activeTab && activeTab.windowId) ? activeTab.windowId : null;
+        screenshot = await new Promise((resolve) => {
+          chrome.tabs.captureVisibleTab(targetWindowId, { format: 'jpeg', quality: 50 }, (dataUrl) => {
+            if (chrome.runtime.lastError || !dataUrl) {
+              chrome.tabs.captureVisibleTab(null, { format: 'jpeg', quality: 50 }, (dataUrlFallback) => {
+                if (chrome.runtime.lastError || !dataUrlFallback) resolve(null);
+                else resolve(dataUrlFallback);
+              });
+            } else {
+              resolve(dataUrl);
+            }
+          });
+        });
+      } catch (err) {
+        screenshot = null;
+      }
+
       try {
         const response = await fetchWithTimeout(`${apiUrl}/chat`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: chatMsg, history, language, formContext })
+          body: JSON.stringify({ message: chatMsg, history, language, formContext, screenshot })
         }, 35000);
 
         if (response.ok) {
