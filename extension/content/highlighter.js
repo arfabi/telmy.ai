@@ -146,13 +146,14 @@ window.GMTHighlighter = (function () {
     // 1. Create Beacon Tooltip
     const beacon = document.createElement('div');
     beacon.className = 'telmy-action-beacon';
-    beacon.innerHTML = `<span>👉</span> <span>${labelText}</span>`;
+    const cleanLabel = (labelText || 'Ditemukan di sini').replace(/^👉\s*/, '');
+    beacon.innerHTML = `<span>👉</span> <span>${cleanLabel}</span>`;
     beacon.style.top = `${targetTop - 44}px`;
     beacon.style.left = `${targetLeft}px`;
     document.body.appendChild(beacon);
     currentActionBeacon = beacon;
 
-    // 2. Create Flying Virtual Pointer (Glides from right side toward target button)
+    // 2. Create Flying Virtual Pointer (Glides from right side toward target element)
     const pointer = document.createElement('div');
     pointer.className = 'telmy-virtual-pointer';
     // Start position near top-right
@@ -170,8 +171,13 @@ window.GMTHighlighter = (function () {
       setTimeout(() => {
         if (currentVirtualPointer && targetElement.isConnected) {
           const freshRect = targetElement.getBoundingClientRect();
-          currentVirtualPointer.style.top = `${freshRect.top + window.scrollY + freshRect.height + 4}px`;
-          currentVirtualPointer.style.left = `${freshRect.left + window.scrollX + Math.min(freshRect.width / 2, 60)}px`;
+          if (freshRect.height > 80) {
+            currentVirtualPointer.style.top = `${freshRect.top + window.scrollY - 24}px`;
+            currentVirtualPointer.style.left = `${freshRect.left + window.scrollX + 16}px`;
+          } else {
+            currentVirtualPointer.style.top = `${freshRect.top + window.scrollY + freshRect.height + 4}px`;
+            currentVirtualPointer.style.left = `${freshRect.left + window.scrollX + Math.min(freshRect.width / 2, 60)}px`;
+          }
         }
       }, 60);
     });

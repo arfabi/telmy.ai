@@ -43,6 +43,26 @@ window.TelmyA11y = (function () {
           state.currentLang = mapLangToLocale(res.preferred_language);
         }
       });
+
+      // Plan V7: Real-time broadcast sync via chrome.storage.onChanged
+      chrome.storage.onChanged.addListener((changes, area) => {
+        if (area !== 'local') return;
+        if (changes.a11y_spotlight_enabled) {
+          setSpotlight(Boolean(changes.a11y_spotlight_enabled.newValue));
+        }
+        if (changes.a11y_speak_enabled) {
+          setClickToSpeak(Boolean(changes.a11y_speak_enabled.newValue));
+        }
+        if (changes.a11y_thick_focus) {
+          setThickFocus(Boolean(changes.a11y_thick_focus.newValue));
+        }
+        if (changes.a11y_speech_rate) {
+          state.speechRate = parseFloat(changes.a11y_speech_rate.newValue) || 0.9;
+        }
+        if (changes.preferred_language) {
+          state.currentLang = mapLangToLocale(changes.preferred_language.newValue);
+        }
+      });
     }
 
     // Global Keyboard Shortcut: Alt+S to toggle Spotlight
@@ -55,8 +75,27 @@ window.TelmyA11y = (function () {
 
     // Auto-track focused form elements when Spotlight is active
     document.addEventListener('focusin', (e) => {
-      if (state.spotlightEnabled && isFormInput(e.target)) {
+      if (state.spotlightEnabled && isFormInput(e.target) && !isIgnoredLanguageOrSearchInput(e.target)) {
         spotlightElement(e.target);
+      }
+    }, true);
+
+    // Direct click/pointerdown support to move spotlight instantly on click
+    document.addEventListener('pointerdown', (e) => {
+      if (!state.spotlightEnabled) return;
+      if (e.target.closest('#telmy-spotlight-overlay, #telmy-wand-bar, .gmt-side-panel')) return;
+
+      const input = isFormInput(e.target) ? e.target : e.target.closest('input, select, textarea, [role="textbox"], .form-group, .form-row, .Qr7Oae, .geS5n, label');
+      if (input) {
+        if (input.tagName && input.tagName.toLowerCase() === 'label') {
+          const forId = input.getAttribute('for');
+          const bound = forId ? document.getElementById(forId) : input.querySelector('input, select, textarea');
+          if (bound) {
+            spotlightElement(bound);
+            return;
+          }
+        }
+        spotlightElement(input);
       }
     }, true);
 
@@ -72,6 +111,57 @@ window.TelmyA11y = (function () {
     if (!el || !el.tagName) return false;
     const tag = el.tagName.toLowerCase();
     return tag === 'input' || tag === 'select' || tag === 'textarea' || el.getAttribute('role') === 'textbox' || el.isContentEditable;
+  }
+
+  function isIgnoredLanguageOrSearchInput(el) {
+    if (!el) return true;
+    // Ignore elements inside header, footer, nav, or language pickers
+    if (el.closest('header, footer, nav, [role="navigation"], .language-picker, .goog-te-combo, #goog-gt-tt, #sp-header, .sp-lang-menu')) {
+      return true;
+    }
+    const idOrName = ((el.id || '') + ' ' + (el.name || '') + ' ' + (el.className || '') + ' ' + (el.getAttribute('aria-label') || '')).toLowerCase();
+    if (idOrName.includes('lang') || idOrName.includes('bahasa') || idOrName.includes('search') || idOrName.includes('cari') || idOrName.includes('locale')) {
+      return true;
+    }
+    return false;
+  }
+
+  function isVisibleOnScreen(el) {
+    if (!el || !el.getBoundingClientRect) return false;
+    const r = el.getBoundingClientRect();
+    return r.width > 15 && r.height > 10;
+  }
+
+  function findBestFormTarget() {
+    // 1. If user already focused an input
+    if (document.activeElement && isFormInput(document.activeElement) && !isIgnoredLanguageOrSearchInput(document.activeElement)) {
+      return document.activeElement;
+    }
+
+    // 2. If Telmy highlighter already active on a field
+    const activeHighlighted = document.querySelector('.gmt-highlighted-field');
+    if (activeHighlighted) return activeHighlighted;
+
+    // 3. If Telmy scanner has mapped fields
+    if (window.scannedItems && window.scannedItems.length > 0) {
+      for (const item of window.scannedItems) {
+        const el = item?.metadata?.element;
+        if (el && isVisibleOnScreen(el) && !isIgnoredLanguageOrSearchInput(el)) {
+          return el;
+        }
+      }
+    }
+
+    // 4. Find first genuine form input in main content (excluding header, nav, footer, language selectors)
+    const candidates = Array.from(document.querySelectorAll('input:not([type="hidden"]):not([type="submit"]):not([type="button"]), select, textarea, [role="textbox"]'));
+    for (const el of candidates) {
+      if (isIgnoredLanguageOrSearchInput(el)) continue;
+      if (isVisibleOnScreen(el)) {
+        return el;
+      }
+    }
+
+    return null;
   }
 
   function mapLangToLocale(code) {
@@ -101,17 +191,18 @@ window.TelmyA11y = (function () {
     overlayEl.id = 'telmy-spotlight-overlay';
     overlayEl.className = 'telmy-spotlight-overlay';
     overlayEl.setAttribute('aria-hidden', 'true');
+    overlayEl.style.pointerEvents = 'none';
 
     overlayEl.innerHTML = `
-      <svg class="telmy-spotlight-svg" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+      <svg class="telmy-spotlight-svg" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="pointer-events: none !important;">
         <defs>
           <mask id="telmy-spotlight-mask">
-            <rect width="100%" height="100%" fill="white" />
-            <rect id="telmy-spotlight-hole" x="-1000" y="-1000" width="0" height="0" rx="10" ry="10" fill="black" />
+            <rect width="100%" height="100%" fill="white" style="pointer-events: none !important;" />
+            <rect id="telmy-spotlight-hole" x="-1000" y="-1000" width="0" height="0" rx="10" ry="10" fill="black" style="pointer-events: none !important;" />
           </mask>
         </defs>
-        <rect width="100%" height="100%" fill="rgba(10, 15, 30, 0.72)" mask="url(#telmy-spotlight-mask)" />
-        <rect id="telmy-spotlight-border" x="-1000" y="-1000" width="0" height="0" rx="10" ry="10" fill="none" stroke="#3b82f6" stroke-width="3" />
+        <rect width="100%" height="100%" fill="rgba(10, 15, 30, 0.72)" mask="url(#telmy-spotlight-mask)" style="pointer-events: none !important;" />
+        <rect id="telmy-spotlight-border" x="-1000" y="-1000" width="0" height="0" rx="10" ry="10" fill="none" stroke="#3b82f6" stroke-width="3" style="pointer-events: none !important;" />
       </svg>
     `;
 
@@ -131,11 +222,8 @@ window.TelmyA11y = (function () {
       overlayEl.style.display = 'block';
       document.documentElement.classList.add('telmy-spotlight-active');
 
-      // Find current focused or first highlighted element
-      const activeEl = document.activeElement && isFormInput(document.activeElement)
-        ? document.activeElement
-        : document.querySelector('.gmt-highlighted-field') || document.querySelector('input:not([type="hidden"]), select, textarea');
-
+      // Smart discovery: Find true main form input, avoiding header/footer/language pickers
+      const activeEl = findBestFormTarget();
       if (activeEl) {
         spotlightElement(activeEl);
       }

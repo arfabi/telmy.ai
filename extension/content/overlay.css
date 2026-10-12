@@ -1177,6 +1177,13 @@
    ========================================================= */
 
 /* 1. Form Spotlight Overlay (Zero Interference: pointer-events none) */
+.telmy-spotlight-overlay,
+.telmy-spotlight-overlay *,
+.telmy-spotlight-svg,
+.telmy-spotlight-svg * {
+  pointer-events: none !important;
+}
+
 .telmy-spotlight-overlay {
   position: fixed !important;
   inset: 0 !important;

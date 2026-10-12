@@ -230,6 +230,56 @@
         if (!targetEl && /submit|kirim|send|daftar|register|simpan|save/i.test(queryText)) {
           targetEl = document.querySelector('button[type="submit"], input[type="submit"], button.btn-primary, button.btn-submit');
         }
+
+        // 5b. Plan V7 Extension: Search Headings, Articles, News Cards, Paragraphs ("Show Me / Tunjukkan")
+        if (!targetEl && queryText.length > 2) {
+          const cleanQuery = queryText.replace(/^[“"'\s]+|[”"'\s?!.,]+$/g, '').toLowerCase().trim();
+          const contentCandidates = Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6, article, .card, [class*="post"], [class*="news"], [class*="berita"], [class*="article"], [class*="item"], p, li, blockquote, section, div[class*="content"]'));
+          let bestCandidate = null;
+          let bestScore = 0;
+          const words = cleanQuery.split(/\s+/).filter(w => w.length > 1);
+
+          for (const el of contentCandidates) {
+            if (el.offsetParent === null && el.offsetWidth === 0 && el.offsetHeight === 0) continue;
+            const style = window.getComputedStyle(el);
+            if (style.display === 'none' || style.visibility === 'hidden') continue;
+
+            const text = (el.innerText || el.textContent || '').toLowerCase().trim();
+            if (!text || text.length > 3000) continue;
+
+            let score = 0;
+            if (text.includes(cleanQuery)) {
+              // Exact phrase match
+              score = /^h[1-6]$/i.test(el.tagName) ? 140 : (el.tagName.toLowerCase() === 'article' || el.classList.contains('card') ? 110 : 90);
+            } else if (words.length > 1) {
+              // Multi-word match
+              let matched = 0;
+              for (const w of words) {
+                if (text.includes(w)) matched++;
+              }
+              if (matched >= Math.min(2, words.length)) {
+                score = (matched / words.length) * 70;
+              }
+            }
+
+            if (score > bestScore) {
+              bestScore = score;
+              // If container is large, try focusing the specific heading or paragraph inside it that contains the phrase
+              let specificEl = el;
+              if (el.offsetHeight > 350 || el.tagName.toLowerCase() === 'article' || el.classList.contains('card')) {
+                const innerMatch = el.querySelector('h1, h2, h3, h4, h5, h6, [class*="title"], p');
+                if (innerMatch && (innerMatch.innerText || '').toLowerCase().includes(cleanQuery)) {
+                  specificEl = innerMatch;
+                }
+              }
+              bestCandidate = specificEl;
+            }
+          }
+
+          if (bestCandidate) {
+            targetEl = bestCandidate;
+          }
+        }
       }
 
       if (!targetEl && window.GMTScanner && window.GMTScanner.findActionButtons) {
@@ -237,8 +287,13 @@
         if (matches.length > 0) targetEl = matches[0].element;
       }
 
-      if (targetEl && window.GMTHighlighter) {
-        window.GMTHighlighter.highlightActionButton(targetEl, label);
+      if (targetEl) {
+        if (window.GMTHighlighter) {
+          window.GMTHighlighter.highlightActionButton(targetEl, label);
+        }
+        if (window.TelmyA11y && typeof window.TelmyA11y.spotlightElement === 'function') {
+          window.TelmyA11y.spotlightElement(targetEl);
+        }
         sendResponse({ success: true });
       } else {
         sendResponse({ success: false });

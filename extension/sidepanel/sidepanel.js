@@ -393,9 +393,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       hi: 'सारांश', fil: 'Pangkalahatan', ms: 'Ringkasan'
     },
     chat_placeholder: {
-      en: 'Ask Telmy about this form...', id: 'Tanya Telmy tentang form ini...', ja: 'このフォームについて質問...', ko: '이 양식에 대해 질문하기...',
-      zh: '向 Telmy 询问此表单...', 'zh-TW': '向 Telmy 詢問此表單...', vi: 'Hỏi Telmy về biểu mẫu này...', th: 'ถาม Telmy เกี่ยวกับฟอร์มนี้...',
-      hi: 'इस फ़ॉर्म के बारे में Telmy से पूछें...', fil: 'Magtanong kay Telmy tungkol dito...', ms: 'Tanya Telmy tentang borang ini...'
+      en: "Ask Telmy or type 'Show me [words]'...",
+      id: "Tanya Telmy atau ketik 'Tunjukkan [kata]'...",
+      ja: "Telmyに質問、または「[単語]を見せて」...",
+      ko: "Telmy에게 질문하거나 '[단어] 보여줘' 입력...",
+      zh: "向 Telmy 提问或输入“给我看[内容]”...",
+      'zh-TW': "向 Telmy 提問或輸入「給我看[內容]」...",
+      vi: "Hỏi Telmy hoặc gõ 'Cho tôi xem [từ]'...",
+      th: "ถาม Telmy หรือพิมพ์ 'แสดงให้ฉันดู [คำ]'...",
+      hi: "Telmy से पूछें या 'मुझे दिखाओ [शब्द]' लिखें...",
+      fil: "Magtanong o i-type ang 'Ipakita mo [salita]'...",
+      ms: "Tanya Telmy atau taip 'Tunjukkan [perkataan]'..."
     },
     welcome_msg: {
       en: 'Hello! I am **Telmy**, your AI form-filling assistant. Ask me anything about this form using text or click the microphone button below to speak.',
@@ -799,6 +807,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       en: 'Translate this Page', id: 'Terjemahkan Halaman Ini', ja: 'このページを翻訳', ko: '이 페이지 번역',
       zh: '翻译此页面', 'zh-TW': '翻譯此頁面', vi: 'Dịch trang này', th: 'แปลหน้านี้',
       hi: 'इस पृष्ठ का अनुवाद करें', fil: 'Isalin ang pahinang ito', ms: 'Terjemah Halaman Ini'
+    },
+    welcome_chip_show_me: {
+      en: 'Show Me / Find on Screen 👆', id: 'Tunjukkan / Cari di Layar 👆', ja: '画面で指し示す / 見せて 👆', ko: '화면에서 가리켜 보여줘 👆',
+      zh: '在屏幕上指出 / 给我看 👆', 'zh-TW': '在螢幕上指出 / 給我看 👆', vi: 'Chỉ cho tôi / Cho tôi xem trên màn hình 👆', th: 'แสดงให้ฉันดู / ชี้บนหน้าจอ 👆',
+      hi: 'स्क्रीन पर मुझे दिखाओ 👆', fil: 'Ipakita Mo / Ituro sa Screen 👆', ms: 'Tunjukkan / Cari pada Skrin 👆'
     },
     default_chat_reply: {
       en: 'I am ready to help you complete this form. Click on any field on the page to see detailed step-by-step guidance.',
@@ -2380,6 +2393,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             <span class="chip-icon">📄</span>
             <span class="chip-label">4. Upload Local PDF Forms</span>
           </button>
+          <button type="button" class="welcome-action-chip" data-action="SHOW_ME_PROMPT" style="background: rgba(245,158,11,0.06); border-color: rgba(245,158,11,0.22); color: #b45309; font-weight: 600;">
+            <span class="chip-icon">👆</span>
+            <span class="chip-label">5. ${escapeHTML(t('welcome_chip_show_me'))}</span>
+          </button>
         </div>
       `;
 
@@ -2413,6 +2430,75 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (/(terjemah.*halaman|translate.*page|translate this page|terjemahkan web|terjemahkan situs)/i.test(cleanText)) {
       handleTogglePageTranslation(true);
       return;
+    }
+
+    // Direct Intent 1b: Multi-lingual "Show Me / Tunjukkan" Action Command (11+ Languages)
+    const directShowMe = parseShowMeCommand(cleanText);
+    if (directShowMe) {
+      console.log('[Telmy Chat] 🎯 Direct Show Me / Tunjukkan detected:', directShowMe);
+      const labelDisplay = directShowMe.charAt(0).toUpperCase() + directShowMe.slice(1);
+      const lang = currentLanguage || 'en';
+      const localizedReplies = {
+        'id': `Ini dia! Saya sudah menyorot dan menunjukkan bagian tentang **"${labelDisplay}"** di layar Anda! 👆`,
+        'ms': `Ini dia! Saya telah menyorot bahagian mengenai **"${labelDisplay}"** pada skrin anda! 👆`,
+        'ja': `こちらです！画面上の「**${labelDisplay}**」の部分をお示ししました！👆`,
+        'ko': `여기 있습니다! 화면에서 '**${labelDisplay}**' 부분을 가리켰습니다! 👆`,
+        'zh': `在这里！我已经为您在屏幕上指出了“**${labelDisplay}**”部分！👆`,
+        'zh-TW': `在這裡！我已經為您在螢幕上指出了「**${labelDisplay}**」部分！👆`,
+        'vi': `Đây rồi! Tôi đã chỉ phần về **"${labelDisplay}"** trên màn hình của bạn! 👆`,
+        'th': `อยู่นี่แล้ว! ฉันได้ชี้ส่วนที่เกี่ยวกับ **"${labelDisplay}"** บนหน้าจอให้คุณแล้ว! 👆`,
+        'hi': `यह रहा! मैंने आपकी स्क्रीन पर **"${labelDisplay}"** वाला हिस्सा दिखा दिया है! 👆`,
+        'fil': `Heto na! Itinuro ko na ang bahagi tungkol sa **"${labelDisplay}"** sa iyong screen! 👆`,
+        'en': `Here it is! I've highlighted and pointed out the section about **"${labelDisplay}"** on your screen! 👆`
+      };
+      const replyText = localizedReplies[lang] || localizedReplies['en'];
+
+      const targetTabId = currentTabId;
+      if (targetTabId) {
+        safeSendTabMessage(targetTabId, {
+          type: 'SPOTLIGHT_ELEMENT',
+          label: `👉 ${labelDisplay}`,
+          text: directShowMe.toLowerCase()
+        }, (err, res) => {
+          if (!err && res && res.success) {
+            appendChatMessage({
+              role: 'assistant',
+              text: replyText,
+              actions: [
+                { type: 'SPOTLIGHT_ACTION', label: `👉 ${labelDisplay}`, text: directShowMe.toLowerCase() }
+              ],
+              time: formatTime(new Date())
+            });
+            if (!isMuted) speakResponse(replyText);
+            if (telmyAvatar) telmyAvatar.setState('CELEBRATING');
+          } else {
+            injectContentScript(targetTabId, () => {
+              safeSendTabMessage(targetTabId, {
+                type: 'SPOTLIGHT_ELEMENT',
+                label: `👉 ${labelDisplay}`,
+                text: directShowMe.toLowerCase()
+              }, (err2, res2) => {
+                if (!err2 && res2 && res2.success) {
+                  appendChatMessage({
+                    role: 'assistant',
+                    text: replyText,
+                    actions: [
+                      { type: 'SPOTLIGHT_ACTION', label: `👉 ${labelDisplay}`, text: directShowMe.toLowerCase() }
+                    ],
+                    time: formatTime(new Date())
+                  });
+                  if (!isMuted) speakResponse(replyText);
+                  if (telmyAvatar) telmyAvatar.setState('CELEBRATING');
+                } else {
+                  // Fallback to Gemini AI backend chat if not found directly
+                  executeBackendChat(cleanText);
+                }
+              });
+            });
+          }
+        });
+        return;
+      }
     }
 
     // Direct Intent 2: Page Rescan or Application Action Button Search
@@ -2497,6 +2583,85 @@ document.addEventListener('DOMContentLoaded', async () => {
     executeBackendChat(cleanText);
   }
 
+  // Multi-lingual "Show Me / Tunjukkan" Action Intent Parser (11+ Languages)
+  function parseShowMeCommand(text) {
+    if (!text || typeof text !== 'string') return null;
+    const clean = text.trim();
+    const lower = clean.toLowerCase();
+
+    // 1. Indonesian / Malay ("Tunjukkan", "Coba carikan", "Tolong carikan", "Perlihatkan", "Mana", "Cari")
+    const idMatch = lower.match(/^(?:coba\s+|tolong\s+|mohon\s+|bisa\s+tolong\s+|bisa\s+)?(?:tunjukkan|perlihatkan|mana|carikan|cari)\s+(?:tulisan\s+(?:tentang\s+|soal\s+)?|bagian\s+|artikel\s+|berita\s+|postingan\s+|teks\s+|kata\s+)?(?:tentang\s+|soal\s+|mengenai\s+)?(.+)/i);
+    if (idMatch && idMatch[1]) {
+      return idMatch[1].replace(/^(?:tentang|soal|mengenai)\s+/i, '').replace(/^[“"'\s]+|[”"'\s?!.,]+$/g, '').trim();
+    }
+
+    // 2. English ("Show me", "Please show me", "Can you show me", "Point to", "Where is", "Find me", "Find", "Highlight")
+    const enMatch = lower.match(/^(?:please\s+|can\s+you\s+|could\s+you\s+)?(?:show\s+me|point\s+to|where\s+(?:is|'s)|find\s+me|find|show|highlight)\s+(?:the\s+)?(?:article\s+(?:about|on)?|post\s+(?:about|on)?|news\s+(?:about|on)?|text\s+(?:about|on)?|section\s+(?:about|on)?|about\s+)?(.+)/i);
+    if (enMatch && enMatch[1]) {
+      return enMatch[1].replace(/^(?:about|on)\s+/i, '').replace(/^[“"'\s]+|[”"'\s?!.,]+$/g, '').trim();
+    }
+
+    // 3. Japanese (見せて, みせて, 教えて, おしえて, 探して, はどこ)
+    if (clean.includes('見せて') || clean.includes('みせて') || clean.includes('教えて') || clean.includes('おしえて') || clean.includes('探して') || clean.includes('はどこ')) {
+      const q = clean.replace(/^(?:テルミー[、,\s]*|すみません[、,\s]*|お願い[、,\s]*)/, '')
+                     .replace(/(?:について(?:の(?:記事|部分|ニュース)?)?|に関する(?:記事|部分)?)?(?:見せて|みせて|教えて|おしえて|探して|はどこ|ください).*$/, '')
+                     .replace(/^[“"'\s]+|[”"'\s?!。、]+$/g, '')
+                     .trim();
+      if (q) return q;
+    }
+
+    // 4. Korean (보여줘, 찾아줘, 어디 있어, 가리켜줘)
+    if (clean.includes('보여줘') || clean.includes('보여주세요') || clean.includes('찾아줘') || clean.includes('찾아주세요') || clean.includes('가리켜줘') || clean.includes('어디 있어') || clean.includes('어디에 있어')) {
+      const q = clean.replace(/^(?:텔미[、,\s]*|저기[、,\s]*)/, '')
+                     .replace(/(?:에\s*대한\s*(?:기사|뉴스|내용|부분)?)?(?:보여줘|보여주세요|찾아줘|찾아주세요|가리켜줘|어디\s*있어|어디에\s*있어).*$/, '')
+                     .replace(/^[“"'\s]+|[”"'\s?!.]+$/g, '')
+                     .trim();
+      if (q) return q;
+    }
+
+    // 5. Chinese (给我看, 給我看, 指出, 找出, 显示, 顯示, 在哪)
+    if (/给我看|給我看|指出|找出|显示|顯示|在哪/.test(clean)) {
+      const q = clean.replace(/^(?:请|請|麻烦)?(?:给我看|給我看|指出|找出|显示|顯示)\s*(?:关于|關于)?/, '')
+                     .replace(/(?:在哪|在哪裡|在哪儿)\s*[？?]?$/, '')
+                     .replace(/(?:的(?:报道|報導|文章|部分|内容))?$/, '')
+                     .replace(/^[“"'\s]+|[”"'\s?!。，]+$/g, '')
+                     .trim();
+      if (q) return q;
+    }
+
+    // 6. Vietnamese (Cho tôi xem, Chỉ cho tôi, Tìm cho tôi, Ở đâu)
+    const viMatch = lower.match(/^(?:làm\s+ơn\s+|xin\s+vui\s+lòng\s+)?(?:cho\s+tôi\s+xem|chỉ\s+cho\s+tôi|tìm\s+cho\s+tôi|ở\s+đâu)\s+(?:bài\s+viết\s+về|phần\s+về|tin\s+tức\s+về)?(.+)/i);
+    if (viMatch && viMatch[1]) {
+      return viMatch[1].replace(/^về\s+/i, '').replace(/^[“"'\s]+|[”"'\s?!.,]+$/g, '').trim();
+    }
+
+    // 7. Thai (แสดงให้ฉันดู, ชี้ให้ดู, หา, อยู่ไหน)
+    if (clean.includes('แสดงให้ฉันดู') || clean.includes('ชี้ให้ดู') || clean.includes('อยู่ไหน')) {
+      const q = clean.replace(/^(?:กรุณา\s+)?(?:แสดงให้ฉันดู|ชี้ให้ดู)\s*(?:ส่วน|ข่าว|เรื่อง)?/, '')
+                     .replace(/(?:อยู่ไหน).*$/, '')
+                     .replace(/^[“"'\s]+|[”"'\s?!]+$/g, '')
+                     .trim();
+      if (q) return q;
+    }
+
+    // 8. Hindi (मुझे दिखाओ, कहाँ है, ढूंढो)
+    if (clean.includes('दिखाओ') || clean.includes('ढूंढो') || clean.includes('कहाँ है')) {
+      const q = clean.replace(/^(?:कृपया\s+|मुझे\s+)?/, '')
+                     .replace(/(?:के\s*बारे\s*में\s*)?(?:दिखाओ|ढूंढो|कहाँ\s*है).*$/, '')
+                     .replace(/^[“"'\s]+|[”"'\s?!.|]+$/g, '')
+                     .trim();
+      if (q) return q;
+    }
+
+    // 9. Filipino (Ipakita mo, Nasaan ang, Hanapin, Ituro mo)
+    const filMatch = lower.match(/^(?:paki\s+|pakisuyo\s+|maaari\s+bang\s+)?(?:ipakita\s+mo|nasaan\s+ang|hanapin|ituro\s+mo)\s+(?:ang\s+)?(?:balita\s+tungkol\s+sa|bahagi\s+ng)?(.+)/i);
+    if (filMatch && filMatch[1]) {
+      return filMatch[1].replace(/^tungkol\s+sa\s+/i, '').replace(/^[“"'\s]+|[”"'\s?!.,]+$/g, '').trim();
+    }
+
+    return null;
+  }
+
   async function executeBackendChat(cleanText) {
     if (telmyAvatar) telmyAvatar.setState('THINKING');
 
@@ -2576,9 +2741,39 @@ document.addEventListener('DOMContentLoaded', async () => {
       const isAskingForField = /(where|where's|where do i|where i|show|point|highlight|mana|dimana|tunjukkan|upload).*(photo|picture|foto|image|paspor|passport|file|dokumen|document|ktp|email|nama|name|field|kolom)/i.test(cleanText) ||
         /(upload|unggah).*(photo|picture|foto|image|file|dokumen)/i.test(cleanText);
 
+      // Check multi-lingual "Show Me / Tunjukkan" Action Command Parser (11+ Languages)
+      const showMeQuery = parseShowMeCommand(cleanText);
+      let effectiveReply = reply;
+
       let spotlightAct = actions.find(a => a && (a.type === 'SPOTLIGHT_ACTION' || a.type === 'CLICK_ACTION_BUTTON'));
       if (!spotlightAct) {
-        if (isAskingForButton) {
+        if (showMeQuery) {
+          let labelDisplay = showMeQuery.charAt(0).toUpperCase() + showMeQuery.slice(1);
+          spotlightAct = {
+            type: 'SPOTLIGHT_ACTION',
+            label: `👉 ${labelDisplay}`,
+            text: showMeQuery.toLowerCase()
+          };
+          actions.push(spotlightAct);
+
+          // Localized friendly response
+          const lang = currentLanguage || 'en';
+          const q = labelDisplay;
+          const localizedReplies = {
+            'id': `Ini dia! Saya sudah menyorot dan menunjukkan bagian tentang **"${q}"** di layar Anda! 👆`,
+            'ms': `Ini dia! Saya telah menyorot bahagian mengenai **"${q}"** pada skrin anda! 👆`,
+            'ja': `こちらです！画面上の「**${q}**」の部分をお示ししました！👆`,
+            'ko': `여기 있습니다! 화면에서 '**${q}**' 부분을 가리켰습니다! 👆`,
+            'zh': `在这里！我已经为您在屏幕上指出了“**${q}**”部分！👆`,
+            'zh-TW': `在這裡！我已經為您在螢幕上指出了「**${q}**」部分！👆`,
+            'vi': `Đây rồi! Tôi đã chỉ phần về **"${q}"** trên màn hình của bạn! 👆`,
+            'th': `อยู่นี่แล้ว! ฉันได้ชี้ส่วนที่เกี่ยวกับ **"${q}"** บนหน้าจอให้คุณแล้ว! 👆`,
+            'hi': `यह रहा! मैंने आपकी स्क्रीन पर **"${q}"** वाला हिस्सा दिखा दिया है! 👆`,
+            'fil': `Heto na! Itinuro ko na ang bahagi tungkol sa **"${q}"** sa iyong screen! 👆`,
+            'en': `Here it is! I've highlighted and pointed out the section about **"${q}"** on your screen! 👆`
+          };
+          effectiveReply = localizedReplies[lang] || localizedReplies['en'];
+        } else if (isAskingForButton) {
           let btnName = 'Submit';
           const isLogin = /login|sign in|signin|masuk/i.test(cleanText);
           const isRegister = /register|sign up|signup|daftar/i.test(cleanText);
@@ -2619,7 +2814,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       const assistantMsg = {
         role: 'assistant',
-        text: reply,
+        text: effectiveReply,
         actions: actions,
         time: formatTime(new Date())
       };
@@ -2631,7 +2826,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       // Speak response using Gemini TTS
       if (!isMuted) {
-        speakResponse(reply);
+        speakResponse(effectiveReply);
       } else {
         if (telmyAvatar) telmyAvatar.setState('IDLE');
       }
@@ -2816,6 +3011,31 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     } else if (act.type === 'SPOTLIGHT_ACTION') {
       triggerSpotlightOnTab(currentTabId, act);
+    } else if (act.type === 'SHOW_ME_PROMPT') {
+      const lang = currentLanguage || 'en';
+      const promptTemplates = {
+        'id': 'Tunjukkan tulisan tentang ',
+        'ms': 'Tunjukkan bahagian mengenai ',
+        'en': 'Show me section about ',
+        'ja': 'について見せて',
+        'ko': '에 대해 보여줘',
+        'zh': '给我看关于 ',
+        'zh-TW': '給我看關於 ',
+        'vi': 'Cho tôi xem về ',
+        'th': 'แสดงให้ฉันดูเรื่อง ',
+        'hi': 'मुझे दिखाओ ',
+        'fil': 'Ipakita mo ang tungkol sa '
+      };
+      const textToFill = promptTemplates[lang] || promptTemplates['en'];
+      if (chatInput) {
+        chatInput.value = textToFill;
+        chatInput.focus();
+        if (lang === 'ja' || lang === 'ko') {
+          chatInput.setSelectionRange(0, 0);
+        } else {
+          chatInput.setSelectionRange(textToFill.length, textToFill.length);
+        }
+      }
     }
   }
 
@@ -2824,7 +3044,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     safeSendTabMessage(tabId, {
       type: 'SPOTLIGHT_ELEMENT',
       label: spotlightAct.label || 'Klik tombol ini',
-      text: spotlightAct.label || null,
+      text: spotlightAct.text || spotlightAct.label || null,
       selector: spotlightAct.selector || null
     }, (err, res) => {
       if (err || !res || !res.success) {
@@ -2832,7 +3052,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           safeSendTabMessage(tabId, {
             type: 'SPOTLIGHT_ELEMENT',
             label: spotlightAct.label || 'Klik tombol ini',
-            text: spotlightAct.label || null,
+            text: spotlightAct.text || spotlightAct.label || null,
             selector: spotlightAct.selector || null
           });
         });
@@ -5963,27 +6183,46 @@ document.addEventListener('DOMContentLoaded', async () => {
       btnSpeak.classList.toggle('active', active);
     }
 
-    // Toggle Spotlight
-    if (btnSpotlight) {
-      btnSpotlight.addEventListener('click', () => {
-        isSpotlightOn = !isSpotlightOn;
-        updateSpotlightUI(isSpotlightOn);
-        chrome.storage.local.set({ a11y_spotlight_enabled: isSpotlightOn });
-        if (currentTabId) {
-          safeSendTabMessage(currentTabId, { type: 'A11Y_SET_SPOTLIGHT', enabled: isSpotlightOn });
+    async function getEffectiveTabId() {
+      if (currentTabId) return currentTabId;
+      const tab = await getActiveWebTab();
+      if (tab && tab.id) {
+        currentTabId = tab.id;
+        return tab.id;
+      }
+      return null;
+    }
+
+    async function sendA11yMessageWithInjection(message) {
+      const tabId = await getEffectiveTabId();
+      if (!tabId) return;
+      safeSendTabMessage(tabId, message, (err, res) => {
+        if (err || !res) {
+          console.log('[Telmy A11y] Tab did not respond. Injecting content scripts on-demand...');
+          injectContentScript(tabId, () => {
+            safeSendTabMessage(tabId, message);
+          });
         }
       });
     }
 
-    // Toggle Click-to-Speak
+    // Toggle Spotlight (Instant activation with zero refresh required)
+    if (btnSpotlight) {
+      btnSpotlight.addEventListener('click', async () => {
+        isSpotlightOn = !isSpotlightOn;
+        updateSpotlightUI(isSpotlightOn);
+        await chrome.storage.local.set({ a11y_spotlight_enabled: isSpotlightOn });
+        sendA11yMessageWithInjection({ type: 'A11Y_SET_SPOTLIGHT', enabled: isSpotlightOn });
+      });
+    }
+
+    // Toggle Click-to-Speak (Instant activation with zero refresh required)
     if (btnSpeak) {
-      btnSpeak.addEventListener('click', () => {
+      btnSpeak.addEventListener('click', async () => {
         isSpeakOn = !isSpeakOn;
         updateSpeakUI(isSpeakOn);
-        chrome.storage.local.set({ a11y_speak_enabled: isSpeakOn });
-        if (currentTabId) {
-          safeSendTabMessage(currentTabId, { type: 'A11Y_SET_CLICK_TO_SPEAK', enabled: isSpeakOn });
-        }
+        await chrome.storage.local.set({ a11y_speak_enabled: isSpeakOn });
+        sendA11yMessageWithInjection({ type: 'A11Y_SET_CLICK_TO_SPEAK', enabled: isSpeakOn });
       });
     }
 
@@ -6055,25 +6294,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Speech Rate
     speedBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', async () => {
         const rate = parseFloat(btn.getAttribute('data-rate')) || 1.0;
         speedBtns.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        chrome.storage.local.set({ a11y_speech_rate: rate });
-        if (currentTabId) {
-          safeSendTabMessage(currentTabId, { type: 'A11Y_SET_SPEECH_RATE', rate });
-        }
+        await chrome.storage.local.set({ a11y_speech_rate: rate });
+        sendA11yMessageWithInjection({ type: 'A11Y_SET_SPEECH_RATE', rate });
       });
     });
 
     // Thick Focus Checkbox
     if (chkThickFocus) {
-      chkThickFocus.addEventListener('change', () => {
+      chkThickFocus.addEventListener('change', async () => {
         const enabled = chkThickFocus.checked;
-        chrome.storage.local.set({ a11y_thick_focus: enabled });
-        if (currentTabId) {
-          safeSendTabMessage(currentTabId, { type: 'A11Y_SET_THICK_FOCUS', enabled });
-        }
+        await chrome.storage.local.set({ a11y_thick_focus: enabled });
+        sendA11yMessageWithInjection({ type: 'A11Y_SET_THICK_FOCUS', enabled });
       });
     }
 
