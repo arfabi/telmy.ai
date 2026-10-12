@@ -333,6 +333,14 @@
           <span id="mic-status-text">Listening to your voice...</span>
         </div>
 
+        <!-- Dedicated Voicebot Speak Action Bar in Footer (Replaces heavy chatbox during Voicebot mode) -->
+        <div class="sp-voice-action-bar" id="sp-voice-action-bar" style="display: none;">
+          <button type="button" id="btn-voice-footer-mic" class="btn-voice-footer-mic" title="Click to Speak (Push-to-Talk)">
+            <span class="voice-footer-mic-icon">🎙️</span>
+            <span class="voice-footer-mic-text" id="lbl-voice-footer-mic">Click to Speak</span>
+          </button>
+        </div>
+
         <div class="sp-input-bar" id="sp-input-bar">
           <!-- Push-to-Talk Button (Visible in Voicebot mode, hidden in Chatbot mode) -->
           <button id="btn-mic" class="btn-mic" title="Click to Speak (Push-to-Talk)" style="display: none;">
@@ -536,7 +544,11 @@
 
             <!-- 2. ANALYZING / LOADING ANIMATION STATE (Shown while Gemini is analyzing) -->
             <div id="fields-analyzing-state" class="sp-card-empty fields-analyzing-card" style="display: none;">
-              <div class="analyzing-orbit-icon">✨</div>
+              <div class="fields-scanner-visual-stage">
+                <div class="fields-scanner-laser"></div>
+                <div class="fields-scanner-grid"></div>
+                <div class="analyzing-orbit-icon">✨</div>
+              </div>
               <h3 class="analyzing-title" id="lbl-analyzing-title">Gemini AI is Analyzing Form...</h3>
               <p class="analyzing-desc" id="lbl-analyzing-desc">Reading input structure, official bureaucracy guidelines, and document requirements.</p>
               <div class="skeleton-shimmer-box" style="margin-top: 18px; width: 100%;">

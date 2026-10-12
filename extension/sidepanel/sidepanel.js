@@ -40,6 +40,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   const spModeCardsContainer = document.getElementById('sp-mode-cards-container');
   const spModeCompactBar = document.getElementById('sp-mode-compact-bar');
   const lblCompactModeTitle = document.getElementById('lbl-compact-mode-title');
+  const spVoiceActionBar = document.getElementById('sp-voice-action-bar');
+  const btnVoiceFooterMic = document.getElementById('btn-voice-footer-mic');
+  const lblVoiceFooterMic = document.getElementById('lbl-voice-footer-mic');
+  const spInputBar = document.getElementById('sp-input-bar');
 
   // Translation Banner & Quick Chips Elements (Priority 3)
   const spTranslateBanner = document.getElementById('sp-translate-banner');
@@ -82,6 +86,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (fieldsAnalyzedState) fieldsAnalyzedState.style.display = (state === 'analyzed') ? 'block' : 'none';
     if (fieldDetailContent) fieldDetailContent.style.display = (state === 'detail') ? 'block' : 'none';
     if (fieldsCompletionState) fieldsCompletionState.style.display = (state === 'completion') ? 'block' : 'none';
+
+    // Synchronize page-wide scanning beam animation (like Translator)
+    if (currentTabId) {
+      if (state === 'analyzing') {
+        safeSendTabMessage(currentTabId, { type: 'START_PAGE_SCAN_ANIMATION' });
+      } else {
+        safeSendTabMessage(currentTabId, { type: 'STOP_PAGE_SCAN_ANIMATION' });
+      }
+    }
 
     if (spStepperFooter) {
       spStepperFooter.style.display = (state === 'detail' || state === 'completion') ? 'flex' : 'none';
@@ -354,6 +367,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   let isVaultUnlocked = false;
   let currentEditingFieldId = null;
   let pinUnlockCallback = null;
+  let activeVaultMode = 'password'; // 'password' | 'seed_phrase'
+  let isVaultSetupMode = false;
+  let currentGeneratedSeed = '';
+  let lockoutInterval = null;
 
   // Complete JAPAC Multi-Language Matrix (English default)
   const I18N = {
@@ -2938,7 +2955,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Stop audio & reset avatar
-    stopAudio();
+    stopSpeaking();
     if (telmyAvatar) telmyAvatar.setState('IDLE');
 
     // Reset UI panes
@@ -3525,6 +3542,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (btnMic) btnMic.style.display = 'none';
       if (btnMute) btnMute.style.display = 'none';
       if (audioBar) audioBar.style.display = 'none';
+      if (spVoiceActionBar) spVoiceActionBar.style.display = 'none';
+      if (spInputBar) spInputBar.style.display = 'flex';
     } else {
       // Voicebot mode: active speech assistant with large animated robot & big mic
       if (cardModeVoice) cardModeVoice.classList.add('active');
@@ -3534,16 +3553,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       isMuted = false;
       if (spVoicebotStage) spVoicebotStage.style.display = 'flex';
-      if (btnMic) btnMic.style.display = 'flex';
+      if (btnMic) btnMic.style.display = 'none';
       if (btnMute) {
         btnMute.style.display = 'flex';
         btnMute.classList.remove('muted');
       }
+      // Hide chatbox textarea in voicebot mode to save screen space, show clean Click to Speak footer bar
+      if (spInputBar) spInputBar.style.display = 'none';
+      if (spVoiceActionBar) spVoiceActionBar.style.display = 'flex';
 
       // Initialize large avatar in voicebot robot slot if not already created
       if (!voicebotAvatar && window.TelmyAvatar && spVoicebotRobotSlot) {
         voicebotAvatar = new TelmyAvatar(spVoicebotRobotSlot, {
-          size: 88,
+          size: 64,
           interactive: true,
           onClick: handleAvatarTap
         });
@@ -3643,6 +3665,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       isListening = true;
       if (btnMic) btnMic.classList.add('active');
       if (btnVoicebotBigMic) btnVoicebotBigMic.classList.add('listening');
+      if (btnVoiceFooterMic) {
+        btnVoiceFooterMic.classList.add('listening');
+        if (lblVoiceFooterMic) lblVoiceFooterMic.textContent = t('mic_listening') || 'Listening...';
+      }
       if (micBanner) micBanner.style.display = 'flex';
       if (micText) micText.textContent = t('mic_listening');
       if (voicebotAvatar) voicebotAvatar.setState('THINKING');
@@ -3723,6 +3749,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     isListening = false;
     if (btnMic) btnMic.classList.remove('active');
     if (btnVoicebotBigMic) btnVoicebotBigMic.classList.remove('listening');
+    if (btnVoiceFooterMic) {
+      btnVoiceFooterMic.classList.remove('listening');
+      if (lblVoiceFooterMic) lblVoiceFooterMic.textContent = 'Click to Speak';
+    }
     if (micBanner) micBanner.style.display = 'none';
     if (voicebotAvatar && !isSpeaking) voicebotAvatar.setState('IDLE');
     if (telmyAvatar && !isSpeaking) telmyAvatar.setState('IDLE');
@@ -3735,6 +3765,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   if (btnMic) btnMic.addEventListener('click', toggleListening);
   if (btnVoicebotBigMic) btnVoicebotBigMic.addEventListener('click', toggleListening);
+  if (btnVoiceFooterMic) btnVoiceFooterMic.addEventListener('click', toggleListening);
 
   // Mute / Audio Toggle
   if (btnMute) {
@@ -3821,6 +3852,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     if ('speechSynthesis' in window) {
       try { window.speechSynthesis.cancel(); } catch (e) {}
     }
+  }
+  function stopAudio() {
+    stopSpeaking();
   }
 
   if (btnStopAudio) btnStopAudio.addEventListener('click', stopSpeaking);
@@ -4383,7 +4417,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  function switchSourceMode(mode) {
+  function switchSourceMode(mode, shouldSwitchTab = false) {
     activeSourceMode = mode;
     if (btnModeWeb && btnModePdf) {
       btnModeWeb.classList.toggle('active', mode === 'web');
@@ -4393,9 +4427,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       webModeContainer.style.display = mode === 'web' ? 'flex' : 'none';
       pdfModeContainer.style.display = mode === 'pdf' ? 'flex' : 'none';
     }
-    // Switch to fields tab to view it
-    const tabFields = document.querySelector('.sp-tab-btn[data-tab="fields"]');
-    if (tabFields) tabFields.click();
+    // Only switch to fields tab if explicitly requested
+    if (shouldSwitchTab) {
+      const tabFields = document.querySelector('.sp-tab-btn[data-tab="fields"]');
+      if (tabFields) tabFields.click();
+    }
   }
 
   function setupPdfMode() {
@@ -5185,12 +5221,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       btnVaultWipe.addEventListener('click', wipeVault);
     }
 
-    // 6. Dual-Lock Vault Modal Setup & Controls
-    let activeVaultMode = 'password'; // 'password' | 'seed_phrase'
-    let isVaultSetupMode = false;
-    let currentGeneratedSeed = '';
-    let lockoutInterval = null;
-
     function switchVaultModalTab(mode) {
       activeVaultMode = mode;
       if (tabVaultPassword) tabVaultPassword.classList.toggle('active', mode === 'password');
@@ -5268,38 +5298,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       a.click();
       URL.revokeObjectURL(url);
       showToast('📥 Emergency seed phrase text file saved!');
-    }
-
-    function checkAndApplyLockoutUI() {
-      if (!window.TelmyCryptoVault) return false;
-      const status = window.TelmyCryptoVault.getAttemptStatus();
-      if (status.isLocked) {
-        if (vaultLockoutBanner) {
-          vaultLockoutBanner.style.display = 'flex';
-          if (vaultLockoutText) {
-            vaultLockoutText.textContent = `⚠️ Too many failed attempts. Locked for ${status.remainingSeconds}s.`;
-          }
-        }
-        if (btnSubmitVaultPin) btnSubmitVaultPin.disabled = true;
-
-        if (lockoutInterval) clearInterval(lockoutInterval);
-        lockoutInterval = setInterval(() => {
-          const fresh = window.TelmyCryptoVault.getAttemptStatus();
-          if (!fresh.isLocked) {
-            clearInterval(lockoutInterval);
-            lockoutInterval = null;
-            if (vaultLockoutBanner) vaultLockoutBanner.style.display = 'none';
-            if (btnSubmitVaultPin) btnSubmitVaultPin.disabled = false;
-          } else if (vaultLockoutText) {
-            vaultLockoutText.textContent = `⚠️ Too many failed attempts. Locked for ${fresh.remainingSeconds}s.`;
-          }
-        }, 1000);
-        return true;
-      } else {
-        if (vaultLockoutBanner) vaultLockoutBanner.style.display = 'none';
-        if (btnSubmitVaultPin) btnSubmitVaultPin.disabled = false;
-        return false;
-      }
     }
 
     if (tabVaultPassword) tabVaultPassword.addEventListener('click', () => switchVaultModalTab('password'));
@@ -5396,6 +5394,38 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     if (btnVaultLockToggle) {
       btnVaultLockToggle.title = unlocked ? 'Lock Vault (Clear Session from RAM)' : 'Unlock Profile Vault';
+    }
+  }
+
+  function checkAndApplyLockoutUI() {
+    if (!window.TelmyCryptoVault) return false;
+    const status = window.TelmyCryptoVault.getAttemptStatus();
+    if (status.isLocked) {
+      if (vaultLockoutBanner) {
+        vaultLockoutBanner.style.display = 'flex';
+        if (vaultLockoutText) {
+          vaultLockoutText.textContent = `⚠️ Too many failed attempts. Locked for ${status.remainingSeconds}s.`;
+        }
+      }
+      if (btnSubmitVaultPin) btnSubmitVaultPin.disabled = true;
+
+      if (lockoutInterval) clearInterval(lockoutInterval);
+      lockoutInterval = setInterval(() => {
+        const fresh = window.TelmyCryptoVault.getAttemptStatus();
+        if (!fresh.isLocked) {
+          clearInterval(lockoutInterval);
+          lockoutInterval = null;
+          if (vaultLockoutBanner) vaultLockoutBanner.style.display = 'none';
+          if (btnSubmitVaultPin) btnSubmitVaultPin.disabled = false;
+        } else if (vaultLockoutText) {
+          vaultLockoutText.textContent = `⚠️ Too many failed attempts. Locked for ${fresh.remainingSeconds}s.`;
+        }
+      }, 1000);
+      return true;
+    } else {
+      if (vaultLockoutBanner) vaultLockoutBanner.style.display = 'none';
+      if (btnSubmitVaultPin) btnSubmitVaultPin.disabled = false;
+      return false;
     }
   }
 
