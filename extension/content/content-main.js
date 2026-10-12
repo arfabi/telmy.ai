@@ -574,6 +574,22 @@
       return false;
     }
 
+    if (message.type === 'A11Y_SET_FEATURE') {
+      if (window.TelmyA11y && window.TelmyA11y.setFeature) {
+        window.TelmyA11y.setFeature(message.feature, message.value);
+      }
+      sendResponse({ success: true });
+      return false;
+    }
+
+    if (message.type === 'A11Y_RESET_ALL') {
+      if (window.TelmyA11y && window.TelmyA11y.resetAll) {
+        window.TelmyA11y.resetAll();
+      }
+      sendResponse({ success: true });
+      return false;
+    }
+
     if (message.type === 'A11Y_GET_STATE') {
       const state = window.TelmyA11y ? window.TelmyA11y.getState() : {};
       sendResponse({ success: true, state });

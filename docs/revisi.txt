@@ -1,0 +1,95 @@
+1. ketika saya buka apa gitu, tab telmy.ai sering pindah ke forms guide, padahal saya belum nyuruh apa-apa
+
+2. analyze this form, saat klik itu, tolong tambahkan animasi scanning seperti di translator.
+
+3. 🔄
+Start Over / Start New Session : belum berfungsi. ketika saya klik tidak terjadi apa apa.
+muncul error :
+
+Uncaught (in promise) ReferenceError: stopAudio is not defined
+    at HTMLButtonElement.handleStartOverSession (sidepanel.js:2707:5)
+sidepanel.js:2665 [Telmy] 🔄 Resetting session to Start Over...
+sidepanel.js:2707 Uncaught (in promise) ReferenceError: stopAudio is not defined
+    at HTMLButtonElement.handleStartOverSession (sidepanel.js:2707:5)
+
+
+4. saat Uplaod KTP di autofill
+
+sidepanel.js:5415 Uncaught (in promise) ReferenceError: checkAndApplyLockoutUI is not defined
+    at openVaultPinModal (sidepanel.js:5415:5)
+
+5. saat nambahkan field  di autofill
+sidepanel.js:5415 Uncaught (in promise) ReferenceError: checkAndApplyLockoutUI is not defined
+    at openVaultPinModal (sidepanel.js:5415:5)
+openVaultPinModal	@	sidepanel.js:5415
+await in openVaultPinModal		
+(anonymous)	@	sidepanel.js:5135
+
+﻿
+
+5. sebenarnya fitur Tampilan di Accesibilitas, itu untuk siapa ?
+
+♿ Bantuan Penglihatan & Suara
+✕
+Ukuran Huruf Panel
+Standar
++25%
++50%
+Tema Kontras (WCAG AA/AAA)
+
+Normal
+
+Kuning-Hitam
+
+Sepia
+
+Gelap
+Kecepatan Suara Panduan
+0.75x
+1.0x
+1.25x
+Garis Fokus Tebal di Website
+Memperjelas kolom aktif di web pemerintah
+
+
+
+soalnya saya klik kuning hitam, malah extensinya yang berganti, bukan website nya. apa karena kita pakai sidepnael, tidak detect active tabnya.
+
+
+
+6. cek kembali, fitur baca teks, ini buat apa sebenarnya?
+dan saat ini hanya bahasa indonesia. bisa kah ditambah bahasa lain?
+
+kemudian  terima masukan ide ini :
+Sediakan dua cara: sorot teks lalu baca, dan klik paragraf lalu baca.
+Beri highlight kata demi kata dan kontrol kecepatan.
+Deteksi bahasa otomatis.
+Gunakan suara lokal (Web Speech API) sebagai default, supaya teks tidak dikirim ke server.
+
+
+
+7.  Pembesar target klik	Tombol dan kotak centang kecil, sulit untuk tangan gemetar	🟢	2.5.8 (WCAG 2.2)	Mudah dibuat dan dampaknya besar bagi lansia
+
+
+8. Input suara dengan konfirmasi baca ulang	Mengetik NIK 16 digit sulit bagi lansia	🔵	Tidak ada SC	Setelah dikte, bacakan ulang per kelompok angka dan minta konfirmasi
+
+9. Perbaikan label kolom	Input tanpa label, hanya placeholder atau ikon	🟢	1.3.1, 3.3.2, 4.1.2	Label ditebak dari teks di sekitarnya, jadi bisa salah. Tampilkan sebagai “saran”, bukan fakta
+AAA
+
+10. Animasi Dijeda
+Sembunyikan Gambar
+Ramah Disleksia
+Teks Lebih besar : Ada 4 : Tambah 25%, 50, 75 100%.
+Kontras +
+Sembunyikan Gambar
+Ramah Disleksia
+
+
+
+
+
+
+
+
+
+

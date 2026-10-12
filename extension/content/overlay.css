@@ -1322,6 +1322,159 @@ html.telmy-thick-focus-active [role="textbox"]:focus {
   transition: all 0.18s ease-in-out !important;
 }
 
+/* =========================================================
+   Plan V8: WCAG 2.1 / 2.2 & UserWay Style In-Page Modifiers
+   ========================================================= */
+
+/* 1. Kontras + (High Contrast Levels) */
+html.telmy-contrast-1 {
+  filter: contrast(135%) !important;
+}
+
+html.telmy-contrast-2 {
+  filter: contrast(175%) brightness(105%) !important;
+}
+
+html.telmy-contrast-3,
+html.telmy-contrast-3 body {
+  background-color: #000000 !important;
+  color: #ffff00 !important;
+}
+
+html.telmy-contrast-3 *:not([id*="telmy"]):not([class*="telmy"]):not([class*="gmt"]) {
+  background-color: #000000 !important;
+  color: #ffff00 !important;
+  border-color: #ffff00 !important;
+}
+
+html.telmy-contrast-3 a {
+  color: #00e5ff !important;
+  text-decoration: underline !important;
+}
+
+/* 2. Sorot Tautan (Highlight Links - WCAG 1.4.1) */
+html.telmy-links-active a,
+html.telmy-links-active [role="link"] {
+  text-decoration: underline 3px solid #ffcc00 !important;
+  background-color: rgba(254, 240, 138, 0.55) !important;
+  color: #000000 !important;
+  outline: 1.5px solid #ca8a04 !important;
+  padding: 1px 3px !important;
+  border-radius: 3px !important;
+  font-weight: 700 !important;
+}
+
+/* 3. Teks Lebih Besar (Cycle: +25%, +50%, +75%, +100%) */
+html.telmy-text-scale-1 body {
+  zoom: 1.15 !important;
+}
+html.telmy-text-scale-2 body {
+  zoom: 1.30 !important;
+}
+html.telmy-text-scale-3 body {
+  zoom: 1.45 !important;
+}
+html.telmy-text-scale-4 body {
+  zoom: 1.60 !important;
+}
+
+/* 4. Spasi Teks (Text Spacing - WCAG 1.4.12) */
+html.telmy-spacing-1 *:not([id*="telmy"]):not([class*="telmy"]) {
+  letter-spacing: 0.12em !important;
+  word-spacing: 0.16em !important;
+}
+html.telmy-spacing-2 *:not([id*="telmy"]):not([class*="telmy"]) {
+  letter-spacing: 0.20em !important;
+  word-spacing: 0.28em !important;
+}
+html.telmy-spacing-3 *:not([id*="telmy"]):not([class*="telmy"]) {
+  letter-spacing: 0.30em !important;
+  word-spacing: 0.40em !important;
+}
+
+/* 5. Animasi Dijeda (Pause Animations - WCAG 2.2.2) */
+html.telmy-anim-paused *,
+html.telmy-anim-paused *::before,
+html.telmy-anim-paused *::after {
+  animation-play-state: paused !important;
+  transition: none !important;
+}
+
+/* 6. Sembunyikan Gambar (Distraction-Free) */
+html.telmy-hide-images-active img:not([id*="telmy"]):not([class*="telmy"]):not([class*="gmt"]),
+html.telmy-hide-images-active svg:not([id*="telmy"]):not([class*="telmy"]):not([class*="gmt"]),
+html.telmy-hide-images-active video,
+html.telmy-hide-images-active picture,
+html.telmy-hide-images-active canvas:not([class*="telmy"]),
+html.telmy-hide-images-active [style*="background-image"]:not([class*="telmy"]) {
+  opacity: 0.05 !important;
+  filter: blur(4px) !important;
+}
+
+/* 7. Ramah Disleksia (OpenDyslexic & High-Legibility Font) */
+html.telmy-dyslexia-active *:not([id*="telmy"]):not([class*="telmy"]):not([class*="gmt"]) {
+  font-family: 'OpenDyslexic', 'Comic Sans MS', 'Trebuchet MS', sans-serif !important;
+}
+
+/* 8. Kursor (Cycle: Besar Putih, Besar Hitam Kontras) */
+html.telmy-cursor-1,
+html.telmy-cursor-1 * {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffffff' stroke='%23000000' stroke-width='1.5' d='M4.5 3.5l14 10.5-6.5 1 4.5 7.5-3 1.5-4.5-7.5-4.5 4.5z'/%3E%3C/svg%3E"), auto !important;
+}
+
+html.telmy-cursor-2,
+html.telmy-cursor-2 * {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44' viewBox='0 0 24 24'%3E%3Cpath fill='%23000000' stroke='%23ffd600' stroke-width='2' d='M4.5 3.5l14 10.5-6.5 1 4.5 7.5-3 1.5-4.5-7.5-4.5 4.5z'/%3E%3C/svg%3E"), auto !important;
+}
+
+/* 9. Keterangan Alat (Tooltips) */
+html.telmy-tooltips-active [title]:hover::after,
+html.telmy-tooltips-active [aria-label]:hover::after {
+  content: " 💬 " attr(title) attr(aria-label) !important;
+  position: absolute !important;
+  background: #1e293b !important;
+  color: #ffffff !important;
+  padding: 4px 10px !important;
+  border-radius: 6px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  z-index: 2147483647 !important;
+  white-space: nowrap !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+  pointer-events: none !important;
+}
+
+/* 10. Tinggi Garis (Line Height - WCAG 1.4.12) */
+html.telmy-lineheight-1 *:not([id*="telmy"]):not([class*="telmy"]) {
+  line-height: 1.8 !important;
+}
+html.telmy-lineheight-2 *:not([id*="telmy"]):not([class*="telmy"]) {
+  line-height: 2.1 !important;
+}
+html.telmy-lineheight-3 *:not([id*="telmy"]):not([class*="telmy"]) {
+  line-height: 2.5 !important;
+}
+
+/* 11. Perataan Teks (Text Align) */
+html.telmy-align-left *:not([id*="telmy"]):not([class*="telmy"]) {
+  text-align: left !important;
+}
+html.telmy-align-right *:not([id*="telmy"]):not([class*="telmy"]) {
+  text-align: right !important;
+}
+
+/* 12. Kejenuhan Warna (Saturation / Grayscale Filter) */
+html.telmy-saturation-1 {
+  filter: saturate(0.5) !important;
+}
+html.telmy-saturation-2 {
+  filter: grayscale(100%) !important;
+}
+html.telmy-saturation-3 {
+  filter: saturate(2.2) !important;
+}
+
+
 
 
 

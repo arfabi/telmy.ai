@@ -33,7 +33,8 @@ window.TelmyA11y = (function () {
         'a11y_speak_enabled',
         'a11y_thick_focus',
         'a11y_speech_rate',
-        'preferred_language'
+        'preferred_language',
+        'a11y_feature_states'
       ], (res) => {
         if (res.a11y_spotlight_enabled) setSpotlight(true);
         if (res.a11y_speak_enabled) setClickToSpeak(true);
@@ -42,9 +43,12 @@ window.TelmyA11y = (function () {
         if (res.preferred_language) {
           state.currentLang = mapLangToLocale(res.preferred_language);
         }
+        if (res.a11y_feature_states) {
+          applyAllA11yStates(res.a11y_feature_states);
+        }
       });
 
-      // Plan V7: Real-time broadcast sync via chrome.storage.onChanged
+      // Plan V8: Real-time broadcast sync via chrome.storage.onChanged
       chrome.storage.onChanged.addListener((changes, area) => {
         if (area !== 'local') return;
         if (changes.a11y_spotlight_enabled) {
@@ -61,6 +65,9 @@ window.TelmyA11y = (function () {
         }
         if (changes.preferred_language) {
           state.currentLang = mapLangToLocale(changes.preferred_language.newValue);
+        }
+        if (changes.a11y_feature_states) {
+          applyAllA11yStates(changes.a11y_feature_states.newValue || {});
         }
       });
     }
@@ -474,6 +481,96 @@ window.TelmyA11y = (function () {
     }
   }
 
+  // =========================================================
+  // Plan V8: Full UserWay-Style In-Page WCAG Modifier Handlers
+  // =========================================================
+  function setFeature(feature, val) {
+    const root = document.documentElement;
+    if (!root) return;
+
+    if (feature === 'spotlight') {
+      setSpotlight(!!val);
+    } else if (feature === 'speak') {
+      setClickToSpeak(!!val);
+    } else if (feature === 'contrast') {
+      root.classList.remove('telmy-contrast-1', 'telmy-contrast-2', 'telmy-contrast-3');
+      const lvl = parseInt(val, 10) || 0;
+      if (lvl > 0) root.classList.add(`telmy-contrast-${lvl}`);
+    } else if (feature === 'links') {
+      root.classList.toggle('telmy-links-active', !!val);
+    } else if (feature === 'textSize') {
+      root.classList.remove('telmy-text-scale-1', 'telmy-text-scale-2', 'telmy-text-scale-3', 'telmy-text-scale-4');
+      const lvl = parseInt(val, 10) || 0;
+      if (lvl > 0) root.classList.add(`telmy-text-scale-${lvl}`);
+    } else if (feature === 'spacing') {
+      root.classList.remove('telmy-spacing-1', 'telmy-spacing-2', 'telmy-spacing-3');
+      const lvl = parseInt(val, 10) || 0;
+      if (lvl > 0) root.classList.add(`telmy-spacing-${lvl}`);
+    } else if (feature === 'animations') {
+      root.classList.toggle('telmy-anim-paused', !!val);
+    } else if (feature === 'hideImages') {
+      root.classList.toggle('telmy-hide-images-active', !!val);
+    } else if (feature === 'dyslexia') {
+      root.classList.toggle('telmy-dyslexia-active', !!val);
+    } else if (feature === 'cursor') {
+      root.classList.remove('telmy-cursor-1', 'telmy-cursor-2');
+      const lvl = parseInt(val, 10) || 0;
+      if (lvl > 0) root.classList.add(`telmy-cursor-${lvl}`);
+    } else if (feature === 'tooltips') {
+      root.classList.toggle('telmy-tooltips-active', !!val);
+    } else if (feature === 'lineHeight') {
+      root.classList.remove('telmy-lineheight-1', 'telmy-lineheight-2', 'telmy-lineheight-3');
+      const lvl = parseInt(val, 10) || 0;
+      if (lvl > 0) root.classList.add(`telmy-lineheight-${lvl}`);
+    } else if (feature === 'align') {
+      root.classList.remove('telmy-align-left', 'telmy-align-right');
+      const lvl = parseInt(val, 10) || 0;
+      if (lvl === 1) root.classList.add('telmy-align-left');
+      if (lvl === 2) root.classList.add('telmy-align-right');
+    } else if (feature === 'saturation') {
+      root.classList.remove('telmy-saturation-1', 'telmy-saturation-2', 'telmy-saturation-3');
+      const lvl = parseInt(val, 10) || 0;
+      if (lvl > 0) root.classList.add(`telmy-saturation-${lvl}`);
+    }
+  }
+
+  function applyAllA11yStates(states) {
+    if (!states || typeof states !== 'object') return;
+    Object.keys(states).forEach((k) => {
+      setFeature(k, states[k]);
+    });
+  }
+
+  function resetAll() {
+    setSpotlight(false);
+    setClickToSpeak(false);
+    stopSpeaking();
+    const root = document.documentElement;
+    if (root) {
+      root.classList.remove(
+        'telmy-contrast-1', 'telmy-contrast-2', 'telmy-contrast-3',
+        'telmy-links-active',
+        'telmy-text-scale-1', 'telmy-text-scale-2', 'telmy-text-scale-3', 'telmy-text-scale-4',
+        'telmy-spacing-1', 'telmy-spacing-2', 'telmy-spacing-3',
+        'telmy-anim-paused',
+        'telmy-hide-images-active',
+        'telmy-dyslexia-active',
+        'telmy-cursor-1', 'telmy-cursor-2',
+        'telmy-tooltips-active',
+        'telmy-lineheight-1', 'telmy-lineheight-2', 'telmy-lineheight-3',
+        'telmy-align-left', 'telmy-align-right',
+        'telmy-saturation-1', 'telmy-saturation-2', 'telmy-saturation-3'
+      );
+    }
+    if (chrome.storage && chrome.storage.local) {
+      chrome.storage.local.set({
+        a11y_spotlight_enabled: false,
+        a11y_speak_enabled: false,
+        a11y_feature_states: {}
+      });
+    }
+  }
+
   // Public Interface
   return {
     init,
@@ -487,6 +584,9 @@ window.TelmyA11y = (function () {
     setThickFocus,
     setSpeechRate,
     setLanguage,
+    setFeature,
+    applyAllA11yStates,
+    resetAll,
     getState: () => ({ ...state }),
     onFieldActive: (el) => {
       if (state.spotlightEnabled) {

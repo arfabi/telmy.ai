@@ -5069,3 +5069,272 @@ body {
   font-size: 130% !important;
 }
 
+/* =========================================================
+   Plan V8: 3 Rows x 2 Columns Onboarding Grid & UserWay A11y Hub
+   ========================================================= */
+.welcome-chips-grid.welcome-grid-2col {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 8px !important;
+  margin-top: 14px !important;
+  width: 100% !important;
+}
+
+.welcome-action-card {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 10px 10px !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  background: #ffffff !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  text-align: left !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
+  user-select: none !important;
+}
+
+.welcome-action-card:hover {
+  transform: translateY(-1.5px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07) !important;
+}
+
+.welcome-action-card .chip-icon {
+  font-size: 16px !important;
+  flex-shrink: 0 !important;
+}
+
+.welcome-action-card .chip-label {
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  line-height: 1.25 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+}
+
+.welcome-action-card.chip-analyze {
+  background: rgba(37,99,235,0.05) !important;
+  border-color: rgba(37,99,235,0.2) !important;
+  color: #1d4ed8 !important;
+}
+
+.welcome-action-card.chip-translate {
+  background: rgba(14,165,233,0.05) !important;
+  border-color: rgba(14,165,233,0.2) !important;
+  color: #0284c7 !important;
+}
+
+.welcome-action-card.chip-autofill {
+  background: rgba(16,185,129,0.05) !important;
+  border-color: rgba(16,185,129,0.2) !important;
+  color: #047857 !important;
+}
+
+.welcome-action-card.chip-pdf {
+  background: rgba(139,92,246,0.05) !important;
+  border-color: rgba(139,92,246,0.2) !important;
+  color: #6d28d9 !important;
+}
+
+.welcome-action-card.chip-showme {
+  background: rgba(245,158,11,0.05) !important;
+  border-color: rgba(245,158,11,0.2) !important;
+  color: #b45309 !important;
+}
+
+.welcome-action-card.chip-a11y {
+  background: rgba(99,102,241,0.07) !important;
+  border-color: rgba(99,102,241,0.25) !important;
+  color: #4f46e5 !important;
+}
+
+/* UserWay-Style A11y Hub Dedicated Section */
+.sp-a11y-hub-view {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow-y: auto;
+  background: #f8fafc;
+  padding-bottom: 24px;
+}
+
+.a11y-hub-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: #0066ff;
+  color: #ffffff;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0, 102, 255, 0.25);
+}
+
+.a11y-hub-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.a11y-hub-back-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateX(-1px);
+}
+
+.a11y-hub-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.a11y-hub-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: -0.2px;
+}
+
+.a11y-hub-shortcut-badge {
+  font-size: 10px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.3px;
+}
+
+.a11y-hub-reset-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #ffffff;
+  color: #0066ff;
+  border: none;
+  border-radius: 20px;
+  padding: 5px 11px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.a11y-hub-reset-btn:hover {
+  background: #eff6ff;
+  transform: scale(1.02);
+}
+
+.a11y-hub-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 14px 6px;
+  padding: 8px 12px;
+  background: #e0f2fe;
+  border: 1px solid #bae6fd;
+  border-radius: 10px;
+  color: #0369a1;
+  font-size: 11.5px;
+  line-height: 1.35;
+}
+
+.a11y-hub-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  padding: 10px 14px 20px;
+}
+
+.a11y-tile-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 16px 8px 12px;
+  min-height: 104px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+  position: relative;
+  user-select: none;
+}
+
+.a11y-tile-card:hover {
+  border-color: #3b82f6;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(37, 99, 235, 0.08);
+}
+
+.a11y-tile-card.active {
+  border-color: #0066ff;
+  background: #f0f7ff;
+  box-shadow: 0 0 0 2px rgba(0, 102, 255, 0.18), 0 4px 12px rgba(0, 102, 255, 0.08);
+}
+
+.tile-icon-wrap {
+  font-size: 24px;
+  line-height: 1;
+  margin-bottom: 8px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-df {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -1px;
+}
+
+.tile-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.25;
+  margin-bottom: 6px;
+}
+
+.a11y-tile-card.active .tile-title {
+  color: #0066ff;
+}
+
+.tile-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+  transition: all 0.15s ease;
+}
+
+.a11y-tile-card.active .tile-badge {
+  background: #0066ff;
+  color: #ffffff;
+  border-color: #0066ff;
+}
+

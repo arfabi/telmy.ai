@@ -1477,7 +1477,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupVaultController();
     setupQuotaAndPaywall();
     refreshUserQuota();
-    setupAccessibilityToolbar();
+    setupAccessibilityHub();
 
     // Initialize Mode Toggle Cards (Chatbot vs Voicebot)
     const initialMode = stored.telmyBotMode || 'chat';
@@ -2376,31 +2376,40 @@ document.addEventListener('DOMContentLoaded', async () => {
         </div>
         <h3 class="welcome-title">${escapeHTML(t('welcome_hero_title'))}</h3>
         <p class="welcome-subtitle">${escapeHTML(t('welcome_hero_desc'))}</p>
-        <div class="welcome-chips-grid" style="display: flex; flex-direction: column; gap: 8px; margin-top: 14px;">
-          <button type="button" class="welcome-action-chip" data-action="ANALYZE_FORM" style="background: rgba(37,99,235,0.06); border-color: rgba(37,99,235,0.22); color: #1d4ed8; font-weight: 600;">
+        <div class="welcome-chips-grid welcome-grid-2col">
+          <!-- Row 1: Col 1 & 2 -->
+          <button type="button" class="welcome-action-card chip-analyze" data-action="ANALYZE_FORM">
             <span class="chip-icon">🔍</span>
             <span class="chip-label">1. Analyze This Form</span>
           </button>
-          <button type="button" class="welcome-action-chip" data-action="TRANSLATE_PAGE" style="background: rgba(14,165,233,0.06); border-color: rgba(14,165,233,0.22); color: #0284c7; font-weight: 600;">
+          <button type="button" class="welcome-action-card chip-translate" data-action="TRANSLATE_PAGE">
             <span class="chip-icon">🌐</span>
-            <span class="chip-label">2. Translate This Page (AI Powered)</span>
+            <span class="chip-label">2. Translate This Page</span>
           </button>
-          <button type="button" class="welcome-action-chip" data-action="AUTOFILL_FORM" style="background: rgba(16,185,129,0.06); border-color: rgba(16,185,129,0.22); color: #047857; font-weight: 600;">
+
+          <!-- Row 2: Col 1 & 2 -->
+          <button type="button" class="welcome-action-card chip-autofill" data-action="AUTOFILL_FORM">
             <span class="chip-icon">⚡</span>
             <span class="chip-label">3. 1-Click Auto Fill</span>
           </button>
-          <button type="button" class="welcome-action-chip" data-action="OPEN_PDF" style="background: rgba(139,92,246,0.06); border-color: rgba(139,92,246,0.22); color: #6d28d9; font-weight: 600;">
+          <button type="button" class="welcome-action-card chip-pdf" data-action="OPEN_PDF">
             <span class="chip-icon">📄</span>
-            <span class="chip-label">4. Upload Local PDF Forms</span>
+            <span class="chip-label">4. Upload Local PDF</span>
           </button>
-          <button type="button" class="welcome-action-chip" data-action="SHOW_ME_PROMPT" style="background: rgba(245,158,11,0.06); border-color: rgba(245,158,11,0.22); color: #b45309; font-weight: 600;">
+
+          <!-- Row 3: Col 1 (Show Me) & Col 2 (Accessibility) -->
+          <button type="button" class="welcome-action-card chip-showme" data-action="SHOW_ME_PROMPT">
             <span class="chip-icon">👆</span>
-            <span class="chip-label">5. ${escapeHTML(t('welcome_chip_show_me'))}</span>
+            <span class="chip-label">5. Show Me / Layar</span>
+          </button>
+          <button type="button" class="welcome-action-card chip-a11y" data-action="OPEN_A11Y_HUB">
+            <span class="chip-icon">♿</span>
+            <span class="chip-label">6. Aksesibilitas</span>
           </button>
         </div>
       `;
 
-      hero.querySelectorAll('.welcome-action-chip').forEach(btn => {
+      hero.querySelectorAll('.welcome-action-card').forEach(btn => {
         btn.addEventListener('click', () => {
           const act = btn.getAttribute('data-action');
           handleActionChip({ type: act });
@@ -3036,6 +3045,8 @@ document.addEventListener('DOMContentLoaded', async () => {
           chatInput.setSelectionRange(textToFill.length, textToFill.length);
         }
       }
+    } else if (act.type === 'OPEN_A11Y_HUB') {
+      showA11yHub();
     }
   }
 
@@ -6120,195 +6131,221 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // =========================================================
-  // Plan V7: Accessibility Toolbar & Inclusivity Bridge (WCAG 2.1/2.2 AA)
+  // Plan V8: Accessibility Hub & 1-Click Cycle System (UserWay Style)
   // =========================================================
-  function setupAccessibilityToolbar() {
-    const btnSpotlight = document.getElementById('btn-a11y-spotlight');
-    const btnSpeak = document.getElementById('btn-a11y-speak');
-    const btnDisplay = document.getElementById('btn-a11y-display');
-    const popover = document.getElementById('a11y-drawer-popover');
-    const btnClosePopover = document.getElementById('btn-close-a11y-popover');
-    const fontBtns = document.querySelectorAll('#ctrl-a11y-font .a11y-seg-btn');
-    const themeBtns = document.querySelectorAll('#ctrl-a11y-theme .a11y-theme-btn');
-    const speedBtns = document.querySelectorAll('#ctrl-a11y-speed .a11y-seg-btn');
-    const chkThickFocus = document.getElementById('chk-a11y-thick-focus');
-    const rootEl = document.querySelector('.sidepanel-root');
+  const paneA11yHub = document.getElementById('pane-a11y-hub');
+  const btnA11yBack = document.getElementById('btn-a11y-back');
+  const btnA11yResetAll = document.getElementById('btn-a11y-reset-all');
+  let prevActivePaneBeforeA11y = 'pane-chat';
 
-    let isSpotlightOn = false;
-    let isSpeakOn = false;
+  function showA11yHub() {
+    const currentActive = document.querySelector('.sp-pane.active:not(#pane-a11y-hub)');
+    if (currentActive) {
+      prevActivePaneBeforeA11y = currentActive.id;
+    }
+    panes.forEach(p => p.classList.remove('active'));
+    if (paneA11yHub) {
+      paneA11yHub.style.display = 'flex';
+      paneA11yHub.classList.add('active');
+    }
+    const chatFooter = document.querySelector('.sp-chat-footer');
+    if (chatFooter) chatFooter.style.display = 'none';
+  }
 
-    // 1. Load saved preferences from chrome.storage.local
-    chrome.storage.local.get([
-      'a11y_spotlight_enabled',
-      'a11y_speak_enabled',
-      'a11y_font_scale',
-      'a11y_contrast_theme',
-      'a11y_thick_focus',
-      'a11y_speech_rate'
-    ], (res) => {
-      if (res.a11y_spotlight_enabled) {
-        isSpotlightOn = true;
-        updateSpotlightUI(true);
-      }
-      if (res.a11y_speak_enabled) {
-        isSpeakOn = true;
-        updateSpeakUI(true);
-      }
-      if (res.a11y_font_scale) {
-        applyFontScale(res.a11y_font_scale);
-      }
-      if (res.a11y_contrast_theme) {
-        applyContrastTheme(res.a11y_contrast_theme);
-      }
-      if (res.a11y_thick_focus && chkThickFocus) {
-        chkThickFocus.checked = true;
-      }
-      if (res.a11y_speech_rate) {
-        speedBtns.forEach(b => {
-          if (b.getAttribute('data-rate') === String(res.a11y_speech_rate)) {
-            speedBtns.forEach(btn => btn.classList.remove('active'));
-            b.classList.add('active');
-          }
-        });
+  function hideA11yHub() {
+    if (paneA11yHub) {
+      paneA11yHub.style.display = 'none';
+      paneA11yHub.classList.remove('active');
+    }
+    const restorePane = document.getElementById(prevActivePaneBeforeA11y) || document.getElementById('pane-chat');
+    if (restorePane) {
+      restorePane.classList.add('active');
+    }
+    const chatFooter = document.querySelector('.sp-chat-footer');
+    if (chatFooter && prevActivePaneBeforeA11y === 'pane-chat') {
+      chatFooter.style.display = 'flex';
+    }
+  }
+
+  function setupAccessibilityHub() {
+    if (btnA11yBack) {
+      btnA11yBack.addEventListener('click', hideA11yHub);
+    }
+
+    // Global Shortcut Ctrl+U / Alt+A to toggle A11y Hub
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey && (e.key === 'u' || e.key === 'U')) || (e.altKey && (e.key === 'a' || e.key === 'A'))) {
+        e.preventDefault();
+        if (paneA11yHub && paneA11yHub.style.display === 'flex') {
+          hideA11yHub();
+        } else {
+          showA11yHub();
+        }
       }
     });
 
-    function updateSpotlightUI(active) {
-      if (!btnSpotlight) return;
-      btnSpotlight.classList.toggle('active', active);
-    }
+    // Close A11y hub if any top navigation tab is clicked
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (paneA11yHub) {
+          paneA11yHub.style.display = 'none';
+          paneA11yHub.classList.remove('active');
+        }
+      });
+    });
 
-    function updateSpeakUI(active) {
-      if (!btnSpeak) return;
-      btnSpeak.classList.toggle('active', active);
-    }
+    // Feature state dictionary
+    const featureState = {
+      spotlight: false,
+      speak: false,
+      contrast: 0,
+      links: false,
+      textSize: 0,
+      spacing: 0,
+      animations: false,
+      hideImages: false,
+      dyslexia: false,
+      cursor: 0,
+      tooltips: false,
+      lineHeight: 0,
+      align: 0,
+      saturation: 0
+    };
 
-    async function getEffectiveTabId() {
-      if (currentTabId) return currentTabId;
-      const tab = await getActiveWebTab();
-      if (tab && tab.id) {
-        currentTabId = tab.id;
-        return tab.id;
+    // Cycle configurations
+    const cycleConfigs = {
+      contrast: ['Normal', '+25%', '+50%', 'Kuning-Hitam'],
+      textSize: ['Normal', '+25%', '+50%', '+75%', '+100%'],
+      spacing: ['Normal', '+25%', '+50%', '+75%'],
+      cursor: ['Normal', 'Besar Putih', 'Besar Hitam'],
+      lineHeight: ['Normal', '+25%', '+50%', '+75%'],
+      align: ['Normal', 'Rata Kiri', 'Rata Kanan'],
+      saturation: ['Normal', 'Rendah (-50%)', 'Monokrom', 'Tinggi (+50%)']
+    };
+
+    async function sendA11yMessageToTab(msg) {
+      if (!currentTabId) {
+        const tab = await getActiveWebTab();
+        if (tab && tab.id) currentTabId = tab.id;
       }
-      return null;
-    }
+      if (!currentTabId) return;
 
-    async function sendA11yMessageWithInjection(message) {
-      const tabId = await getEffectiveTabId();
-      if (!tabId) return;
-      safeSendTabMessage(tabId, message, (err, res) => {
+      safeSendTabMessage(currentTabId, msg, (err, res) => {
         if (err || !res) {
-          console.log('[Telmy A11y] Tab did not respond. Injecting content scripts on-demand...');
-          injectContentScript(tabId, () => {
-            safeSendTabMessage(tabId, message);
+          injectContentScript(currentTabId, () => {
+            safeSendTabMessage(currentTabId, msg);
           });
         }
       });
     }
 
-    // Toggle Spotlight (Instant activation with zero refresh required)
-    if (btnSpotlight) {
-      btnSpotlight.addEventListener('click', async () => {
-        isSpotlightOn = !isSpotlightOn;
-        updateSpotlightUI(isSpotlightOn);
-        await chrome.storage.local.set({ a11y_spotlight_enabled: isSpotlightOn });
-        sendA11yMessageWithInjection({ type: 'A11Y_SET_SPOTLIGHT', enabled: isSpotlightOn });
-      });
+    function featureToTileId(k) {
+      const map = {
+        spotlight: 'spotlight',
+        speak: 'speak',
+        contrast: 'contrast',
+        links: 'links',
+        textSize: 'text-size',
+        spacing: 'spacing',
+        animations: 'animations',
+        hideImages: 'hide-images',
+        dyslexia: 'dyslexia',
+        cursor: 'cursor',
+        tooltips: 'tooltips',
+        lineHeight: 'line-height',
+        align: 'align',
+        saturation: 'saturation'
+      };
+      return map[k] || k;
     }
 
-    // Toggle Click-to-Speak (Instant activation with zero refresh required)
-    if (btnSpeak) {
-      btnSpeak.addEventListener('click', async () => {
-        isSpeakOn = !isSpeakOn;
-        updateSpeakUI(isSpeakOn);
-        await chrome.storage.local.set({ a11y_speak_enabled: isSpeakOn });
-        sendA11yMessageWithInjection({ type: 'A11Y_SET_CLICK_TO_SPEAK', enabled: isSpeakOn });
-      });
-    }
+    function updateCardUI(featureKey) {
+      const tile = document.getElementById(`tile-a11y-${featureToTileId(featureKey)}`);
+      const badge = document.getElementById(`badge-a11y-${featureToTileId(featureKey)}`);
+      if (!tile || !badge) return;
 
-    // Popover Open / Close
-    if (btnDisplay && popover) {
-      btnDisplay.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const isOpen = popover.style.display === 'block';
-        popover.style.display = isOpen ? 'none' : 'block';
-        btnDisplay.classList.toggle('active', !isOpen);
-      });
-    }
-
-    if (btnClosePopover && popover) {
-      btnClosePopover.addEventListener('click', () => {
-        popover.style.display = 'none';
-        if (btnDisplay) btnDisplay.classList.remove('active');
-      });
-    }
-
-    // Close popover when clicking outside
-    document.addEventListener('click', (e) => {
-      if (popover && popover.style.display === 'block' && !popover.contains(e.target) && e.target !== btnDisplay) {
-        popover.style.display = 'none';
-        if (btnDisplay) btnDisplay.classList.remove('active');
+      const val = featureState[featureKey];
+      if (typeof val === 'boolean') {
+        tile.classList.toggle('active', val);
+        if (featureKey === 'animations') {
+          badge.textContent = val ? 'Dijeda' : 'Normal';
+        } else if (featureKey === 'hideImages') {
+          badge.textContent = val ? 'Sembunyi' : 'Normal';
+        } else {
+          badge.textContent = val ? 'Aktif' : 'Mati';
+        }
+      } else {
+        const cycles = cycleConfigs[featureKey] || ['Normal'];
+        const label = cycles[val] || 'Normal';
+        tile.classList.toggle('active', val > 0);
+        badge.textContent = label;
       }
-    });
-
-    // Font Scale
-    function applyFontScale(scale) {
-      if (!rootEl) return;
-      rootEl.classList.remove('font-scale-125', 'font-scale-150');
-      if (scale === '125') rootEl.classList.add('font-scale-125');
-      if (scale === '150') rootEl.classList.add('font-scale-150');
-
-      fontBtns.forEach(btn => {
-        btn.classList.toggle('active', btn.getAttribute('data-scale') === scale);
-      });
     }
 
-    fontBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const scale = btn.getAttribute('data-scale') || '100';
-        applyFontScale(scale);
-        chrome.storage.local.set({ a11y_font_scale: scale });
+    // Load saved states from storage
+    chrome.storage.local.get([
+      'a11y_feature_states',
+      'a11y_spotlight_enabled',
+      'a11y_speak_enabled'
+    ], (res) => {
+      if (res.a11y_feature_states) {
+        Object.assign(featureState, res.a11y_feature_states);
+      }
+      if (res.a11y_spotlight_enabled !== undefined) featureState.spotlight = !!res.a11y_spotlight_enabled;
+      if (res.a11y_speak_enabled !== undefined) featureState.speak = !!res.a11y_speak_enabled;
+
+      Object.keys(featureState).forEach(updateCardUI);
+    });
+
+    // Attach 1-click cycle event listeners to all 14 tiles
+    const tileCards = document.querySelectorAll('.a11y-tile-card');
+    tileCards.forEach((tile) => {
+      tile.addEventListener('click', async () => {
+        const feat = tile.getAttribute('data-feature');
+        if (!feat || !(feat in featureState)) return;
+
+        if (typeof featureState[feat] === 'boolean') {
+          featureState[feat] = !featureState[feat];
+        } else {
+          const maxCycle = (cycleConfigs[feat] || []).length;
+          featureState[feat] = (featureState[feat] + 1) % maxCycle;
+        }
+
+        updateCardUI(feat);
+
+        // Save preferences
+        await chrome.storage.local.set({
+          a11y_feature_states: featureState,
+          a11y_spotlight_enabled: featureState.spotlight,
+          a11y_speak_enabled: featureState.speak
+        });
+
+        // Broadcast directly to active tab
+        if (feat === 'spotlight') {
+          sendA11yMessageToTab({ type: 'A11Y_SET_SPOTLIGHT', enabled: featureState.spotlight });
+        } else if (feat === 'speak') {
+          sendA11yMessageToTab({ type: 'A11Y_SET_CLICK_TO_SPEAK', enabled: featureState.speak });
+        } else {
+          sendA11yMessageToTab({ type: 'A11Y_SET_FEATURE', feature: feat, value: featureState[feat] });
+        }
       });
     });
 
-    // Contrast Themes
-    function applyContrastTheme(theme) {
-      if (!rootEl) return;
-      rootEl.classList.remove('theme-yellow-black', 'theme-sepia', 'theme-dark');
-      if (theme === 'yellow-black') rootEl.classList.add('theme-yellow-black');
-      if (theme === 'sepia') rootEl.classList.add('theme-sepia');
-      if (theme === 'dark') rootEl.classList.add('theme-dark');
+    // Reset All Button: restore website immediately
+    if (btnA11yResetAll) {
+      btnA11yResetAll.addEventListener('click', async () => {
+        Object.keys(featureState).forEach((k) => {
+          featureState[k] = (typeof featureState[k] === 'boolean') ? false : 0;
+          updateCardUI(k);
+        });
 
-      themeBtns.forEach(btn => {
-        btn.classList.toggle('active', btn.getAttribute('data-theme') === theme);
-      });
-    }
+        await chrome.storage.local.set({
+          a11y_feature_states: featureState,
+          a11y_spotlight_enabled: false,
+          a11y_speak_enabled: false
+        });
 
-    themeBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const theme = btn.getAttribute('data-theme') || 'default';
-        applyContrastTheme(theme);
-        chrome.storage.local.set({ a11y_contrast_theme: theme });
-      });
-    });
-
-    // Speech Rate
-    speedBtns.forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const rate = parseFloat(btn.getAttribute('data-rate')) || 1.0;
-        speedBtns.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        await chrome.storage.local.set({ a11y_speech_rate: rate });
-        sendA11yMessageWithInjection({ type: 'A11Y_SET_SPEECH_RATE', rate });
-      });
-    });
-
-    // Thick Focus Checkbox
-    if (chkThickFocus) {
-      chkThickFocus.addEventListener('change', async () => {
-        const enabled = chkThickFocus.checked;
-        await chrome.storage.local.set({ a11y_thick_focus: enabled });
-        sendA11yMessageWithInjection({ type: 'A11Y_SET_THICK_FOCUS', enabled });
+        sendA11yMessageToTab({ type: 'A11Y_RESET_ALL' });
       });
     }
 
@@ -6316,12 +6353,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     chrome.runtime.onMessage.addListener((msg) => {
       if (msg.type === 'A11Y_STATE_CHANGED' && msg.state) {
         if (typeof msg.state.spotlightEnabled === 'boolean') {
-          isSpotlightOn = msg.state.spotlightEnabled;
-          updateSpotlightUI(isSpotlightOn);
+          featureState.spotlight = msg.state.spotlightEnabled;
+          updateCardUI('spotlight');
         }
         if (typeof msg.state.clickToSpeakEnabled === 'boolean') {
-          isSpeakOn = msg.state.clickToSpeakEnabled;
-          updateSpeakUI(isSpeakOn);
+          featureState.speak = msg.state.clickToSpeakEnabled;
+          updateCardUI('speak');
         }
       }
     });

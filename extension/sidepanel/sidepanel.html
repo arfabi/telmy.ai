@@ -129,87 +129,6 @@
       </button>
     </nav>
 
-    <!-- Accessibility Quick Toolbar (Plan V7: WCAG 2.2 Inclusivity Bridge) -->
-    <div class="sp-a11y-toolbar" id="sp-a11y-toolbar" role="toolbar" aria-label="Aksesibilitas dan Bantuan Khusus">
-      <div class="a11y-toolbar-inner">
-        <!-- 1. Form Spotlight Toggle -->
-        <button type="button" class="a11y-quick-btn" id="btn-a11y-spotlight" title="Form Spotlight (Alt+S) — Meredupkan web dan hanya menyorot kolom aktif">
-          <span class="a11y-btn-icon">🔦</span>
-          <span class="a11y-btn-text">Spotlight</span>
-          <span class="a11y-status-dot" id="dot-a11y-spotlight"></span>
-        </button>
-
-        <!-- 2. Click-to-Speak Toggle -->
-        <button type="button" class="a11y-quick-btn" id="btn-a11y-speak" title="Click-to-Speak — Klik teks apa pun di web untuk mendengarkan suara">
-          <span class="a11y-btn-icon">🔊</span>
-          <span class="a11y-btn-text">Baca Teks</span>
-          <span class="a11y-status-dot" id="dot-a11y-speak"></span>
-        </button>
-
-        <!-- 3. Visual & Contrast Drawer Toggle -->
-        <button type="button" class="a11y-quick-btn" id="btn-a11y-display" title="Pengaturan Tampilan & Kontras (WCAG)">
-          <span class="a11y-btn-icon">♿</span>
-          <span class="a11y-btn-text">Tampilan</span>
-        </button>
-      </div>
-
-      <!-- Accessibility Settings Dropdown Popover -->
-      <div class="a11y-drawer-popover" id="a11y-drawer-popover" style="display: none;">
-        <div class="a11y-popover-header">
-          <strong>♿ Bantuan Penglihatan & Suara</strong>
-          <button type="button" id="btn-close-a11y-popover" class="a11y-popover-close">✕</button>
-        </div>
-
-        <div class="a11y-setting-group">
-          <label class="a11y-setting-label">Ukuran Huruf Panel</label>
-          <div class="a11y-segmented-control" id="ctrl-a11y-font">
-            <button type="button" class="a11y-seg-btn active" data-scale="100">Standar</button>
-            <button type="button" class="a11y-seg-btn" data-scale="125">+25%</button>
-            <button type="button" class="a11y-seg-btn" data-scale="150">+50%</button>
-          </div>
-        </div>
-
-        <div class="a11y-setting-group">
-          <label class="a11y-setting-label">Tema Kontras (WCAG AA/AAA)</label>
-          <div class="a11y-theme-grid" id="ctrl-a11y-theme">
-            <button type="button" class="a11y-theme-btn active" data-theme="default" title="Default Modern">
-              <span class="theme-swatch default"></span>
-              <span class="theme-name">Normal</span>
-            </button>
-            <button type="button" class="a11y-theme-btn" data-theme="yellow-black" title="Kuning di atas Hitam (Standar Katarak/Low-Vision)">
-              <span class="theme-swatch yellow-black"></span>
-              <span class="theme-name">Kuning-Hitam</span>
-            </button>
-            <button type="button" class="a11y-theme-btn" data-theme="sepia" title="Sepia Hangat (Mata Sensitif Silau)">
-              <span class="theme-swatch sepia"></span>
-              <span class="theme-name">Sepia</span>
-            </button>
-            <button type="button" class="a11y-theme-btn" data-theme="dark" title="Dark Mode Nyaman">
-              <span class="theme-swatch dark"></span>
-              <span class="theme-name">Gelap</span>
-            </button>
-          </div>
-        </div>
-
-        <div class="a11y-setting-group">
-          <label class="a11y-setting-label">Kecepatan Suara Panduan</label>
-          <div class="a11y-segmented-control" id="ctrl-a11y-speed">
-            <button type="button" class="a11y-seg-btn" data-rate="0.75">0.75x</button>
-            <button type="button" class="a11y-seg-btn active" data-rate="1.0">1.0x</button>
-            <button type="button" class="a11y-seg-btn" data-rate="1.25">1.25x</button>
-          </div>
-        </div>
-
-        <div class="a11y-toggle-row">
-          <label for="chk-a11y-thick-focus" class="a11y-toggle-label">
-            <span>Garis Fokus Tebal di Website</span>
-            <small>Memperjelas kolom aktif di web pemerintah</small>
-          </label>
-          <input type="checkbox" id="chk-a11y-thick-focus" class="a11y-checkbox">
-        </div>
-      </div>
-    </div>
-
     <!-- Speaking / Audio Live Indicator -->
     <div id="sp-audio-bar" class="sp-audio-bar" style="display: none;">
       <div class="sp-audio-waves">
@@ -218,6 +137,131 @@
       <span id="sp-audio-status-text">Telmy is speaking...</span>
       <button id="sp-btn-stop-audio" class="sp-audio-stop-btn" title="Stop Audio">✕</button>
     </div>
+
+    <!-- FULL DEDICATED VIEW: A11y Hub (Menu Aksesibilitas ala UserWay) -->
+    <section id="pane-a11y-hub" class="sp-pane sp-a11y-hub-view" style="display: none;">
+      <!-- Header Navigasi A11y -->
+      <div class="a11y-hub-header">
+        <button type="button" id="btn-a11y-back" class="a11y-hub-back-btn" title="Kembali ke Halaman Utama">
+          <span class="back-icon">←</span>
+          <span class="back-label">Kembali</span>
+        </button>
+        <div class="a11y-hub-title-wrap">
+          <h2 class="a11y-hub-title">Menu Aksesibilitas</h2>
+          <span class="a11y-hub-shortcut-badge">CTRL+U</span>
+        </div>
+        <button type="button" id="btn-a11y-reset-all" class="a11y-hub-reset-btn" title="Kembalikan semua efek web ke kondisi normal">
+          🔄 Reset
+        </button>
+      </div>
+
+      <!-- UserWay-style Info Banner -->
+      <div class="a11y-hub-banner">
+        <span class="a11y-banner-icon">💡</span>
+        <span class="a11y-banner-text">Klik kartu untuk menambah level atau menyalakan/mematikan fitur secara instan.</span>
+      </div>
+
+      <!-- 2-Column Accessibility Grid Tiles (14 Fitur) -->
+      <div class="a11y-hub-grid" id="a11y-cards-grid">
+        <!-- 1. Form Spotlight (Telmy Core) -->
+        <button type="button" class="a11y-tile-card" id="tile-a11y-spotlight" data-feature="spotlight">
+          <div class="tile-icon-wrap">🔦</div>
+          <span class="tile-title">Form Spotlight</span>
+          <span class="tile-badge" id="badge-a11y-spotlight">Mati</span>
+        </button>
+
+        <!-- 2. Baca Teks (Telmy Core TTS) -->
+        <button type="button" class="a11y-tile-card" id="tile-a11y-speak" data-feature="speak">
+          <div class="tile-icon-wrap">🔊</div>
+          <span class="tile-title">Baca Teks</span>
+          <span class="tile-badge" id="badge-a11y-speak">Mati</span>
+        </button>
+
+        <!-- 3. Kontras + (Cycle) -->
+        <button type="button" class="a11y-tile-card" id="tile-a11y-contrast" data-feature="contrast">
+          <div class="tile-icon-wrap">🌓</div>
+          <span class="tile-title">Kontras +</span>
+          <span class="tile-badge" id="badge-a11y-contrast">Normal</span>
+        </button>
+
+        <!-- 4. Sorot Tautan (Toggle) -->
+        <button type="button" class="a11y-tile-card" id="tile-a11y-links" data-feature="links">
+          <div class="tile-icon-wrap">🔗</div>
+          <span class="tile-title">Sorot Tautan</span>
+          <span class="tile-badge" id="badge-a11y-links">Mati</span>
+        </button>
+
+        <!-- 5. Teks Lebih Besar (Cycle) -->
+        <button type="button" class="a11y-tile-card" id="tile-a11y-text-size" data-feature="textSize">
+          <div class="tile-icon-wrap">🔠</div>
+          <span class="tile-title">Teks Lebih Besar</span>
+          <span class="tile-badge" id="badge-a11y-text-size">Normal</span>
+        </button>
+
+        <!-- 6. Spasi Teks (Cycle) -->
+        <button type="button" class="a11y-tile-card" id="tile-a11y-spacing" data-feature="spacing">
+          <div class="tile-icon-wrap">↔️</div>
+          <span class="tile-title">Spasi Teks</span>
+          <span class="tile-badge" id="badge-a11y-spacing">Normal</span>
+        </button>
+
+        <!-- 7. Animasi Dijeda (Toggle) -->
+        <button type="button" class="a11y-tile-card" id="tile-a11y-animations" data-feature="animations">
+          <div class="tile-icon-wrap">⏸️</div>
+          <span class="tile-title">Animasi Dijeda</span>
+          <span class="tile-badge" id="badge-a11y-animations">Mati</span>
+        </button>
+
+        <!-- 8. Sembunyikan Gambar (Toggle) -->
+        <button type="button" class="a11y-tile-card" id="tile-a11y-hide-images" data-feature="hideImages">
+          <div class="tile-icon-wrap">🖼️</div>
+          <span class="tile-title">Sembunyikan Gambar</span>
+          <span class="tile-badge" id="badge-a11y-hide-images">Mati</span>
+        </button>
+
+        <!-- 9. Ramah Disleksia (Toggle) -->
+        <button type="button" class="a11y-tile-card" id="tile-a11y-dyslexia" data-feature="dyslexia">
+          <div class="tile-icon-wrap"><strong class="icon-df">Df</strong></div>
+          <span class="tile-title">Ramah Disleksia</span>
+          <span class="tile-badge" id="badge-a11y-dyslexia">Mati</span>
+        </button>
+
+        <!-- 10. Kursor (Cycle) -->
+        <button type="button" class="a11y-tile-card" id="tile-a11y-cursor" data-feature="cursor">
+          <div class="tile-icon-wrap">🖱️</div>
+          <span class="tile-title">Kursor</span>
+          <span class="tile-badge" id="badge-a11y-cursor">Normal</span>
+        </button>
+
+        <!-- 11. Keterangan Alat (Toggle) -->
+        <button type="button" class="a11y-tile-card" id="tile-a11y-tooltips" data-feature="tooltips">
+          <div class="tile-icon-wrap">💬</div>
+          <span class="tile-title">Keterangan Alat</span>
+          <span class="tile-badge" id="badge-a11y-tooltips">Mati</span>
+        </button>
+
+        <!-- 12. Tinggi Garis (Cycle) -->
+        <button type="button" class="a11y-tile-card" id="tile-a11y-line-height" data-feature="lineHeight">
+          <div class="tile-icon-wrap">↕️</div>
+          <span class="tile-title">Tinggi Garis</span>
+          <span class="tile-badge" id="badge-a11y-line-height">Normal</span>
+        </button>
+
+        <!-- 13. Perataan Teks (Cycle) -->
+        <button type="button" class="a11y-tile-card" id="tile-a11y-align" data-feature="align">
+          <div class="tile-icon-wrap">📄</div>
+          <span class="tile-title">Perataan Teks</span>
+          <span class="tile-badge" id="badge-a11y-align">Normal</span>
+        </button>
+
+        <!-- 14. Kejenuhan (Cycle) -->
+        <button type="button" class="a11y-tile-card" id="tile-a11y-saturation" data-feature="saturation">
+          <div class="tile-icon-wrap">💧</div>
+          <span class="tile-title">Kejenuhan</span>
+          <span class="tile-badge" id="badge-a11y-saturation">Normal</span>
+        </button>
+      </div>
+    </section>
 
     <!-- TAB 1: Live Copilot Chat & Voice Assistant -->
     <section id="pane-chat" class="sp-pane active">
