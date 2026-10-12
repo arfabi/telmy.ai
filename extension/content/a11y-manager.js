@@ -24,6 +24,7 @@ window.TelmyA11y = (function () {
   let floatingWandBar = null;
   let currentSpeakingEl = null;
   let activeUtterance = null;
+  let isListenersAttached = false;
 
   // Initialize from chrome.storage
   function init() {
@@ -72,46 +73,49 @@ window.TelmyA11y = (function () {
       });
     }
 
-    // Global Keyboard Shortcut: Alt+S to toggle Spotlight
-    window.addEventListener('keydown', (e) => {
-      if (e.altKey && (e.key === 's' || e.key === 'S')) {
-        e.preventDefault();
-        toggleSpotlight();
-      }
-    });
-
-    // Auto-track focused form elements when Spotlight is active
-    document.addEventListener('focusin', (e) => {
-      if (state.spotlightEnabled && isFormInput(e.target) && !isIgnoredLanguageOrSearchInput(e.target)) {
-        spotlightElement(e.target);
-      }
-    }, true);
-
-    // Direct click/pointerdown support to move spotlight instantly on click
-    document.addEventListener('pointerdown', (e) => {
-      if (!state.spotlightEnabled) return;
-      if (e.target.closest('#telmy-spotlight-overlay, #telmy-wand-bar, .gmt-side-panel')) return;
-
-      const input = isFormInput(e.target) ? e.target : e.target.closest('input, select, textarea, [role="textbox"], .form-group, .form-row, .Qr7Oae, .geS5n, label');
-      if (input) {
-        if (input.tagName && input.tagName.toLowerCase() === 'label') {
-          const forId = input.getAttribute('for');
-          const bound = forId ? document.getElementById(forId) : input.querySelector('input, select, textarea');
-          if (bound) {
-            spotlightElement(bound);
-            return;
-          }
+    if (!isListenersAttached) {
+      isListenersAttached = true;
+      // Global Keyboard Shortcut: Alt+S to toggle Spotlight
+      window.addEventListener('keydown', (e) => {
+        if (e.altKey && (e.key === 's' || e.key === 'S')) {
+          e.preventDefault();
+          toggleSpotlight();
         }
-        spotlightElement(input);
-      }
-    }, true);
+      });
 
-    // Reposition spotlight on scroll / resize
-    window.addEventListener('scroll', onScrollOrResize, { passive: true });
-    window.addEventListener('resize', onScrollOrResize, { passive: true });
+      // Auto-track focused form elements when Spotlight is active
+      document.addEventListener('focusin', (e) => {
+        if (state.spotlightEnabled && isFormInput(e.target) && !isIgnoredLanguageOrSearchInput(e.target)) {
+          spotlightElement(e.target);
+        }
+      }, true);
 
-    // Click-to-Speak event delegation
-    document.addEventListener('click', onDocumentClickWand, true);
+      // Direct click/pointerdown support to move spotlight instantly on click
+      document.addEventListener('pointerdown', (e) => {
+        if (!state.spotlightEnabled) return;
+        if (e.target.closest('#telmy-spotlight-overlay, #telmy-wand-bar, .gmt-side-panel')) return;
+
+        const input = isFormInput(e.target) ? e.target : e.target.closest('input, select, textarea, [role="textbox"], .form-group, .form-row, .Qr7Oae, .geS5n, label');
+        if (input) {
+          if (input.tagName && input.tagName.toLowerCase() === 'label') {
+            const forId = input.getAttribute('for');
+            const bound = forId ? document.getElementById(forId) : input.querySelector('input, select, textarea');
+            if (bound) {
+              spotlightElement(bound);
+              return;
+            }
+          }
+          spotlightElement(input);
+        }
+      }, true);
+
+      // Reposition spotlight on scroll / resize
+      window.addEventListener('scroll', onScrollOrResize, { passive: true });
+      window.addEventListener('resize', onScrollOrResize, { passive: true });
+
+      // Click-to-Speak event delegation
+      document.addEventListener('click', onDocumentClickWand, true);
+    }
   }
 
   function isFormInput(el) {

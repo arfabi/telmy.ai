@@ -1327,12 +1327,40 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function getActiveWebTab() {
     try {
       let [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
-      if (!tab || !tab.id || tab.url?.startsWith('chrome-extension://')) {
-        [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (!tab || !tab.id || tab.url?.startsWith('chrome-extension://') || tab.url?.startsWith('chrome://')) {
+        const tabs = await chrome.tabs.query({ active: true });
+        const webTab = tabs.find(t => t.url && (t.url.startsWith('http://') || t.url.startsWith('https://')));
+        if (webTab) return webTab;
+        if (tabs && tabs.length > 0) return tabs[0];
       }
       return tab || null;
     } catch (e) {
       return null;
+    }
+  }
+
+  // Ensure content script & CSS are proactively injected without requiring page refresh
+  async function ensureContentScriptInjected(tabId) {
+    if (!tabId) return;
+    try {
+      const tab = await chrome.tabs.get(tabId).catch(() => null);
+      const tabUrl = (tab && tab.url) ? tab.url : '';
+      if (!tabUrl || isTelmyInternalUrl(tabUrl)) return;
+      if (tabUrl.startsWith('chrome://') || tabUrl.startsWith('edge://') || tabUrl.startsWith('about:') || tabUrl.startsWith('chrome-extension://')) return;
+
+      return new Promise((resolve) => {
+        safeSendTabMessage(tabId, { type: 'A11Y_GET_STATE' }, async (err, res) => {
+          if (err || !res) {
+            console.log('[Telmy] Tab has no content script yet. Injecting on-demand without refresh...');
+            await injectContentScript(tabId);
+            resolve(true);
+          } else {
+            resolve(false);
+          }
+        });
+      });
+    } catch (e) {
+      // safe ignore
     }
   }
 
@@ -1487,6 +1515,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Determine current active tab
     const tab = await getActiveWebTab();
     if (tab && tab.id) {
+      currentTabId = tab.id;
+      ensureContentScriptInjected(tab.id);
       await restoreOrResetTabSession(tab.id, tab.url);
     } else {
       renderWelcome();
@@ -6138,7 +6168,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const btnA11yResetAll = document.getElementById('btn-a11y-reset-all');
   let prevActivePaneBeforeA11y = 'pane-chat';
 
-  function showA11yHub() {
+  async function showA11yHub() {
     const currentActive = document.querySelector('.sp-pane.active:not(#pane-a11y-hub)');
     if (currentActive) {
       prevActivePaneBeforeA11y = currentActive.id;
@@ -6150,6 +6180,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     const chatFooter = document.querySelector('.sp-chat-footer');
     if (chatFooter) chatFooter.style.display = 'none';
+
+    // Ensure content script & CSS are proactively injected without needing reload
+    const tab = await getActiveWebTab();
+    if (tab && tab.id) {
+      currentTabId = tab.id;
+      ensureContentScriptInjected(tab.id);
+    }
   }
 
   function hideA11yHub() {
@@ -6224,17 +6261,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     async function sendA11yMessageToTab(msg) {
-      if (!currentTabId) {
-        const tab = await getActiveWebTab();
-        if (tab && tab.id) currentTabId = tab.id;
-      }
-      if (!currentTabId) return;
+      const tab = await getActiveWebTab();
+      const tabId = (tab && tab.id) ? tab.id : currentTabId;
+      if (!tabId) return;
+      currentTabId = tabId;
 
-      safeSendTabMessage(currentTabId, msg, (err, res) => {
+      safeSendTabMessage(tabId, msg, async (err, res) => {
         if (err || !res) {
-          injectContentScript(currentTabId, () => {
-            safeSendTabMessage(currentTabId, msg);
-          });
+          console.log('[Telmy A11y] Tab did not respond. Injecting scripts and retrying on-demand...', err);
+          await injectContentScript(tabId);
+          setTimeout(() => {
+            safeSendTabMessage(tabId, msg);
+          }, 80);
         }
       });
     }
