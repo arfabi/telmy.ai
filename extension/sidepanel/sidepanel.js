@@ -2798,6 +2798,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         ? response.data.reply
         : t('default_chat_reply');
 
+      const detectedLang = response && response.data && response.data.detectedLanguage
+        ? response.data.detectedLanguage
+        : null;
+
       const actions = response && response.data && Array.isArray(response.data.actions)
         ? response.data.actions
         : [];
@@ -2896,9 +2900,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         triggerSpotlightOnTab(currentTabId, spotlightAct);
       }
 
-      // Speak response using Gemini TTS
+      // Speak response using Gemini TTS with detected response language
       if (!isMuted) {
-        speakResponse(effectiveReply);
+        speakResponse(effectiveReply, detectedLang);
       } else {
         if (telmyAvatar) telmyAvatar.setState('IDLE');
       }
@@ -3793,9 +3797,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // 8. TTS Playback (Gemini WaveNet TTS + Browser Fallback + Dual Avatar Sync)
-  function speakResponse(text) {
+  function speakResponse(text, targetLanguage = null) {
     if (currentBotMode === 'chat' || isMuted || !text) return;
     stopSpeaking();
+
+    const effectiveVoiceLang = targetLanguage || currentLanguage || 'en';
 
     isSpeaking = true;
     if (audioBar) audioBar.style.display = 'flex';
@@ -3808,7 +3814,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 1. Try Gemini WaveNet TTS via backend gateway
     chrome.runtime.sendMessage({
       type: 'VOICE_TTS',
-      payload: { text, language: currentLanguage }
+      payload: { text, language: effectiveVoiceLang }
     }, (res) => {
       if (!chrome.runtime.lastError && res && res.success && res.audioDataUrl) {
         currentAudio = new Audio(res.audioDataUrl);
@@ -3819,15 +3825,15 @@ document.addEventListener('DOMContentLoaded', async () => {
           voicebotAvatar.attachAudioElement(currentAudio);
         }
         currentAudio.onended = stopSpeaking;
-        currentAudio.onerror = () => speakBrowserFallback(text);
-        currentAudio.play().catch(() => speakBrowserFallback(text));
+        currentAudio.onerror = () => speakBrowserFallback(text, effectiveVoiceLang);
+        currentAudio.play().catch(() => speakBrowserFallback(text, effectiveVoiceLang));
       } else {
-        speakBrowserFallback(text);
+        speakBrowserFallback(text, effectiveVoiceLang);
       }
     });
   }
 
-  function speakBrowserFallback(text) {
+  function speakBrowserFallback(text, targetLanguage = null) {
     if (currentBotMode === 'chat' || isMuted) {
       stopSpeaking();
       return;
@@ -3836,10 +3842,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       stopSpeaking();
       return;
     }
+    const effectiveVoiceLang = targetLanguage || currentLanguage || 'en';
     window.speechSynthesis.cancel();
     const clean = text.replace(/[*_#`~]/g, '').trim();
     const utterance = new SpeechSynthesisUtterance(clean);
-    utterance.lang = LOCALE_MAP[currentLanguage] || 'en-US';
+    utterance.lang = LOCALE_MAP[effectiveVoiceLang] || LOCALE_MAP[currentLanguage] || 'en-US';
     if (telmyAvatar) {
       telmyAvatar.startSpeechCadence();
     }

@@ -129,6 +129,42 @@ async function callChatGemini({ message, history, language, formContext, screens
   return parseReplyAndActions(rawContent, language, message, formContext);
 }
 
+/**
+ * Intelligent Language Detector for chat responses and voice synthesis
+ */
+export function detectTextLanguage(text, defaultLanguage = 'en') {
+  if (!text || typeof text !== 'string') return defaultLanguage;
+  const clean = text.toLowerCase();
+
+  // 1. Indonesian / Malay markers
+  const idMarkers = /\b(ini|itu|adalah|formulir|halaman|tombol|anda|kamu|silakan|mohon|klik|bisa|untuk|pada|di|ke|dari|saya|kami|sudah|tidak|belum|kolom|bantuan|data|masuk|daftar)\b/i;
+  if (idMarkers.test(clean)) {
+    return 'id';
+  }
+
+  // 2. CJK Scripts (Japanese, Chinese, Korean)
+  if (/[\u3040-\u309f\u30a0-\u30ff]/.test(text)) return 'ja'; // Japanese Hiragana/Katakana
+  if (/[\u4e00-\u9fff]/.test(text)) return 'zh'; // Chinese Hanzi
+  if (/[\uac00-\ud7af]/.test(text)) return 'ko'; // Korean Hangul
+
+  // 3. Southeast & South Asian scripts
+  if (/[\u0e00-\u0e7f]/.test(text)) return 'th'; // Thai
+  if (/[\u0900-\u097f]/.test(text)) return 'hi'; // Hindi
+
+  // 4. Vietnamese specific tone marks
+  if (/[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/i.test(text)) {
+    return 'vi';
+  }
+
+  // 5. English common words marker
+  const enMarkers = /\b(the|this|that|form|page|button|please|you|your|click|enter|field|fields|login|submit|help|welcome)\b/i;
+  if (enMarkers.test(clean)) {
+    return 'en';
+  }
+
+  return defaultLanguage || 'en';
+}
+
 function parseReplyAndActions(rawText, language, message = '', formContext = {}) {
   let reply = rawText;
   let actions = [];
@@ -181,8 +217,12 @@ function parseReplyAndActions(rawText, language, message = '', formContext = {})
     });
   }
 
+  const finalReply = reply || (language === 'en' ? 'I am here to help you navigate this form.' : 'Saya siap membantu Anda mengisi formulir ini.');
+  const detectedLanguage = detectTextLanguage(finalReply, language);
+
   return {
-    reply: reply || (language === 'en' ? 'I am here to help you navigate this form.' : 'Saya siap membantu Anda mengisi formulir ini.'),
+    reply: finalReply,
+    detectedLanguage: detectedLanguage,
     actions: Array.isArray(actions) ? actions : []
   };
 }
@@ -259,5 +299,6 @@ function createSmartChatFallback({ message, language, formContext }) {
       : `Saya siap memandu Anda. Tanyakan hal apa pun seputar pengisian formulir ini dan saya akan memberikan penjelasan yang jelas.`;
   }
 
-  return { reply, actions };
+  const detectedLanguage = detectTextLanguage(reply, effectiveLang);
+  return { reply, detectedLanguage, actions };
 }

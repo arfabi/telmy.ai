@@ -21,6 +21,8 @@ const GOOGLE_VOICE_MAP = {
   ms: { languageCode: 'ms-MY', name: process.env.GOOGLE_TTS_VOICE_MS || 'ms-MY-Wavenet-A', ssmlGender: 'FEMALE' }
 };
 
+import { detectTextLanguage } from './chatService.js';
+
 /**
  * Check if Google Cloud TTS is configured
  */
@@ -59,7 +61,11 @@ export async function synthesizeSpeechStream({ text, language = 'en' }) {
     throw error;
   }
 
-  const voiceConfig = GOOGLE_VOICE_MAP[language] || GOOGLE_VOICE_MAP['en'];
+  // CRITICAL HIGHER PRIORITY LANGUAGE POLICY FOR TTS:
+  // Detect the actual language of the text to be spoken. If text clearly matches another language
+  // (e.g. Indonesian response while session/user language was 'en'), use the native voice of the text!
+  const effectiveLanguage = detectTextLanguage(cleanText, language);
+  const voiceConfig = GOOGLE_VOICE_MAP[effectiveLanguage] || GOOGLE_VOICE_MAP[language] || GOOGLE_VOICE_MAP['en'];
   const requestHeaders = {
     'Content-Type': 'application/json'
   };
