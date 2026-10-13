@@ -6116,12 +6116,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Update modal metrics if elements exist
     if (paywallSumRemaining) paywallSumRemaining.textContent = remaining;
     if (paywallSumPlan) {
-      const planName = data.plan === 'pro' ? 'Pro Subscription ($14.99/mo)' :
-                       data.plan === 'payg' ? 'Pay-as-you-Go' : 'Free Tier';
+      let planName = 'Free Tier (5 Forms/bln)';
+      if (data.plan === 'pro') planName = 'Pro (75 Forms/bln)';
+      else if (data.plan === 'standard') planName = 'Standard (25 Forms/bln)';
+      else if (data.plan === 'max') planName = 'Max (200 Forms/bln)';
+      else if (data.plan === 'payg') planName = 'Pay-as-you-Go';
       paywallSumPlan.textContent = planName;
     }
     if (paywallSumPayg) paywallSumPayg.textContent = `${q.purchasedCreditsRemaining || 0} Forms`;
-    if (paywallSumPro) paywallSumPro.textContent = `${q.subscriptionQuotaRemaining || 0} Forms`;
+    if (paywallSumPro) paywallSumPro.textContent = `${(q.subscriptionQuotaRemaining || 0) + (q.freeRemaining || 0)} Forms`;
   }
 
   function openPaywallModal(reasonSubtitle) {
@@ -6169,15 +6172,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (res && res.success) {
           const quotaData = res.user || {
-            plan: res.plan?.type === 'subscription' ? 'pro' : 'payg',
+            plan: res.plan?.id || planId,
             quota: res.user?.quota || {},
-            totalRemaining: res.user?.totalRemaining || 10
+            totalRemaining: res.user?.totalRemaining || 25
           };
           refreshUserQuota(quotaData);
-          alert(`🎉 Purchase Successful!\n\nPlan: ${res.plan?.name || planId}\nRemaining Quota: ${res.user?.totalRemaining || 'Added'}\n\nThank you for choosing Telmy!`);
+          alert(`🎉 Pembayaran Berhasil!\n\nPaket: ${res.plan?.name || planId} (${res.plan?.forms || ''} Forms)\nSisa Kuota: ${res.user?.totalRemaining || 'Aktif'}\nMetode: QRIS / Virtual Account (Mayar.id)\n\nTerima kasih telah berlangganan Telmy.ai!`);
           closePaywallModal();
         } else {
-          alert('Purchase processing failed. Please verify your connection.');
+          alert('Gagal memproses pembayaran. Silakan periksa koneksi Anda.');
         }
       });
     };

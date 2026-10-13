@@ -3,10 +3,21 @@ import { getFirestore } from '../config/firebase.js';
 // In-memory fallback cache for development or when Firestore is offline
 const inMemoryQuotaMap = new Map();
 
+/**
+ * Returns current Year-Month string (e.g. '2026-10') for monthly quota refresh
+ */
+export function getCurrentYearMonth() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  return `${year}-${month}`;
+}
+
 const DEFAULT_QUOTA = {
   plan: 'free',
   quota: {
     freeRemaining: 5,
+    lastFreeMonth: getCurrentYearMonth(),
     purchasedCreditsRemaining: 0,
     subscriptionQuotaRemaining: 0,
     subscriptionStatus: 'none', // 'none' | 'active' | 'canceled'
@@ -20,11 +31,12 @@ const DEFAULT_QUOTA = {
 };
 
 /**
- * Get or initialize user quota record
+ * Get or initialize user quota record with Lazy Monthly Reset for Free Tier
  * @param {string} uid - User ID
  * @returns {Promise<object>} Quota details
  */
 export async function getUserQuota(uid = 'guest_user') {
+  const currentMonth = getCurrentYearMonth();
   const { db, isFirebaseConnected } = getFirestore();
 
   if (isFirebaseConnected && db) {
@@ -35,16 +47,32 @@ export async function getUserQuota(uid = 'guest_user') {
       if (doc.exists) {
         const data = doc.data();
         if (data.quota) {
-          // Check if subscription has expired
+          let needsUpdate = false;
+
+          // 1. Lazy Monthly Refresh for Free Tier (5 forms refreshed every month)
+          if (!data.quota.lastFreeMonth || data.quota.lastFreeMonth !== currentMonth) {
+            console.log(`[QuotaService] 🔄 Lazy monthly refresh triggered for ${uid}: ${data.quota.lastFreeMonth || 'initial'} -> ${currentMonth}`);
+            data.quota.freeRemaining = 5;
+            data.quota.lastFreeMonth = currentMonth;
+            needsUpdate = true;
+          }
+
+          // 2. Check if active paid subscription has expired (30-day window)
           if (data.quota.subscriptionStatus === 'active' && data.quota.subscriptionExpiresAt) {
             const expiresDate = new Date(data.quota.subscriptionExpiresAt);
             if (expiresDate < new Date()) {
+              console.log(`[QuotaService] ⌛ Subscription expired for ${uid}. Downgrading to free/custom.`);
               data.quota.subscriptionStatus = 'none';
               data.quota.subscriptionQuotaRemaining = 0;
-              data.plan = data.quota.purchasedCreditsRemaining > 0 ? 'payg' : 'free';
-              await userRef.set({ quota: data.quota, plan: data.plan }, { merge: true });
+              data.plan = (data.quota.purchasedCreditsRemaining || 0) > 0 ? 'custom' : 'free';
+              needsUpdate = true;
             }
           }
+
+          if (needsUpdate) {
+            await userRef.set({ quota: data.quota, plan: data.plan }, { merge: true });
+          }
+
           return {
             uid,
             plan: data.plan || 'free',
@@ -71,12 +99,19 @@ export async function getUserQuota(uid = 'guest_user') {
   }
   const memoryData = inMemoryQuotaMap.get(uid);
 
-  // Check subscription expiration in memory
+  // Lazy Monthly Refresh in-memory
+  if (!memoryData.quota.lastFreeMonth || memoryData.quota.lastFreeMonth !== currentMonth) {
+    console.log(`[QuotaService] 🔄 Lazy monthly refresh (in-memory) for ${uid}: ${memoryData.quota.lastFreeMonth || 'initial'} -> ${currentMonth}`);
+    memoryData.quota.freeRemaining = 5;
+    memoryData.quota.lastFreeMonth = currentMonth;
+  }
+
+  // Check subscription expiration in-memory
   if (memoryData.quota.subscriptionStatus === 'active' && memoryData.quota.subscriptionExpiresAt) {
     if (new Date(memoryData.quota.subscriptionExpiresAt) < new Date()) {
       memoryData.quota.subscriptionStatus = 'none';
       memoryData.quota.subscriptionQuotaRemaining = 0;
-      memoryData.plan = memoryData.quota.purchasedCreditsRemaining > 0 ? 'payg' : 'free';
+      memoryData.plan = (memoryData.quota.purchasedCreditsRemaining || 0) > 0 ? 'custom' : 'free';
     }
   }
 
@@ -271,15 +306,15 @@ export async function consumeFormQuota(uid = 'guest_user', context = {}) {
     q.subscriptionQuotaRemaining -= 1;
     consumedFrom = 'subscription';
   }
-  // Priority 2: Permanent PAYG Credits
-  else if (q.purchasedCreditsRemaining > 0) {
-    q.purchasedCreditsRemaining -= 1;
-    consumedFrom = 'payg';
-  }
-  // Priority 3: Initial Free Tier
+  // Priority 2: Monthly Free Tier Quota (refreshes every month)
   else if (q.freeRemaining > 0) {
     q.freeRemaining -= 1;
     consumedFrom = 'free';
+  }
+  // Priority 3: Permanent Purchased PAYG Credits (never expires)
+  else if (q.purchasedCreditsRemaining > 0) {
+    q.purchasedCreditsRemaining -= 1;
+    consumedFrom = 'payg';
   }
   // Quota Exhausted
   else {
@@ -360,19 +395,22 @@ export async function addPaygCredits(uid = 'guest_user', credits = 10) {
 }
 
 /**
- * Activate Pro Monthly Subscription ($14.99/mo for 50 forms)
+ * Activate or Renew a Plan Subscription (Mayar Tiers: standard, pro, max)
  * @param {string} uid - User ID
- * @param {number} months - Duration in months (default: 1)
+ * @param {string} planId - 'standard' | 'pro' | 'max'
+ * @param {number} formsGranted - Number of form credits granted (e.g. 25, 75, 200)
+ * @param {number} durationDays - Duration in days (default: 30)
  * @returns {Promise<object>} Updated quota
  */
-export async function activateProSubscription(uid = 'guest_user', months = 1) {
+export async function activatePlanSubscription(uid = 'guest_user', planId = 'pro', formsGranted = 75, durationDays = 30) {
   const current = await getUserQuota(uid);
   const expiry = new Date();
-  expiry.setDate(expiry.getDate() + (30 * months));
+  expiry.setDate(expiry.getDate() + durationDays);
 
-  current.plan = 'pro';
+  current.plan = planId;
   current.quota.subscriptionStatus = 'active';
-  current.quota.subscriptionQuotaRemaining = 50;
+  // Accumulate or set new subscription credits
+  current.quota.subscriptionQuotaRemaining = formsGranted;
   current.quota.subscriptionExpiresAt = expiry.toISOString();
 
   const { db, isFirebaseConnected } = getFirestore();
@@ -383,13 +421,24 @@ export async function activateProSubscription(uid = 'guest_user', months = 1) {
         quota: current.quota
       }, { merge: true });
     } catch (e) {
-      console.warn('[QuotaService] Error activating Pro subscription in Firestore:', e.message);
+      console.warn(`[QuotaService] Error activating ${planId} subscription in Firestore:`, e.message);
     }
   } else {
     inMemoryQuotaMap.set(uid, current);
   }
 
+  console.log(`[QuotaService] ✅ Plan ${planId} activated for ${uid}: +${formsGranted} forms, valid until ${expiry.toISOString()}`);
   return current;
+}
+
+/**
+ * Activate Pro Monthly Subscription (backward compatibility wrapper)
+ * @param {string} uid - User ID
+ * @param {number} months - Duration in months (default: 1)
+ * @returns {Promise<object>} Updated quota
+ */
+export async function activateProSubscription(uid = 'guest_user', months = 1) {
+  return activatePlanSubscription(uid, 'pro', 75, 30 * months);
 }
 
 /**

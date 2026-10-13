@@ -97,16 +97,40 @@ if (chrome.sidePanel && chrome.sidePanel.setPanelBehavior) {
   chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch(() => {});
 }
 
+// Cross-browser helper: Open Chrome/Edge sidePanel or Firefox sidebarAction
+async function openSidePanelOrSidebar(tabId) {
+  try {
+    if (chrome.sidePanel && chrome.sidePanel.open && tabId) {
+      await chrome.sidePanel.open({ tabId });
+      return;
+    }
+  } catch (e) {}
+
+  try {
+    if (typeof browser !== 'undefined' && browser.sidebarAction && browser.sidebarAction.open) {
+      await browser.sidebarAction.open();
+      return;
+    }
+    if (chrome.sidebarAction && chrome.sidebarAction.open) {
+      await chrome.sidebarAction.open();
+      return;
+    }
+  } catch (e) {}
+}
+
+// Handle Toolbar Action Click (fallback for Firefox / environments without setPanelBehavior)
+if (chrome.action && chrome.action.onClicked) {
+  chrome.action.onClicked.addListener(async (tab) => {
+    await openSidePanelOrSidebar(tab?.id);
+  });
+}
+
 // Handle Context Menu Clicks: Open Side Panel and Analyze Tab (Method 1)
 if (chrome.contextMenus && chrome.contextMenus.onClicked) {
   chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     if (!tab || !tab.id) return;
     if (info.menuItemId === 'telmy_analyze_page') {
-      try {
-        if (chrome.sidePanel && chrome.sidePanel.open) {
-          await chrome.sidePanel.open({ tabId: tab.id });
-        }
-      } catch (e) {}
+      await openSidePanelOrSidebar(tab.id);
 
       // Enforce Login Gate: If user has not signed in, do not trigger scanner!
       const stored = await chrome.storage.local.get(['user']);

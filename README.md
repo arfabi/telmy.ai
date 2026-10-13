@@ -57,7 +57,7 @@ graph TD
         DictSvc["Hybrid Knowledge Base & Vector Search"]
         BuroSvc["Bureaucratic Glossary RAG Engine"]
         PDFSvc["Multimodal Document Explainer"]
-        PaySvc["Lemon Squeezy Engine\n(Simulation & Webhooks)"]
+        PaySvc["Mayar.id Engine\n(QRIS, VA & Webhooks)"]
     end
 
     subgraph GoogleAI ["Google Cloud & Firebase Ecosystem"]
@@ -458,12 +458,49 @@ npm run dev
 
 ---
 
-### Step 2: Install Chrome Extension
-1. Open Google Chrome and navigate to `chrome://extensions/`.
-2. Enable **Developer mode** (top-right toggle).
-3. Click **Load unpacked** (top-left).
-4. Select the `extension/` folder in this repository.
-5. Alternatively, download the pre-packaged archive [telmy-cws-clean.zip](file:///d:/webdev/laragon/www/telmy/telmy-cws-clean.zip) (1.43 MB) and drag it into Chrome.
+### Step 2: Install Browser Extension (Chrome, Edge, & Firefox)
+
+Telmy.ai supports **Google Chrome**, **Microsoft Edge**, **Brave**, **Opera**, and **Mozilla Firefox**.
+
+#### Option A: Load Unpacked (Development)
+* **Google Chrome / Brave / Opera:**
+  1. Open `chrome://extensions/` (or `brave://extensions/`).
+  2. Enable **Developer mode** (top-right toggle).
+  3. Click **Load unpacked** (top-left) and select the [extension/](file:///d:/webdev/laragon/www/telmy/extension) folder.
+* **Microsoft Edge:**
+  1. Open `edge://extensions/`.
+  2. Enable **Developer mode** (left sidebar toggle).
+  3. Click **Load unpacked** and select the [extension/](file:///d:/webdev/laragon/www/telmy/extension) folder.
+* **Mozilla Firefox:**
+  1. Open `about:debugging#/runtime/this-firefox`.
+  2. Click **Load Temporary Add-on...**
+  3. Select the `dist-extensions/telmy-firefox.zip` file (or select `manifest.json` after running the export script).
+
+---
+
+### 📦 Export to ZIP (Dual-Browser Packaging)
+
+To distribute or upload Telmy to browser stores (Chrome Web Store, Edge Add-ons, and Firefox AMO), we maintain a **Single Source of Truth** inside `extension/` and provide an automated export script that produces **two optimized ZIP archives**:
+
+```text
+📁 dist-extensions/
+  ├── telmy-chrome-edge.zip   --> For Google Chrome, Microsoft Edge, Brave, Opera (MV3 Side Panel)
+  └── telmy-firefox.zip       --> For Mozilla Firefox (Gecko MV3 Sidebar Action)
+```
+
+#### How to Export (1-Click):
+* **Method 1 (Batch 1-Click - Windows):**  
+  Double-click [build-extensions.bat](file:///d:/webdev/laragon/www/telmy/build-extensions.bat) in the root directory.
+
+* **Method 2 (PowerShell):**  
+  Run the export script in your terminal:
+  ```powershell
+  powershell -ExecutionPolicy Bypass -File .\build-extensions.ps1
+  ```
+
+#### How It Works:
+1. **`telmy-chrome-edge.zip`**: Packages the core extension using [manifest.json](file:///d:/webdev/laragon/www/telmy/extension/manifest.json) configured with `side_panel` and Chrome MV3 service worker. Ready for Chrome Web Store and Microsoft Edge Add-ons.
+2. **`telmy-firefox.zip`**: Replaces the manifest with [manifest.firefox.json](file:///d:/webdev/laragon/www/telmy/extension/manifest.firefox.json) (renamed to `manifest.json` inside the archive) which configures `sidebar_action`, Firefox background scripts, and `browser_specific_settings.gecko.id`.
 
 ---
 
@@ -479,7 +516,20 @@ npm run dev
    * **Universal PDF Guide:** Drag any visa/scholarship PDF into the Side Panel or test with `test-page/demo_apostille.html`.
    * **Pre-Submission Auditor:** Click *"🔍 Audit Form"* to run a sanity check on your filled values.
    * **Profile Vault:** Store your master profile once and 1-click fill matching fields.
-   * **Lemon Squeezy Simulation:** Click the `💎 5 Forms` badge and simulate purchasing credits instantly!
+   * **Mayar.id Simulation (QRIS & VA):** Click the `💎 5 Forms` badge and simulate activating Standard (25 Forms), Pro (75 Forms), or Max (200 Forms) instantly!
+
+---
+
+### 💎 Pricing Tiers (Freemium Model)
+
+| Tier | Kuota / Bulan | Harga (IDR) | Patokan (USD) | Biaya Efektif | Fitur Utama |
+| :--- | :---: | :---: | :---: | :---: | :--- |
+| **Free Tier** | **5 Forms** | **Rp 0** | $0 | Gratis | Auto-refresh bulanan, 14 tools aksesibilitas, 1 profil vault. |
+| **Standard** | **25 Forms** | **Rp 49.000** | ~$3 | Rp 1.960/form | Aktif 30 hari, Pre-submission auditor, PDF hingga 15 hal, 3 profil. |
+| **Pro** *(Best Value)* | **75 Forms** | **Rp 99.000** | ~$7 | **Rp 1.320/form** | Prioritas Gemini 3.5 Flash-Lite, Unlimited Voice Lip-Sync, 10 profil. |
+| **Max** *(Power User)* | **200 Forms** | **Rp 199.000** | ~$13 | **Rp 995/form** | Prioritas Vision AI, PDF tanpa batas, Multi-Vault klien tanpa batas. |
+
+*Didukung metode pembayaran lokal via **Mayar.id**: QRIS (GoPay, OVO, ShopeePay, DANA), Virtual Account (BCA, Mandiri, BRI, BNI), & Kartu Kredit.*
 
 ---
 
