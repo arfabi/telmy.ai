@@ -1579,12 +1579,27 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     setupSpeechRecognition();
 
-    // Clean up active tab badges when sidepanel is closed/unloaded
-    window.addEventListener('beforeunload', () => {
+    // Connect sidepanel lifecycle port so background worker knows when sidepanel closes
+    try {
+      chrome.runtime.connect({ name: 'telmy-sidepanel-lifecycle' });
+    } catch (e) {}
+
+    // Clean up active tab badges and a11y effects when sidepanel is closed/unloaded
+    const handleSidepanelClose = () => {
       if (currentTabId) {
         safeSendTabMessage(currentTabId, { type: 'DEACTIVATE_SCANNER' });
+        safeSendTabMessage(currentTabId, { type: 'A11Y_RESET_ALL' });
       }
-    });
+      chrome.storage.local.set({
+        a11y_hub_active: false,
+        a11y_feature_states: {},
+        a11y_spotlight_enabled: false,
+        a11y_speak_enabled: false,
+        a11y_thick_focus: false
+      });
+    };
+    window.addEventListener('beforeunload', handleSidepanelClose);
+    window.addEventListener('unload', handleSidepanelClose);
 
     // Auto-refresh session & quota when sidepanel regains window focus (e.g. returning from web login)
     window.addEventListener('focus', async () => {
@@ -1603,6 +1618,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (currentTabId && currentTabId !== activeInfo.tabId) {
           saveTabSession(currentTabId);
           safeSendTabMessage(currentTabId, { type: 'DEACTIVATE_SCANNER' });
+          safeSendTabMessage(currentTabId, { type: 'A11Y_RESET_ALL' });
         }
         currentTabId = activeInfo.tabId;
         const newTab = await chrome.tabs.get(activeInfo.tabId).catch(() => null) || await getActiveWebTab();
@@ -6201,6 +6217,113 @@ document.addEventListener('DOMContentLoaded', async () => {
   const btnA11yResetAll = document.getElementById('btn-a11y-reset-all');
   let prevActivePaneBeforeA11y = 'pane-chat';
 
+  // Feature state dictionary
+  const a11yFeatureState = {
+    spotlight: false,
+    speak: false,
+    contrast: 0,
+    links: false,
+    textSize: 0,
+    spacing: 0,
+    animations: false,
+    hideImages: false,
+    dyslexia: false,
+    cursor: 0,
+    tooltips: false,
+    lineHeight: 0,
+    align: 0,
+    saturation: 0
+  };
+
+  // Cycle configurations
+  const a11yCycleConfigs = {
+    contrast: ['Normal', '+25%', '+50%', 'Kuning-Hitam'],
+    textSize: ['Normal', '+25%', '+50%', '+75%', '+100%'],
+    spacing: ['Normal', '+25%', '+50%', '+75%'],
+    cursor: ['Normal', 'Besar Putih', 'Besar Hitam'],
+    lineHeight: ['Normal', '+25%', '+50%', '+75%'],
+    align: ['Normal', 'Rata Kiri', 'Rata Kanan'],
+    saturation: ['Normal', 'Rendah (-50%)', 'Monokrom', 'Tinggi (+50%)']
+  };
+
+  async function sendA11yMessageToTab(msg) {
+    const tab = await getActiveWebTab();
+    const tabId = (tab && tab.id) ? tab.id : currentTabId;
+    if (!tabId) return;
+    currentTabId = tabId;
+
+    safeSendTabMessage(tabId, msg, async (err, res) => {
+      if (err || !res) {
+        console.log('[Telmy A11y] Tab did not respond. Injecting scripts and retrying on-demand...', err);
+        await injectContentScript(tabId);
+        setTimeout(() => {
+          safeSendTabMessage(tabId, msg);
+        }, 80);
+      }
+    });
+  }
+
+  function a11yFeatureToTileId(k) {
+    const map = {
+      spotlight: 'spotlight',
+      speak: 'speak',
+      contrast: 'contrast',
+      links: 'links',
+      textSize: 'text-size',
+      spacing: 'spacing',
+      animations: 'animations',
+      hideImages: 'hide-images',
+      dyslexia: 'dyslexia',
+      cursor: 'cursor',
+      tooltips: 'tooltips',
+      lineHeight: 'line-height',
+      align: 'align',
+      saturation: 'saturation'
+    };
+    return map[k] || k;
+  }
+
+  function updateA11yCardUI(featureKey) {
+    const tile = document.getElementById(`tile-a11y-${a11yFeatureToTileId(featureKey)}`);
+    const badge = document.getElementById(`badge-a11y-${a11yFeatureToTileId(featureKey)}`);
+    if (!tile || !badge) return;
+
+    const val = a11yFeatureState[featureKey];
+    if (typeof val === 'boolean') {
+      tile.classList.toggle('active', val);
+      if (featureKey === 'animations') {
+        badge.textContent = val ? 'Dijeda' : 'Normal';
+      } else if (featureKey === 'hideImages') {
+        badge.textContent = val ? 'Sembunyi' : 'Normal';
+      } else {
+        badge.textContent = val ? 'Aktif' : 'Mati';
+      }
+    } else {
+      const cycles = a11yCycleConfigs[featureKey] || ['Normal'];
+      const label = cycles[val] || 'Normal';
+      tile.classList.toggle('active', val > 0);
+      badge.textContent = label;
+    }
+  }
+
+  // Deactivate all accessibility effects immediately on tab and clear storage
+  async function resetAllA11yEffects() {
+    Object.keys(a11yFeatureState).forEach((k) => {
+      a11yFeatureState[k] = (typeof a11yFeatureState[k] === 'boolean') ? false : 0;
+      updateA11yCardUI(k);
+    });
+
+    await chrome.storage.local.set({
+      a11y_hub_active: false,
+      a11y_feature_states: {},
+      a11y_spotlight_enabled: false,
+      a11y_speak_enabled: false,
+      a11y_thick_focus: false
+    });
+
+    sendA11yMessageToTab({ type: 'A11Y_RESET_ALL' });
+  }
+
   async function showA11yHub() {
     const currentActive = document.querySelector('.sp-pane.active:not(#pane-a11y-hub)');
     if (currentActive) {
@@ -6214,6 +6337,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const chatFooter = document.querySelector('.sp-chat-footer');
     if (chatFooter) chatFooter.style.display = 'none';
 
+    // Mark a11y hub as active so content script knows it is permitted to apply effects
+    await chrome.storage.local.set({ a11y_hub_active: true });
+
     // Ensure content script & CSS are proactively injected without needing reload
     const tab = await getActiveWebTab();
     if (tab && tab.id) {
@@ -6222,7 +6348,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  function hideA11yHub() {
+  async function hideA11yHub() {
+    // Turning off the a11y view immediately turns off all effects on the active web page
+    await resetAllA11yEffects();
+
     if (paneA11yHub) {
       paneA11yHub.style.display = 'none';
       paneA11yHub.classList.remove('active');
@@ -6238,8 +6367,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function setupAccessibilityHub() {
+    // Back Button (from A11y Hub to main chat/onboarding): closes hub and disables all effects
     if (btnA11yBack) {
       btnA11yBack.addEventListener('click', hideA11yHub);
+    }
+
+    // Reset All Button: restore website immediately
+    if (btnA11yResetAll) {
+      btnA11yResetAll.addEventListener('click', resetAllA11yEffects);
     }
 
     // Global Shortcut Ctrl+U / Alt+A to toggle A11y Hub
@@ -6254,118 +6389,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     });
 
-    // Close A11y hub if any top navigation tab is clicked
+    // Close A11y hub and disable effects if any top navigation tab is clicked
     tabBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        if (paneA11yHub) {
-          paneA11yHub.style.display = 'none';
-          paneA11yHub.classList.remove('active');
+      btn.addEventListener('click', async () => {
+        if (paneA11yHub && (paneA11yHub.classList.contains('active') || paneA11yHub.style.display === 'flex')) {
+          await hideA11yHub();
         }
       });
-    });
-
-    // Feature state dictionary
-    const featureState = {
-      spotlight: false,
-      speak: false,
-      contrast: 0,
-      links: false,
-      textSize: 0,
-      spacing: 0,
-      animations: false,
-      hideImages: false,
-      dyslexia: false,
-      cursor: 0,
-      tooltips: false,
-      lineHeight: 0,
-      align: 0,
-      saturation: 0
-    };
-
-    // Cycle configurations
-    const cycleConfigs = {
-      contrast: ['Normal', '+25%', '+50%', 'Kuning-Hitam'],
-      textSize: ['Normal', '+25%', '+50%', '+75%', '+100%'],
-      spacing: ['Normal', '+25%', '+50%', '+75%'],
-      cursor: ['Normal', 'Besar Putih', 'Besar Hitam'],
-      lineHeight: ['Normal', '+25%', '+50%', '+75%'],
-      align: ['Normal', 'Rata Kiri', 'Rata Kanan'],
-      saturation: ['Normal', 'Rendah (-50%)', 'Monokrom', 'Tinggi (+50%)']
-    };
-
-    async function sendA11yMessageToTab(msg) {
-      const tab = await getActiveWebTab();
-      const tabId = (tab && tab.id) ? tab.id : currentTabId;
-      if (!tabId) return;
-      currentTabId = tabId;
-
-      safeSendTabMessage(tabId, msg, async (err, res) => {
-        if (err || !res) {
-          console.log('[Telmy A11y] Tab did not respond. Injecting scripts and retrying on-demand...', err);
-          await injectContentScript(tabId);
-          setTimeout(() => {
-            safeSendTabMessage(tabId, msg);
-          }, 80);
-        }
-      });
-    }
-
-    function featureToTileId(k) {
-      const map = {
-        spotlight: 'spotlight',
-        speak: 'speak',
-        contrast: 'contrast',
-        links: 'links',
-        textSize: 'text-size',
-        spacing: 'spacing',
-        animations: 'animations',
-        hideImages: 'hide-images',
-        dyslexia: 'dyslexia',
-        cursor: 'cursor',
-        tooltips: 'tooltips',
-        lineHeight: 'line-height',
-        align: 'align',
-        saturation: 'saturation'
-      };
-      return map[k] || k;
-    }
-
-    function updateCardUI(featureKey) {
-      const tile = document.getElementById(`tile-a11y-${featureToTileId(featureKey)}`);
-      const badge = document.getElementById(`badge-a11y-${featureToTileId(featureKey)}`);
-      if (!tile || !badge) return;
-
-      const val = featureState[featureKey];
-      if (typeof val === 'boolean') {
-        tile.classList.toggle('active', val);
-        if (featureKey === 'animations') {
-          badge.textContent = val ? 'Dijeda' : 'Normal';
-        } else if (featureKey === 'hideImages') {
-          badge.textContent = val ? 'Sembunyi' : 'Normal';
-        } else {
-          badge.textContent = val ? 'Aktif' : 'Mati';
-        }
-      } else {
-        const cycles = cycleConfigs[featureKey] || ['Normal'];
-        const label = cycles[val] || 'Normal';
-        tile.classList.toggle('active', val > 0);
-        badge.textContent = label;
-      }
-    }
-
-    // Load saved states from storage
-    chrome.storage.local.get([
-      'a11y_feature_states',
-      'a11y_spotlight_enabled',
-      'a11y_speak_enabled'
-    ], (res) => {
-      if (res.a11y_feature_states) {
-        Object.assign(featureState, res.a11y_feature_states);
-      }
-      if (res.a11y_spotlight_enabled !== undefined) featureState.spotlight = !!res.a11y_spotlight_enabled;
-      if (res.a11y_speak_enabled !== undefined) featureState.speak = !!res.a11y_speak_enabled;
-
-      Object.keys(featureState).forEach(updateCardUI);
     });
 
     // Attach 1-click cycle event listeners to all 14 tiles
@@ -6373,63 +6403,46 @@ document.addEventListener('DOMContentLoaded', async () => {
     tileCards.forEach((tile) => {
       tile.addEventListener('click', async () => {
         const feat = tile.getAttribute('data-feature');
-        if (!feat || !(feat in featureState)) return;
+        if (!feat || !(feat in a11yFeatureState)) return;
 
-        if (typeof featureState[feat] === 'boolean') {
-          featureState[feat] = !featureState[feat];
+        if (typeof a11yFeatureState[feat] === 'boolean') {
+          a11yFeatureState[feat] = !a11yFeatureState[feat];
         } else {
-          const maxCycle = (cycleConfigs[feat] || []).length;
-          featureState[feat] = (featureState[feat] + 1) % maxCycle;
+          const maxCycle = (a11yCycleConfigs[feat] || []).length;
+          a11yFeatureState[feat] = (a11yFeatureState[feat] + 1) % maxCycle;
         }
 
-        updateCardUI(feat);
+        updateA11yCardUI(feat);
 
         // Save preferences
         await chrome.storage.local.set({
-          a11y_feature_states: featureState,
-          a11y_spotlight_enabled: featureState.spotlight,
-          a11y_speak_enabled: featureState.speak
+          a11y_hub_active: true,
+          a11y_feature_states: a11yFeatureState,
+          a11y_spotlight_enabled: a11yFeatureState.spotlight,
+          a11y_speak_enabled: a11yFeatureState.speak
         });
 
         // Broadcast directly to active tab
         if (feat === 'spotlight') {
-          sendA11yMessageToTab({ type: 'A11Y_SET_SPOTLIGHT', enabled: featureState.spotlight });
+          sendA11yMessageToTab({ type: 'A11Y_SET_SPOTLIGHT', enabled: a11yFeatureState.spotlight });
         } else if (feat === 'speak') {
-          sendA11yMessageToTab({ type: 'A11Y_SET_CLICK_TO_SPEAK', enabled: featureState.speak });
+          sendA11yMessageToTab({ type: 'A11Y_SET_CLICK_TO_SPEAK', enabled: a11yFeatureState.speak });
         } else {
-          sendA11yMessageToTab({ type: 'A11Y_SET_FEATURE', feature: feat, value: featureState[feat] });
+          sendA11yMessageToTab({ type: 'A11Y_SET_FEATURE', feature: feat, value: a11yFeatureState[feat] });
         }
       });
     });
-
-    // Reset All Button: restore website immediately
-    if (btnA11yResetAll) {
-      btnA11yResetAll.addEventListener('click', async () => {
-        Object.keys(featureState).forEach((k) => {
-          featureState[k] = (typeof featureState[k] === 'boolean') ? false : 0;
-          updateCardUI(k);
-        });
-
-        await chrome.storage.local.set({
-          a11y_feature_states: featureState,
-          a11y_spotlight_enabled: false,
-          a11y_speak_enabled: false
-        });
-
-        sendA11yMessageToTab({ type: 'A11Y_RESET_ALL' });
-      });
-    }
 
     // Sync state if content script sends updates (e.g. from Alt+S or in-page wand bar)
     chrome.runtime.onMessage.addListener((msg) => {
       if (msg.type === 'A11Y_STATE_CHANGED' && msg.state) {
         if (typeof msg.state.spotlightEnabled === 'boolean') {
-          featureState.spotlight = msg.state.spotlightEnabled;
-          updateCardUI('spotlight');
+          a11yFeatureState.spotlight = msg.state.spotlightEnabled;
+          updateA11yCardUI('spotlight');
         }
         if (typeof msg.state.clickToSpeakEnabled === 'boolean') {
-          featureState.speak = msg.state.clickToSpeakEnabled;
-          updateCardUI('speak');
+          a11yFeatureState.speak = msg.state.clickToSpeakEnabled;
+          updateA11yCardUI('speak');
         }
       }
     });

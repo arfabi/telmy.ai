@@ -28,30 +28,42 @@ window.TelmyA11y = (function () {
 
   // Initialize from chrome.storage
   function init() {
+    // Immediately remove all a11y classes and styles from DOM
+    resetAll();
+
     if (chrome.storage && chrome.storage.local) {
       chrome.storage.local.get([
+        'a11y_hub_active',
         'a11y_spotlight_enabled',
         'a11y_speak_enabled',
-        'a11y_thick_focus',
         'a11y_speech_rate',
         'preferred_language',
         'a11y_feature_states'
       ], (res) => {
-        if (res.a11y_spotlight_enabled) setSpotlight(true);
-        if (res.a11y_speak_enabled) setClickToSpeak(true);
-        if (res.a11y_thick_focus) setThickFocus(true);
         if (res.a11y_speech_rate) state.speechRate = parseFloat(res.a11y_speech_rate) || 0.9;
         if (res.preferred_language) {
           state.currentLang = mapLangToLocale(res.preferred_language);
         }
-        if (res.a11y_feature_states) {
-          applyAllA11yStates(res.a11y_feature_states);
+        // ONLY apply visual modifier effects if the A11y Hub is currently actively open
+        if (res && res.a11y_hub_active) {
+          if (res.a11y_spotlight_enabled) setSpotlight(true);
+          if (res.a11y_speak_enabled) setClickToSpeak(true);
+          if (res.a11y_feature_states) {
+            applyAllA11yStates(res.a11y_feature_states);
+          }
         }
       });
 
       // Plan V8: Real-time broadcast sync via chrome.storage.onChanged
       chrome.storage.onChanged.addListener((changes, area) => {
         if (area !== 'local') return;
+
+        // If the accessibility hub or sidepanel is closed, kill all effects immediately
+        if (changes.a11y_hub_active && changes.a11y_hub_active.newValue === false) {
+          resetAll();
+          return;
+        }
+
         if (changes.a11y_spotlight_enabled) {
           setSpotlight(Boolean(changes.a11y_spotlight_enabled.newValue));
         }
@@ -68,7 +80,12 @@ window.TelmyA11y = (function () {
           state.currentLang = mapLangToLocale(changes.preferred_language.newValue);
         }
         if (changes.a11y_feature_states) {
-          applyAllA11yStates(changes.a11y_feature_states.newValue || {});
+          const val = changes.a11y_feature_states.newValue;
+          if (!val || Object.keys(val).length === 0) {
+            resetAll();
+          } else {
+            applyAllA11yStates(val);
+          }
         }
       });
     }
@@ -549,9 +566,18 @@ window.TelmyA11y = (function () {
     setSpotlight(false);
     setClickToSpeak(false);
     stopSpeaking();
+    setThickFocus(false);
+    state.spotlightEnabled = false;
+    state.clickToSpeakEnabled = false;
+    state.thickFocusEnabled = false;
+    state.activeTargetEl = null;
+
     const root = document.documentElement;
     if (root) {
       root.classList.remove(
+        'telmy-spotlight-active',
+        'telmy-wand-active',
+        'telmy-thick-focus-active',
         'telmy-contrast-1', 'telmy-contrast-2', 'telmy-contrast-3',
         'telmy-links-active',
         'telmy-text-scale-1', 'telmy-text-scale-2', 'telmy-text-scale-3', 'telmy-text-scale-4',
@@ -566,10 +592,18 @@ window.TelmyA11y = (function () {
         'telmy-saturation-1', 'telmy-saturation-2', 'telmy-saturation-3'
       );
     }
+    if (document.body) {
+      document.body.classList.remove(
+        'telmy-contrast-1', 'telmy-contrast-2', 'telmy-contrast-3',
+        'telmy-text-scale-1', 'telmy-text-scale-2', 'telmy-text-scale-3', 'telmy-text-scale-4'
+      );
+    }
     if (chrome.storage && chrome.storage.local) {
       chrome.storage.local.set({
+        a11y_hub_active: false,
         a11y_spotlight_enabled: false,
         a11y_speak_enabled: false,
+        a11y_thick_focus: false,
         a11y_feature_states: {}
       });
     }

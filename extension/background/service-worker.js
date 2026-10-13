@@ -44,6 +44,14 @@ async function sanitizeSettings() {
     if (!stored.suggestions_history) {
       await chrome.storage.local.set({ suggestions_history: [] });
     }
+    // Purge persistent a11y effects so ordinary browsing starts 100% clean
+    await chrome.storage.local.set({
+      a11y_hub_active: false,
+      a11y_feature_states: {},
+      a11y_spotlight_enabled: false,
+      a11y_speak_enabled: false,
+      a11y_thick_focus: false
+    });
     return settings;
   } catch (e) {
     return DEFAULT_SETTINGS;
@@ -96,6 +104,30 @@ chrome.runtime.onStartup?.addListener(async () => {
 if (chrome.sidePanel && chrome.sidePanel.setPanelBehavior) {
   chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch(() => {});
 }
+
+// Sidepanel Life-cycle Monitor: when sidepanel is closed by user or browser, automatically kill all a11y effects
+chrome.runtime.onConnect.addListener((port) => {
+  if (port.name === 'telmy-sidepanel-lifecycle') {
+    port.onDisconnect.addListener(async () => {
+      console.log('[Telmy SW] Sidepanel closed. Resetting all accessibility effects across all tabs...');
+      try {
+        await chrome.storage.local.set({
+          a11y_hub_active: false,
+          a11y_feature_states: {},
+          a11y_spotlight_enabled: false,
+          a11y_speak_enabled: false,
+          a11y_thick_focus: false
+        });
+        const tabs = await chrome.tabs.query({});
+        for (const tab of tabs) {
+          if (tab.id && tab.url && (tab.url.startsWith('http://') || tab.url.startsWith('https://'))) {
+            chrome.tabs.sendMessage(tab.id, { type: 'A11Y_RESET_ALL' }).catch(() => {});
+          }
+        }
+      } catch (err) {}
+    });
+  }
+});
 
 // Cross-browser helper: Open Chrome/Edge sidePanel or Firefox sidebarAction
 async function openSidePanelOrSidebar(tabId) {
