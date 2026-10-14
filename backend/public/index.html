@@ -474,6 +474,286 @@
       margin-top: auto;
     }
 
+    /* A11y Toolbar in Simulator */
+    .sim-a11y-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: #f1f5f9;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .sim-a11y-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #475569;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .btn-a11y-toggle {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #334155;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-a11y-toggle:hover {
+      background: #f8fafc;
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .btn-a11y-toggle.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(0, 113, 227, 0.25);
+    }
+
+    /* Simulator A11y Interactive Modes */
+    .mock-form-area.mode-spotlight {
+      background: #0f172a !important;
+      position: relative;
+    }
+
+    .mock-form-area.mode-spotlight .sim-form-group:not(.active) {
+      opacity: 0.15;
+      filter: blur(1.5px);
+      pointer-events: none;
+    }
+
+    .mock-form-area.mode-spotlight .sim-form-group.active {
+      background: #ffffff !important;
+      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5), 0 0 24px rgba(0, 113, 227, 0.6) !important;
+      position: relative;
+      z-index: 10;
+    }
+
+    .mock-form-area.mode-dyslexia {
+      font-family: 'Comic Sans MS', 'Arial Rounded MT Bold', -apple-system, sans-serif !important;
+      letter-spacing: 0.8px !important;
+      word-spacing: 2px !important;
+      line-height: 1.8 !important;
+    }
+
+    .mock-form-area.mode-contrast {
+      background: #000000 !important;
+      color: #ffff00 !important;
+    }
+
+    .mock-form-area.mode-contrast .sim-label {
+      color: #ffff00 !important;
+    }
+
+    .mock-form-area.mode-contrast .sim-input {
+      background: #000000 !important;
+      color: #ffff00 !important;
+      border: 2px solid #ffff00 !important;
+    }
+
+    .mock-form-area.mode-contrast .sim-hint {
+      color: #00ffcc !important;
+    }
+
+    /* Global E-Government Reality Bar */
+    .reality-bar-section {
+      padding: 0 0 60px;
+    }
+
+    .reality-bar-card {
+      background: #ffffff;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 32px 28px;
+      box-shadow: var(--shadow-subtle);
+      max-width: 1120px;
+      margin: 0 auto;
+    }
+
+    .reality-bar-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .reality-bar-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #0071e3;
+      background: rgba(0, 113, 227, 0.08);
+      padding: 4px 12px;
+      border-radius: var(--radius-full);
+      margin-bottom: 8px;
+    }
+
+    .reality-bar-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: #1d1d1f;
+      letter-spacing: -0.4px;
+    }
+
+    .reality-bar-subtitle {
+      font-size: 13.5px;
+      color: #6e6e73;
+      max-width: 720px;
+      margin: 4px auto 0;
+    }
+
+    .reality-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .reality-metric-tile {
+      background: #fbfbfd;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      border-radius: var(--radius-md);
+      padding: 20px 16px;
+      text-align: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .reality-metric-tile:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .reality-metric-tile.highlight-warn {
+      border-top: 3px solid #ff9500;
+    }
+
+    .reality-metric-tile.highlight-danger {
+      border-top: 3px solid #ff3b30;
+    }
+
+    .reality-metric-tile.highlight-success {
+      border-top: 3px solid #34c759;
+    }
+
+    .reality-metric-tile.highlight-accent {
+      border-top: 3px solid #0071e3;
+    }
+
+    .reality-num {
+      font-size: 38px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      line-height: 1;
+      margin-bottom: 6px;
+      color: #1d1d1f;
+    }
+
+    .reality-num.num-warn { color: #d97706; }
+    .reality-num.num-danger { color: #dc2626; }
+    .reality-num.num-success { color: #16a34a; }
+    .reality-num.num-accent { color: #0071e3; }
+
+    .reality-label {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #1d1d1f;
+      margin-bottom: 4px;
+    }
+
+    .reality-desc {
+      font-size: 11.5px;
+      color: #64748b;
+      line-height: 1.4;
+    }
+
+    .reality-solution-tag {
+      display: inline-block;
+      margin-top: 8px;
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #0071e3;
+      background: #e8f2fc;
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+    }
+
+    /* A11y Feature Showcase Section */
+    .a11y-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 18px;
+      max-width: 1120px;
+      margin: 0 auto;
+    }
+
+    .a11y-feature-card {
+      background: #ffffff;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      box-shadow: var(--shadow-subtle);
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .a11y-feature-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-hover);
+      border-color: rgba(0, 113, 227, 0.3);
+    }
+
+    .a11y-feature-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: rgba(0, 113, 227, 0.08);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      margin-bottom: 12px;
+    }
+
+    .a11y-feature-card h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1d1d1f;
+      margin-bottom: 6px;
+    }
+
+    .a11y-feature-card p {
+      font-size: 13px;
+      color: #64748b;
+      line-height: 1.5;
+    }
+
+    .a11y-wcag-badge {
+      margin-top: auto;
+      padding-top: 10px;
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #15803d;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
     /* Section Styling */
     section {
       padding: 80px 0;
@@ -989,6 +1269,7 @@
 
       <ul class="nav-links" id="nav-menu">
         <li><a href="/" class="nav-link active" id="nav-home">Home</a></li>
+        <li><a href="#accessibility" class="nav-link" id="nav-a11y">Accessibility</a></li>
         <li><a href="#how-it-works" class="nav-link" id="nav-how">How It Works</a></li>
         <li><a href="#features" class="nav-link" id="nav-features">Features</a></li>
         <li><a href="#pricing" class="nav-link" id="nav-pricing">Pricing</a></li>
@@ -1056,7 +1337,21 @@
         </div>
         <div class="frame-content">
           <!-- Web Form Side (Clickable fields 1, 2, 3) -->
-          <div class="mock-form-area">
+          <div class="mock-form-area" id="sim-form-area">
+            <!-- A11y Interactive Playground Toolbar -->
+            <div class="sim-a11y-toolbar">
+              <span class="sim-a11y-label">♿ A11y Hub (WCAG):</span>
+              <button type="button" class="btn-a11y-toggle" id="btn-toggle-spotlight" title="Redupkan area sekitar untuk fokus (SC 2.4.7)">
+                <span>🔦 Spotlight</span>
+              </button>
+              <button type="button" class="btn-a11y-toggle" id="btn-toggle-dyslexia" title="Font ramah disleksia berbobot bawah">
+                <span><strong style="font-size: 11px;">Df</strong> Disleksia</span>
+              </button>
+              <button type="button" class="btn-a11y-toggle" id="btn-toggle-contrast" title="Mode kontras tinggi WCAG AAA">
+                <span>🌓 Kontras</span>
+              </button>
+            </div>
+
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
               <h3 style="font-size: 15px; color: #1e3a8a;" id="sim-form-title">Official Visa & Scholarship Application Portal</h3>
               <span style="font-size: 10.5px; background: #eff6ff; color: #1d4ed8; padding: 2px 8px; border-radius: 4px; font-weight: 600;">Government Service</span>
@@ -1147,6 +1442,124 @@
       </div>
     </div>
   </header>
+
+  <!-- 2.5 Global E-Government Reality Bar (UN E-Gov Survey 2024) -->
+  <section class="reality-bar-section" id="egov-reality">
+    <div class="container">
+      <div class="reality-bar-card">
+        <div class="reality-bar-header">
+          <div class="reality-bar-badge">
+            <span>🏛️</span>
+            <span id="lbl-reality-badge">UN E-Government Survey 2024 Assessment</span>
+          </div>
+          <h2 class="reality-bar-title" id="lbl-reality-title">
+            Global E-Government Reality Check: Availability ≠ Usability
+          </h2>
+          <p class="reality-bar-subtitle" id="lbl-reality-sub">
+            Governments have largely moved public services online, but across 151 city portals surveyed by the United Nations, severe usability and accessibility gaps persist.
+          </p>
+        </div>
+
+        <div class="reality-grid">
+          <!-- Metric 1: Portals Online -->
+          <div class="reality-metric-tile highlight-success">
+            <div class="reality-num num-success" id="val-reality-1">99.5%</div>
+            <div class="reality-label" id="lbl-reality-m1">National Portals Online</div>
+            <p class="reality-desc" id="desc-reality-m1">192 of 193 UN Member States operate online national portals.</p>
+            <span class="reality-solution-tag">Telmy works across all</span>
+          </div>
+
+          <!-- Metric 2: Lack of Help Desk -->
+          <div class="reality-metric-tile highlight-warn">
+            <div class="reality-num num-warn" id="val-reality-2">52%</div>
+            <div class="reality-label" id="lbl-reality-m2">Lack Help Desk Access</div>
+            <p class="reality-desc" id="desc-reality-m2">Only 48% of assessed portals offer help desk guidance to citizens.</p>
+            <span class="reality-solution-tag" style="background: #fef3c7; color: #b45309;">Solved by Telmy Copilot</span>
+          </div>
+
+          <!-- Metric 3: Monolingual Barriers -->
+          <div class="reality-metric-tile highlight-accent">
+            <div class="reality-num num-accent" id="val-reality-3">57%</div>
+            <div class="reality-label" id="lbl-reality-m3">Monolingual Portals</div>
+            <p class="reality-desc" id="desc-reality-m3">Only 43% offer foreign language support for international applicants.</p>
+            <span class="reality-solution-tag">11 JAPAC Languages Matrix</span>
+          </div>
+
+          <!-- Metric 4: Accessibility Crisis -->
+          <div class="reality-metric-tile highlight-danger">
+            <div class="reality-num num-danger" id="val-reality-4">95%</div>
+            <div class="reality-label" id="lbl-reality-m4">Fail Accessibility</div>
+            <p class="reality-desc" id="desc-reality-m4">Just 5% align with web accessibility standards (W3C WCAG).</p>
+            <span class="reality-solution-tag" style="background: #fee2e2; color: #b91c1c;">Built-in WCAG 2.2 AA</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2.6 Dedicated Web Accessibility Showcase (WCAG 2.1 & 2.2 AA) -->
+  <section id="accessibility" style="background: #f8fafc; border-top: 1px solid var(--card-border); border-bottom: 1px solid var(--card-border);">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-badge" id="lbl-a11y-badge">Inclusion For Everyone</span>
+        <h2 class="section-title" id="lbl-a11y-title">Built-In Web Accessibility (WCAG 2.1 & 2.2 AA)</h2>
+        <p class="section-subtitle" id="lbl-a11y-subtitle">
+          Because 95% of government portals fail accessibility standards, Telmy injects essential accessibility superpowers directly into your browser tab.
+        </p>
+      </div>
+
+      <div class="a11y-cards-grid">
+        <!-- A11y 1: Form Spotlight -->
+        <div class="a11y-feature-card">
+          <div class="a11y-feature-icon">🔦</div>
+          <h3>Form Spotlight</h3>
+          <p>Dims the entire busy web page and illuminates only the active form field with a high-contrast guide halo, preventing ADHD and cognitive distraction.</p>
+          <div class="a11y-wcag-badge">✓ WCAG 2.4.7 Focus Visible</div>
+        </div>
+
+        <!-- A11y 2: Click-to-Speak / Audio Wand -->
+        <div class="a11y-feature-card">
+          <div class="a11y-feature-icon">🔊</div>
+          <h3>Audio Wand (Click-to-Speak)</h3>
+          <p>Hover or click any ambiguous official instruction to listen in natural neural voice in your native language, ideal for seniors and auditory learners.</p>
+          <div class="a11y-wcag-badge">✓ WCAG 1.2.1 Audio Guidance</div>
+        </div>
+
+        <!-- A11y 3: Dyslexia-Friendly Typography -->
+        <div class="a11y-feature-card">
+          <div class="a11y-feature-icon"><strong style="font-size: 16px;">Df</strong></div>
+          <h3>Dyslexia-Friendly Mode</h3>
+          <p>Instantly replaces difficult government serif fonts with bottom-weighted, high-legibility letterforms engineered for readers with dyslexia.</p>
+          <div class="a11y-wcag-badge">✓ WCAG 1.4.12 Text Spacing</div>
+        </div>
+
+        <!-- A11y 4: Adaptive High Contrast -->
+        <div class="a11y-feature-card">
+          <div class="a11y-feature-icon">🌓</div>
+          <h3>Adaptive Contrast Cycles</h3>
+          <p>Cycle between High Contrast, Dark Monochrome, and Inverted colors to satisfy 7:1 AAA contrast ratios on washed-out government themes.</p>
+          <div class="a11y-wcag-badge">✓ WCAG 1.4.3 Contrast Minimum</div>
+        </div>
+
+        <!-- A11y 5: Large Pointer & Reading Line -->
+        <div class="a11y-feature-card">
+          <div class="a11y-feature-icon">🖱️</div>
+          <h3>Big Cursor & Reading Guide</h3>
+          <p>Magnifies mouse pointers 300% with high-visibility borders and offers a horizontal reading ruler to prevent line skipping on dense forms.</p>
+          <div class="a11y-wcag-badge">✓ WCAG 2.1 Motor Accessibility</div>
+        </div>
+
+        <!-- A11y 6: Pause Motion & Animation Freeze -->
+        <div class="a11y-feature-card">
+          <div class="a11y-feature-icon">⏸️</div>
+          <h3>Pause Animations & Banners</h3>
+          <p>Instantly freezes distracting government marquees, looping banners, and auto-scrolling carousels for vestibular-safe navigation.</p>
+          <div class="a11y-wcag-badge">✓ WCAG 2.2.2 Pause, Stop, Hide</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
 
   <!-- 3. The Problem Section -->
   <section id="problem">
@@ -1609,15 +2022,6 @@
     </div>
   </footer>
 
-  <script>
-    // FAQ Accordion Interaction
-    document.querySelectorAll('.faq-question').forEach(button => {
-      button.addEventListener('click', () => {
-        const item = button.parentElement;
-        item.classList.toggle('open');
-      });
-    });
-
   <script src="landing-i18n.js"></script>
   <script>
     // FAQ Accordion Interaction
@@ -1627,6 +2031,33 @@
         item.classList.toggle('open');
       });
     });
+
+    // A11y Toolbar Interactive Controls for Simulator
+    const simFormArea = document.getElementById('sim-form-area');
+    const btnToggleSpotlight = document.getElementById('btn-toggle-spotlight');
+    const btnToggleDyslexia = document.getElementById('btn-toggle-dyslexia');
+    const btnToggleContrast = document.getElementById('btn-toggle-contrast');
+
+    if (btnToggleSpotlight && simFormArea) {
+      btnToggleSpotlight.addEventListener('click', () => {
+        const active = simFormArea.classList.toggle('mode-spotlight');
+        btnToggleSpotlight.classList.toggle('active', active);
+      });
+    }
+
+    if (btnToggleDyslexia && simFormArea) {
+      btnToggleDyslexia.addEventListener('click', () => {
+        const active = simFormArea.classList.toggle('mode-dyslexia');
+        btnToggleDyslexia.classList.toggle('active', active);
+      });
+    }
+
+    if (btnToggleContrast && simFormArea) {
+      btnToggleContrast.addEventListener('click', () => {
+        const active = simFormArea.classList.toggle('mode-contrast');
+        btnToggleContrast.classList.toggle('active', active);
+      });
+    }
 
     // Interactive Live Simulator Logic
     const SIMULATOR_FIELDS = {
@@ -1729,7 +2160,7 @@
 
     // Comprehensive 11-Language Translator
     function setLandingLanguage(lang) {
-      const i18n = window.LANDING_I18N || {};
+      const i18n = window.LANDING_I18N || window.LANDING_TRANSLATIONS || {};
       const data = i18n[lang] || i18n['en'] || {};
       document.documentElement.lang = lang;
       
@@ -1740,6 +2171,7 @@
 
       if (data.metaTitle) document.title = data.metaTitle;
       setText('nav-home', data.navHome);
+      setText('nav-a11y', data.navA11y || (lang === 'id' ? 'Aksesibilitas' : 'Accessibility'));
       setText('nav-how', data.navHow);
       setText('nav-features', data.navFeatures);
       setText('nav-pricing', data.navPricing);
@@ -1753,6 +2185,27 @@
       setText('txt-hero-add', data.heroAdd);
       setText('txt-hero-demo', data.heroDemo);
       setText('hero-footnote', data.heroFootnote);
+
+      // UN Survey Reality Bar
+      setText('lbl-reality-title', data.unStatTitle);
+      setText('lbl-reality-sub', data.unStatSub);
+      setText('val-reality-1', data.unStat1Num);
+      setText('lbl-reality-m1', data.unStat1Label);
+      setText('desc-reality-m1', data.unStat1Desc);
+      setText('val-reality-2', data.unStat2Num);
+      setText('lbl-reality-m2', data.unStat2Label);
+      setText('desc-reality-m2', data.unStat2Desc);
+      setText('val-reality-3', data.unStat3Num);
+      setText('lbl-reality-m3', data.unStat3Label);
+      setText('desc-reality-m3', data.unStat3Desc);
+      setText('val-reality-4', data.unStat4Num);
+      setText('lbl-reality-m4', data.unStat4Label);
+      setText('desc-reality-m4', data.unStat4Desc);
+
+      // Accessibility Section
+      setText('lbl-a11y-badge', data.a11ySecBadge);
+      setText('lbl-a11y-title', data.a11ySecTitle);
+      setText('lbl-a11y-subtitle', data.a11ySecSubtitle);
 
       // Simulator Elements
       setText('sim-form-title', data.simTitle);

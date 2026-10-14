@@ -38,3 +38,6 @@ $RECYCLE.BIN/
 tmp/
 dist-extensions/
 .firebase/
+
+# Internal Roadmaps & Design Docs
+roadmap/
