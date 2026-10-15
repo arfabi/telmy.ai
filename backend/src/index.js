@@ -113,9 +113,20 @@ app.use('/api', userRoutes);
 app.use('/api', pdfRoutes);
 app.use('/api', paymentRoutes);
 
-// Fallback 404
+// React SPA Routes & Language Subpaths (/academy, /help, /connect, /dashboard, /id, /en, etc.)
+const spaRoutes = ['/academy', '/help', '/connect', '/dashboard', '/id', '/en', '/zh', '/zh-tw', '/ja', '/ko', '/vi', '/th', '/hi', '/fil', '/ms'];
+spaRoutes.forEach((route) => {
+  app.get(route, (req, res) => res.sendFile(path.join(publicDir, 'index.html')));
+  app.get(`${route}/*`, (req, res) => res.sendFile(path.join(publicDir, 'index.html')));
+});
+
+// Fallback 404 for unmatched API requests or fallback to React index.html for client routes
 app.use((req, res) => {
-  res.status(404).json({ error: 'Endpoint not found' });
+  if (req.accepts('html')) {
+    res.sendFile(path.join(publicDir, 'index.html'));
+  } else {
+    res.status(404).json({ error: 'Endpoint not found' });
+  }
 });
 
 // Start Server

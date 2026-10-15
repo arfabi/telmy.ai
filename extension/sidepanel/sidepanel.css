@@ -5397,6 +5397,70 @@ body {
   line-height: 1.35;
 }
 
+.a11y-presets-container {
+  margin: 10px 14px 4px;
+  padding: 10px 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.a11y-presets-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #475569;
+  margin-bottom: 8px;
+}
+
+.a11y-presets-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+
+.a11y-preset-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+}
+
+.a11y-preset-btn:hover {
+  border-color: #3b82f6;
+  background: #eff6ff;
+  transform: translateY(-1px);
+}
+
+.a11y-preset-btn.active {
+  background: #2563eb;
+  border-color: #1d4ed8;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+}
+
+.a11y-preset-btn.active .preset-name {
+  color: #ffffff;
+}
+
+.preset-icon {
+  font-size: 14px;
+}
+
+.preset-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
 .a11y-hub-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

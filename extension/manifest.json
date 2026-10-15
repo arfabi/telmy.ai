@@ -60,6 +60,7 @@
         "content/highlighter.js",
         "content/translator.js",
         "content/a11y-manager.js",
+        "content/quick-launcher.js",
         "content/content-main.js"
       ],
       "css": [

@@ -61,15 +61,20 @@ async function sanitizeSettings() {
 // Run immediately on service worker boot
 sanitizeSettings();
 
-// Setup Right-Click Context Menu (Plan v6)
+// Setup Right-Click Context Menu (Plan v6 & v14)
 function setupContextMenus() {
   if (!chrome.contextMenus) return;
   try {
     chrome.contextMenus.removeAll(() => {
       chrome.contextMenus.create({
+        id: 'telmy_explain_field',
+        title: 'Explain This with Telmy AI 💡',
+        contexts: ['selection', 'editable']
+      });
+      chrome.contextMenus.create({
         id: 'telmy_analyze_page',
         title: 'Analyze This Page with Telmy AI 🤖',
-        contexts: ['page', 'frame', 'editable', 'selection']
+        contexts: ['page', 'frame']
       });
     });
   } catch (e) {}
@@ -187,6 +192,37 @@ if (chrome.contextMenus && chrome.contextMenus.onClicked) {
           }).catch(() => {});
         }
       });
+      return;
+    }
+
+    if (info.menuItemId === 'telmy_explain_field') {
+      const selectedText = (info.selectionText || '').trim();
+      chrome.tabs.sendMessage(tab.id, {
+        type: 'TRIGGER_EXPLAIN_CONTEXT_MENU',
+        payload: {
+          selectionText: selectedText,
+          editable: Boolean(info.editable)
+        }
+      }, () => {
+        if (chrome.runtime.lastError) {
+          // If content script was not ready, inject scripts first
+          chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            files: ['content/scanner.js', 'content/highlighter.js', 'content/translator.js', 'content/a11y-manager.js', 'content/content-main.js']
+          }).then(() => {
+            setTimeout(() => {
+              chrome.tabs.sendMessage(tab.id, {
+                type: 'TRIGGER_EXPLAIN_CONTEXT_MENU',
+                payload: {
+                  selectionText: selectedText,
+                  editable: Boolean(info.editable)
+                }
+              }).catch(() => {});
+            }, 150);
+          }).catch(() => {});
+        }
+      });
+      return;
     }
   });
 }
@@ -207,6 +243,28 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = 30000) {
 
 // Message listener
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === 'OPEN_SIDEPANEL_REQUEST') {
+    const tabId = sender.tab?.id;
+    if (tabId) {
+      openSidePanelOrSidebar(tabId);
+    }
+    sendResponse({ success: true });
+    return false;
+  }
+
+  if (message.type === 'AUTOFILL_TRIGGER_REQUEST') {
+    const tabId = sender.tab?.id;
+    if (tabId) {
+      openSidePanelOrSidebar(tabId);
+      // Notify sidepanel or tab to initiate autofill
+      chrome.tabs.sendMessage(tabId, { type: 'TRIGGER_VAULT_AUTOFILL_PROMPT' }, () => {
+        if (chrome.runtime.lastError) {}
+      });
+    }
+    sendResponse({ success: true });
+    return false;
+  }
+
   if (message.type === 'GET_SETTINGS') {
     chrome.storage.local.get(['settings']).then((res) => {
       sendResponse(res.settings || DEFAULT_SETTINGS);

@@ -2463,11 +2463,11 @@ document.addEventListener('DOMContentLoaded', async () => {
           <!-- Row 3: Col 1 (Show Me) & Col 2 (Accessibility) -->
           <button type="button" class="welcome-action-card chip-showme" data-action="SHOW_ME_PROMPT">
             <span class="chip-icon">👆</span>
-            <span class="chip-label">5. Show Me / Layar</span>
+            <span class="chip-label">5. Show Me</span>
           </button>
           <button type="button" class="welcome-action-card chip-a11y" data-action="OPEN_A11Y_HUB">
             <span class="chip-icon">♿</span>
-            <span class="chip-label">6. Aksesibilitas</span>
+            <span class="chip-label">6. Accessibility</span>
           </button>
         </div>
       `;
@@ -6402,6 +6402,79 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (paneA11yHub && (paneA11yHub.classList.contains('active') || paneA11yHub.style.display === 'flex')) {
           await hideA11yHub();
         }
+      });
+    });
+
+    // Plan V14: 1-Click Situational Presets Logic
+    const presetConfigs = {
+      adhd: {
+        spotlight: true,
+        animations: true,
+        hideImages: true,
+        spacing: 1
+      },
+      dyslexia: {
+        dyslexia: true,
+        spacing: 2,
+        lineHeight: 2,
+        links: true
+      },
+      lowvision: {
+        contrast: 1, // +25%
+        textSize: 1, // +25%
+        cursor: 1,   // Besar Putih
+        tooltips: true
+      },
+      senior: {
+        speak: true,
+        textSize: 1,
+        cursor: 1,
+        spotlight: false
+      }
+    };
+
+    const presetBtns = document.querySelectorAll('.a11y-preset-btn');
+    presetBtns.forEach((pBtn) => {
+      pBtn.addEventListener('click', async () => {
+        const presetKey = pBtn.getAttribute('data-preset');
+        if (!presetKey || !(presetKey in presetConfigs)) return;
+
+        const isCurrentlyActive = pBtn.classList.contains('active');
+
+        // Reset all buttons visual state first
+        presetBtns.forEach(b => b.classList.remove('active'));
+
+        if (isCurrentlyActive) {
+          // If clicked again, turn off all effects to restore normal view
+          await resetAllA11yEffects();
+          return;
+        }
+
+        pBtn.classList.add('active');
+        const targetCfg = presetConfigs[presetKey];
+
+        // Apply preset settings to a11yFeatureState
+        for (const [feat, val] of Object.entries(targetCfg)) {
+          if (feat in a11yFeatureState) {
+            a11yFeatureState[feat] = val;
+            updateA11yCardUI(feat);
+
+            if (feat === 'spotlight') {
+              sendA11yMessageToTab({ type: 'A11Y_SET_SPOTLIGHT', enabled: val });
+            } else if (feat === 'speak') {
+              sendA11yMessageToTab({ type: 'A11Y_SET_CLICK_TO_SPEAK', enabled: val });
+            } else {
+              sendA11yMessageToTab({ type: 'A11Y_SET_FEATURE', feature: feat, value: val });
+            }
+          }
+        }
+
+        await chrome.storage.local.set({
+          a11y_hub_active: true,
+          a11y_feature_states: a11yFeatureState,
+          a11y_spotlight_enabled: a11yFeatureState.spotlight,
+          a11y_speak_enabled: a11yFeatureState.speak
+        });
       });
     });
 

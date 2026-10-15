@@ -118,6 +118,75 @@ router.get('/user/:uid', async (req, res) => {
 });
 
 /**
+ * POST /api/user/claim-academy-reward
+ * Claim 10 credits valid for 30 days upon completing Telmy Academy (Single claim only)
+ */
+router.post('/user/claim-academy-reward', async (req, res) => {
+  try {
+    const { uid } = req.body;
+    if (!uid) {
+      return res.status(400).json({ success: false, error: 'User UID is required' });
+    }
+
+    const { db, isFirebaseConnected } = getFirestore();
+    let currentCredits = 5;
+    let alreadyClaimed = false;
+
+    if (isFirebaseConnected && db) {
+      const userRef = db.collection('users').doc(uid);
+      const doc = await userRef.get();
+      if (doc.exists) {
+        const d = doc.data();
+        if (d.academyRewardClaimed) {
+          alreadyClaimed = true;
+        }
+        if (d.credits !== undefined) {
+          currentCredits = Number(d.credits);
+        }
+      }
+
+      if (alreadyClaimed) {
+        return res.status(400).json({
+          success: false,
+          error: 'Reward Telmy Academy (+10 Kredit) sudah pernah Anda klaim sebelumnya.'
+        });
+      }
+
+      const updatedCredits = currentCredits + 10;
+      const expiryDate = new Date();
+      expiryDate.setDate(expiryDate.getDate() + 30);
+
+      await userRef.set({
+        credits: updatedCredits,
+        academyRewardClaimed: true,
+        academyRewardClaimedAt: new Date().toISOString(),
+        academyRewardExpiresAt: expiryDate.toISOString()
+      }, { merge: true });
+
+      return res.json({
+        success: true,
+        message: '🎉 Selamat! 10 Form Credits berhasil diklaim ke akun Anda (berlaku 30 hari).',
+        credits: updatedCredits,
+        academyRewardClaimed: true,
+        expiresAt: expiryDate.toISOString()
+      });
+    }
+
+    // Fallback if offline / test mode
+    return res.json({
+      success: true,
+      message: '🎉 Selamat! 10 Form Credits berhasil diklaim ke akun Anda (berlaku 30 hari).',
+      credits: currentCredits + 10,
+      academyRewardClaimed: true,
+      expiresAt: new Date(Date.now() + 30 * 86400000).toISOString()
+    });
+  } catch (error) {
+    console.error('[User Route] Error claiming academy reward:', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/**
  * POST /api/user/avatar
  * Upload and save compressed profile avatar
  */

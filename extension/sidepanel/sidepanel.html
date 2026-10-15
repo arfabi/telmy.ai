@@ -147,7 +147,7 @@
           <span class="back-label">Kembali</span>
         </button>
         <div class="a11y-hub-title-wrap">
-          <h2 class="a11y-hub-title">Menu Aksesibilitas</h2>
+          <h2 class="a11y-hub-title" id="lbl-a11y-hub-title">Accessibility Menu</h2>
           <span class="a11y-hub-shortcut-badge">CTRL+U</span>
         </div>
         <button type="button" id="btn-a11y-reset-all" class="a11y-hub-reset-btn" title="Kembalikan semua efek web ke kondisi normal">
@@ -158,7 +158,30 @@
       <!-- UserWay-style Info Banner -->
       <div class="a11y-hub-banner">
         <span class="a11y-banner-icon">💡</span>
-        <span class="a11y-banner-text">Klik kartu untuk menambah level atau menyalakan/mematikan fitur secara instan.</span>
+        <span class="a11y-banner-text">Klik kartu untuk menambah level atau gunakan Profil Preset Cepat di bawah ini.</span>
+      </div>
+
+      <!-- 1-Click Situational Presets Bar (Plan V14) -->
+      <div class="a11y-presets-container">
+        <span class="a11y-presets-label">🎯 Profil Aksesibilitas Cepat (1-Klik)</span>
+        <div class="a11y-presets-row">
+          <button type="button" class="a11y-preset-btn" data-preset="adhd" title="Fokus tinggi, redam distraksi & sorot formulir">
+            <span class="preset-icon">🧠</span>
+            <span class="preset-name">ADHD Focus</span>
+          </button>
+          <button type="button" class="a11y-preset-btn" data-preset="dyslexia" title="Font ramah disleksia, spasi renggang & sorot tautan">
+            <span class="preset-icon">📖</span>
+            <span class="preset-name">Dyslexia</span>
+          </button>
+          <button type="button" class="a11y-preset-btn" data-preset="lowvision" title="Kontras tinggi, teks lebih besar & kursor jelas">
+            <span class="preset-icon">👁️</span>
+            <span class="preset-name">Low Vision</span>
+          </button>
+          <button type="button" class="a11y-preset-btn" data-preset="senior" title="Teks besar, pemandu suara otomatis & kursor jelas">
+            <span class="preset-icon">👴</span>
+            <span class="preset-name">Senior Friendly</span>
+          </button>
+        </div>
       </div>
 
       <!-- 2-Column Accessibility Grid Tiles (14 Fitur) -->

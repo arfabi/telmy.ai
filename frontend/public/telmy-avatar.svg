@@ -1,0 +1,133 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="telmy-avatar-svg" id="telmy-talking-avatar">
+  <defs>
+    <!-- 3D Gradients -->
+    <linearGradient id="helmGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="70%" stop-color="#f0f4f8"/>
+      <stop offset="100%" stop-color="#d9e2ec"/>
+    </linearGradient>
+
+    <linearGradient id="visorGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0f2b5c"/>
+      <stop offset="50%" stop-color="#091e42"/>
+      <stop offset="100%" stop-color="#040f28"/>
+    </linearGradient>
+
+    <linearGradient id="blueAccentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="40%" stop-color="#0284c7"/>
+      <stop offset="100%" stop-color="#0369a1"/>
+    </linearGradient>
+
+    <linearGradient id="blueHeadphoneGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#60a5fa"/>
+      <stop offset="50%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+
+    <radialGradient id="antennaGlowGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#60a5fa" stop-opacity="1"/>
+      <stop offset="60%" stop-color="#3b82f6" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#1d4ed8" stop-opacity="0"/>
+    </radialGradient>
+
+    <filter id="avatarShadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3.5" flood-color="#034694" flood-opacity="0.22"/>
+    </filter>
+    
+    <filter id="antennaPulseGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2.5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Antenna -->
+  <g id="avatar-antenna" class="avatar-part">
+    <rect x="47.5" y="11" width="5" height="11" rx="2.5" fill="#1d4ed8"/>
+    <!-- Antenna Glow Aura (pulses when speaking or thinking) -->
+    <circle id="antenna-aura" cx="50" cy="9.5" r="9" fill="url(#antennaGlowGrad)" opacity="0.6"/>
+    <!-- Antenna Core Bulb -->
+    <circle id="antenna-bulb" cx="50" cy="9.5" r="6" fill="url(#blueAccentGrad)" filter="url(#antennaPulseGlow)"/>
+    <circle cx="48" cy="7.5" r="1.8" fill="#ffffff" opacity="0.8"/>
+  </g>
+
+  <!-- Headphones (Left & Right) -->
+  <g id="avatar-headphones" class="avatar-part">
+    <!-- Left Cup -->
+    <rect x="6" y="42" width="10" height="26" rx="5" fill="url(#blueHeadphoneGrad)" filter="url(#avatarShadow)"/>
+    <rect x="11" y="46" width="3" height="18" rx="1.5" fill="#1e40af"/>
+    <!-- Right Cup -->
+    <rect x="84" y="42" width="10" height="26" rx="5" fill="url(#blueHeadphoneGrad)" filter="url(#avatarShadow)"/>
+    <rect x="86" y="46" width="3" height="18" rx="1.5" fill="#1e40af"/>
+    <!-- Headband Arch -->
+    <path d="M 14 44 C 14 20, 86 20, 86 44" fill="none" stroke="#2563eb" stroke-width="4" stroke-linecap="round"/>
+  </g>
+
+  <!-- Head / Helmet Base -->
+  <rect id="avatar-helmet" x="14" y="20" width="72" height="68" rx="26" fill="url(#helmGrad)" filter="url(#avatarShadow)"/>
+  <rect x="16" y="22" width="68" height="32" rx="20" fill="#ffffff" opacity="0.45"/>
+
+  <!-- Face Visor Screen (Dark Blue Display) -->
+  <rect id="avatar-screen" x="22" y="32" width="56" height="46" rx="18" fill="url(#visorGrad)"/>
+  
+  <!-- Subtle Visor Glass Reflection -->
+  <path d="M 26 36 Q 50 33 74 36 Q 50 41 26 36 Z" fill="#ffffff" opacity="0.16"/>
+
+  <!-- Cheeks Blush (Warm & Friendly) -->
+  <g id="avatar-blush" opacity="0.5">
+    <ellipse cx="29" cy="60" rx="3.5" ry="2" fill="#38bdf8"/>
+    <ellipse cx="71" cy="60" rx="3.5" ry="2" fill="#38bdf8"/>
+  </g>
+
+  <!-- EYES GROUP -->
+  <g id="avatar-eyes">
+    <!-- 1. Eyes Open (Happy curved arches) -->
+    <g id="eyes-open" class="eye-state">
+      <path d="M 33 52 C 34 45, 43 45, 44 52" stroke="#ffffff" stroke-width="3.6" stroke-linecap="round" fill="none"/>
+      <path d="M 56 52 C 57 45, 66 45, 67 52" stroke="#ffffff" stroke-width="3.6" stroke-linecap="round" fill="none"/>
+    </g>
+
+    <!-- 2. Eyes Blink (Horizontal slits) -->
+    <g id="eyes-blink" class="eye-state" style="display: none;">
+      <line x1="33" y1="51" x2="44" y2="51" stroke="#ffffff" stroke-width="3.2" stroke-linecap="round"/>
+      <line x1="56" y1="51" x2="67" y2="51" stroke="#ffffff" stroke-width="3.2" stroke-linecap="round"/>
+    </g>
+
+    <!-- 3. Eyes Thinking (Playful look up-right) -->
+    <g id="eyes-thinking" class="eye-state" style="display: none;">
+      <circle cx="40" cy="48" r="3.2" fill="#ffffff"/>
+      <circle cx="63" cy="48" r="3.2" fill="#ffffff"/>
+    </g>
+  </g>
+
+  <!-- MOUTH VISEME LAYERS -->
+  <g id="avatar-mouth">
+    <!-- Viseme 1: Idle (Cute small smile) -->
+    <g id="viseme-idle" class="mouth-viseme">
+      <path d="M 44 63 Q 50 68 56 63" stroke="#ffffff" stroke-width="2.8" stroke-linecap="round" fill="none"/>
+    </g>
+
+    <!-- Viseme 2: AEI (Open smiling mouth for A, E, I) -->
+    <g id="viseme-aei" class="mouth-viseme" style="display: none;">
+      <path d="M 43 62 Q 50 72 57 62 Z" fill="#ffffff"/>
+      <path d="M 46 66 Q 50 71 54 66" fill="#f43f5e" opacity="0.85"/>
+    </g>
+
+    <!-- Viseme 3: OU (Round 'O' mouth for O, U) -->
+    <g id="viseme-ou" class="mouth-viseme" style="display: none;">
+      <ellipse cx="50" cy="65" rx="4.5" ry="5.8" fill="#ffffff"/>
+      <ellipse cx="50" cy="65" rx="2.5" ry="3.5" fill="#0f2b5c"/>
+    </g>
+
+    <!-- Viseme 4: MBP (Pressed line for M, B, P consonants) -->
+    <g id="viseme-mbp" class="mouth-viseme" style="display: none;">
+      <line x1="44" y1="64" x2="56" y2="64" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round"/>
+    </g>
+
+    <!-- Viseme 5: Wide (Wide grin for peak amplitude / laughs) -->
+    <g id="viseme-wide" class="mouth-viseme" style="display: none;">
+      <path d="M 41 61 Q 50 75 59 61 Z" fill="#ffffff"/>
+      <path d="M 44 67 Q 50 73 56 67" fill="#f43f5e" opacity="0.85"/>
+    </g>
+  </g>
+</svg>
