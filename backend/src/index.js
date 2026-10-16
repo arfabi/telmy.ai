@@ -90,17 +90,12 @@ app.get('/api/config', (req, res) => {
   });
 });
 
-// Serve Static Web Platform (Landing Page, Privacy, Demo, Download)
+// Serve Static Web Platform (Assets, Icons, Crypto, Bundled SPA)
 const publicDir = path.resolve(__dirname, '../public');
 app.use(express.static(publicDir));
 
-// Clean URLs
+// Clean URL for Root Landing
 app.get('/', (req, res) => res.sendFile(path.join(publicDir, 'index.html')));
-app.get('/privacy', (req, res) => res.sendFile(path.join(publicDir, 'privacy.html')));
-app.get('/demo', (req, res) => res.sendFile(path.join(publicDir, 'demo.html')));
-app.get('/download', (req, res) => res.sendFile(path.join(publicDir, 'download.html')));
-app.get('/connect', (req, res) => res.sendFile(path.join(publicDir, 'connect.html')));
-app.get('/dashboard', (req, res) => res.sendFile(path.join(publicDir, 'dashboard.html')));
 
 // API Routes
 app.use('/api', explainRoutes);

@@ -61,26 +61,6 @@
           }
         },
         {
-          "source": "/privacy",
-          "destination": "/privacy.html"
-        },
-        {
-          "source": "/demo",
-          "destination": "/demo.html"
-        },
-        {
-          "source": "/download",
-          "destination": "/download.html"
-        },
-        {
-          "source": "/dashboard",
-          "destination": "/dashboard.html"
-        },
-        {
-          "source": "/connect",
-          "destination": "/connect.html"
-        },
-        {
           "source": "**",
           "destination": "/index.html"
         }
