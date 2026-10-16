@@ -30,6 +30,24 @@
 
 ---
 
+## 📑 Table of Contents
+
+- [📖 The Story & Problem](#-the-story--problem-why-we-built-telmyai)
+- [🏛️ System Architecture](#️-system-architecture)
+- [🛠️ Google Technology Stack](#️-complete-google-technology-stack-100-google-ai--cloud-native)
+- [🌟 Feature Highlights (Extension & Dashboard)](#-comprehensive-feature-breakdown-extension--dashboard)
+- [🌍 Supported Languages](#-supported-languages-11-japac--global-languages)
+- [🚀 Quickstart & Setup Guide](#-quickstart--setup-guide)
+  - [Step 1: Backend Setup](#step-1-configure--start-backend)
+  - [Step 2: Frontend Setup](#step-2-configure--start-frontend-web-platform)
+  - [Step 3: Browser Extension Installation](#step-3-install-browser-extension-chrome-edge-opera--firefox)
+- [☁️ Cloud Run Deployment](#️-deployment-to-google-cloud-run)
+- [🔒 Chrome Web Store & Privacy Compliance](#-chrome-web-store--privacy-compliance)
+- [💎 Why Telmy.ai Stands Out](#-why-telmyai-stands-out)
+- [📄 License & Credits](#-license--credits)
+
+---
+
 ## 📖 The Story & Problem: Why We Built Telmy.ai
 
 Every year, millions of citizens, international students, foreign travelers, and small business owners encounter digital bureaucracy:
@@ -300,9 +318,9 @@ Telmy.ai was engineered to be **100% compliant** with Google Chrome Web Store De
 
 ---
 
-## 🏆 Hackathon Submission Highlights (Judges Matrix)
+## 💎 Why Telmy.ai Stands Out
 
-| Evaluation Criteria | Telmy.ai Implementation & Evidence |
+| Core Pillar | Telmy.ai Implementation & Engineering Highlights |
 | :--- | :--- |
 | **Comprehensive Google AI Integration** | Fully integrated with **Google Gemini 3.5 Flash-Lite**, **Gemini Multimodal Vision**, **Gemini Embeddings**, **Google Cloud WaveNet TTS**, **Firebase Firestore**, and **Google Cloud Run**. |
 | **Human Impact & Digital Equity** | Solves digital bureaucracy anxiety for international students, job seekers, and senior citizens, supporting 11 native languages with spoken explanations and visual guidance. |
