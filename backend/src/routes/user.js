@@ -368,4 +368,72 @@ router.delete('/user/vault/:uid', async (req, res) => {
   }
 });
 
+/**
+ * POST /api/user/device
+ * Register or update active device/browser connection
+ */
+router.post('/user/device', async (req, res) => {
+  try {
+    const { uid, deviceId, deviceName, browser, os, ip, userAgent } = req.body;
+    if (!uid) {
+      return res.status(400).json({ success: false, error: 'UID is required' });
+    }
+
+    const id = deviceId || 'dev_' + Buffer.from(userAgent || 'browser').toString('base64').substring(0, 16);
+    const deviceRecord = {
+      id,
+      deviceId: id,
+      uid,
+      deviceName: deviceName || (browser ? `${browser} on ${os || 'Device'}` : 'Chrome Extension'),
+      browser: browser || 'Chrome',
+      os: os || 'Windows / MacOS',
+      ip: ip || req.ip || '127.0.0.1',
+      lastActive: new Date().toISOString(),
+      isCurrent: true
+    };
+
+    const { db, isFirebaseConnected } = getFirestore();
+    if (isFirebaseConnected && db) {
+      try {
+        await db.collection('user_devices').doc(`${uid}_${id}`).set(deviceRecord, { merge: true });
+      } catch (dbErr) {
+        console.warn('[User Route] Device save warning:', dbErr.message);
+      }
+    }
+
+    return res.json({ success: true, data: deviceRecord });
+  } catch (error) {
+    console.error('[User Route] Error saving device:', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * GET /api/user/devices/:uid
+ * Retrieve active connected devices for user
+ */
+router.get('/user/devices/:uid', async (req, res) => {
+  try {
+    const { uid } = req.params;
+    const { db, isFirebaseConnected } = getFirestore();
+    const devices = [];
+
+    if (isFirebaseConnected && db) {
+      try {
+        const snap = await db.collection('user_devices').where('uid', '==', uid).get();
+        snap.forEach(doc => devices.push(doc.data()));
+      } catch (dbErr) {
+        console.warn('[User Route] Error fetching user devices:', dbErr.message);
+      }
+    }
+
+    devices.sort((a, b) => new Date(b.lastActive || 0) - new Date(a.lastActive || 0));
+
+    return res.json({ success: true, data: devices });
+  } catch (error) {
+    console.error('[User Route] Error fetching devices:', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 export default router;

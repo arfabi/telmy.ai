@@ -2,10 +2,12 @@ import React from 'react'
 import { Navbar } from '@/components/landing/Navbar'
 import { Hero } from '@/components/landing/Hero'
 import { CoreCards } from '@/components/landing/CoreCards'
+import { WhoFor } from '@/components/landing/WhoFor'
 import { RealityCheck } from '@/components/landing/RealityCheck'
 import { Simulator } from '@/components/landing/Simulator'
 import { Comparison } from '@/components/landing/Comparison'
 import { ThreeSteps } from '@/components/landing/ThreeSteps'
+import { ScopeBoundary } from '@/components/landing/ScopeBoundary'
 import { PrivacySummary } from '@/components/landing/PrivacySummary'
 import { PricingTeaser } from '@/components/landing/PricingTeaser'
 import { FAQ } from '@/components/landing/FAQ'
@@ -21,37 +23,43 @@ export const LandingPage: React.FC = () => {
       {/* 1. Navbar */}
       <Navbar />
 
-      {/* 2. Hero: "Any form. Any language. No worries." + 2 CTA + Robot + Browser badges + Trustline */}
+      {/* 2. Hero: Headline + Subheadline + Dual CTA + Interactive Product Demo Preview */}
       <Hero t={t} />
 
-      {/* 3. Core Cards: Card A (Guide), Card B (11 Languages), Card C (Accessibility) */}
+      {/* 3. Core Cards: Understand Every Field, Forms in Your Language, Guidance When Forms Get Complicated */}
       <CoreCards t={t} />
 
-      {/* 4. Reality Check: UN E-Gov Survey 2024 (99.5%, 52%, 57%, 95%) */}
+      {/* 4. Who Is Telmy For: Scholarship, Visa/Travel, Everyday Forms (New v19) */}
+      <WhoFor t={t} />
+
+      {/* 5. Reality Check: UN E-Gov Survey */}
       <RealityCheck t={t} />
 
-      {/* 5. Interactive Simulator Sandbox */}
+      {/* 6. Interactive Simulator Sandbox (Visa Application Sandbox) */}
       <Simulator t={t} />
 
-      {/* 6. Comparison: Without Telmy vs With Telmy */}
+      {/* 7. Comparison: Without Telmy vs With Telmy */}
       <Comparison t={t} />
 
-      {/* 7. Three Steps: Add Telmy -> Open form -> Follow guide */}
+      {/* 8. Three Steps: Open Form -> Understand -> Fill & Review */}
       <ThreeSteps t={t} />
 
-      {/* 8. Privacy Summary: AES-256, Zero-Knowledge, No doc storage, Passwords private */}
+      {/* 9. Scope & Boundaries: What Telmy Helps With vs What It Doesn't Replace (New v19) */}
+      <ScopeBoundary t={t} />
+
+      {/* 10. Privacy Summary: AES-256, Zero-Knowledge, No doc storage */}
       <PrivacySummary t={t} />
 
-      {/* 9. Pricing Teaser: Start free, 5 forms monthly */}
+      {/* 11. Pricing Teaser: Free 5 forms monthly */}
       <PricingTeaser t={t} />
 
-      {/* 10. Top FAQ Accordion */}
+      {/* 12. Top FAQ Accordion */}
       <FAQ t={t} />
 
-      {/* 11. Final CTA: Your next form can be easier */}
+      {/* 13. Final CTA: Your next form can be easier */}
       <FinalCta t={t} />
 
-      {/* 12. Dynamic Localized Footer */}
+      {/* 14. Dynamic Localized Footer */}
       <Footer t={t} />
     </div>
   )

@@ -31,10 +31,12 @@ export const SignInPage: React.FC = () => {
     }
   }
 
-  // If already logged in, offer quick forward to dashboard
-  if (userProfile?.uid) {
-    navigate('/dashboard')
-  }
+  // If already logged in, redirect cleanly to dashboard without firing auth popup
+  React.useEffect(() => {
+    if (userProfile?.uid) {
+      navigate('/dashboard', { replace: true })
+    }
+  }, [userProfile, navigate])
 
   const strings: Record<string, { title: string; subtitle: string; googleBtn: string; privacyLine: string; trust1: string; trust2: string; trust3: string; backHome: string }> = {
     en: {

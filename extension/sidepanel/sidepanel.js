@@ -111,12 +111,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const elUploadLocalText = document.getElementById('lbl-btn-upload-local');
 
     if (reason === 'unscanned') {
-      if (elIcon) elIcon.textContent = '📋';
+      if (elIcon) elIcon.innerHTML = `<div class="empty-icon-bubble"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg></div>`;
       if (elTitle) elTitle.textContent = currentLanguage === 'en' ? 'Form Not Yet Analyzed' : 'Form Belum Dianalisis';
       if (elDesc) elDesc.textContent = currentLanguage === 'en'
         ? 'This page has not been analyzed yet. Please click the button below to analyze this page to find forms, or you can upload a local PDF / image form.'
         : 'Halaman ini belum dianalisis. Silakan klik tombol di bawah untuk menganalisis formulir di halaman ini guna menemukan formulir, atau Anda dapat mengunggah file formulir PDF / gambar lokal.';
-      if (elBtnText) elBtnText.textContent = '🔍 Analyze This Form';
+      if (elBtnText) elBtnText.textContent = currentLanguage === 'en' ? 'Analyze This Form' : 'Analisis Formulir Ini';
       if (btnManual) {
         btnManual.style.display = 'inline-flex';
         btnManual.onclick = () => triggerFullFormAnalysis();
@@ -126,7 +126,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         btnUploadLocal.onclick = () => openPdfMode();
       }
       if (elUploadLocalText) {
-        elUploadLocalText.textContent = currentLanguage === 'en' ? '📄 Upload Local File Form' : '📄 Upload File Formulir Lokal';
+        elUploadLocalText.textContent = currentLanguage === 'en' ? 'Upload Local File Form' : 'Upload File Formulir Lokal';
       }
     } else if (reason === 'no_fields') {
       if (btnUploadLocal) {
@@ -134,17 +134,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         btnUploadLocal.onclick = () => openPdfMode();
       }
       if (elUploadLocalText) {
-        elUploadLocalText.textContent = currentLanguage === 'en' ? '📄 Upload Local File Form' : '📄 Upload File Formulir Lokal';
+        elUploadLocalText.textContent = currentLanguage === 'en' ? 'Upload Local File Form' : 'Upload File Formulir Lokal';
       }
       if (extraData && extraData.actionButton) {
-        if (elIcon) elIcon.textContent = '🎯';
+        if (elIcon) elIcon.innerHTML = `<div class="empty-icon-bubble"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>`;
         if (elTitle) elTitle.textContent = currentLanguage === 'en'
           ? `Action Button Found: ${extraData.actionButton.text}`
           : `Tombol Pengajuan Ditemukan: ${extraData.actionButton.text}`;
         if (elDesc) elDesc.textContent = currentLanguage === 'en'
           ? `No form inputs on this page. However, Telmy found and highlighted the application button: "${extraData.actionButton.text}". Click it on the page to proceed.`
           : `Belum ada formulir input di halaman ini. Namun Telmy telah menemukan dan menyorot tombol untuk memulai pengajuan: "${extraData.actionButton.text}". Silakan klik tombol tersebut di halaman web.`;
-        if (elBtnText) elBtnText.textContent = currentLanguage === 'en' ? `👉 Click "${extraData.actionButton.text}"` : `👉 Klik "${extraData.actionButton.text}"`;
+        if (elBtnText) elBtnText.textContent = currentLanguage === 'en' ? `Click "${extraData.actionButton.text}"` : `Klik "${extraData.actionButton.text}"`;
         if (btnManual) {
           btnManual.style.display = 'inline-flex';
           btnManual.onclick = () => {
@@ -152,12 +152,12 @@ document.addEventListener('DOMContentLoaded', async () => {
           };
         }
       } else {
-        if (elIcon) elIcon.textContent = '🔍';
+        if (elIcon) elIcon.innerHTML = `<div class="empty-icon-bubble"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></div>`;
         if (elTitle) elTitle.textContent = currentLanguage === 'en' ? 'No Form Fields Detected' : 'Tidak Ada Kolom Formulir di Halaman Ini';
         if (elDesc) elDesc.textContent = currentLanguage === 'en'
           ? 'Telmy scanned this page but found 0 input fields. If you need to submit an application, ensure you are on the actual form page or logged in.'
           : 'Telmy telah memindai halaman ini dan tidak menemukan kolom input formulir (0 kolom). Jika Anda ingin mengajukan permohonan, pastikan Anda berada di halaman formulir atau login terlebih dahulu.';
-        if (elBtnText) elBtnText.textContent = currentLanguage === 'en' ? '🔄 Rescan Page' : '🔄 Pindai Ulang Halaman';
+        if (elBtnText) elBtnText.textContent = currentLanguage === 'en' ? 'Rescan Page' : 'Pindai Ulang Halaman';
         if (btnManual) {
           btnManual.style.display = 'inline-flex';
           btnManual.onclick = () => triggerFullFormAnalysis();
@@ -165,7 +165,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     } else if (reason === 'select_field') {
       if (btnUploadLocal) btnUploadLocal.style.display = 'none';
-      if (elIcon) elIcon.textContent = '👆';
+      if (elIcon) elIcon.innerHTML = `<div class="empty-icon-bubble"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4.1 12 6"/><path d="m5.1 8-2.9-.8.8-2.9a2 2 0 0 1 2.8-1.1l.1.1a2 2 0 0 1 1.1 2.8l-.8 2.9Z"/><path d="m6 12 2-2"/><path d="M7.2 2.2 8 5.1"/><path d="M9.037 9.69a.498.498 0 0 1 .653-.653l11 4.5a.5.5 0 0 1-.074.949l-4.349 1.041a1 1 0 0 0-.74.739l-1.04 4.35a.5.5 0 0 1-.95.074z"/></svg></div>`;
       if (elTitle) elTitle.textContent = t('empty_fields_title');
       if (elDesc) elDesc.textContent = t('empty_fields_desc');
       if (elBtnText) elBtnText.textContent = t('btn_start_guide');
@@ -217,12 +217,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   const btnPdfExportFilled = document.getElementById('btn-pdf-export-filled');
 
   // Priority 7 & 8: Encrypted Profile Vault & Multi-Document Ingestion Elements
+  const vaultLockedStateView = document.getElementById('vault-locked-state-view');
+  const vaultUnlockedStateView = document.getElementById('vault-unlocked-state-view');
+  const btnVaultGateAction = document.getElementById('btn-vault-gate-action');
+  const lblVaultGateTitle = document.getElementById('lbl-vault-gate-title');
+  const lblVaultGateDesc = document.getElementById('lbl-vault-gate-desc');
+  const lblVaultGateBtn = document.getElementById('lbl-vault-gate-btn');
   const btnVaultLockToggle = document.getElementById('btn-vault-lock-toggle');
   const lblVaultLockIcon = document.getElementById('lbl-vault-lock-icon');
   const btnVaultAutofillNow = document.getElementById('btn-vault-autofill-now');
   const vaultFieldsCount = document.getElementById('vault-fields-count');
-  const btnVaultAddCustom = document.getElementById('btn-vault-add-custom');
-  const btnVaultWipe = document.getElementById('btn-vault-wipe');
+  const btnOpenDashboardVault = document.getElementById('btn-open-dashboard-vault');
   const vaultFieldsList = document.getElementById('vault-fields-list');
 
   // Vault Modals Elements (Dual-Lock: Password & 12-Word Seed Phrase)
@@ -2361,8 +2366,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (lblCompactModeTitle) {
       lblCompactModeTitle.textContent = currentBotMode === 'chat'
-        ? `💬 Mode: ${t('mode_chat_compact')}`
-        : `🎙️ Mode: ${t('mode_voice_compact')}`;
+        ? `Mode: ${t('mode_chat_compact')}`
+        : `Mode: ${t('mode_voice_compact')}`;
     }
     const compactHoverHint = spModeCompactBar?.querySelector('span:last-child');
     if (compactHoverHint) compactHoverHint.textContent = `${t('hover_change_mode')} ▾`;
@@ -2441,32 +2446,44 @@ document.addEventListener('DOMContentLoaded', async () => {
         <p class="welcome-subtitle">${escapeHTML(t('welcome_hero_desc'))}</p>
         <div class="welcome-chips-grid welcome-grid-2col">
           <!-- Row 1: Col 1 & 2 -->
-          <button type="button" class="welcome-action-card chip-analyze" data-action="ANALYZE_FORM">
-            <span class="chip-icon">🔍</span>
+          <button type="button" class="welcome-action-card chip-analyze active-chip" data-action="ANALYZE_FORM">
+            <span class="chip-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </span>
             <span class="chip-label">1. Analyze This Form</span>
           </button>
           <button type="button" class="welcome-action-card chip-translate" data-action="TRANSLATE_PAGE">
-            <span class="chip-icon">🌐</span>
+            <span class="chip-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            </span>
             <span class="chip-label">2. Translate This Page</span>
           </button>
 
           <!-- Row 2: Col 1 & 2 -->
           <button type="button" class="welcome-action-card chip-autofill" data-action="AUTOFILL_FORM">
-            <span class="chip-icon">⚡</span>
+            <span class="chip-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            </span>
             <span class="chip-label">3. 1-Click Auto Fill</span>
           </button>
           <button type="button" class="welcome-action-card chip-pdf" data-action="OPEN_PDF">
-            <span class="chip-icon">📄</span>
+            <span class="chip-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg>
+            </span>
             <span class="chip-label">4. Upload Local PDF</span>
           </button>
 
-          <!-- Row 3: Col 1 (Show Me) & Col 2 (Accessibility) -->
+          <!-- Row 3: Col 1 & 2 -->
           <button type="button" class="welcome-action-card chip-showme" data-action="SHOW_ME_PROMPT">
-            <span class="chip-icon">👆</span>
+            <span class="chip-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>
+            </span>
             <span class="chip-label">5. Show Me</span>
           </button>
           <button type="button" class="welcome-action-card chip-a11y" data-action="OPEN_A11Y_HUB">
-            <span class="chip-icon">♿</span>
+            <span class="chip-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="8" r="1.5"/><path d="M7 11h10"/><path d="M9 20l3-6 3 6"/><path d="M12 11v4"/></svg>
+            </span>
             <span class="chip-label">6. Accessibility</span>
           </button>
         </div>
@@ -3596,8 +3613,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (lblCompactModeTitle) {
       lblCompactModeTitle.textContent = mode === 'chat'
-        ? `💬 Mode: ${t('mode_chat_compact')}`
-        : `🎙️ Mode: ${t('mode_voice_compact')}`;
+        ? `Mode: ${t('mode_chat_compact')}`
+        : `Mode: ${t('mode_voice_compact')}`;
     }
 
     // Refresh chat stream / welcome hero depending on mode (Priority 5.3)
@@ -5212,7 +5229,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 1. Initial lock state & Session Cache restoration
     checkVaultSessionCache();
 
-    // 2. Lock / Unlock Toggle Button
+    // 2. Gate Unlock / Create Vault Button (in Locked View)
+    if (btnVaultGateAction) {
+      btnVaultGateAction.addEventListener('click', () => {
+        openVaultPinModal();
+      });
+    }
+
+    // 2b. Lock Toggle Button (in Unlocked Topbar)
     if (btnVaultLockToggle) {
       btnVaultLockToggle.addEventListener('click', () => {
         if (isVaultUnlocked) {
@@ -5228,99 +5252,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       btnVaultAutofillNow.addEventListener('click', handleVault1ClickAutoFill);
     }
 
-    // 4. Add Custom Field Button
-    if (btnVaultAddCustom) {
-      btnVaultAddCustom.addEventListener('click', () => {
-        if (!isVaultUnlocked) {
-          openVaultPinModal(() => openFieldModal(null));
-        } else {
-          openFieldModal(null);
-        }
-      });
-    }
-
-    // 5. Wipe Master Vault Button
-    if (btnVaultWipe) {
-      btnVaultWipe.addEventListener('click', wipeVault);
-    }
-
-    function switchVaultModalTab(mode) {
-      activeVaultMode = mode;
-      if (tabVaultPassword) tabVaultPassword.classList.toggle('active', mode === 'password');
-      if (tabVaultSeed) tabVaultSeed.classList.toggle('active', mode === 'seed_phrase');
-      if (vaultViewPassword) vaultViewPassword.style.display = mode === 'password' ? 'block' : 'none';
-      if (vaultViewSeed) vaultViewSeed.style.display = mode === 'seed_phrase' ? 'block' : 'none';
-      if (vaultPinError) vaultPinError.style.display = 'none';
-
-      if (mode === 'password' && inputVaultPassword) {
-        setTimeout(() => inputVaultPassword.focus(), 50);
-      } else if (mode === 'seed_phrase' && isVaultSetupMode && !currentGeneratedSeed) {
-        generateAndRenderSeedChips();
-      }
-    }
-
-    function togglePasswordVisibility() {
-      if (!inputVaultPassword) return;
-      const isPwd = inputVaultPassword.type === 'password';
-      inputVaultPassword.type = isPwd ? 'text' : 'password';
-      if (btnTogglePwdVisibility) btnTogglePwdVisibility.textContent = isPwd ? '🙈' : '👁️';
-    }
-
-    function updatePasswordStrengthUI() {
-      if (!inputVaultPassword) return;
-      const val = inputVaultPassword.value;
-      if (isVaultSetupMode && vaultPwdStrengthWrap) {
-        vaultPwdStrengthWrap.style.display = 'block';
-        const st = window.TelmyCryptoVault.calculatePasswordStrength(val);
-        if (vaultStrengthBar) {
-          vaultStrengthBar.style.width = st.percent + '%';
-          vaultStrengthBar.style.backgroundColor = st.color;
-        }
-        if (vaultStrengthText) {
-          vaultStrengthText.textContent = st.label;
-          vaultStrengthText.style.color = st.color;
-        }
-      } else if (vaultPwdStrengthWrap) {
-        vaultPwdStrengthWrap.style.display = 'none';
-      }
-    }
-
-    function generateAndRenderSeedChips() {
-      currentGeneratedSeed = window.TelmyCryptoVault.generateSeedPhrase();
-      const words = currentGeneratedSeed.split(' ');
-      if (vaultSeedChips) {
-        vaultSeedChips.innerHTML = words.map((w, idx) => `
-          <div class="vault-seed-chip">
-            <span class="vault-seed-num">${idx + 1}.</span>
-            <span>${w}</span>
-          </div>
-        `).join('');
-      }
-      if (chkSeedSaved) chkSeedSaved.checked = false;
-    }
-
-    function copySeedWordsToClipboard() {
-      if (!currentGeneratedSeed) return;
-      navigator.clipboard.writeText(currentGeneratedSeed).then(() => {
-        showToast('📋 12 secret words copied to clipboard!');
-      });
-    }
-
-    function downloadSeedTxtFile() {
-      if (!currentGeneratedSeed) return;
-      const txtContent = `TELMY.AI — EMERGENCY ZERO-KNOWLEDGE SEED PHRASE\n` +
-        `Generated: ${new Date().toISOString()}\n\n` +
-        `Your 12 Secret Words (Keep this safe & offline):\n` +
-        `${currentGeneratedSeed}\n\n` +
-        `IMPORTANT: If you lose these words, your encrypted profile cannot be recovered by anyone.`;
-      const blob = new Blob([txtContent], { type: 'text/plain;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `telmy-vault-seed-${Date.now().toString(36)}.txt`;
-      a.click();
-      URL.revokeObjectURL(url);
-      showToast('📥 Emergency seed phrase text file saved!');
+    // 4. Open Web Dashboard for Full Vault Editing
+    if (btnOpenDashboardVault) {
+      btnOpenDashboardVault.addEventListener('click', openDashboardVault);
     }
 
     if (tabVaultPassword) tabVaultPassword.addEventListener('click', () => switchVaultModalTab('password'));
@@ -5367,6 +5301,117 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 8. Document Dropzone Setup (Priority 8)
     setupVaultDocDropzone();
   }
+
+  // Toast Notification Helper
+  function showToast(message) {
+    let toast = document.getElementById("telmy-sidepanel-toast");
+    if (!toast) {
+      toast = document.createElement("div");
+      toast.id = "telmy-sidepanel-toast";
+      toast.style.position = "fixed";
+      toast.style.bottom = "20px";
+      toast.style.left = "50%";
+      toast.style.transform = "translateX(-50%)";
+      toast.style.backgroundColor = "#0f172a";
+      toast.style.color = "#ffffff";
+      toast.style.padding = "8px 16px";
+      toast.style.borderRadius = "8px";
+      toast.style.fontSize = "12px";
+      toast.style.boxShadow = "0 4px 12px rgba(0,0,0,0.15)";
+      toast.style.zIndex = "99999";
+      toast.style.transition = "opacity 0.3s, transform 0.3s";
+      toast.style.pointerEvents = "none";
+      document.body.appendChild(toast);
+    }
+    toast.textContent = message;
+    toast.style.opacity = "1";
+    toast.style.transform = "translateX(-50%) translateY(0)";
+    clearTimeout(toast._timeout);
+    toast._timeout = setTimeout(() => {
+      toast.style.opacity = "0";
+      toast.style.transform = "translateX(-50%) translateY(10px)";
+    }, 2500);
+  }
+
+  function switchVaultModalTab(mode) {
+    activeVaultMode = mode;
+    if (tabVaultPassword) tabVaultPassword.classList.toggle('active', mode === 'password');
+    if (tabVaultSeed) tabVaultSeed.classList.toggle('active', mode === 'seed_phrase');
+    if (vaultViewPassword) vaultViewPassword.style.display = mode === 'password' ? 'block' : 'none';
+    if (vaultViewSeed) vaultViewSeed.style.display = mode === 'seed_phrase' ? 'block' : 'none';
+    if (vaultPinError) vaultPinError.style.display = 'none';
+
+    if (mode === 'password' && inputVaultPassword) {
+      setTimeout(() => inputVaultPassword.focus(), 50);
+    } else if (mode === 'seed_phrase' && isVaultSetupMode && !currentGeneratedSeed) {
+      generateAndRenderSeedChips();
+    }
+  }
+
+  function togglePasswordVisibility() {
+    if (!inputVaultPassword) return;
+    const isPwd = inputVaultPassword.type === 'password';
+    inputVaultPassword.type = isPwd ? 'text' : 'password';
+    if (btnTogglePwdVisibility) btnTogglePwdVisibility.textContent = isPwd ? '🙈' : '👁️';
+  }
+
+  function updatePasswordStrengthUI() {
+    if (!inputVaultPassword) return;
+    const val = inputVaultPassword.value;
+    if (isVaultSetupMode && vaultPwdStrengthWrap) {
+      vaultPwdStrengthWrap.style.display = 'block';
+      const st = window.TelmyCryptoVault.calculatePasswordStrength(val);
+      if (vaultStrengthBar) {
+        vaultStrengthBar.style.width = st.percent + '%';
+        vaultStrengthBar.style.backgroundColor = st.color;
+      }
+      if (vaultStrengthText) {
+        vaultStrengthText.textContent = st.label;
+        vaultStrengthText.style.color = st.color;
+      }
+    } else if (vaultPwdStrengthWrap) {
+      vaultPwdStrengthWrap.style.display = 'none';
+    }
+  }
+
+  function generateAndRenderSeedChips() {
+    currentGeneratedSeed = window.TelmyCryptoVault.generateSeedPhrase();
+    const words = currentGeneratedSeed.split(' ');
+    if (vaultSeedChips) {
+      vaultSeedChips.innerHTML = words.map((w, idx) => `
+        <div class="vault-seed-chip">
+          <span class="vault-seed-num">${idx + 1}.</span>
+          <span>${w}</span>
+        </div>
+      `).join('');
+    }
+    if (chkSeedSaved) chkSeedSaved.checked = false;
+  }
+
+  function copySeedWordsToClipboard() {
+    if (!currentGeneratedSeed) return;
+    navigator.clipboard.writeText(currentGeneratedSeed).then(() => {
+      showToast('📋 12 secret words copied to clipboard!');
+    });
+  }
+
+  function downloadSeedTxtFile() {
+    if (!currentGeneratedSeed) return;
+    const txtContent = `TELMY.AI — EMERGENCY ZERO-KNOWLEDGE SEED PHRASE\n` +
+      `Generated: ${new Date().toISOString()}\n\n` +
+      `Your 12 Secret Words (Keep this safe & offline):\n` +
+      `${currentGeneratedSeed}\n\n` +
+      `IMPORTANT: If you lose these words, your encrypted profile cannot be recovered by anyone.`;
+    const blob = new Blob([txtContent], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `telmy-vault-seed-${Date.now().toString(36)}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('📥 Emergency seed phrase text file saved!');
+  }
+
 
   async function checkVaultSessionCache() {
     try {
@@ -5417,6 +5462,31 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     if (btnVaultLockToggle) {
       btnVaultLockToggle.title = unlocked ? 'Lock Vault (Clear Session from RAM)' : 'Unlock Profile Vault';
+    }
+
+    if (vaultLockedStateView) {
+      vaultLockedStateView.style.display = unlocked ? 'none' : 'flex';
+    }
+    if (vaultUnlockedStateView) {
+      vaultUnlockedStateView.style.display = unlocked ? 'flex' : 'none';
+    }
+
+    // Check if envelope exists to personalize gate text
+    if (!unlocked) {
+      chrome.runtime.sendMessage({ type: 'VAULT_GET' }, (res) => {
+        const hasVault = res && res.envelope && res.envelope.ciphertext;
+        if (lblVaultGateTitle) {
+          lblVaultGateTitle.textContent = hasVault ? 'Encrypted Profile Vault' : 'Set Up Your Profile Vault';
+        }
+        if (lblVaultGateDesc) {
+          lblVaultGateDesc.textContent = hasVault
+            ? 'Your personal data and documents are stored with Zero-Knowledge Client-Side Encryption (AES-256). Unlock to autofill forms or manage credentials.'
+            : 'Protect your identity data (KTP, Passport, Academic Diplomas) with bank-grade encryption before using 1-Click AutoFill.';
+        }
+        if (lblVaultGateBtn) {
+          lblVaultGateBtn.textContent = hasVault ? 'Unlock Vault' : 'Create Vault & Encrypt';
+        }
+      });
     }
   }
 
@@ -5475,7 +5545,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     if (vaultPinModalSub) {
       vaultPinModalSub.textContent = subtitle || (isVaultSetupMode
-        ? 'Protect your profile data with Bank-grade Client-Side Encryption. Choose a Password (6–12 chars) or a 12-Word Seed Phrase.'
+        ? 'Protect your profile data with Bank-grade Client-Side Encryption. Choose a Password (min. 8 chars) or a 12-Word Seed Phrase.'
         : 'Enter your Master Password or 12 Secret Words to decrypt your profile.');
     }
     if (btnSubmitVaultPin) {
@@ -5532,8 +5602,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     let secret = '';
     if (activeVaultMode === 'password') {
       secret = inputVaultPassword ? inputVaultPassword.value.trim() : '';
-      if (!secret || secret.length < 6 || secret.length > 12) {
-        showVaultPinError('Password must be between 6 and 12 characters.');
+      if (!secret || secret.length < 8) {
+        showVaultPinError('Password must be at least 8 characters.');
         if (inputVaultPassword) inputVaultPassword.focus();
         return;
       }
@@ -5744,18 +5814,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!vaultFieldsList) return;
 
     if (!isVaultUnlocked || !currentDecryptedVault) {
-      // Render Locked View
-      if (vaultFieldsCount) vaultFieldsCount.textContent = '🔒 Locked';
-      vaultFieldsList.innerHTML = `
-        <div style="text-align: center; padding: 32px 16px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px; margin-top: 8px;">
-          <div style="font-size: 32px; margin-bottom: 8px;">🔒</div>
-          <strong style="display: block; font-size: 13px; color: #0f172a; margin-bottom: 4px;">Vault is Locked</strong>
-          <p style="font-size: 11.5px; color: #64748b; line-height: 1.4; margin-bottom: 14px;">Enter your 6-Digit Master PIN to view, edit, or autofill your zero-knowledge encrypted profile.</p>
-          <button type="button" id="btn-vault-inline-unlock" class="btn-vault-pin-pri" style="max-width: 180px; margin: 0 auto; padding: 8px 14px; font-size: 12px;">Unlock Vault</button>
-        </div>
-      `;
-      const btnUnlock = document.getElementById('btn-vault-inline-unlock');
-      if (btnUnlock) btnUnlock.addEventListener('click', () => openVaultPinModal());
+      if (vaultFieldsCount) vaultFieldsCount.textContent = '0 items';
+      vaultFieldsList.innerHTML = '';
       return;
     }
 
@@ -5766,10 +5826,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (fields.length === 0) {
       vaultFieldsList.innerHTML = `
-        <div style="text-align: center; padding: 28px 16px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px;">
-          <div style="font-size: 28px; margin-bottom: 6px;">📂</div>
-          <strong style="display: block; font-size: 12.5px; color: #0f172a; margin-bottom: 4px;">No Verified Fields Stored</strong>
-          <p style="font-size: 11.5px; color: #64748b; line-height: 1.4;">Click "+ Add Field" above or upload an ID/Passport below to populate your encrypted vault.</p>
+        <div style="text-align: center; padding: 22px 14px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px;">
+          <div style="font-size: 24px; margin-bottom: 4px;">📂</div>
+          <strong style="display: block; font-size: 12.5px; color: #0f172a; margin-bottom: 3px;">No Stored Profile Fields Yet</strong>
+          <p style="font-size: 11px; color: #64748b; line-height: 1.4; margin: 0;">Upload your KTP, Passport, or Academic Diploma below to extract and populate verified fields.</p>
         </div>
       `;
       return;
@@ -5789,7 +5849,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             ${aliasStr ? `<div style="font-size: 10px; color: #94a3b8; margin-top: 2px;">Aliases: ${escapeHTML(aliasStr)}</div>` : ''}
           </div>
           <div class="vault-field-ctrls">
-            <button type="button" class="btn-field-ctrl edit" data-field-id="${escapeHTML(f.id)}" title="Edit field value">✏️</button>
             <button type="button" class="btn-field-ctrl delete" data-field-id="${escapeHTML(f.id)}" title="Delete field">🗑️</button>
           </div>
         </div>
@@ -5797,20 +5856,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     }).join('');
 
     // Attach row button events
-    vaultFieldsList.querySelectorAll('.btn-field-ctrl.edit').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const fieldId = btn.getAttribute('data-field-id');
-        const field = fields.find(f => f.id === fieldId);
-        if (field) openFieldModal(field);
-      });
-    });
-
     vaultFieldsList.querySelectorAll('.btn-field-ctrl.delete').forEach((btn) => {
       btn.addEventListener('click', () => {
         const fieldId = btn.getAttribute('data-field-id');
         deleteVaultField(fieldId);
       });
     });
+  }
+
+  function openDashboardVault() {
+    chrome.tabs.create({ url: 'https://telmy.id/dashboard' });
   }
 
   function openFieldModal(field = null) {
@@ -5987,7 +6042,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!file) return;
 
     if (!isVaultUnlocked) {
-      openVaultPinModal(() => handleVaultDocUpload(file), 'Unlock Vault to Ingest Document', 'Enter your 6-Digit Master PIN to securely encrypt the extracted document data.');
+      openVaultPinModal(() => handleVaultDocUpload(file), 'Unlock Vault to Ingest Document', 'Enter your Master Password or Seed Phrase to decrypt and store document data.');
       return;
     }
 

@@ -588,6 +588,8 @@ window.addEventListener('message', (event) => {
 try {
   const host = window.location.hostname || '';
   const isTelmyDomain = host.includes('telmy') || 
+                        host.includes('localhost') ||
+                        host.includes('127.0.0.1') ||
                         host.includes('cloud.run') ||
                         host.includes('firebaseapp.com');
   if (isTelmyDomain) {

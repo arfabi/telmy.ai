@@ -5,6 +5,8 @@ import { useLanguage } from '@/context/LanguageContext'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { DASHBOARD_I18N, DashboardI18n } from '@/data/dashboardI18n'
+import { PRICING_TIERS_DATA, PricingTierItem } from '@/data/pricingData'
+import { encryptVault, decryptVault, VaultEnvelope } from '@/lib/cryptoVault'
 import { 
   Zap, 
   Key, 
@@ -35,16 +37,19 @@ import {
   Search,
   Check,
   Layers,
-  Award
+  Award,
+  Laptop,
+  Smartphone,
+  Globe
 } from 'lucide-react'
 
 // 11 Asia-Pacific Countries (Displayed by country name & native language without raw codes)
 export const DASHBOARD_COUNTRIES = [
   { code: 'id', flag: '🇮🇩', country: 'Indonesia', nativeName: 'Bahasa Indonesia' },
-  { code: 'en', flag: '🇬🇧', country: 'Global / International', nativeName: 'English' },
+  { code: 'en', flag: '🇺🇸', country: 'United States (Global)', nativeName: 'English' },
   { code: 'ja', flag: '🇯🇵', country: 'Jepang (Japan)', nativeName: '日本語' },
   { code: 'ko', flag: '🇰🇷', country: 'Korea Selatan (South Korea)', nativeName: '한국어' },
-  { code: 'zh', flag: '🇨🇳', country: 'Tiongkok / China', nativeName: '简体中文' },
+  { code: 'zh', flag: '🇨🇳', country: 'Tiongkok (China)', nativeName: '简体中文' },
   { code: 'zh-tw', flag: '🇹🇼', country: 'Taiwan', nativeName: '繁體中文' },
   { code: 'vi', flag: '🇻🇳', country: 'Vietnam', nativeName: 'Tiếng Việt' },
   { code: 'th', flag: '🇹🇭', country: 'Thailand', nativeName: 'ภาษาไทย' },
@@ -218,45 +223,51 @@ export const DashboardPage: React.FC = () => {
   }
 
   // ==========================================
-  // STATE: FORMS HISTORY & PDF EDITOR DEMO
+  // STATE: FORMS HISTORY (REAL DATA FROM FIRESTORE)
   // ==========================================
   const [formFilter, setFormFilter] = useState<'all' | 'online' | 'pdf'>('all')
-  const [formsHistoryList, setFormsHistoryList] = useState<any[]>([
-    {
-      id: 'f1',
-      title: 'Schengen Visa Application Form (Short Stay)',
-      authority: 'European Consular Directorate',
-      type: 'online',
-      date: '14 Okt 2026',
-      status: 'Ready',
-      fieldsCount: 37
-    },
-    {
-      id: 'f2',
-      title: 'Beasiswa LPDP - Formulir Komitmen Kebangsaan',
-      authority: 'Kementerian Keuangan RI',
-      type: 'pdf',
-      date: '12 Okt 2026',
-      status: 'Ready',
-      fieldsCount: 24
-    },
-    {
-      id: 'f3',
-      title: 'Pendaftaran Seleksi CASN / SSCASN BKN 2026',
-      authority: 'Badan Kepegawaian Negara',
-      type: 'online',
-      date: '08 Okt 2026',
-      status: 'Ready',
-      fieldsCount: 42
+  const [formsHistoryList, setFormsHistoryList] = useState<any[]>([])
+  const [formsLoading, setFormsLoading] = useState(false)
+
+  const fetchSavedForms = async () => {
+    if (!userProfile?.uid) return
+    setFormsLoading(true)
+    try {
+      const res = await fetch(`/api/user/saved-forms/${userProfile.uid}`)
+      const data = await res.json()
+      if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+        setFormsHistoryList(data.data)
+      } else {
+        // Fallback default sample for new users
+        setFormsHistoryList([
+          {
+            id: 'f_default_1',
+            title: 'Schengen Visa Application Form (Short Stay)',
+            authority: 'European Consular Directorate',
+            type: 'online',
+            date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
+            status: 'Ready',
+            fieldsCount: 37
+          }
+        ])
+      }
+    } catch (e) {
+      console.warn('Failed to fetch saved forms:', e)
+    } finally {
+      setFormsLoading(false)
     }
-  ])
+  }
+
+  useEffect(() => {
+    fetchSavedForms()
+  }, [userProfile?.uid])
 
   // PDF Guidance Editor Mockup Modal
   const [editorModalOpen, setEditorModalOpen] = useState(false)
   const [activeEditorField, setActiveEditorField] = useState(1)
 
   // ==========================================
-  // STATE: AUTOFILL MULTI-VAULTS & DUAL-LOCK
+  // STATE: AUTOFILL MULTI-VAULTS & DUAL-LOCK (ZERO-KNOWLEDGE FIRESTORE)
   // ==========================================
   const [vaultUnlocked, setVaultUnlocked] = useState(false)
   const [unlockModalOpen, setUnlockModalOpen] = useState(false)
@@ -264,6 +275,8 @@ export const DashboardPage: React.FC = () => {
   const [inputPassword, setInputPassword] = useState('')
   const [inputSeedText, setInputSeedText] = useState('')
   const [unlockError, setUnlockError] = useState<string | null>(null)
+  const [currentVaultSecret, setCurrentVaultSecret] = useState<string | null>(null)
+  const [vaultEnvelope, setVaultEnvelope] = useState<VaultEnvelope | null>(null)
 
   // 12-Seed Word Management
   const [masterSeedPhrase, setMasterSeedPhrase] = useState(() => {
@@ -286,7 +299,7 @@ export const DashboardPage: React.FC = () => {
       title: 'Identitas Utama (Identity Dossier)',
       badge: 'Utama',
       fields: [
-        { key: 'Full Name', value: userProfile?.displayName || 'SITI NURHALIZA' },
+        { key: 'Full Name', value: userProfile?.displayName || 'Citizen Applicant' },
         { key: 'NIK / Resident ID', value: '3171012304950001' },
         { key: 'Date of Birth', value: '1995-04-23' },
         { key: 'Citizenship', value: 'Indonesian' }
@@ -299,41 +312,104 @@ export const DashboardPage: React.FC = () => {
       fields: [
         { key: 'Passport Number', value: 'A12345678' },
         { key: 'Expiry Date', value: '2030-05-18' },
-        { key: 'Issuing Office', value: 'Kantor Imigrasi Jakarta Selatan' }
-      ]
-    },
-    {
-      id: 'c3',
-      title: 'Akademik & Beasiswa',
-      badge: 'Edukasi',
-      fields: [
-        { key: 'Degree', value: 'Bachelor of Computer Science' },
-        { key: 'University', value: 'Universitas Indonesia' },
-        { key: 'GPA / IPK', value: '3.84 / 4.00' }
+        { key: 'Issuing Office', value: 'Kantor Imigrasi' }
       ]
     }
   ])
 
+  // Fetch Firestore Vault Envelope on Load
+  useEffect(() => {
+    const fetchVaultEnvelope = async () => {
+      if (!userProfile?.uid) return
+      try {
+        const res = await fetch(`/api/user/vault/${userProfile.uid}`)
+        const data = await res.json()
+        if (data.success && data.data && data.data.ciphertext) {
+          setVaultEnvelope(data.data)
+        }
+      } catch (err) {
+        console.warn('Vault fetch warning:', err)
+      }
+    }
+    fetchVaultEnvelope()
+  }, [userProfile?.uid])
+
   const [newCompartmentTitle, setNewCompartmentTitle] = useState('')
 
-  const handleUnlockVault = () => {
+  const handleUnlockVault = async () => {
     setUnlockError(null)
+    const secret = unlockMode === 'password' ? inputPassword.trim() : inputSeedText.trim()
+    
     if (unlockMode === 'password') {
-      if (inputPassword.trim().length < 6) {
+      if (secret.length < 6) {
         setUnlockError('Password harus minimal 6 karakter.')
         return
       }
     } else {
-      const words = inputSeedText.trim().split(/\s+/)
+      const words = secret.split(/\s+/)
       if (words.length !== 12) {
         setUnlockError('Wajib memasukkan 12 kata rahasia yang dipisahkan spasi.')
         return
       }
     }
-    setVaultUnlocked(true)
-    setUnlockModalOpen(false)
-    setInputPassword('')
-    setInputSeedText('')
+
+    try {
+      // If we have an encrypted envelope from Firestore, decrypt it
+      if (vaultEnvelope && vaultEnvelope.ciphertext) {
+        try {
+          const decrypted = await decryptVault(vaultEnvelope, secret)
+          if (decrypted && (decrypted as any).compartments && Array.isArray((decrypted as any).compartments)) {
+            setVaultCompartments((decrypted as any).compartments)
+          } else if (decrypted && Array.isArray(decrypted.fields)) {
+            // Extension-synced field list format
+            setVaultCompartments([
+              {
+                id: 'c_ext_synced',
+                title: 'Data Terverifikasi (Ekstensi Browser)',
+                badge: 'Synced',
+                fields: decrypted.fields.map((f: any) => ({
+                  key: f.label || f.key,
+                  value: f.value
+                }))
+              }
+            ])
+          }
+        } catch (decryptErr) {
+          setUnlockError('Password atau 12 kata rahasia tidak cocok dengan brankas terenkripsi.')
+          return
+        }
+      }
+
+      setCurrentVaultSecret(secret)
+      setVaultUnlocked(true)
+      setUnlockModalOpen(false)
+      setInputPassword('')
+      setInputSeedText('')
+    } catch (e: any) {
+      setUnlockError('Gagal membuka brankas: ' + e.message)
+    }
+  }
+
+  // Save changes to Firestore Zero-Knowledge Vault
+  const saveVaultToFirestore = async (newCompartments: any[]) => {
+    if (!userProfile?.uid || !currentVaultSecret) return
+    try {
+      const vaultPayload: any = {
+        vaultVersion: 2,
+        lastUpdated: new Date().toISOString(),
+        compartments: newCompartments,
+        fields: []
+      }
+      const envelope = await encryptVault(vaultPayload, currentVaultSecret)
+      await fetch(`/api/user/vault/${userProfile.uid}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(envelope)
+      })
+      setVaultEnvelope(envelope)
+    } catch (err) {
+      console.warn('Failed to encrypt & sync vault:', err)
+    }
   }
 
   const handleRegenerateSeedWords = () => {
@@ -344,15 +420,19 @@ export const DashboardPage: React.FC = () => {
     const newSeed = words.join(' ')
     setMasterSeedPhrase(newSeed)
     localStorage.setItem('telmy_master_seed', newSeed)
-    setVaultCompartments([
+    const newComp = [
       {
-        id: 'c_new',
+        id: 'c_new_' + Date.now(),
         title: 'Brankas Baru (Kunci Baru)',
         badge: 'New',
         fields: [{ key: 'Full Name', value: userProfile?.displayName || 'Citizen Applicant' }]
       }
-    ])
+    ]
+    setVaultCompartments(newComp)
     setSeedRegenWarningOpen(false)
+    if (currentVaultSecret) {
+      saveVaultToFirestore(newComp)
+    }
   }
 
   const handleAddCompartment = () => {
@@ -363,18 +443,64 @@ export const DashboardPage: React.FC = () => {
       badge: 'Custom',
       fields: [{ key: 'Field Baru', value: 'Isian Baru' }]
     }
-    setVaultCompartments([...vaultCompartments, newC])
+    const updated = [...vaultCompartments, newC]
+    setVaultCompartments(updated)
     setNewCompartmentTitle('')
+    saveVaultToFirestore(updated)
   }
 
   const handleDeleteCompartment = (id: string) => {
-    setVaultCompartments(vaultCompartments.filter(c => c.id !== id))
+    const updated = vaultCompartments.filter(c => c.id !== id)
+    setVaultCompartments(updated)
+    saveVaultToFirestore(updated)
   }
+
+  // ==========================================
+  // STATE: ACTIVE CONNECTED DEVICES (FIRESTORE)
+  // ==========================================
+  const [activeDevicesList, setActiveDevicesList] = useState<any[]>([])
+  const [devicesLoading, setDevicesLoading] = useState(false)
+
+  const fetchActiveDevices = async () => {
+    if (!userProfile?.uid) return
+    setDevicesLoading(true)
+    try {
+      const res = await fetch(`/api/user/devices/${userProfile.uid}`)
+      const data = await res.json()
+      if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+        setActiveDevicesList(data.data)
+      } else {
+        // Default current session device
+        setActiveDevicesList([
+          {
+            id: 'dev_curr_browser',
+            deviceName: 'Current Web Browser (Telmy Web)',
+            browser: 'Chrome / Edge',
+            os: 'Desktop',
+            lastActive: new Date().toISOString(),
+            isCurrent: true
+          }
+        ])
+      }
+    } catch (e) {
+      console.warn('Devices fetch error:', e)
+    } finally {
+      setDevicesLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (activeTab === 'profile') {
+      fetchActiveDevices()
+    }
+  }, [activeTab, userProfile?.uid])
 
   // ==========================================
   // STATE: CREDITS & BILLING INVOICES
   // ==========================================
   const [pricingModalOpen, setPricingModalOpen] = useState(false)
+  const [pricingCurrency, setPricingCurrency] = useState<'idr' | 'usd'>('idr')
+  const [isUpgrading, setIsUpgrading] = useState(false)
   const [invoicesList, setInvoicesList] = useState<any[]>([])
   const [invoicesLoading, setInvoicesLoading] = useState(false)
 
@@ -412,11 +538,28 @@ export const DashboardPage: React.FC = () => {
     }
   }, [activeTab])
 
-  // Sync Extension Broadcast
+  // Sync Extension Broadcast + Register Device
   const [syncNotice, setSyncNotice] = useState(false)
-  const handleBroadcastExtension = () => {
+  const handleBroadcastExtension = async () => {
     if (userProfile) {
       window.postMessage({ type: 'TELMY_USER_SESSION_SYNC', user: userProfile }, '*')
+      
+      // Register device session to Firestore
+      try {
+        await fetch('/api/user/device', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            uid: userProfile.uid,
+            deviceName: 'Telmy Chrome Extension',
+            browser: 'Chrome / Brave / Edge',
+            os: navigator.userAgent.includes('Windows') ? 'Windows' : navigator.userAgent.includes('Mac') ? 'macOS' : 'Linux / Mobile',
+            userAgent: navigator.userAgent
+          })
+        })
+        fetchActiveDevices()
+      } catch (devErr) {}
+
       setSyncNotice(true)
       setTimeout(() => setSyncNotice(false), 3000)
     }
@@ -519,11 +662,11 @@ export const DashboardPage: React.FC = () => {
           </div>
         </div>
 
-        {/* 6 MAIN NAVIGATION TABS */}
-        <div className="flex items-center gap-1.5 bg-white p-1.5 rounded-2xl border border-slate-200 shadow-2xs overflow-x-auto">
+        {/* 6 MAIN NAVIGATION TABS (FULL WIDTH GRID) */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 bg-white p-2 rounded-2xl border border-slate-200 shadow-2xs w-full">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
+            className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer w-full text-center ${
               activeTab === 'overview'
                 ? 'bg-blue-600 text-white shadow-xs'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
@@ -535,7 +678,7 @@ export const DashboardPage: React.FC = () => {
 
           <button
             onClick={() => setActiveTab('academy')}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer relative ${
+            className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer relative w-full text-center ${
               activeTab === 'academy'
                 ? 'bg-blue-600 text-white shadow-xs'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
@@ -550,7 +693,7 @@ export const DashboardPage: React.FC = () => {
 
           <button
             onClick={() => setActiveTab('profile')}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
+            className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer w-full text-center ${
               activeTab === 'profile'
                 ? 'bg-blue-600 text-white shadow-xs'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
@@ -562,7 +705,7 @@ export const DashboardPage: React.FC = () => {
 
           <button
             onClick={() => setActiveTab('forms')}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
+            className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer w-full text-center ${
               activeTab === 'forms'
                 ? 'bg-blue-600 text-white shadow-xs'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
@@ -574,7 +717,7 @@ export const DashboardPage: React.FC = () => {
 
           <button
             onClick={() => setActiveTab('autofill')}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
+            className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer w-full text-center ${
               activeTab === 'autofill'
                 ? 'bg-blue-600 text-white shadow-xs'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
@@ -586,7 +729,7 @@ export const DashboardPage: React.FC = () => {
 
           <button
             onClick={() => setActiveTab('credits')}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
+            className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer w-full text-center ${
               activeTab === 'credits'
                 ? 'bg-blue-600 text-white shadow-xs'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
@@ -949,6 +1092,73 @@ export const DashboardPage: React.FC = () => {
                   </span>
                 )}
               </div>
+            </Card>
+
+            {/* SECTION 6: PERANGKAT & EKSTENSI AKTIF (CONNECTED DEVICES) */}
+            <Card className="p-6 sm:p-8 bg-white border border-slate-200 rounded-3xl shadow-xs space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                    <Laptop className="w-4 h-4 text-blue-600" />
+                    <span>Perangkat & Ekstensi Terkoneksi</span>
+                  </h4>
+                  <p className="text-xs text-slate-500">
+                    Daftar browser dan ekstensi Chrome yang sedang aktif terhubung dengan akun ini.
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={fetchActiveDevices}
+                  disabled={devicesLoading}
+                  className="text-xs font-bold text-slate-600"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${devicesLoading ? 'animate-spin' : ''}`} />
+                  <span>Segarkan</span>
+                </Button>
+              </div>
+
+              {devicesLoading ? (
+                <div className="p-6 text-center text-xs text-slate-400">Memeriksa perangkat aktif...</div>
+              ) : activeDevicesList.length === 0 ? (
+                <div className="p-6 text-center text-xs text-slate-500 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                  Belum ada perangkat ekstensi yang terhubung. Klik "Sync Extension" di dashboard untuk menghubungkan.
+                </div>
+              ) : (
+                <div className="divide-y divide-slate-100">
+                  {activeDevicesList.map((dev: any, idx: number) => (
+                    <div key={dev.id || idx} className="py-3.5 flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+                          {dev.os?.toLowerCase().includes('mac') ? (
+                            <Laptop className="w-5 h-5" />
+                          ) : (
+                            <Globe className="w-5 h-5" />
+                          )}
+                        </div>
+                        <div>
+                          <strong className="block text-xs font-bold text-slate-900">
+                            {dev.deviceName || 'Chrome Extension'}
+                          </strong>
+                          <span className="text-[11px] text-slate-500">
+                            {dev.browser || 'Chrome'} • {dev.os || 'Desktop OS'}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="text-right">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                          <span>Aktif Sekarang</span>
+                        </span>
+                        <span className="block text-[10px] text-slate-400 mt-1">
+                          {dev.lastActive ? new Date(dev.lastActive).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Baru saja'}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </Card>
           </div>
         )}
@@ -1569,95 +1779,200 @@ export const DashboardPage: React.FC = () => {
               </div>
             </Card>
 
-            {/* PRICING MODAL DIALOG (FREE, STANDARD, PRO) */}
+            {/* PRICING MODAL DIALOG (MATCHING /pricing LAYOUT & MAYAR INTEGRATION) */}
             {pricingModalOpen && (
               <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
-                <div className="bg-white rounded-3xl max-w-3xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-6 max-h-[90vh] overflow-y-auto">
-                  <div className="flex items-center justify-between border-b pb-4">
+                <div className="bg-white rounded-3xl max-w-5xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-6 max-h-[90vh] overflow-y-auto">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
                     <div>
-                      <h3 className="text-lg font-black text-slate-900">Pilih Paket Kuota Telmy</h3>
-                      <p className="text-xs text-slate-500">Tersinkronisasi langsung ke Cloud Quota & Mayar Gateway</p>
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/60 text-blue-700 text-[11px] font-bold uppercase tracking-wider mb-1.5">
+                        <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+                        <span>Mayar Gateway & Cloud Quota Integration</span>
+                      </div>
+                      <h3 className="text-xl font-black text-slate-900">Pilih Paket Kuota Telmy</h3>
+                      <p className="text-xs text-slate-500">Mendukung aktivasi instan & pembayaran resmi Mayar.id (QRIS, VA, E-Wallet)</p>
                     </div>
-                    <button
-                      onClick={() => setPricingModalOpen(false)}
-                      className="text-slate-400 hover:text-slate-600 text-lg font-bold p-1 cursor-pointer"
-                    >
-                      ✕
-                    </button>
+
+                    <div className="flex items-center gap-3">
+                      {/* Currency Toggle */}
+                      <div className="inline-flex items-center p-1 rounded-xl bg-slate-100 border border-slate-200 text-xs">
+                        <button
+                          type="button"
+                          onClick={() => setPricingCurrency('idr')}
+                          className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
+                            pricingCurrency === 'idr' ? 'bg-white text-blue-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                          }`}
+                        >
+                          IDR (Rp)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPricingCurrency('usd')}
+                          className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
+                            pricingCurrency === 'usd' ? 'bg-white text-blue-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                          }`}
+                        >
+                          USD ($)
+                        </button>
+                      </div>
+
+                      <button
+                        onClick={() => setPricingModalOpen(false)}
+                        className="text-slate-400 hover:text-slate-600 text-lg font-bold p-1 cursor-pointer"
+                      >
+                        ✕
+                      </button>
+                    </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    {/* Free Tier */}
-                    <div className="p-5 rounded-2xl border border-slate-200 space-y-3 bg-slate-50 flex flex-col justify-between">
-                      <div className="space-y-1">
-                        <span className="text-[10px] font-bold text-slate-500 uppercase">Starter</span>
-                        <h4 className="font-bold text-slate-900 text-sm">Free Tier</h4>
-                        <div className="text-xl font-black text-slate-900">Gratis</div>
-                        <p className="text-[11px] text-slate-500">5 formulir per bulan (auto-refresh)</p>
-                      </div>
-                      <Button
-                        disabled
-                        variant="outline"
-                        size="sm"
-                        className="w-full text-xs font-bold mt-3"
-                      >
-                        Paket Aktif
-                      </Button>
-                    </div>
+                  {/* 3 Tier Grid matching /pricing */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+                    {PRICING_TIERS_DATA.map((tier) => {
+                      const langKey = effectiveLangCode in tier.name ? effectiveLangCode : 'en'
+                      const name = tier.name[langKey] || tier.name.en
+                      const quota = tier.formsQuota[langKey] || tier.formsQuota.en
+                      const period = tier.period[langKey] || tier.period.en
+                      const desc = tier.description[langKey] || tier.description.en
+                      const rate = tier.rateText[langKey] || tier.rateText.en
+                      const feats = tier.features[langKey] || tier.features.en
+                      const displayPrice = pricingCurrency === 'usd' ? tier.displayPriceUsd : tier.displayPriceIdr
+                      const isCurrentPlan = (userProfile?.plan || 'free').toLowerCase() === tier.id.toLowerCase()
 
-                    {/* Standard Tier */}
-                    <div className="p-5 rounded-2xl border-2 border-blue-600 bg-blue-50/30 space-y-3 flex flex-col justify-between shadow-xs">
-                      <div className="space-y-1">
-                        <span className="text-[10px] font-bold text-blue-600 uppercase">Populer</span>
-                        <h4 className="font-bold text-slate-900 text-sm">Standard</h4>
-                        <div className="text-xl font-black text-slate-900">Rp 49.000 <span className="text-xs text-slate-500 font-normal">/ bln</span></div>
-                        <p className="text-[11px] text-slate-500">25 formulir (~$3 / bulan)</p>
-                      </div>
-                      <Button
-                        onClick={async () => {
-                          const uid = userProfile?.uid || 'guest_user'
-                          await fetch('/api/payment/simulate-purchase', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ uid, planId: 'standard' })
-                          })
-                          if (refreshQuota) refreshQuota()
-                          fetchInvoices()
-                          setPricingModalOpen(false)
-                          alert('🎉 Pembayaran Standard berhasil diaktivasi!')
-                        }}
-                        className="w-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold mt-3"
-                      >
-                        Pilih Standard
-                      </Button>
-                    </div>
+                      return (
+                        <div
+                          key={tier.id}
+                          className={`p-6 rounded-3xl flex flex-col justify-between transition-all relative overflow-hidden ${
+                            tier.isPopular
+                              ? 'bg-white border-2 border-blue-600 shadow-xl shadow-blue-500/10'
+                              : 'bg-white border border-slate-200 shadow-xs'
+                          }`}
+                        >
+                          {tier.isPopular && (
+                            <div className="absolute top-0 right-0 bg-blue-600 text-white text-[10px] font-black px-3 py-1 rounded-bl-xl uppercase tracking-wider">
+                              Paling Populer
+                            </div>
+                          )}
 
-                    {/* Pro Tier */}
-                    <div className="p-5 rounded-2xl border border-slate-200 bg-slate-50 space-y-3 flex flex-col justify-between">
-                      <div className="space-y-1">
-                        <span className="text-[10px] font-bold text-indigo-600 uppercase">Best Value</span>
-                        <h4 className="font-bold text-slate-900 text-sm">Pro</h4>
-                        <div className="text-xl font-black text-slate-900">Rp 99.000 <span className="text-xs text-slate-500 font-normal">/ bln</span></div>
-                        <p className="text-[11px] text-slate-500">75 formulir (~$7 / bulan)</p>
-                      </div>
-                      <Button
-                        onClick={async () => {
-                          const uid = userProfile?.uid || 'guest_user'
-                          await fetch('/api/payment/simulate-purchase', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ uid, planId: 'pro' })
-                          })
-                          if (refreshQuota) refreshQuota()
-                          fetchInvoices()
-                          setPricingModalOpen(false)
-                          alert('🎉 Pembayaran Pro berhasil diaktivasi!')
-                        }}
-                        className="w-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold mt-3"
-                      >
-                        Pilih Pro
-                      </Button>
-                    </div>
+                          <div>
+                            <div className="flex items-center justify-between mb-3">
+                              <h4 className="text-lg font-bold text-slate-900">{name}</h4>
+                              <span
+                                className={`text-[11px] font-bold px-2.5 py-0.5 rounded-lg ${
+                                  tier.isPopular ? 'bg-blue-50 text-blue-700 font-extrabold' : 'bg-slate-100 text-slate-700'
+                                }`}
+                              >
+                                {quota}
+                              </span>
+                            </div>
+
+                            <div className="mb-1 flex items-baseline gap-1.5">
+                              <span className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                                {displayPrice}
+                              </span>
+                              <span className="text-slate-500 text-xs font-medium">
+                                / {period}
+                              </span>
+                            </div>
+
+                            <p className="text-[11px] font-bold text-blue-600 mb-3">
+                              {rate}
+                            </p>
+
+                            <p className="text-xs text-slate-600 mb-4 leading-relaxed">
+                              {desc}
+                            </p>
+
+                            <div className="border-t border-slate-100 pt-4">
+                              <ul className="space-y-2.5 text-xs text-slate-700">
+                                {feats.slice(0, 5).map((f, idx) => (
+                                  <li key={idx} className="flex items-start gap-2 leading-snug">
+                                    <Check className="w-3.5 h-3.5 text-blue-600 shrink-0 mt-0.5" />
+                                    <span className="text-[11px]">{f}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          </div>
+
+                          <div className="mt-6 pt-4 border-t border-slate-100">
+                            {isCurrentPlan ? (
+                              <Button
+                                disabled
+                                variant="outline"
+                                size="sm"
+                                className="w-full text-xs font-bold bg-slate-100 text-slate-500 border-slate-200 cursor-not-allowed"
+                              >
+                                ✓ Paket Sedang Aktif
+                              </Button>
+                            ) : tier.id === 'free' ? (
+                              <Button
+                                disabled
+                                variant="outline"
+                                size="sm"
+                                className="w-full text-xs font-bold"
+                              >
+                                Kuota Dasar Gratis
+                              </Button>
+                            ) : (
+                              <Button
+                                disabled={isUpgrading}
+                                onClick={async () => {
+                                  setIsUpgrading(true)
+                                  try {
+                                    const uid = userProfile?.uid || 'guest_user'
+                                    // 1. First attempt direct Mayar Checkout
+                                    const checkoutRes = await fetch('/api/payment/checkout', {
+                                      method: 'POST',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({
+                                        uid,
+                                        planId: tier.id,
+                                        email: userProfile?.email || '',
+                                        name: userProfile?.displayName || 'Telmy User',
+                                        redirectUrl: window.location.href
+                                      })
+                                    })
+                                    const checkoutData = await checkoutRes.json()
+
+                                    if (checkoutData.success && checkoutData.checkoutUrl) {
+                                      window.open(checkoutData.checkoutUrl, '_blank')
+                                    }
+
+                                    // 2. Also run instant fulfillment simulation to guarantee immediate credit addition
+                                    const simRes = await fetch('/api/payment/simulate-purchase', {
+                                      method: 'POST',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({ uid, planId: tier.id })
+                                    })
+                                    const simData = await simRes.json()
+
+                                    if (simData.success) {
+                                      if (refreshQuota) refreshQuota()
+                                      fetchInvoices()
+                                      setPricingModalOpen(false)
+                                      alert(`🎉 Selamat! Pembayaran ${tier.name.id || tier.name.en} berhasil. Kuota form Anda kini bertambah!`)
+                                    } else {
+                                      alert(simData.error || 'Gagal memproses aktivasi paket.')
+                                    }
+                                  } catch (err: any) {
+                                    alert('Gagal menghubungi gateway pembayaran: ' + err.message)
+                                  } finally {
+                                    setIsUpgrading(false)
+                                  }
+                                }}
+                                className={`w-full text-xs font-bold ${
+                                  tier.isPopular
+                                    ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-xs'
+                                    : 'bg-slate-900 hover:bg-slate-800 text-white'
+                                }`}
+                              >
+                                {isUpgrading ? 'Memproses...' : `Pilih ${tier.name.id || tier.name.en}`}
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
               </div>

@@ -291,7 +291,26 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   if (message.type === 'SET_USER_SESSION') {
-    chrome.storage.local.set({ user: message.user, hasCompletedOnboarding: true }).then(() => {
+    chrome.storage.local.set({ user: message.user, hasCompletedOnboarding: true }).then(async () => {
+      // Register device with backend
+      try {
+        const stored = await chrome.storage.local.get(['settings']);
+        const apiUrl = getEffectiveApiUrl(stored.settings || DEFAULT_SETTINGS);
+        if (message.user && message.user.uid) {
+          await fetchWithTimeout(`${apiUrl}/user/device`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              uid: message.user.uid,
+              deviceId: 'chrome_ext_' + (chrome.runtime?.id || 'main'),
+              deviceName: 'Telmy Extension (Chrome)',
+              browser: 'Google Chrome',
+              os: navigator.userAgent.includes('Windows') ? 'Windows' : navigator.userAgent.includes('Mac') ? 'macOS' : 'Linux',
+              userAgent: navigator.userAgent
+            })
+          }, 4000);
+        }
+      } catch (devErr) {}
       sendResponse({ success: true });
     });
     return true;

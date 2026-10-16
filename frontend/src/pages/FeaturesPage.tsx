@@ -27,8 +27,10 @@ import {
   ArrowLeft,
   ArrowRight,
   Sparkles,
-  DownloadCloud
+  DownloadCloud,
+  Globe
 } from 'lucide-react'
+import { SUPPORTED_LANGUAGES_DATA } from '@/data/languagesData'
 
 // Icon mapper
 const ICON_MAP: Record<string, React.ElementType> = {
@@ -254,6 +256,72 @@ export const FeaturesPage: React.FC = () => {
               </Card>
             )
           })}
+        </div>
+      </section>
+
+      {/* 11 Supported Languages Feature Cards Section */}
+      <section id="languages" className="py-20 bg-white border-t border-slate-200/80">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-14">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200/60 text-indigo-700 text-xs font-semibold mb-4">
+              <Globe className="w-3.5 h-3.5 text-indigo-600" />
+              <span>Multilingual Capability</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+              {langKey === 'id' ? 'Dukungan 11 Bahasa Resmi Asia-Pasifik' : 'Supported in 11 Official Languages'}
+            </h2>
+            <p className="mt-4 text-base sm:text-lg text-slate-600 leading-relaxed">
+              {langKey === 'id' 
+                ? 'Pahami instruksi formulir, dengarkan panduan suara, dan periksa jawaban dalam bahasa yang paling Anda kuasai.'
+                : 'Understand form questions, listen to audio guidance, and verify entries in the language you feel most comfortable with.'}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {SUPPORTED_LANGUAGES_DATA.map((lang) => {
+              const isIndonesian = langKey === 'id'
+              return (
+                <Card
+                  key={lang.code}
+                  hoverGlow
+                  className="p-6 flex flex-col justify-between bg-white border border-slate-200/90 rounded-2xl shadow-xs hover:border-indigo-400 hover:shadow-lg hover:shadow-indigo-500/5 transition-all duration-300 group"
+                >
+                  <div>
+                    {/* Header: Flag SVG + Language Code Badge */}
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="w-12 h-8.5 rounded-lg overflow-hidden border border-slate-300/80 shadow-xs shrink-0 group-hover:scale-105 transition-transform">
+                        {lang.flagSvg}
+                      </div>
+                      <span className="text-xs font-bold font-mono px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200/60">
+                        {lang.short}
+                      </span>
+                    </div>
+
+                    {/* Language & Native Name */}
+                    <h3 className="text-lg font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                      {lang.nativeName}
+                    </h3>
+                    <p className="text-xs font-semibold text-slate-500 mb-3">
+                      {lang.country}
+                    </p>
+
+                    {/* Description: "Gunakan bahasa xxxx" */}
+                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/70 text-xs text-slate-700 leading-relaxed">
+                      {isIndonesian ? (
+                        <span>
+                          Gunakan bahasa <strong>{lang.name}</strong> ({lang.nativeName}) untuk memahami dan mengisi formulir resmi tanpa kendala bahasa.
+                        </span>
+                      ) : (
+                        <span>
+                          Use <strong>{lang.name}</strong> ({lang.nativeName}) to understand and complete official forms with clarity.
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+              )
+            })}
+          </div>
         </div>
       </section>
 

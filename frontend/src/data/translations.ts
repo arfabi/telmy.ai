@@ -9,15 +9,17 @@ export interface TranslationData {
   navSignIn: string
   navCta: string
 
-  // Hero (V3 + V2 Trustline)
+  // Hero (V19)
+  heroKicker: string
   heroTitle: string
   heroSubtitle: string
   heroCta: string
   heroDemo: string
+  heroSupportText: string
   heroTrustline: string
   heroWorksOn: string
 
-  // Cards A, B, C (V3)
+  // Cards A, B, C (V19)
   cardATitle: string
   cardADesc: string
   cardALink: string
@@ -27,6 +29,32 @@ export interface TranslationData {
   cardCTitle: string
   cardCDesc: string
   cardCLink: string
+
+  // Who Is Telmy For (V19 Section)
+  whoForTitle: string
+  whoForSubtitle: string
+  whoForCard1Title: string
+  whoForCard1Desc: string
+  whoForCard2Title: string
+  whoForCard2Desc: string
+  whoForCard3Title: string
+  whoForCard3Desc: string
+  whoForClosing: string
+
+  // What Telmy Does & Doesn't Do (V19 Section)
+  scopeTitle: string
+  scopeSubtitle: string
+  scopeDoesTitle: string
+  scopeDoes1: string
+  scopeDoes2: string
+  scopeDoes3: string
+  scopeDoes4: string
+  scopeDoesNotTitle: string
+  scopeDoesNot1: string
+  scopeDoesNot2: string
+  scopeDoesNot3: string
+  scopeDoesNot4: string
+  scopeDisclaimer: string
 
   // UN Statistics Bar (V2)
   unStatTitle: string
@@ -154,22 +182,48 @@ export const transEN: TranslationData = {
   navSignIn: "Sign in",
   navCta: "Get Telmy.ai (Free)",
 
-  heroTitle: "Any form. Any language. No worries.",
-  heroSubtitle: "Telmy.ai helps you get through complicated forms. It explains every field in plain words, in your language, and checks your answers before you submit.",
-  heroCta: "Get Telmy.ai (Free)",
-  heroDemo: "Try the demo",
-  heroTrustline: "Free forever tier · Zero-Knowledge Encryption · W3C WCAG 2.2 AA Compliant",
+  heroKicker: "Any form. Any language. No worries.",
+  heroTitle: "Confused by a form? Telmy makes it easier.",
+  heroSubtitle: "Telmy.ai explains confusing form questions in your language, guides you through each field, and helps you check your answers before you submit.",
+  heroCta: "Try Telmy for Free",
+  heroDemo: "Watch How It Works",
+  heroSupportText: "Understand the questions. Fill in your answers. Submit with more confidence.",
+  heroTrustline: "Free tier · Zero-Knowledge Encryption · Built for official forms",
   heroWorksOn: "Works on",
 
-  cardATitle: "Guide every field",
-  cardADesc: "Ask anything and get clear, simple explanations with real-world examples.",
+  cardATitle: "Understand Every Field",
+  cardADesc: "Not sure what a question means? Telmy explains confusing form fields in simple language so you know what's requested.",
   cardALink: "Learn more",
-  cardBTitle: "11 languages",
-  cardBDesc: "Read and fill official forms in the language you feel safest in.",
-  cardBLink: "See 11 Asia-Pacific languages",
-  cardCTitle: "Accessibility built in",
-  cardCDesc: "14 tools for seniors, dyslexic readers, and low-vision applicants.",
-  cardCLink: "See 14 accessibility tools",
+  cardBTitle: "Forms in Your Language",
+  cardBDesc: "Get explanations in a language you're comfortable with, so language barriers never hold you back.",
+  cardBLink: "Explore 11 languages",
+  cardCTitle: "Guidance When Forms Get Complicated",
+  cardCDesc: "Get step-by-step guidance when a form feels confusing, moving forward with clarity.",
+  cardCLink: "Explore guidance features",
+
+  whoForTitle: "Built for People Who Need Help Understanding Forms",
+  whoForSubtitle: "Whether you're applying for an opportunity, completing official paperwork, or dealing with an unfamiliar form, Telmy makes questions easier to understand.",
+  whoForCard1Title: "Scholarship Applications",
+  whoForCard1Desc: "Understand application questions, supporting document requests, and instructions clearly while completing your scholarship application.",
+  whoForCard2Title: "Visa and Travel Forms",
+  whoForCard2Desc: "Get help understanding unfamiliar questions and official instructions when completing supported visa or travel paperwork.",
+  whoForCard3Title: "Everyday Online Forms",
+  whoForCard3Desc: "Get guidance when registration forms, applications, or other supported online forms leave you unsure what to enter.",
+  whoForClosing: "If a form leaves you wondering what it means, Telmy is here to help.",
+
+  scopeTitle: "Guidance, Not Guesswork. You're Still in Control.",
+  scopeSubtitle: "Telmy helps you understand forms. You make the decisions.",
+  scopeDoesTitle: "What Telmy helps with",
+  scopeDoes1: "Explaining confusing questions in plain words.",
+  scopeDoes2: "Simplifying complex instructions and requirements.",
+  scopeDoes3: "Guiding you through supported online forms step-by-step.",
+  scopeDoes4: "Helping you review your answers before final submission.",
+  scopeDoesNotTitle: "What Telmy doesn't replace",
+  scopeDoesNot1: "Official instructions from the organization receiving your form.",
+  scopeDoesNot2: "Your responsibility to provide truthful and accurate information.",
+  scopeDoesNot3: "Professional legal, immigration, or financial advice.",
+  scopeDoesNot4: "Your final personal review and decision to submit.",
+  scopeDisclaimer: "Telmy explains and guides. You verify, decide, and submit. Telmy is not a government agency.",
 
   unStatTitle: "Global E-Government Reality Check (UN E-Gov Survey 2024)",
   unStatSub: "Governments moved services online, but availability does not equal usability.",
@@ -205,24 +259,24 @@ export const transEN: TranslationData = {
   simQuickActions: "1-Click Quick Actions:",
   simVaultTip: "💡 Tip: Profile data is encrypted in your local browser and never stored on any server.",
 
-  compTitle: "Why Traditional Form Filling Fails",
-  compSubtitle: "The old frustrating way vs. the smooth Telmy.ai way.",
+  compTitle: "Filling Out a Form Shouldn't Feel Like Guesswork",
+  compSubtitle: "When instructions are unclear, it's easy to get stuck. Telmy helps you understand before you answer.",
   compWithoutTitle: "❌ Without Telmy",
-  compWithout1: "Spend 45+ minutes stressing over ambiguous legal jargon and fine print.",
-  compWithout2: "Risk visa rejection or delayed scholarships due to small typos or inverted dates.",
-  compWithout3: "Generic machine translation breaks button scripts and scrambles legal terms.",
+  compWithout1: "Unclear questions leave you guessing what to enter.",
+  compWithout2: "Unfamiliar language makes official instructions harder to grasp.",
+  compWithout3: "You waste time searching for outside explanations and worrying about mistakes.",
   compWithTitle: "✅ With Telmy.ai",
-  compWith1: "Plain, comforting explanations that feel like having an expert friend right beside you.",
-  compWith2: "Automatic Traffic Light auditor catches expiration and format mistakes before submission.",
-  compWith3: "1-Click AutoFill populates 20+ fields in one second from your Zero-Knowledge Vault.",
+  compWith1: "Understand confusing questions in simple, plain language.",
+  compWith2: "Get reliable guidance in a supported language you understand.",
+  compWith3: "Move through the form with confidence and review your answers before submitting.",
 
-  stepsTitle: "Three steps. No worries.",
-  step1Title: "Add Telmy.ai to your browser",
-  step1Desc: "Free for Chrome, Edge, Firefox, and Opera in less than a minute.",
-  step2Title: "Open your form",
-  step2Desc: "Telmy.ai opens a friendly companion side panel next to any web form or PDF.",
-  step3Title: "Follow the guide",
-  step3Desc: "Get simple field explanations, autofill verified data, and audit errors before submitting.",
+  stepsTitle: "Three Simple Steps. Less Form Stress.",
+  step1Title: "Open Your Form",
+  step1Desc: "Open a supported form in your browser and launch Telmy when you need assistance.",
+  step2Title: "Understand Each Question",
+  step2Desc: "Select a confusing field and get a clear explanation in a language you understand.",
+  step3Title: "Fill In and Review",
+  step3Desc: "Use guidance to complete your answers, then review your information before submitting.",
 
   privacyTitle: "Your information stays yours",
   privacySubtitle: "Forms hold your most personal details. Telmy.ai is engineered to mathematically protect them.",

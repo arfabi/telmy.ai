@@ -2,12 +2,14 @@ import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
 import { useLanguage } from '@/context/LanguageContext'
+import { useAuth } from '@/context/AuthContext'
 import { JAPAC_LANGUAGES } from '@/data/languages'
 import { LanguageModal } from '@/components/landing/LanguageModal'
-import { Menu, X } from 'lucide-react'
+import { Menu, X, LayoutDashboard } from 'lucide-react'
 
 export const Navbar: React.FC = () => {
   const { lang, t } = useLanguage()
+  const { userProfile } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
 
@@ -58,12 +60,21 @@ export const Navbar: React.FC = () => {
               </span>
             </button>
 
-            {/* Sign in */}
-            <Link to="/signin">
-              <Button variant="ghost" size="sm" className="font-semibold text-slate-700 hover:text-blue-600">
-                {t.navSignIn}
-              </Button>
-            </Link>
+            {/* Sign in or Dashboard */}
+            {userProfile?.uid ? (
+              <Link to="/dashboard">
+                <Button variant="ghost" size="sm" className="font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1.5">
+                  <LayoutDashboard className="w-4 h-4" />
+                  <span>Dashboard</span>
+                </Button>
+              </Link>
+            ) : (
+              <Link to="/signin">
+                <Button variant="ghost" size="sm" className="font-semibold text-slate-700 hover:text-blue-600">
+                  {t.navSignIn}
+                </Button>
+              </Link>
+            )}
 
             {/* Primary CTA */}
             <Link to="/download">
@@ -131,13 +142,24 @@ export const Navbar: React.FC = () => {
               >
                 {t.navFaq}
               </Link>
-              <Link
-                to="/signin"
-                onClick={() => setMobileMenuOpen(false)}
-                className="py-1 font-semibold text-blue-600"
-              >
-                {t.navSignIn}
-              </Link>
+              {userProfile?.uid ? (
+                <Link
+                  to="/dashboard"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="py-1 font-semibold text-blue-600 flex items-center gap-1.5"
+                >
+                  <LayoutDashboard className="w-4 h-4" />
+                  <span>Dashboard</span>
+                </Link>
+              ) : (
+                <Link
+                  to="/signin"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="py-1 font-semibold text-blue-600"
+                >
+                  {t.navSignIn}
+                </Link>
+              )}
             </nav>
 
             <div className="pt-2">
