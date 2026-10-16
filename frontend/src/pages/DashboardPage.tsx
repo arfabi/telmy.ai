@@ -2021,9 +2021,6 @@ export const DashboardPage: React.FC = () => {
                 </table>
               </div>
             </Card>
-
-              </div>
-            )}
           </div>
         )}
 
