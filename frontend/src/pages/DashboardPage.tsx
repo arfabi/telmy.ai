@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { DASHBOARD_I18N, DashboardI18n } from '@/data/dashboardI18n'
 import { PRICING_TIERS_DATA, PricingTierItem } from '@/data/pricingData'
+import { JAPAC_LANGUAGES } from '@/data/languages'
 import { encryptVault, decryptVault, VaultEnvelope } from '@/lib/cryptoVault'
 import { 
   Zap, 
@@ -23,6 +24,7 @@ import {
   Copy,
   Plus,
   Trash2,
+  Edit2,
   GraduationCap,
   FileText,
   HelpCircle,
@@ -43,19 +45,19 @@ import {
   Globe
 } from 'lucide-react'
 
-// 11 Asia-Pacific Countries (Displayed by country name & native language without raw codes)
+// 11 Asia-Pacific Countries (Displayed by country name & native language with cross-platform SVG flag)
 export const DASHBOARD_COUNTRIES = [
-  { code: 'id', flag: '🇮🇩', country: 'Indonesia', nativeName: 'Bahasa Indonesia' },
-  { code: 'en', flag: '🇺🇸', country: 'United States (Global)', nativeName: 'English' },
-  { code: 'ja', flag: '🇯🇵', country: 'Jepang (Japan)', nativeName: '日本語' },
-  { code: 'ko', flag: '🇰🇷', country: 'Korea Selatan (South Korea)', nativeName: '한국어' },
-  { code: 'zh', flag: '🇨🇳', country: 'Tiongkok (China)', nativeName: '简体中文' },
-  { code: 'zh-tw', flag: '🇹🇼', country: 'Taiwan', nativeName: '繁體中文' },
-  { code: 'vi', flag: '🇻🇳', country: 'Vietnam', nativeName: 'Tiếng Việt' },
-  { code: 'th', flag: '🇹🇭', country: 'Thailand', nativeName: 'ภาษาไทย' },
-  { code: 'hi', flag: '🇮🇳', country: 'India', nativeName: 'हिन्दी' },
-  { code: 'fil', flag: '🇵🇭', country: 'Filipina (Philippines)', nativeName: 'Filipino' },
-  { code: 'ms', flag: '🇲🇾', country: 'Malaysia', nativeName: 'Bahasa Melayu' }
+  { code: 'id', flag: '🇮🇩', country: 'Indonesia', nativeName: 'Bahasa Indonesia', svg: JAPAC_LANGUAGES.find(l => l.code === 'id')?.svg },
+  { code: 'en', flag: '🇺🇸', country: 'United States (Global)', nativeName: 'English', svg: JAPAC_LANGUAGES.find(l => l.code === 'en')?.svg },
+  { code: 'ja', flag: '🇯🇵', country: 'Jepang (Japan)', nativeName: '日本語', svg: JAPAC_LANGUAGES.find(l => l.code === 'ja')?.svg },
+  { code: 'ko', flag: '🇰🇷', country: 'Korea Selatan (South Korea)', nativeName: '한국어', svg: JAPAC_LANGUAGES.find(l => l.code === 'ko')?.svg },
+  { code: 'zh', flag: '🇨🇳', country: 'Tiongkok (China)', nativeName: '简体中文', svg: JAPAC_LANGUAGES.find(l => l.code === 'zh')?.svg },
+  { code: 'zh-tw', flag: '🇹🇼', country: 'Taiwan', nativeName: '繁體中文', svg: JAPAC_LANGUAGES.find(l => l.code.toLowerCase() === 'zh-tw')?.svg },
+  { code: 'vi', flag: '🇻🇳', country: 'Vietnam', nativeName: 'Tiếng Việt', svg: JAPAC_LANGUAGES.find(l => l.code === 'vi')?.svg },
+  { code: 'th', flag: '🇹🇭', country: 'Thailand', nativeName: 'ภาษาไทย', svg: JAPAC_LANGUAGES.find(l => l.code === 'th')?.svg },
+  { code: 'hi', flag: '🇮🇳', country: 'India', nativeName: 'हिन्दी', svg: JAPAC_LANGUAGES.find(l => l.code === 'hi')?.svg },
+  { code: 'fil', flag: '🇵🇭', country: 'Filipina (Philippines)', nativeName: 'Filipino', svg: JAPAC_LANGUAGES.find(l => l.code === 'fil')?.svg },
+  { code: 'ms', flag: '🇲🇾', country: 'Malaysia', nativeName: 'Bahasa Melayu', svg: JAPAC_LANGUAGES.find(l => l.code === 'ms')?.svg }
 ]
 
 const BIP39_WORDS = [
@@ -63,6 +65,50 @@ const BIP39_WORDS = [
   'island', 'jungle', 'kinetic', 'lunar', 'matrix', 'nebula', 'orbit', 'pulse',
   'quantum', 'radar', 'safari', 'titan', 'uranium', 'vector', 'walnut', 'zenith',
   'anchor', 'breeze', 'canyon', 'delta', 'ember', 'forest', 'glacier', 'horizon'
+]
+
+// Animated quotes on form-filling struggles
+const FORM_FRUSTRATION_QUOTES = [
+  {
+    en: "Filling out a form shouldn’t feel like solving a puzzle.",
+    id: "Mengisi formulir seharusnya tidak terasa seperti memecahkan teka-teki.",
+    author: "UX Philosophy"
+  },
+  {
+    en: "Why is filling out a simple form harder than it should be?",
+    id: "Kenapa mengisi formulir sederhana bisa jauh lebih sulit dari yang seharusnya?",
+    author: "User Reality"
+  },
+  {
+    en: "One form, a hundred questions, and absolutely no patience left.",
+    id: "Satu formulir, seratus pertanyaan, dan kesabaran yang sudah habis.",
+    author: "Citizen Experience"
+  },
+  {
+    en: "The form is online, but my frustration is very real.",
+    id: "Formulirnya online, tetapi rasa frustrasiku benar-benar nyata.",
+    author: "Modern Bureaucracy"
+  },
+  {
+    en: "A good form asks for information. A bad form tests your patience.",
+    id: "Formulir yang baik meminta informasi. Formulir yang buruk menguji kesabaranmu.",
+    author: "Design Axiom"
+  },
+  {
+    en: "If users struggle to complete your form, the problem might not be the users.",
+    id: "Jika pengguna kesulitan menyelesaikan formulirmu, mungkin masalahnya bukan pada penggunanya.",
+    author: "Usability Rule"
+  },
+  {
+    en: "Every unnecessary field is another reason to give up.",
+    id: "Setiap kolom yang tidak diperlukan adalah alasan tambahan untuk menyerah.",
+    author: "Conversion Law"
+  },
+  {
+    en: "A form should make things easier, not make people question their life choices.",
+    id: "Formulir seharusnya mempermudah, bukan membuat orang mempertanyakan pilihan hidup mereka.",
+    author: "Telmy Mission"
+  }
 ]
 
 export const DashboardPage: React.FC = () => {
@@ -96,6 +142,21 @@ export const DashboardPage: React.FC = () => {
   const [selectedCountryCode, setSelectedCountryCode] = useState<string>(effectiveLangCode)
   const [profileName, setProfileName] = useState(userProfile?.displayName || 'Citizen Applicant')
   const [profileSavedToast, setProfileSavedToast] = useState(false)
+
+  // Animated rotating quote ticker (changes every 6 seconds)
+  const [currentQuoteIdx, setCurrentQuoteIdx] = useState(0)
+  const [quoteFade, setQuoteFade] = useState(true)
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setQuoteFade(false)
+      setTimeout(() => {
+        setCurrentQuoteIdx((prev) => (prev + 1) % FORM_FRUSTRATION_QUOTES.length)
+        setQuoteFade(true)
+      }, 350)
+    }, 6000)
+    return () => clearInterval(timer)
+  }, [])
 
   useEffect(() => {
     if (userProfile?.displayName) setProfileName(userProfile.displayName)
@@ -235,21 +296,10 @@ export const DashboardPage: React.FC = () => {
     try {
       const res = await fetch(`/api/user/saved-forms/${userProfile.uid}`)
       const data = await res.json()
-      if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+      if (data.success && Array.isArray(data.data)) {
         setFormsHistoryList(data.data)
       } else {
-        // Fallback default sample for new users
-        setFormsHistoryList([
-          {
-            id: 'f_default_1',
-            title: 'Schengen Visa Application Form (Short Stay)',
-            authority: 'European Consular Directorate',
-            type: 'online',
-            date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
-            status: 'Ready',
-            fieldsCount: 37
-          }
-        ])
+        setFormsHistoryList([])
       }
     } catch (e) {
       console.warn('Failed to fetch saved forms:', e)
@@ -292,30 +342,8 @@ export const DashboardPage: React.FC = () => {
   })
   const [seedRegenWarningOpen, setSeedRegenWarningOpen] = useState(false)
 
-  // Dynamic Vault Compartments
-  const [vaultCompartments, setVaultCompartments] = useState<any[]>([
-    {
-      id: 'c1',
-      title: 'Identitas Utama (Identity Dossier)',
-      badge: 'Utama',
-      fields: [
-        { key: 'Full Name', value: userProfile?.displayName || 'Citizen Applicant' },
-        { key: 'NIK / Resident ID', value: '3171012304950001' },
-        { key: 'Date of Birth', value: '1995-04-23' },
-        { key: 'Citizenship', value: 'Indonesian' }
-      ]
-    },
-    {
-      id: 'c2',
-      title: 'Paspor & Perjalanan Internasional',
-      badge: 'Travel',
-      fields: [
-        { key: 'Passport Number', value: 'A12345678' },
-        { key: 'Expiry Date', value: '2030-05-18' },
-        { key: 'Issuing Office', value: 'Kantor Imigrasi' }
-      ]
-    }
-  ])
+  // Dynamic Vault Compartments (Initialized empty - loaded dynamically upon unlocking encrypted envelope)
+  const [vaultCompartments, setVaultCompartments] = useState<any[]>([])
 
   // Fetch Firestore Vault Envelope on Load
   useEffect(() => {
@@ -441,7 +469,7 @@ export const DashboardPage: React.FC = () => {
       id: 'c_' + Date.now(),
       title: newCompartmentTitle,
       badge: 'Custom',
-      fields: [{ key: 'Field Baru', value: 'Isian Baru' }]
+      fields: []
     }
     const updated = [...vaultCompartments, newC]
     setVaultCompartments(updated)
@@ -450,7 +478,76 @@ export const DashboardPage: React.FC = () => {
   }
 
   const handleDeleteCompartment = (id: string) => {
+    if (!confirm('Apakah Anda yakin ingin menghapus koper data ini beserta seluruh isinya?')) return
     const updated = vaultCompartments.filter(c => c.id !== id)
+    setVaultCompartments(updated)
+    saveVaultToFirestore(updated)
+  }
+
+  // Edit / Rename Compartment Title
+  const handleEditCompartmentTitle = (compId: string, currentTitle: string) => {
+    const newTitle = prompt('Ubah nama koper data:', currentTitle)
+    if (!newTitle || !newTitle.trim() || newTitle.trim() === currentTitle) return
+    const updated = vaultCompartments.map(comp => {
+      if (comp.id === compId) {
+        return { ...comp, title: newTitle.trim() }
+      }
+      return comp
+    })
+    setVaultCompartments(updated)
+    saveVaultToFirestore(updated)
+  }
+
+  // Add field to compartment
+  const handleAddField = (compId: string) => {
+    const key = prompt('Nama label kolom (contoh: Nomor Paspor, NIK, Alamat):')
+    if (!key || !key.trim()) return
+    const val = prompt(`Nilai untuk "${key.trim()}":`)
+    if (val === null) return
+
+    const updated = vaultCompartments.map(comp => {
+      if (comp.id === compId) {
+        const fields = Array.isArray(comp.fields) ? [...comp.fields] : []
+        fields.push({ key: key.trim(), value: val.trim() })
+        return { ...comp, fields }
+      }
+      return comp
+    })
+    setVaultCompartments(updated)
+    saveVaultToFirestore(updated)
+  }
+
+  // Update existing field
+  const handleUpdateField = (compId: string, fieldIdx: number, currentKey: string, currentVal: string) => {
+    const newKey = prompt('Ubah nama kolom:', currentKey)
+    if (newKey === null) return
+    const newVal = prompt('Ubah nilai isian:', currentVal)
+    if (newVal === null) return
+
+    const updated = vaultCompartments.map(comp => {
+      if (comp.id === compId) {
+        const fields = [...comp.fields]
+        fields[fieldIdx] = {
+          key: newKey.trim() || currentKey,
+          value: newVal.trim()
+        }
+        return { ...comp, fields }
+      }
+      return comp
+    })
+    setVaultCompartments(updated)
+    saveVaultToFirestore(updated)
+  }
+
+  // Delete field from compartment
+  const handleDeleteField = (compId: string, fieldIdx: number) => {
+    const updated = vaultCompartments.map(comp => {
+      if (comp.id === compId) {
+        const fields = comp.fields.filter((_: any, idx: number) => idx !== fieldIdx)
+        return { ...comp, fields }
+      }
+      return comp
+    })
     setVaultCompartments(updated)
     saveVaultToFirestore(updated)
   }
@@ -777,8 +874,17 @@ export const DashboardPage: React.FC = () => {
                 <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                   {dI18n.kpiLangLabel}
                 </span>
-                <div className="text-lg font-black text-blue-600 flex items-center gap-2 pt-1">
-                  <span className="text-2xl">{activeCountryItem.flag}</span>
+                <div className="text-lg font-black text-blue-600 flex items-center gap-2.5 pt-1">
+                  <div className="w-8 h-5 shrink-0 flex items-center justify-center overflow-hidden rounded shadow-xs border border-slate-200">
+                    {activeCountryItem.svg ? (
+                      <div 
+                        className="w-full h-full [&>svg]:w-full [&>svg]:h-full [&>svg]:object-cover" 
+                        dangerouslySetInnerHTML={{ __html: activeCountryItem.svg }} 
+                      />
+                    ) : (
+                      <span className="text-xl leading-none">{activeCountryItem.flag}</span>
+                    )}
+                  </div>
                   <span className="truncate">{activeCountryItem.country}</span>
                 </div>
                 <p className="text-xs text-slate-500 leading-relaxed">
@@ -839,15 +945,52 @@ export const DashboardPage: React.FC = () => {
               </div>
             </Card>
 
-            {/* Daily E-Government Trivia Card */}
-            <Card className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50/60 border border-blue-100 rounded-3xl space-y-2">
-              <div className="flex items-center gap-2 text-blue-700 font-bold text-xs">
-                <Sparkles className="w-4 h-4 text-blue-600" />
-                <span>{dI18n.triviaTitle}</span>
+            {/* Animated Dynamic Quotes: Buruknya Pengalaman Mengisi Formulir */}
+            <Card className="p-6 bg-gradient-to-r from-blue-50/80 via-indigo-50/50 to-slate-50 border border-blue-200/60 rounded-3xl relative overflow-hidden shadow-xs">
+              <div className="flex items-center justify-between gap-4 mb-3">
+                <div className="flex items-center gap-2 text-blue-700 font-bold text-xs uppercase tracking-wider">
+                  <Sparkles className="w-4 h-4 text-blue-600 animate-pulse" />
+                  <span>The Real Pain of Forms • Quote of the Moment</span>
+                </div>
+                {/* Dots indicator & manual navigation */}
+                <div className="flex items-center gap-1.5">
+                  {FORM_FRUSTRATION_QUOTES.map((_, qIdx) => (
+                    <button
+                      key={qIdx}
+                      onClick={() => {
+                        setQuoteFade(false)
+                        setTimeout(() => {
+                          setCurrentQuoteIdx(qIdx)
+                          setQuoteFade(true)
+                        }, 200)
+                      }}
+                      className={`h-1.5 rounded-full transition-all cursor-pointer ${
+                        currentQuoteIdx === qIdx ? 'w-5 bg-blue-600' : 'w-1.5 bg-slate-300 hover:bg-slate-400'
+                      }`}
+                      title={`Quote ${qIdx + 1}`}
+                    />
+                  ))}
+                </div>
               </div>
-              <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
-                💡 {dI18n.triviaBody}
-              </p>
+
+              <div className={`transition-all duration-350 transform ${quoteFade ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}>
+                <blockquote className="space-y-1.5">
+                  <p className="text-sm sm:text-base font-black text-slate-900 tracking-tight leading-snug">
+                    “{FORM_FRUSTRATION_QUOTES[currentQuoteIdx].en}”
+                  </p>
+                  <p className="text-xs sm:text-sm font-medium text-slate-600 italic leading-relaxed">
+                    “{FORM_FRUSTRATION_QUOTES[currentQuoteIdx].id}”
+                  </p>
+                </blockquote>
+                <div className="mt-2.5 flex items-center justify-between text-[11px] text-slate-500 font-semibold">
+                  <span className="text-blue-700 font-bold bg-blue-100/70 px-2 py-0.5 rounded-md">
+                    💡 {FORM_FRUSTRATION_QUOTES[currentQuoteIdx].author}
+                  </span>
+                  <span className="text-slate-400 text-[10px]">
+                    {currentQuoteIdx + 1} of {FORM_FRUSTRATION_QUOTES.length}
+                  </span>
+                </div>
+              </div>
             </Card>
           </div>
         )}
@@ -1059,7 +1202,16 @@ export const DashboardPage: React.FC = () => {
                             : 'bg-slate-50/70 border-slate-200 hover:bg-slate-100 hover:border-slate-300'
                         }`}
                       >
-                        <span className="text-3xl shrink-0">{item.flag}</span>
+                        <div className="w-9 h-6 shrink-0 flex items-center justify-center overflow-hidden rounded shadow-xs border border-slate-200">
+                          {item.svg ? (
+                            <div 
+                              className="w-full h-full [&>svg]:w-full [&>svg]:h-full [&>svg]:object-cover" 
+                              dangerouslySetInnerHTML={{ __html: item.svg }} 
+                            />
+                          ) : (
+                            <span className="text-2xl leading-none">{item.flag}</span>
+                          )}
+                        </div>
                         <div className="min-w-0 flex-1">
                           <strong className="block text-xs font-bold text-slate-900 truncate">
                             {item.country}
@@ -1227,39 +1379,49 @@ export const DashboardPage: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {formsHistoryList
-                      .filter(f => formFilter === 'all' || f.type === formFilter)
-                      .map((item) => (
-                        <tr key={item.id} className="hover:bg-slate-50/70 transition-colors">
-                          <td className="py-3.5 px-4 font-bold text-slate-900">
-                            {item.title}
-                          </td>
-                          <td className="py-3.5 px-4 text-slate-600">{item.authority}</td>
-                          <td className="py-3.5 px-4">
-                            <span className={`px-2 py-0.5 rounded-md font-bold text-[10px] ${
-                              item.type === 'pdf'
-                                ? 'bg-amber-100 text-amber-700'
-                                : 'bg-blue-100 text-blue-700'
-                            }`}>
-                              {item.type.toUpperCase()}
-                            </span>
-                          </td>
-                          <td className="py-3.5 px-4 text-slate-400">{item.date}</td>
-                          <td className="py-3.5 px-4">
-                            <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-bold text-[10px]">
-                              🟢 0 Error
-                            </span>
-                          </td>
-                          <td className="py-3.5 px-4 text-right">
-                            <button
-                              onClick={() => setEditorModalOpen(true)}
-                              className="text-xs font-bold text-blue-600 hover:text-blue-800 cursor-pointer"
-                            >
-                              {dI18n.formsOpenEditor}
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
+                    {formsHistoryList.filter(f => formFilter === 'all' || f.type === formFilter).length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="py-12 text-center text-slate-400">
+                          <FileText className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                          <p className="text-xs font-semibold text-slate-600">Belum ada riwayat formulir tersimpan</p>
+                          <p className="text-[11px] text-slate-400 mt-0.5">Formulir yang Anda isi melalui Ekstensi Telmy akan otomatis tercatat di sini.</p>
+                        </td>
+                      </tr>
+                    ) : (
+                      formsHistoryList
+                        .filter(f => formFilter === 'all' || f.type === formFilter)
+                        .map((item) => (
+                          <tr key={item.id} className="hover:bg-slate-50/70 transition-colors">
+                            <td className="py-3.5 px-4 font-bold text-slate-900">
+                              {item.title}
+                            </td>
+                            <td className="py-3.5 px-4 text-slate-600">{item.authority}</td>
+                            <td className="py-3.5 px-4">
+                              <span className={`px-2 py-0.5 rounded-md font-bold text-[10px] ${
+                                item.type === 'pdf'
+                                  ? 'bg-amber-100 text-amber-700'
+                                  : 'bg-blue-100 text-blue-700'
+                              }`}>
+                                {item.type.toUpperCase()}
+                              </span>
+                            </td>
+                            <td className="py-3.5 px-4 text-slate-400">{item.date}</td>
+                            <td className="py-3.5 px-4">
+                              <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-bold text-[10px]">
+                                🟢 0 Error
+                              </span>
+                            </td>
+                            <td className="py-3.5 px-4 text-right">
+                              <button
+                                onClick={() => setEditorModalOpen(true)}
+                                className="text-xs font-bold text-blue-600 hover:text-blue-800 cursor-pointer"
+                              >
+                                {dI18n.formsOpenEditor}
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -1454,53 +1616,62 @@ export const DashboardPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* 12-Seed Word Action Strip */}
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
-                <div className="flex items-center gap-2">
-                  <Shield className="w-4 h-4 text-emerald-600" />
-                  <span className="font-bold text-slate-800">{dI18n.vaultSeedStrip}</span>
+              {/* 12-Seed Word Action Strip (Only accessible when Vault is UNLOCKED) */}
+              {vaultUnlocked ? (
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center gap-2">
+                    <Shield className="w-4 h-4 text-emerald-600" />
+                    <span className="font-bold text-slate-800">{dI18n.vaultSeedStrip}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      onClick={() => {
+                        navigator.clipboard.writeText(masterSeedPhrase)
+                        alert('12 Secret Words copied to clipboard!')
+                      }}
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs font-bold text-slate-600 h-8"
+                    >
+                      <Copy className="w-3 h-3 mr-1" />
+                      <span>{dI18n.vaultCopySeed}</span>
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        const blob = new Blob([masterSeedPhrase], { type: 'text/plain' })
+                        const url = URL.createObjectURL(blob)
+                        const a = document.createElement('a')
+                        a.href = url
+                        a.download = `telmy-vault-seed-${Date.now().toString(36)}.txt`
+                        a.click()
+                        URL.revokeObjectURL(url)
+                      }}
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs font-bold text-slate-600 h-8"
+                    >
+                      <Download className="w-3 h-3 mr-1" />
+                      <span>{dI18n.vaultSaveTxt}</span>
+                    </Button>
+                    <Button
+                      onClick={() => setSeedRegenWarningOpen(true)}
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs font-bold text-red-600 hover:bg-red-50 h-8"
+                    >
+                      <RefreshCw className="w-3 h-3 mr-1" />
+                      <span>{dI18n.vaultRegenBtn}</span>
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    onClick={() => {
-                      navigator.clipboard.writeText(masterSeedPhrase)
-                      alert('12 Secret Words copied to clipboard!')
-                    }}
-                    variant="ghost"
-                    size="sm"
-                    className="text-xs font-bold text-slate-600 h-8"
-                  >
-                    <Copy className="w-3 h-3 mr-1" />
-                    <span>{dI18n.vaultCopySeed}</span>
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      const blob = new Blob([masterSeedPhrase], { type: 'text/plain' })
-                      const url = URL.createObjectURL(blob)
-                      const a = document.createElement('a')
-                      a.href = url
-                      a.download = `telmy-vault-seed-${Date.now().toString(36)}.txt`
-                      a.click()
-                      URL.revokeObjectURL(url)
-                    }}
-                    variant="ghost"
-                    size="sm"
-                    className="text-xs font-bold text-slate-600 h-8"
-                  >
-                    <Download className="w-3 h-3 mr-1" />
-                    <span>{dI18n.vaultSaveTxt}</span>
-                  </Button>
-                  <Button
-                    onClick={() => setSeedRegenWarningOpen(true)}
-                    variant="ghost"
-                    size="sm"
-                    className="text-xs font-bold text-red-600 hover:bg-red-50 h-8"
-                  >
-                    <RefreshCw className="w-3 h-3 mr-1" />
-                    <span>{dI18n.vaultRegenBtn}</span>
-                  </Button>
+              ) : (
+                <div className="p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200/60 flex items-center justify-between text-xs text-amber-900">
+                  <div className="flex items-center gap-2">
+                    <Lock className="w-4 h-4 text-amber-600 shrink-0" />
+                    <span>Master Seed Phrase terenkripsi & tersimpan aman di browser Anda. Buka brankas untuk melihat atau mencadangkan seed phrase.</span>
+                  </div>
                 </div>
-              </div>
+              )}
             </Card>
 
             {/* List of Dynamic Vault Compartments */}
@@ -1530,46 +1701,118 @@ export const DashboardPage: React.FC = () => {
                 )}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {vaultCompartments.map((comp) => (
-                  <Card key={comp.id} className="p-5 bg-white border border-slate-200 rounded-3xl shadow-xs space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-blue-50 text-blue-700">
-                        {comp.badge}
-                      </span>
-                      {vaultUnlocked && (
-                        <button
-                          onClick={() => handleDeleteCompartment(comp.id)}
-                          className="text-slate-400 hover:text-red-600 p-1 cursor-pointer"
-                          title="Hapus koper ini"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      )}
-                    </div>
+              {vaultCompartments.length === 0 ? (
+                <div className="py-12 px-4 text-center rounded-3xl bg-white border border-dashed border-slate-200">
+                  <Shield className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                  <h5 className="text-sm font-bold text-slate-700">Belum Ada Kompartmen Data</h5>
+                  <p className="text-xs text-slate-400 max-w-sm mx-auto mt-1">
+                    {vaultUnlocked 
+                      ? 'Buka ekstensi Telmy untuk upload dokumen identitas atau buat koper data baru di atas.' 
+                      : 'Buka brankas dengan password atau seed phrase untuk melihat data profil yang tersimpan.'}
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {vaultCompartments.map((comp) => (
+                    <Card key={comp.id} className="p-5 bg-white border border-slate-200 rounded-3xl shadow-xs space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-blue-50 text-blue-700">
+                          {comp.badge}
+                        </span>
+                        {vaultUnlocked && (
+                          <button
+                            onClick={() => handleDeleteCompartment(comp.id)}
+                            className="text-slate-400 hover:text-red-600 p-1 cursor-pointer"
+                            title="Hapus koper ini"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
 
-                    <h5 className="font-bold text-slate-900 text-sm leading-tight">
-                      {comp.title}
-                    </h5>
-
-                    {vaultUnlocked ? (
-                      <div className="space-y-2 pt-2 border-t border-slate-100 text-xs">
-                        {comp.fields.map((f: any, idx: number) => (
-                          <div key={idx} className="flex justify-between font-mono text-[11px]">
-                            <span className="text-slate-500 font-sans">{f.key}:</span>
-                            <span className="font-bold text-slate-800">{f.value}</span>
+                      <div className="flex items-center justify-between gap-2">
+                        <h5 className="font-bold text-slate-900 text-sm leading-tight flex-1">
+                          {comp.title}
+                        </h5>
+                        {vaultUnlocked && (
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => handleEditCompartmentTitle(comp.id, comp.title)}
+                              className="text-slate-400 hover:text-blue-600 p-1 cursor-pointer transition-colors"
+                              title="Ubah nama koper"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => handleAddField(comp.id)}
+                              className="text-slate-400 hover:text-emerald-600 p-1 cursor-pointer transition-colors"
+                              title="Tambah kolom baru ke koper ini"
+                            >
+                              <Plus className="w-3.5 h-3.5" />
+                            </button>
                           </div>
-                        ))}
+                        )}
                       </div>
-                    ) : (
-                      <div className="py-6 text-center text-xs text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                        <Lock className="w-4 h-4 mx-auto mb-1 text-slate-400" />
-                        <span>{dI18n.vaultLockedData}</span>
-                      </div>
-                    )}
-                  </Card>
-                ))}
-              </div>
+
+                      {vaultUnlocked ? (
+                        <div className="space-y-2 pt-2 border-t border-slate-100 text-xs">
+                          {Array.isArray(comp.fields) && comp.fields.length > 0 ? (
+                            comp.fields.map((f: any, idx: number) => (
+                              <div key={idx} className="group/item flex items-center justify-between gap-2 font-mono text-[11px] hover:bg-slate-50 p-1 rounded-lg transition-colors">
+                                <span className="text-slate-500 font-sans truncate max-w-[40%]">{f.key}:</span>
+                                <div className="flex items-center gap-1.5 min-w-0">
+                                  <span className="font-bold text-slate-800 truncate">{f.value}</span>
+                                  <div className="opacity-0 group-hover/item:opacity-100 flex items-center transition-opacity shrink-0">
+                                    <button
+                                      onClick={() => handleUpdateField(comp.id, idx, f.key, f.value)}
+                                      className="text-slate-400 hover:text-blue-600 p-0.5 cursor-pointer"
+                                      title="Edit baris data ini"
+                                    >
+                                      <Edit2 className="w-3 h-3" />
+                                    </button>
+                                    <button
+                                      onClick={() => handleDeleteField(comp.id, idx)}
+                                      className="text-slate-400 hover:text-red-600 p-0.5 cursor-pointer"
+                                      title="Hapus baris data ini"
+                                    >
+                                      <Trash2 className="w-3 h-3" />
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="py-3 text-center text-[11px] text-slate-400">
+                              <span>Belum ada kolom. Klik </span>
+                              <button
+                                onClick={() => handleAddField(comp.id)}
+                                className="text-blue-600 font-bold hover:underline inline-flex items-center gap-0.5"
+                              >
+                                + Tambah Kolom
+                              </button>
+                            </div>
+                          )}
+
+                          {Array.isArray(comp.fields) && comp.fields.length > 0 && (
+                            <button
+                              onClick={() => handleAddField(comp.id)}
+                              className="w-full mt-2 py-1.5 rounded-lg border border-dashed border-slate-200 hover:border-blue-400 hover:bg-blue-50/50 text-[11px] font-bold text-slate-500 hover:text-blue-600 flex items-center justify-center gap-1 transition-all cursor-pointer"
+                            >
+                              <Plus className="w-3 h-3" />
+                              <span>Tambah Kolom</span>
+                            </button>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="py-6 text-center text-xs text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                          <Lock className="w-4 h-4 mx-auto mb-1 text-slate-400" />
+                          <span>{dI18n.vaultLockedData}</span>
+                        </div>
+                      )}
+                    </Card>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* UNLOCK MODAL (DUAL-LOCK: PASSWORD OR 12 SEED WORDS) */}
@@ -1779,204 +2022,207 @@ export const DashboardPage: React.FC = () => {
               </div>
             </Card>
 
-            {/* PRICING MODAL DIALOG (MATCHING /pricing LAYOUT & MAYAR INTEGRATION) */}
-            {pricingModalOpen && (
-              <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
-                <div className="bg-white rounded-3xl max-w-5xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-6 max-h-[90vh] overflow-y-auto">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
-                    <div>
-                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/60 text-blue-700 text-[11px] font-bold uppercase tracking-wider mb-1.5">
-                        <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-                        <span>Mayar Gateway & Cloud Quota Integration</span>
-                      </div>
-                      <h3 className="text-xl font-black text-slate-900">Pilih Paket Kuota Telmy</h3>
-                      <p className="text-xs text-slate-500">Mendukung aktivasi instan & pembayaran resmi Mayar.id (QRIS, VA, E-Wallet)</p>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      {/* Currency Toggle */}
-                      <div className="inline-flex items-center p-1 rounded-xl bg-slate-100 border border-slate-200 text-xs">
-                        <button
-                          type="button"
-                          onClick={() => setPricingCurrency('idr')}
-                          className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
-                            pricingCurrency === 'idr' ? 'bg-white text-blue-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'
-                          }`}
-                        >
-                          IDR (Rp)
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setPricingCurrency('usd')}
-                          className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
-                            pricingCurrency === 'usd' ? 'bg-white text-blue-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'
-                          }`}
-                        >
-                          USD ($)
-                        </button>
-                      </div>
-
-                      <button
-                        onClick={() => setPricingModalOpen(false)}
-                        className="text-slate-400 hover:text-slate-600 text-lg font-bold p-1 cursor-pointer"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* 3 Tier Grid matching /pricing */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
-                    {PRICING_TIERS_DATA.map((tier) => {
-                      const langKey = effectiveLangCode in tier.name ? effectiveLangCode : 'en'
-                      const name = tier.name[langKey] || tier.name.en
-                      const quota = tier.formsQuota[langKey] || tier.formsQuota.en
-                      const period = tier.period[langKey] || tier.period.en
-                      const desc = tier.description[langKey] || tier.description.en
-                      const rate = tier.rateText[langKey] || tier.rateText.en
-                      const feats = tier.features[langKey] || tier.features.en
-                      const displayPrice = pricingCurrency === 'usd' ? tier.displayPriceUsd : tier.displayPriceIdr
-                      const isCurrentPlan = (userProfile?.plan || 'free').toLowerCase() === tier.id.toLowerCase()
-
-                      return (
-                        <div
-                          key={tier.id}
-                          className={`p-6 rounded-3xl flex flex-col justify-between transition-all relative overflow-hidden ${
-                            tier.isPopular
-                              ? 'bg-white border-2 border-blue-600 shadow-xl shadow-blue-500/10'
-                              : 'bg-white border border-slate-200 shadow-xs'
-                          }`}
-                        >
-                          {tier.isPopular && (
-                            <div className="absolute top-0 right-0 bg-blue-600 text-white text-[10px] font-black px-3 py-1 rounded-bl-xl uppercase tracking-wider">
-                              Paling Populer
-                            </div>
-                          )}
-
-                          <div>
-                            <div className="flex items-center justify-between mb-3">
-                              <h4 className="text-lg font-bold text-slate-900">{name}</h4>
-                              <span
-                                className={`text-[11px] font-bold px-2.5 py-0.5 rounded-lg ${
-                                  tier.isPopular ? 'bg-blue-50 text-blue-700 font-extrabold' : 'bg-slate-100 text-slate-700'
-                                }`}
-                              >
-                                {quota}
-                              </span>
-                            </div>
-
-                            <div className="mb-1 flex items-baseline gap-1.5">
-                              <span className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-                                {displayPrice}
-                              </span>
-                              <span className="text-slate-500 text-xs font-medium">
-                                / {period}
-                              </span>
-                            </div>
-
-                            <p className="text-[11px] font-bold text-blue-600 mb-3">
-                              {rate}
-                            </p>
-
-                            <p className="text-xs text-slate-600 mb-4 leading-relaxed">
-                              {desc}
-                            </p>
-
-                            <div className="border-t border-slate-100 pt-4">
-                              <ul className="space-y-2.5 text-xs text-slate-700">
-                                {feats.slice(0, 5).map((f, idx) => (
-                                  <li key={idx} className="flex items-start gap-2 leading-snug">
-                                    <Check className="w-3.5 h-3.5 text-blue-600 shrink-0 mt-0.5" />
-                                    <span className="text-[11px]">{f}</span>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          </div>
-
-                          <div className="mt-6 pt-4 border-t border-slate-100">
-                            {isCurrentPlan ? (
-                              <Button
-                                disabled
-                                variant="outline"
-                                size="sm"
-                                className="w-full text-xs font-bold bg-slate-100 text-slate-500 border-slate-200 cursor-not-allowed"
-                              >
-                                ✓ Paket Sedang Aktif
-                              </Button>
-                            ) : tier.id === 'free' ? (
-                              <Button
-                                disabled
-                                variant="outline"
-                                size="sm"
-                                className="w-full text-xs font-bold"
-                              >
-                                Kuota Dasar Gratis
-                              </Button>
-                            ) : (
-                              <Button
-                                disabled={isUpgrading}
-                                onClick={async () => {
-                                  setIsUpgrading(true)
-                                  try {
-                                    const uid = userProfile?.uid || 'guest_user'
-                                    // 1. First attempt direct Mayar Checkout
-                                    const checkoutRes = await fetch('/api/payment/checkout', {
-                                      method: 'POST',
-                                      headers: { 'Content-Type': 'application/json' },
-                                      body: JSON.stringify({
-                                        uid,
-                                        planId: tier.id,
-                                        email: userProfile?.email || '',
-                                        name: userProfile?.displayName || 'Telmy User',
-                                        redirectUrl: window.location.href
-                                      })
-                                    })
-                                    const checkoutData = await checkoutRes.json()
-
-                                    if (checkoutData.success && checkoutData.checkoutUrl) {
-                                      window.open(checkoutData.checkoutUrl, '_blank')
-                                    }
-
-                                    // 2. Also run instant fulfillment simulation to guarantee immediate credit addition
-                                    const simRes = await fetch('/api/payment/simulate-purchase', {
-                                      method: 'POST',
-                                      headers: { 'Content-Type': 'application/json' },
-                                      body: JSON.stringify({ uid, planId: tier.id })
-                                    })
-                                    const simData = await simRes.json()
-
-                                    if (simData.success) {
-                                      if (refreshQuota) refreshQuota()
-                                      fetchInvoices()
-                                      setPricingModalOpen(false)
-                                      alert(`🎉 Selamat! Pembayaran ${tier.name.id || tier.name.en} berhasil. Kuota form Anda kini bertambah!`)
-                                    } else {
-                                      alert(simData.error || 'Gagal memproses aktivasi paket.')
-                                    }
-                                  } catch (err: any) {
-                                    alert('Gagal menghubungi gateway pembayaran: ' + err.message)
-                                  } finally {
-                                    setIsUpgrading(false)
-                                  }
-                                }}
-                                className={`w-full text-xs font-bold ${
-                                  tier.isPopular
-                                    ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-xs'
-                                    : 'bg-slate-900 hover:bg-slate-800 text-white'
-                                }`}
-                              >
-                                {isUpgrading ? 'Memproses...' : `Pilih ${tier.name.id || tier.name.en}`}
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* PRICING MODAL DIALOG (GLOBAL - ACCESSIBLE FROM ANY TAB) */}
+        {pricingModalOpen && (
+          <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl max-w-5xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-6 max-h-[90vh] overflow-y-auto">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
+                <div>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/60 text-blue-700 text-[11px] font-bold uppercase tracking-wider mb-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Mayar Gateway & Cloud Quota Integration</span>
+                  </div>
+                  <h3 className="text-xl font-black text-slate-900">Pilih Paket Kuota Telmy</h3>
+                  <p className="text-xs text-slate-500">Mendukung aktivasi instan & pembayaran resmi Mayar.id (QRIS, VA, E-Wallet)</p>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  {/* Currency Toggle */}
+                  <div className="inline-flex items-center p-1 rounded-xl bg-slate-100 border border-slate-200 text-xs">
+                    <button
+                      type="button"
+                      onClick={() => setPricingCurrency('idr')}
+                      className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
+                        pricingCurrency === 'idr' ? 'bg-white text-blue-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      IDR (Rp)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPricingCurrency('usd')}
+                      className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
+                        pricingCurrency === 'usd' ? 'bg-white text-blue-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      USD ($)
+                    </button>
+                  </div>
+
+                  <button
+                    onClick={() => setPricingModalOpen(false)}
+                    className="text-slate-400 hover:text-slate-600 text-lg font-bold p-1 cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+
+              {/* 3 Tier Grid matching /pricing */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+                {PRICING_TIERS_DATA.map((tier) => {
+                  const langKey = effectiveLangCode in tier.name ? effectiveLangCode : 'en'
+                  const name = tier.name[langKey] || tier.name.en
+                  const quota = tier.formsQuota[langKey] || tier.formsQuota.en
+                  const period = tier.period[langKey] || tier.period.en
+                  const desc = tier.description[langKey] || tier.description.en
+                  const rate = tier.rateText[langKey] || tier.rateText.en
+                  const feats = tier.features[langKey] || tier.features.en
+                  const displayPrice = pricingCurrency === 'usd' ? tier.displayPriceUsd : tier.displayPriceIdr
+                  const isCurrentPlan = (userProfile?.plan || 'free').toLowerCase() === tier.id.toLowerCase()
+
+                  return (
+                    <div
+                      key={tier.id}
+                      className={`p-6 rounded-3xl flex flex-col justify-between transition-all relative overflow-hidden ${
+                        tier.isPopular
+                          ? 'bg-white border-2 border-blue-600 shadow-xl shadow-blue-500/10'
+                          : 'bg-white border border-slate-200 shadow-xs'
+                      }`}
+                    >
+                      {tier.isPopular && (
+                        <div className="absolute top-0 right-0 bg-blue-600 text-white text-[10px] font-black px-3 py-1 rounded-bl-xl uppercase tracking-wider">
+                          Paling Populer
+                        </div>
+                      )}
+
+                      <div>
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="text-lg font-bold text-slate-900">{name}</h4>
+                          <span
+                            className={`text-[11px] font-bold px-2.5 py-0.5 rounded-lg ${
+                              tier.isPopular ? 'bg-blue-50 text-blue-700 font-extrabold' : 'bg-slate-100 text-slate-700'
+                            }`}
+                          >
+                            {quota}
+                          </span>
+                        </div>
+
+                        <div className="mb-1 flex items-baseline gap-1.5">
+                          <span className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                            {displayPrice}
+                          </span>
+                          <span className="text-slate-500 text-xs font-medium">
+                            / {period}
+                          </span>
+                        </div>
+
+                        <p className="text-[11px] font-bold text-blue-600 mb-3">
+                          {rate}
+                        </p>
+
+                        <p className="text-xs text-slate-600 mb-4 leading-relaxed">
+                          {desc}
+                        </p>
+
+                        <div className="border-t border-slate-100 pt-4">
+                          <ul className="space-y-2.5 text-xs text-slate-700">
+                            {feats.slice(0, 5).map((f, idx) => (
+                              <li key={idx} className="flex items-start gap-2 leading-snug">
+                                <Check className="w-3.5 h-3.5 text-blue-600 shrink-0 mt-0.5" />
+                                <span className="text-[11px]">{f}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+
+                      <div className="mt-6 pt-4 border-t border-slate-100">
+                        {isCurrentPlan ? (
+                          <Button
+                            disabled
+                            variant="outline"
+                            size="sm"
+                            className="w-full text-xs font-bold bg-slate-100 text-slate-500 border-slate-200 cursor-not-allowed"
+                          >
+                            ✓ Paket Sedang Aktif
+                          </Button>
+                        ) : tier.id === 'free' ? (
+                          <Button
+                            disabled
+                            variant="outline"
+                            size="sm"
+                            className="w-full text-xs font-bold"
+                          >
+                            Kuota Dasar Gratis
+                          </Button>
+                        ) : (
+                          <Button
+                            disabled={isUpgrading}
+                            onClick={async () => {
+                              setIsUpgrading(true)
+                              try {
+                                const uid = userProfile?.uid || 'guest_user'
+                                // 1. First attempt direct Mayar Checkout
+                                const checkoutRes = await fetch('/api/payment/checkout', {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({
+                                    uid,
+                                    planId: tier.id,
+                                    email: userProfile?.email || '',
+                                    name: userProfile?.displayName || 'Telmy User',
+                                    redirectUrl: window.location.href
+                                  })
+                                })
+                                const checkoutData = await checkoutRes.json()
+
+                                if (checkoutData.success && checkoutData.checkoutUrl) {
+                                  window.open(checkoutData.checkoutUrl, '_blank')
+                                }
+
+                                // 2. Also run instant fulfillment simulation to guarantee immediate credit addition
+                                const simRes = await fetch('/api/payment/simulate-purchase', {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ uid, planId: tier.id })
+                                })
+                                const simData = await simRes.json()
+
+                                if (simData.success) {
+                                  if (refreshQuota) refreshQuota()
+                                  fetchInvoices()
+                                  setPricingModalOpen(false)
+                                  alert(`🎉 Selamat! Pembayaran ${tier.name.id || tier.name.en} berhasil. Kuota form Anda kini bertambah!`)
+                                } else {
+                                  alert(simData.error || 'Gagal memproses aktivasi paket.')
+                                }
+                              } catch (err: any) {
+                                alert('Gagal menghubungi gateway pembayaran: ' + err.message)
+                              } finally {
+                                setIsUpgrading(false)
+                              }
+                            }}
+                            className={`w-full text-xs font-bold ${
+                              tier.isPopular
+                                ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-xs'
+                                : 'bg-slate-900 hover:bg-slate-800 text-white'
+                            }`}
+                          >
+                            {isUpgrading ? 'Memproses...' : `Pilih ${tier.name.id || tier.name.en}`}
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
           </div>
         )}
 

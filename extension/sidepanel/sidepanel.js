@@ -237,6 +237,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const vaultModalIcon = document.getElementById('vault-modal-icon');
   const vaultLockoutBanner = document.getElementById('vault-lockout-banner');
   const vaultLockoutText = document.getElementById('vault-lockout-text');
+  const btnVaultResetVault = document.getElementById('btn-vault-reset-vault');
   const vaultModeTabs = document.getElementById('vault-mode-tabs');
   const tabVaultPassword = document.getElementById('tab-vault-password');
   const tabVaultSeed = document.getElementById('tab-vault-seed');
@@ -2283,6 +2284,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (message.type === 'GMT_FIELD_FOCUSED') {
       const idx = message.index;
       selectFieldByIndex(idx, false);
+      sendResponse({ success: true });
+      return false;
+    }
+
+    // Context Menu Triggers
+    if (message.type === 'CONTEXT_MENU_TRANSLATE_FORM') {
+      if (tabBtns && tabBtns[0]) tabBtns[0].click(); // Switch to Chat/Assistant tab
+      handleTogglePageTranslation(false);
+      sendResponse({ success: true });
+      return false;
+    }
+
+    if (message.type === 'CONTEXT_MENU_ANALYZE_FORM') {
+      const fieldsTabBtn = document.querySelector('[data-tab="fields"]');
+      if (fieldsTabBtn) fieldsTabBtn.click(); // Switch to Forms/Fields tab
+      if (currentTabId) {
+        activateScannerOnTab(currentTabId);
+      }
+      sendResponse({ success: true });
+      return false;
+    }
+
+    if (message.type === 'CONTEXT_MENU_AUTOFILL') {
+      handleTriggerAutoFill();
       sendResponse({ success: true });
       return false;
     }
@@ -5269,6 +5294,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (btnGenerateNewSeed) btnGenerateNewSeed.addEventListener('click', generateAndRenderSeedChips);
     if (btnCopySeedWords) btnCopySeedWords.addEventListener('click', copySeedWordsToClipboard);
     if (btnDownloadSeedTxt) btnDownloadSeedTxt.addEventListener('click', downloadSeedTxtFile);
+
+    if (btnVaultResetVault) {
+      btnVaultResetVault.addEventListener('click', async () => {
+        if (!confirm('Are you sure you want to reset your vault? All local encrypted data will be wiped so you can create a fresh vault.')) return;
+        if (window.TelmyCryptoVault) {
+          window.TelmyCryptoVault.resetFailedAttempts();
+          window.TelmyCryptoVault.clearSessionVaultSecret();
+        }
+        await chrome.storage.local.remove(['telmy_vault_session_cache', 'telmy_autofill', 'telmy_vault_envelope']);
+        await new Promise((resolve) => {
+          chrome.runtime.sendMessage({ type: 'VAULT_WIPE' }, resolve);
+        });
+        currentDecryptedVault = null;
+        currentVaultPin = null;
+        isVaultUnlocked = false;
+        closeVaultPinModal();
+        updateVaultHeaderUI(false);
+        renderVaultFieldsList();
+        showToast('Vault has been reset. You can create a new Master Password.');
+      });
+    }
 
     if (btnSubmitVaultPin) {
       btnSubmitVaultPin.addEventListener('click', handleVaultPinSubmit);

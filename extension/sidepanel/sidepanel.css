@@ -4046,6 +4046,25 @@ body {
   transition: all 0.15s ease;
 }
 
+.vault-drop-trust-note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 10px;
+  color: #059669;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  padding: 5px 10px;
+  border-radius: 8px;
+  text-align: left;
+  line-height: 1.35;
+}
+
+.vault-drop-trust-note svg {
+  flex-shrink: 0;
+}
+
 .btn-browse-vault-doc:hover {
   border-color: #0B63F0;
   background: #F0F6FF;
@@ -4291,17 +4310,49 @@ body {
 
 .vault-lockout-alert {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   background: #fef2f2;
   border: 1px solid #fecaca;
   color: #b91c1c;
-  padding: 8px 12px;
+  padding: 10px 12px;
   border-radius: 10px;
   font-size: 11.5px;
   font-weight: 600;
   margin-bottom: 12px;
   text-align: left;
+}
+
+.lockout-content {
+  flex: 1;
+}
+
+.lockout-reset-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(185, 28, 28, 0.25);
+  font-size: 10.5px;
+  font-weight: 500;
+}
+
+.btn-lockout-reset {
+  background: #dc2626;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 10.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.btn-lockout-reset:hover {
+  background: #b91c1c;
 }
 
 .vault-mode-tabs {

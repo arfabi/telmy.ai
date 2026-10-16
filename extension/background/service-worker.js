@@ -61,20 +61,30 @@ async function sanitizeSettings() {
 // Run immediately on service worker boot
 sanitizeSettings();
 
-// Setup Right-Click Context Menu (Plan v6 & v14)
+// Setup Right-Click Context Menu
 function setupContextMenus() {
   if (!chrome.contextMenus) return;
   try {
     chrome.contextMenus.removeAll(() => {
       chrome.contextMenus.create({
-        id: 'telmy_explain_field',
-        title: 'Explain This with Telmy AI 💡',
-        contexts: ['selection', 'editable']
+        id: 'telmy_open_assistant',
+        title: 'Open Telmy AI Assistant 🤖',
+        contexts: ['all']
       });
       chrome.contextMenus.create({
-        id: 'telmy_analyze_page',
-        title: 'Analyze This Page with Telmy AI 🤖',
-        contexts: ['page', 'frame']
+        id: 'telmy_translate_form',
+        title: 'Translate This Form 🌐',
+        contexts: ['all']
+      });
+      chrome.contextMenus.create({
+        id: 'telmy_analyze_form',
+        title: 'Analyze This Form 🔍',
+        contexts: ['all']
+      });
+      chrome.contextMenus.create({
+        id: 'telmy_autofill_form',
+        title: '1 Click Auto Fill ⚡',
+        contexts: ['all']
       });
     });
   } catch (e) {}
@@ -162,66 +172,40 @@ if (chrome.action && chrome.action.onClicked) {
   });
 }
 
-// Handle Context Menu Clicks: Open Side Panel and Analyze Tab (Method 1)
+// Handle Context Menu Clicks: Open Side Panel, Translate This Form, Analyze This Form, 1 Click Auto Fill
 if (chrome.contextMenus && chrome.contextMenus.onClicked) {
   chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     if (!tab || !tab.id) return;
-    if (info.menuItemId === 'telmy_analyze_page') {
-      await openSidePanelOrSidebar(tab.id);
 
-      // Enforce Login Gate: If user has not signed in, do not trigger scanner!
-      const stored = await chrome.storage.local.get(['user']);
-      if (!stored.user || (!stored.user.uid && !stored.user.email)) {
-        console.log('[Telmy SW] User not signed in. Opening side panel in login-required mode.');
-        return;
-      }
+    // Always ensure the sidepanel is open so user sees feedback
+    await openSidePanelOrSidebar(tab.id);
 
-      // Trigger instant scanner on the active tab (no refresh needed)
-      chrome.tabs.sendMessage(tab.id, { type: 'ACTIVATE_SCANNER' }, () => {
-        if (chrome.runtime.lastError) {
-          // If content script was not loaded yet, inject into main frame dynamically
-          chrome.scripting.executeScript({
-            target: { tabId: tab.id },
-            files: ['content/scanner.js', 'content/highlighter.js', 'content/translator.js', 'content/a11y-manager.js', 'content/content-main.js']
-          }).then(() => {
-            setTimeout(() => {
-              chrome.tabs.sendMessage(tab.id, { type: 'ACTIVATE_SCANNER' }, () => {
-                if (chrome.runtime.lastError) { /* safe ignore */ }
-              });
-            }, 150);
-          }).catch(() => {});
-        }
-      });
+    // 0. Open Telmy AI Assistant
+    if (info.menuItemId === 'telmy_open_assistant') {
       return;
     }
 
-    if (info.menuItemId === 'telmy_explain_field') {
-      const selectedText = (info.selectionText || '').trim();
-      chrome.tabs.sendMessage(tab.id, {
-        type: 'TRIGGER_EXPLAIN_CONTEXT_MENU',
-        payload: {
-          selectionText: selectedText,
-          editable: Boolean(info.editable)
-        }
-      }, () => {
-        if (chrome.runtime.lastError) {
-          // If content script was not ready, inject scripts first
-          chrome.scripting.executeScript({
-            target: { tabId: tab.id },
-            files: ['content/scanner.js', 'content/highlighter.js', 'content/translator.js', 'content/a11y-manager.js', 'content/content-main.js']
-          }).then(() => {
-            setTimeout(() => {
-              chrome.tabs.sendMessage(tab.id, {
-                type: 'TRIGGER_EXPLAIN_CONTEXT_MENU',
-                payload: {
-                  selectionText: selectedText,
-                  editable: Boolean(info.editable)
-                }
-              }).catch(() => {});
-            }, 150);
-          }).catch(() => {});
-        }
-      });
+    // 1. Translate This Form
+    if (info.menuItemId === 'telmy_translate_form') {
+      setTimeout(() => {
+        chrome.runtime.sendMessage({ type: 'CONTEXT_MENU_TRANSLATE_FORM' }).catch(() => {});
+      }, 300);
+      return;
+    }
+
+    // 2. Analyze This Form
+    if (info.menuItemId === 'telmy_analyze_form') {
+      setTimeout(() => {
+        chrome.runtime.sendMessage({ type: 'CONTEXT_MENU_ANALYZE_FORM' }).catch(() => {});
+      }, 300);
+      return;
+    }
+
+    // 3. 1 Click Auto Fill
+    if (info.menuItemId === 'telmy_autofill_form') {
+      setTimeout(() => {
+        chrome.runtime.sendMessage({ type: 'CONTEXT_MENU_AUTOFILL' }).catch(() => {});
+      }, 300);
       return;
     }
   });

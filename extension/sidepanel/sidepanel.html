@@ -480,13 +480,17 @@
             <input type="file" id="vault-doc-file-input" accept=".pdf,image/png,image/jpeg,image/jpg" style="display: none;">
             <div class="vault-drop-content" id="vault-drop-content">
               <span class="vault-drop-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
               </span>
               <div class="vault-drop-text">
-                <strong id="lbl-vault-upload-title">+ Ingest ID, Passport, or Academic Diploma</strong>
-                <small id="lbl-vault-upload-sub">PDF, PNG, JPG &bull; Extracted by Gemini Multimodal</small>
+                <strong id="lbl-vault-upload-title">Add Profile Data via ID or Document</strong>
+                <small id="lbl-vault-upload-sub">Simply upload your ID card, Passport, or Academic Certificate (PDF, PNG, JPG)</small>
               </div>
               <button type="button" class="btn-browse-vault-doc" id="btn-browse-vault-doc">Upload Document</button>
+              <div class="vault-drop-trust-note">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <span>Files are never stored on our servers. All extracted data belongs 100% to you and is encrypted locally.</span>
+              </div>
             </div>
             <!-- Ingestion Loading State -->
             <div id="vault-doc-analyzing" class="vault-doc-analyzing" style="display: none;">
@@ -884,7 +888,13 @@
       <!-- Lockout Alert Banner -->
       <div id="vault-lockout-banner" class="vault-lockout-alert" style="display: none;">
         <span class="lockout-icon">⏳</span>
-        <span id="vault-lockout-text">Too many failed attempts. Locked for 30s.</span>
+        <div class="lockout-content">
+          <span id="vault-lockout-text">Too many failed attempts. Locked for 30s.</span>
+          <div class="lockout-reset-row">
+            <span>Forgot credentials?</span>
+            <button type="button" id="btn-vault-reset-vault" class="btn-lockout-reset" title="Reset your encrypted vault and start over">Reset Vault & Start Over</button>
+          </div>
+        </div>
       </div>
 
       <!-- Mode Selector Tabs -->
