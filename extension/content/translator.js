@@ -276,16 +276,24 @@
   /**
    * Page-wide scanning beam animation (loop scan up & down)
    */
-  function showScanAnimation() {
+  function showScanAnimation(mode = 'translate', lang = 'en') {
     if (document.getElementById('telmy-page-scan-overlay')) return;
+    const isId = (lang || '').toLowerCase().startsWith('id');
+    let badgeText = 'Telmy.ai Scanning & Translating...';
+    if (mode === 'analyze') {
+      badgeText = isId ? 'Telmy.ai Memindai & Menganalisis Formulir...' : 'Telmy.ai Scanning & Analyzing Form...';
+    } else {
+      badgeText = isId ? 'Telmy.ai Memindai & Menerjemahkan...' : 'Telmy.ai Scanning & Translating...';
+    }
+
     const overlay = document.createElement('div');
     overlay.id = 'telmy-page-scan-overlay';
     overlay.innerHTML = `
       <div class="telmy-page-scan-haze"></div>
       <div class="telmy-page-scan-beam"></div>
       <div class="telmy-page-scan-badge">
-        <span class="telmy-scan-spin">✨</span>
-        <span>Telmy.ai Scanning & Translating...</span>
+        <span class="telmy-scan-spin">🔍</span>
+        <span>${badgeText}</span>
       </div>
     `;
     document.documentElement.appendChild(overlay);
@@ -304,7 +312,7 @@
   // Runtime message listener
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === 'START_PAGE_SCAN_ANIMATION') {
-      showScanAnimation();
+      showScanAnimation(message.mode || 'translate', message.language || 'en');
       sendResponse({ success: true });
       return false;
     }

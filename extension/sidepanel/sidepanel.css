@@ -3758,28 +3758,37 @@ body {
   height: 100%;
 }
 
-/* Dedicated Locked State View */
+/* Dedicated Locked State View (Styled prominently like Form Not Yet Analyzed) */
 .vault-locked-state-view {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  min-height: 380px;
-  height: 100%;
-  padding: 12px 6px;
+  justify-content: flex-start;
+  min-height: 420px;
+  width: 100%;
+  padding: 8px 4px 20px;
 }
 
 .vault-locked-card {
   width: 100%;
-  max-width: 330px;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 18px;
-  padding: 32px 20px 24px;
+  background: var(--sp-card-bg, #ffffff);
+  border: 1px solid var(--sp-border, #e2e8f0);
+  border-radius: var(--sp-radius-md, 16px);
+  padding: 36px 20px 28px;
   text-align: center;
-  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
   display: flex;
   flex-direction: column;
   align-items: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.vault-locked-card:hover {
+  box-shadow: 0 8px 26px rgba(15, 23, 42, 0.08);
+}
+
+.vault-locked-card:hover .vault-locked-icon-bubble {
+  transform: scale(1.06);
 }
 
 .vault-locked-icon-bubble {
@@ -3787,52 +3796,65 @@ body {
   height: 64px;
   border-radius: 20px;
   background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-  border: 1px solid #bfdbfe;
-  display: flex;
+  border: 1.5px solid #bfdbfe;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 16px;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12);
+  margin-bottom: 18px;
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.14);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .vault-locked-title {
   font-size: 16px;
   font-weight: 800;
   color: #0f172a;
-  margin: 0 0 6px 0;
+  margin: 0 0 8px 0;
   letter-spacing: -0.2px;
 }
 
 .vault-locked-desc {
-  font-size: 11.5px;
+  font-size: 12px;
   color: #64748b;
-  line-height: 1.45;
-  margin: 0 0 20px 0;
-  max-width: 270px;
+  line-height: 1.55;
+  margin: 0 0 22px 0;
+  max-width: 320px;
+}
+
+.vault-locked-actions-box {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
 }
 
 .btn-vault-gate-primary {
-  width: 100%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
+  width: 100%;
+  padding: 12px 20px;
   background: linear-gradient(135deg, #2563eb, #1d4ed8);
   color: #ffffff;
   border: none;
   border-radius: 12px;
-  padding: 11px 18px;
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.28);
-  transition: all 0.15s ease;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .btn-vault-gate-primary:hover {
   background: linear-gradient(135deg, #1d4ed8, #1e40af);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.38);
+  transform: translateY(-1.5px);
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.38);
+}
+
+.btn-vault-gate-primary:active {
+  transform: translateY(0);
 }
 
 .vault-locked-privacy-badge {
@@ -3840,13 +3862,13 @@ body {
   align-items: center;
   gap: 6px;
   margin-top: 18px;
-  font-size: 10.5px;
+  padding: 6px 12px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 999px;
+  color: #166534;
+  font-size: 11px;
   font-weight: 600;
-  color: #059669;
-  background: #ecfdf5;
-  border: 1px solid #a7f3d0;
-  padding: 4px 10px;
-  border-radius: 20px;
 }
 
 /* Dedicated Unlocked State View */
@@ -4981,6 +5003,27 @@ body {
   flex-shrink: 0;
 }
 
+.audit-status-tag.empty {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fca5a5;
+}
+
+.audit-status-tag.warning {
+  background: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.audit-checklist-row.clickable {
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.audit-checklist-row.clickable:hover {
+  background: #f8fafc;
+}
+
 .audit-passed-banner {
   display: flex;
   align-items: center;
@@ -4991,6 +5034,10 @@ body {
   border-radius: 10px;
   margin: 12px 10px 10px;
   text-align: left;
+}
+
+.audit-passed-banner.has-issues {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
 }
 
 .audit-passed-banner strong {
@@ -5573,10 +5620,17 @@ body {
 .sp-a11y-hub-view {
   display: flex;
   flex-direction: column;
-  flex: 1;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 500;
   overflow-y: auto;
   background: #f8fafc;
-  padding-bottom: 24px;
+  padding-bottom: 30px;
 }
 
 .a11y-hub-header {

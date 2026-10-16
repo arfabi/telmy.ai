@@ -174,14 +174,59 @@
 
       const queryText = (message.text || message.label || '').toLowerCase().trim();
       if (!targetEl && queryText) {
-        // 1. Search buttons and navbar action links with bilingual synonyms (login <-> masuk, register <-> daftar)
+        // Helper: Extract all semantic label texts connected to an input/button element
+        const getElementSemanticText = (el) => {
+          const texts = [];
+          if (!el) return '';
+          
+          // 1. Value or innerText
+          if (el.innerText) texts.push(el.innerText);
+          if (el.value && typeof el.value === 'string') texts.push(el.value);
+          
+          // 2. Direct attributes
+          ['placeholder', 'aria-label', 'name', 'id', 'title', 'data-placeholder', 'alt'].forEach(attr => {
+            const val = el.getAttribute(attr);
+            if (val) texts.push(val);
+          });
+
+          // 3. Native labels via <label for="..."> or closest label
+          if (el.labels && el.labels.length > 0) {
+            for (const lbl of el.labels) {
+              texts.push(lbl.innerText || lbl.textContent || '');
+            }
+          }
+          const closestLabel = el.closest('label');
+          if (closestLabel) texts.push(closestLabel.innerText || closestLabel.textContent || '');
+
+          // 4. ARIA labeledby
+          const ariaLabeledBy = el.getAttribute('aria-labelledby');
+          if (ariaLabeledBy) {
+            ariaLabeledBy.split(/\s+/).forEach(id => {
+              const labelNode = document.getElementById(id);
+              if (labelNode) texts.push(labelNode.innerText || labelNode.textContent || '');
+            });
+          }
+
+          // 5. Parent container's leading text / header (for React / Angular form groups)
+          const parentGroup = el.closest('.form-group, .form-row, .form-item, [class*="field"], [class*="input"], .Qr7Oae, .geS5n, tr');
+          if (parentGroup) {
+            const labelOrHeader = parentGroup.querySelector('label, [class*="label"], [class*="title"], [class*="header"], th, strong');
+            if (labelOrHeader && labelOrHeader !== el) {
+              texts.push(labelOrHeader.innerText || labelOrHeader.textContent || '');
+            }
+          }
+
+          return texts.join(' ').toLowerCase().replace(/\s+/g, ' ').trim();
+        };
+
+        // 1. Search buttons and navbar action links with bilingual synonyms
         const synonyms = [queryText];
         if (/login|sign in|signin|masuk/i.test(queryText)) synonyms.push('masuk', 'login', 'sign in', 'log in');
         if (/register|sign up|signup|daftar/i.test(queryText)) synonyms.push('daftar', 'register', 'sign up');
-        if (/submit|send|kirim/i.test(queryText)) synonyms.push('kirim', 'submit', 'lanjut');
+        if (/submit|send|kirim/i.test(queryText)) synonyms.push('kirim', 'submit', 'lanjut', 'simpan', 'save');
 
-        const candidates = document.querySelectorAll('button, a.btn, [role="button"], input[type="submit"], input[type="button"], .btn, header a, nav a, .navbar a, a[class*="btn"], a[class*="button"]');
-        for (const el of candidates) {
+        const btnCandidates = document.querySelectorAll('button, a.btn, [role="button"], input[type="submit"], input[type="button"], .btn, header a, nav a, .navbar a, a[class*="btn"], a[class*="button"]');
+        for (const el of btnCandidates) {
           const btnText = (el.innerText || el.value || el.getAttribute('aria-label') || '').toLowerCase().trim();
           if (btnText && synonyms.some(syn => btnText === syn || btnText.includes(syn) || syn.includes(btnText))) {
             targetEl = el;
@@ -197,15 +242,45 @@
           targetEl = document.querySelector('a[href*="register"], a[href*="daftar"], a[href*="signup"], button[id*="register"], button[id*="daftar"]');
         }
 
-        // 2. Search scanned form fields (photo upload, text inputs, etc.)
-        if (!targetEl && Array.isArray(scannedItems) && scannedItems.length > 0) {
-          for (const item of scannedItems) {
-            const meta = item.metadata || {};
-            const metaStr = `${meta.label || ''} ${meta.name || ''} ${meta.placeholder || ''} ${meta.type || ''}`.toLowerCase();
-            if (metaStr.includes(queryText) || (meta.label && queryText.includes(meta.label.toLowerCase()))) {
-              targetEl = meta.element;
-              break;
+        // 2. Comprehensive LIVE Form Inputs Search (input, select, textarea, contenteditable, role="textbox")
+        if (!targetEl) {
+          const liveInputs = Array.from(document.querySelectorAll('input:not([type="hidden"]), select, textarea, [role="textbox"], [role="combobox"], [contenteditable="true"]'));
+          let bestInput = null;
+          let bestInputScore = 0;
+          const queryWords = queryText.split(/\s+/).filter(w => w.length > 1);
+
+          for (const inp of liveInputs) {
+            // Skip hidden elements
+            if (inp.offsetParent === null && inp.offsetWidth === 0 && inp.offsetHeight === 0) continue;
+            const style = window.getComputedStyle(inp);
+            if (style.display === 'none' || style.visibility === 'hidden') continue;
+
+            const semanticStr = getElementSemanticText(inp);
+            if (!semanticStr) continue;
+
+            let score = 0;
+            if (semanticStr.includes(queryText)) {
+              score = 150; // Exact substring match
+            } else if (queryText.includes(semanticStr)) {
+              score = 120;
+            } else if (queryWords.length > 0) {
+              let matchCount = 0;
+              for (const w of queryWords) {
+                if (semanticStr.includes(w)) matchCount++;
+              }
+              if (matchCount > 0) {
+                score = (matchCount / queryWords.length) * 100;
+              }
             }
+
+            if (score > bestInputScore) {
+              bestInputScore = score;
+              bestInput = inp;
+            }
+          }
+
+          if (bestInput && bestInputScore >= 50) {
+            targetEl = bestInput;
           }
         }
 
@@ -214,13 +289,13 @@
           targetEl = document.querySelector('input[type="file"], [class*="upload"], [class*="dropzone"], [class*="photo"], [class*="picture"], [id*="upload"], [id*="photo"], [id*="picture"], [id*="file"]');
         }
 
-        // 4. Search all visible form inputs by label / placeholder
-        if (!targetEl) {
-          const formInputs = document.querySelectorAll('input:not([type="hidden"]), select, textarea');
-          for (const inp of formInputs) {
-            const labelStr = `${inp.labels?.[0]?.innerText || ''} ${inp.getAttribute('placeholder') || ''} ${inp.name || ''} ${inp.id || ''}`.toLowerCase();
-            if (labelStr && (labelStr.includes(queryText) || queryText.includes(labelStr.trim()))) {
-              targetEl = inp;
+        // 4. Fallback from scannedItems cache (if still connected to DOM)
+        if (!targetEl && Array.isArray(scannedItems) && scannedItems.length > 0) {
+          for (const item of scannedItems) {
+            const meta = item.metadata || {};
+            const metaStr = `${meta.label || ''} ${meta.name || ''} ${meta.placeholder || ''} ${meta.type || ''}`.toLowerCase();
+            if ((metaStr.includes(queryText) || (meta.label && queryText.includes(meta.label.toLowerCase()))) && meta.element && meta.element.isConnected) {
+              targetEl = meta.element;
               break;
             }
           }
@@ -231,7 +306,7 @@
           targetEl = document.querySelector('button[type="submit"], input[type="submit"], button.btn-primary, button.btn-submit');
         }
 
-        // 5b. Plan V7 Extension: Search Headings, Articles, News Cards, Paragraphs ("Show Me / Tunjukkan")
+        // 6. Search Headings, Articles, News Cards, Paragraphs ("Show Me / Tunjukkan")
         if (!targetEl && queryText.length > 2) {
           const cleanQuery = queryText.replace(/^[“"'\s]+|[”"'\s?!.,]+$/g, '').toLowerCase().trim();
           const contentCandidates = Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6, article, .card, [class*="post"], [class*="news"], [class*="berita"], [class*="article"], [class*="item"], p, li, blockquote, section, div[class*="content"]'));
@@ -249,10 +324,8 @@
 
             let score = 0;
             if (text.includes(cleanQuery)) {
-              // Exact phrase match
               score = /^h[1-6]$/i.test(el.tagName) ? 140 : (el.tagName.toLowerCase() === 'article' || el.classList.contains('card') ? 110 : 90);
             } else if (words.length > 1) {
-              // Multi-word match
               let matched = 0;
               for (const w of words) {
                 if (text.includes(w)) matched++;
@@ -264,7 +337,6 @@
 
             if (score > bestScore) {
               bestScore = score;
-              // If container is large, try focusing the specific heading or paragraph inside it that contains the phrase
               let specificEl = el;
               if (el.offsetHeight > 350 || el.tagName.toLowerCase() === 'article' || el.classList.contains('card')) {
                 const innerMatch = el.querySelector('h1, h2, h3, h4, h5, h6, [class*="title"], p');

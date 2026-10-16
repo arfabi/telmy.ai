@@ -90,7 +90,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Synchronize page-wide scanning beam animation (like Translator)
     if (currentTabId) {
       if (state === 'analyzing') {
-        safeSendTabMessage(currentTabId, { type: 'START_PAGE_SCAN_ANIMATION' });
+        safeSendTabMessage(currentTabId, { 
+          type: 'START_PAGE_SCAN_ANIMATION', 
+          mode: 'analyze', 
+          language: currentLanguage 
+        });
       } else {
         safeSendTabMessage(currentTabId, { type: 'STOP_PAGE_SCAN_ANIMATION' });
       }
@@ -123,18 +127,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
       if (btnUploadLocal) {
         btnUploadLocal.style.display = 'inline-flex';
-        btnUploadLocal.onclick = () => openPdfMode();
+        btnUploadLocal.onclick = () => openPdfMode(true);
       }
       if (elUploadLocalText) {
-        elUploadLocalText.textContent = currentLanguage === 'en' ? 'Upload Local File Form' : 'Upload File Formulir Lokal';
+        elUploadLocalText.textContent = currentLanguage === 'en' ? 'Upload Local Form (PDF)' : 'Unggah Formulir PDF Lokal';
       }
     } else if (reason === 'no_fields') {
       if (btnUploadLocal) {
         btnUploadLocal.style.display = 'inline-flex';
-        btnUploadLocal.onclick = () => openPdfMode();
+        btnUploadLocal.onclick = () => openPdfMode(true);
       }
       if (elUploadLocalText) {
-        elUploadLocalText.textContent = currentLanguage === 'en' ? 'Upload Local File Form' : 'Upload File Formulir Lokal';
+        elUploadLocalText.textContent = currentLanguage === 'en' ? 'Upload Local Form (PDF)' : 'Unggah Formulir PDF Lokal';
       }
       if (extraData && extraData.actionButton) {
         if (elIcon) elIcon.innerHTML = `<div class="empty-icon-bubble"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>`;
@@ -2318,7 +2322,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     btn.addEventListener('click', () => {
       const targetTab = btn.getAttribute('data-tab');
       tabBtns.forEach((b) => b.classList.toggle('active', b === btn));
-      panes.forEach((p) => p.classList.toggle('active', p.id === `pane-${targetTab}`));
+      panes.forEach((p) => {
+        p.style.display = '';
+        p.classList.toggle('active', p.id === `pane-${targetTab}`);
+      });
+      const chatFooter = document.querySelector('.sp-chat-footer');
+      if (chatFooter) {
+        chatFooter.style.display = targetTab === 'chat' ? 'flex' : 'none';
+      }
     });
   });
 
@@ -2451,12 +2462,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       return !isWelcome;
     });
 
-    if (chatHistory.length === 0) {
-      if (currentBotMode === 'voice') {
-        // Voicebot mode has its own large interactive avatar stage; hide welcome card to prevent overlap
-        return;
-      }
+    // In Voicebot mode, always hide the welcome onboarding hero card to prevent layout clutter and overlapping
+    if (currentBotMode === 'voice') {
+      const existingHero = chatStream.querySelector('.welcome-hero-card');
+      if (existingHero) existingHero.remove();
+      chatHistory.forEach(appendChatMessageDOM);
+      return;
+    }
 
+    if (chatHistory.length === 0) {
       const robotIconSrc = (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL)
         ? chrome.runtime.getURL('assets/telmy_icon.png')
         : '../assets/telmy_icon.png';
@@ -2495,7 +2509,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             <span class="chip-icon">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg>
             </span>
-            <span class="chip-label">4. Upload Local PDF</span>
+            <span class="chip-label">4. Upload Local Form (PDF)</span>
           </button>
 
           <!-- Row 3: Col 1 & 2 -->
@@ -3050,6 +3064,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function appendChatMessageDOM(msg) {
+    // Remove onboarding welcome hero card as soon as an active message is rendered
+    const existingHero = chatStream.querySelector('.welcome-hero-card');
+    if (existingHero) {
+      existingHero.remove();
+    }
+
     const item = document.createElement('div');
     item.className = `chat-msg ${msg.role}`;
 
@@ -3114,7 +3134,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     } else if (act.type === 'TRANSLATE_PAGE' || act.type === 'REVERT_PAGE') {
       handleTogglePageTranslation();
     } else if (act.type === 'OPEN_PDF') {
-      openPdfMode();
+      openPdfMode(true);
     } else if (act.type === 'TAB_FIELDS') {
       document.getElementById('tab-btn-fields').click();
     } else if (act.type === 'TAB_SUMMARY') {
@@ -3180,9 +3200,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  function openPdfMode() {
+  function openPdfMode(triggerFilePicker = false) {
     tabBtns.forEach((b) => b.classList.remove('active'));
-    panes.forEach((p) => p.classList.toggle('active', p.id === 'pane-pdf'));
+    panes.forEach((p) => {
+      p.style.display = (p.id === 'pane-pdf') ? 'flex' : 'none';
+      p.classList.toggle('active', p.id === 'pane-pdf');
+    });
+
+    const chatFooter = document.querySelector('.sp-chat-footer');
+    if (chatFooter) chatFooter.style.display = 'none';
+
+    // If PDF container was hidden by source mode switch, ensure it's visible
+    if (pdfModeContainer) pdfModeContainer.style.display = 'flex';
+
+    if (triggerFilePicker) {
+      const fileInput = document.getElementById('sp-pdf-file-input');
+      if (fileInput) {
+        setTimeout(() => fileInput.click(), 50);
+      }
+    }
   }
 
   async function handleTrigger1ClickAutoFill() {
@@ -3642,10 +3678,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         : `Mode: ${t('mode_voice_compact')}`;
     }
 
-    // Refresh chat stream / welcome hero depending on mode (Priority 5.3)
-    if (!chatHistory || chatHistory.length === 0) {
-      renderWelcome();
-    }
+    // Always cleanly synchronize chat stream & hero state with the selected mode
+    renderWelcome();
   }
 
   function setupModeToggleCards() {
@@ -4327,41 +4361,155 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // Pre-Submission Audit button listener in completion state
+  // Pre-Submission Audit button listener in completion state (Real DOM Verification)
   if (btnTriggerPreAudit) {
-    btnTriggerPreAudit.addEventListener('click', () => {
+    btnTriggerPreAudit.addEventListener('click', async () => {
       if (!detectedFields || detectedFields.length === 0) return;
-      if (boxAuditChecklistResults) {
-        boxAuditChecklistResults.style.display = 'block';
+      if (!currentTabId) {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (tab) currentTabId = tab.id;
       }
-      if (auditChecklistItems) {
-        auditChecklistItems.innerHTML = detectedFields.map((f, idx) => {
-          const meta = f.metadata || {};
-          const isPwd = Boolean(meta.isPassword || f.isPassword || meta.type === 'password');
-          const label = meta.label || meta.name || `${t('field_label_prefix') || 'Field'} #${idx + 1}`;
-          if (isPwd) {
+      if (!currentTabId) {
+        alert('No active form tab found.');
+        return;
+      }
+
+      btnTriggerPreAudit.disabled = true;
+      btnTriggerPreAudit.textContent = '⏳ Memeriksa isian formulir...';
+
+      chrome.tabs.sendMessage(currentTabId, { type: 'AUDIT_FORM_VALUES' }, (res) => {
+        btnTriggerPreAudit.disabled = false;
+        btnTriggerPreAudit.innerHTML = '<span>🔍 Pre-Submission Form Audit</span>';
+
+        if (boxAuditChecklistResults) {
+          boxAuditChecklistResults.style.display = 'block';
+        }
+
+        const domFields = (res && res.success && Array.isArray(res.fields)) ? res.fields : [];
+        let emptyCount = 0;
+        let warningCount = 0;
+
+        if (auditChecklistItems) {
+          auditChecklistItems.innerHTML = detectedFields.map((f, idx) => {
+            const meta = f.metadata || {};
+            const isPwd = Boolean(meta.isPassword || f.isPassword || meta.type === 'password');
+            const label = meta.label || meta.name || `${t('field_label_prefix') || 'Field'} #${idx + 1}`;
+            
+            // Match with live scanned value from DOM
+            const domField = domFields.find(df => df.index === idx) || {};
+            const val = (domField.value !== undefined ? domField.value : (meta.element ? meta.element.value : '') || '').trim();
+            const isRequired = Boolean(domField.required || meta.required || f.required || (f.dictEntry && f.dictEntry.required));
+
+            if (isPwd) {
+              return `
+                <div class="audit-checklist-row clickable" onclick="window.selectFieldByIndex && window.selectFieldByIndex(${idx})">
+                  <div class="audit-field-left">
+                    <span class="audit-check-icon" style="color: #10b981;">🔒</span>
+                    <span class="audit-field-name">${escapeHTML(label)}</span>
+                  </div>
+                  <span class="audit-status-tag" style="background: rgba(16, 185, 129, 0.12); color: #047857; border: 1px solid rgba(16, 185, 129, 0.28);">Privasi Terlindungi</span>
+                </div>
+              `;
+            }
+
+            // 1. Critical Empty Required Field
+            if (!val && isRequired) {
+              emptyCount++;
+              return `
+                <div class="audit-checklist-row clickable" onclick="window.selectFieldByIndex && window.selectFieldByIndex(${idx})" style="background: #fff1f2;">
+                  <div class="audit-field-left">
+                    <span class="audit-check-icon" style="color: #e11d48;">⚠️</span>
+                    <span class="audit-field-name" style="color: #9f1239; font-weight: 700;">${escapeHTML(label)}</span>
+                  </div>
+                  <span class="audit-status-tag empty">Belum Diisi (Wajib)</span>
+                </div>
+              `;
+            }
+
+            // 2. Empty Optional Field
+            if (!val && !isRequired) {
+              return `
+                <div class="audit-checklist-row clickable" onclick="window.selectFieldByIndex && window.selectFieldByIndex(${idx})">
+                  <div class="audit-field-left">
+                    <span class="audit-check-icon" style="color: #94a3b8;">○</span>
+                    <span class="audit-field-name" style="color: #64748b;">${escapeHTML(label)}</span>
+                  </div>
+                  <span class="audit-status-tag" style="background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0;">Opsional Kosong</span>
+                </div>
+              `;
+            }
+
+            // 3. Formatting checks (Academic titles or lowercase names)
+            const lowLbl = label.toLowerCase();
+            let formatWarning = null;
+            if (lowLbl.includes('nama') || lowLbl.includes('name')) {
+              if (/M\.Sc|B\.Sc|Ph\.D|S\.T|S\.Kom|Drs|Ir\./i.test(val)) {
+                formatWarning = 'Gelar akademis terdeteksi';
+              } else if (val === val.toLowerCase() && val.length > 3) {
+                formatWarning = 'Huruf kecil semua';
+              }
+            } else if (lowLbl.includes('nik') || lowLbl.includes('ktp')) {
+              const digits = val.replace(/\D/g, '').length;
+              if (digits > 0 && digits !== 16) {
+                formatWarning = `NIK ${digits} digit (harus 16)`;
+              }
+            }
+
+            if (formatWarning) {
+              warningCount++;
+              return `
+                <div class="audit-checklist-row clickable" onclick="window.selectFieldByIndex && window.selectFieldByIndex(${idx})" style="background: #fffbeb;">
+                  <div class="audit-field-left">
+                    <span class="audit-check-icon" style="color: #d97706;">⚠️</span>
+                    <span class="audit-field-name" style="color: #92400e;">${escapeHTML(label)}</span>
+                  </div>
+                  <span class="audit-status-tag warning">${escapeHTML(formatWarning)}</span>
+                </div>
+              `;
+            }
+
+            // 4. Clean & Valid Filled Field
             return `
-              <div class="audit-checklist-row">
+              <div class="audit-checklist-row clickable" onclick="window.selectFieldByIndex && window.selectFieldByIndex(${idx})">
                 <div class="audit-field-left">
-                  <span class="audit-check-icon" style="color: #10b981;">🔒</span>
+                  <span class="audit-check-icon" style="color: #16a34a;">✓</span>
                   <span class="audit-field-name">${escapeHTML(label)}</span>
                 </div>
-                <span class="audit-status-tag" style="background: rgba(16, 185, 129, 0.12); color: #047857; border: 1px solid rgba(16, 185, 129, 0.28);">Privasi Terlindungi (Zero-Knowledge)</span>
+                <span class="audit-status-tag">Lolos Audit</span>
               </div>
             `;
+          }).join('');
+        }
+
+        // Update Bottom Banner Status
+        const banner = document.getElementById('audit-passed-banner');
+        const bannerIcon = document.getElementById('audit-passed-banner-icon');
+        const bannerTitle = document.getElementById('audit-passed-banner-title');
+        const bannerDesc = document.getElementById('audit-passed-banner-desc');
+
+        if (banner && bannerTitle && bannerDesc && bannerIcon) {
+          if (emptyCount > 0) {
+            banner.className = 'audit-passed-banner has-issues';
+            bannerIcon.textContent = '⚠️';
+            bannerTitle.textContent = `Ada ${emptyCount} kolom wajib yang belum diisi!`;
+            bannerDesc.textContent = 'Harap lengkapi kolom bertanda merah di atas sebelum mengirim formulir.';
+          } else if (warningCount > 0) {
+            banner.className = 'audit-passed-banner';
+            banner.style.background = 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
+            bannerIcon.textContent = '💡';
+            bannerTitle.textContent = `Audit Selesai (${warningCount} saran perbaikan)`;
+            bannerDesc.textContent = 'Periksa kembali kolom bertanda kuning sebelum mengklik Submit.';
+          } else {
+            banner.className = 'audit-passed-banner';
+            banner.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+            bannerIcon.textContent = '🎉';
+            bannerTitle.textContent = 'Semua isian sudah lolos Audit!';
+            bannerDesc.textContent = 'Formulir Anda siap dikirim. Silakan klik tombol Submit pada formulir.';
           }
-          return `
-            <div class="audit-checklist-row">
-              <div class="audit-field-left">
-                <span class="audit-check-icon">✓</span>
-                <span class="audit-field-name">${escapeHTML(label)}</span>
-              </div>
-              <span class="audit-status-tag">Lolos Audit</span>
-            </div>
-          `;
-        }).join('');
-      }
-      boxAuditChecklistResults.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        boxAuditChecklistResults.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      });
     });
   }
 
@@ -5329,6 +5477,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // 7. Field Edit / Add Modal Controls
+    const btnAddManualHeader = document.getElementById('btn-add-vault-field-manual');
+    if (btnAddManualHeader) {
+      btnAddManualHeader.addEventListener('click', () => openFieldModal(null));
+    }
     if (btnCloseFieldModal) {
       btnCloseFieldModal.addEventListener('click', closeFieldModal);
     }
@@ -5872,12 +6024,28 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (fields.length === 0) {
       vaultFieldsList.innerHTML = `
-        <div style="text-align: center; padding: 22px 14px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px;">
-          <div style="font-size: 24px; margin-bottom: 4px;">📂</div>
-          <strong style="display: block; font-size: 12.5px; color: #0f172a; margin-bottom: 3px;">No Stored Profile Fields Yet</strong>
-          <p style="font-size: 11px; color: #64748b; line-height: 1.4; margin: 0;">Upload your KTP, Passport, or Academic Diploma below to extract and populate verified fields.</p>
+        <div style="text-align: center; padding: 20px 14px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 14px;">
+          <div style="font-size: 26px; margin-bottom: 6px;">📂</div>
+          <strong style="display: block; font-size: 13px; color: #0f172a; margin-bottom: 4px;">Belum Ada Data di Brankas</strong>
+          <p style="font-size: 11px; color: #64748b; line-height: 1.45; margin: 0 0 14px 0;">
+            Unggah dokumen (KTP, Paspor, Ijazah) di bawah untuk ekstrak instan via AI, atau kelola brankas di Dashboard Web.
+          </p>
+          <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+            <button type="button" id="btn-vault-empty-add-manual" style="display: inline-flex; align-items: center; gap: 5px; background: #0284c7; color: #ffffff; border: none; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer;">
+              <span>+ Tambah Data</span>
+            </button>
+            <button type="button" id="btn-vault-empty-dashboard" style="display: inline-flex; align-items: center; gap: 5px; background: #ffffff; color: #0369a1; border: 1px solid #bae6fd; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer;">
+              <span>Buka Dashboard ↗</span>
+            </button>
+          </div>
         </div>
       `;
+
+      const btnEmptyAdd = vaultFieldsList.querySelector('#btn-vault-empty-add-manual');
+      if (btnEmptyAdd) btnEmptyAdd.addEventListener('click', () => openFieldModal(null));
+      const btnEmptyDash = vaultFieldsList.querySelector('#btn-vault-empty-dashboard');
+      if (btnEmptyDash) btnEmptyDash.addEventListener('click', openDashboardVault);
+
       return;
     }
 
@@ -6437,7 +6605,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (currentActive) {
       prevActivePaneBeforeA11y = currentActive.id;
     }
-    panes.forEach(p => p.classList.remove('active'));
+    // Remove active class from all other panes and explicitly hide pane-chat
+    panes.forEach(p => {
+      p.classList.remove('active');
+      if (p.id !== 'pane-a11y-hub') {
+        p.style.display = 'none';
+      }
+    });
+
     if (paneA11yHub) {
       paneA11yHub.style.display = 'flex';
       paneA11yHub.classList.add('active');
@@ -6464,12 +6639,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       paneA11yHub.style.display = 'none';
       paneA11yHub.classList.remove('active');
     }
-    const restorePane = document.getElementById(prevActivePaneBeforeA11y) || document.getElementById('pane-chat');
+    const restorePaneId = prevActivePaneBeforeA11y || 'pane-chat';
+    const restorePane = document.getElementById(restorePaneId);
     if (restorePane) {
+      restorePane.style.display = '';
       restorePane.classList.add('active');
     }
     const chatFooter = document.querySelector('.sp-chat-footer');
-    if (chatFooter && prevActivePaneBeforeA11y === 'pane-chat') {
+    if (chatFooter && restorePaneId === 'pane-chat') {
       chatFooter.style.display = 'flex';
     }
   }

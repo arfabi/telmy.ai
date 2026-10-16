@@ -35,7 +35,7 @@
 
 /* Floating beacon tooltip pointing at the button */
 .telmy-action-beacon {
-  position: absolute !important;
+  position: fixed !important;
   background: linear-gradient(135deg, #0071e3, #1d4ed8) !important;
   color: #ffffff !important;
   padding: 6px 14px !important;
@@ -52,6 +52,7 @@
   gap: 6px !important;
   pointer-events: none !important;
   animation: telmyBeaconBounce 1.5s infinite ease-in-out !important;
+  transition: opacity 0.25s ease, transform 0.1s linear !important;
 }
 
 .telmy-action-beacon::after {
@@ -1130,13 +1131,13 @@
    Telmy Flying Virtual Pointer & Guided Cursor
    ========================================================= */
 .telmy-virtual-pointer {
-  position: absolute !important;
+  position: fixed !important;
   z-index: 2147483646 !important;
   pointer-events: none !important;
   display: flex !important;
   align-items: center !important;
   gap: 8px !important;
-  transition: top 0.75s cubic-bezier(0.22, 1, 0.36, 1), left 0.75s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease !important;
+  transition: top 0.4s cubic-bezier(0.22, 1, 0.36, 1), left 0.4s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease !important;
   will-change: left, top !important;
 }
 

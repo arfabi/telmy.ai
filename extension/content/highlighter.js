@@ -126,6 +126,72 @@ window.GMTHighlighter = (function () {
   let currentActionTarget = null;
   let currentVirtualPointer = null;
   let actionHighlightTimeout = null;
+  let actionRepositionCleanup = null;
+
+  // Helper: Find closest scrollable parent (for modal, dashboard containers with overflow-y)
+  function findScrollableParent(el) {
+    if (!el || !el.parentElement) return window;
+    let parent = el.parentElement;
+    while (parent && parent !== document.body && parent !== document.documentElement) {
+      const style = window.getComputedStyle(parent);
+      const overflowY = style.overflowY || '';
+      const overflowX = style.overflowX || '';
+      const isScrollable = /(auto|scroll)/.test(overflowY) || /(auto|scroll)/.test(overflowX);
+      if (isScrollable && (parent.scrollHeight > parent.clientHeight || parent.scrollWidth > parent.clientWidth)) {
+        return parent;
+      }
+      parent = parent.parentElement;
+    }
+    return window;
+  }
+
+  function scrollElementIntoViewSafe(el) {
+    if (!el) return;
+    try {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+    } catch (e) {
+      try { el.scrollIntoView(true); } catch (_) {}
+    }
+  }
+
+  function updateActionVisualsPosition() {
+    if (!currentActionTarget || !currentActionTarget.isConnected) {
+      clearActionButtonHighlight();
+      return;
+    }
+
+    const rect = currentActionTarget.getBoundingClientRect();
+    
+    // Check if element is completely off-screen or hidden
+    if (rect.width === 0 && rect.height === 0) return;
+
+    // Viewport-based coordinates (FIXED positioning)
+    const viewportTop = Math.max(12, rect.top);
+    const viewportLeft = Math.max(12, rect.left);
+
+    // 1. Position Beacon Tooltip (Floating above the element, or below if near top of window)
+    if (currentActionBeacon) {
+      if (viewportTop < 60) {
+        // Not enough space above, position below
+        currentActionBeacon.style.top = `${rect.bottom + 10}px`;
+        currentActionBeacon.style.left = `${viewportLeft}px`;
+      } else {
+        currentActionBeacon.style.top = `${viewportTop - 42}px`;
+        currentActionBeacon.style.left = `${viewportLeft}px`;
+      }
+    }
+
+    // 2. Position Flying Virtual Pointer Hand
+    if (currentVirtualPointer) {
+      if (rect.height > 70) {
+        currentVirtualPointer.style.top = `${viewportTop + 14}px`;
+        currentVirtualPointer.style.left = `${viewportLeft + Math.min(rect.width - 24, 40)}px`;
+      } else {
+        currentVirtualPointer.style.top = `${rect.bottom + 4}px`;
+        currentVirtualPointer.style.left = `${viewportLeft + Math.min(rect.width / 2, 50)}px`;
+      }
+    }
+  }
 
   function highlightActionButton(targetElement, labelText = 'Klik tombol ini untuk memulai!') {
     clearActionButtonHighlight();
@@ -134,31 +200,27 @@ window.GMTHighlighter = (function () {
     currentActionTarget = targetElement;
 
     targetElement.classList.add('telmy-action-spotlight');
-    try {
-      targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    } catch (e) {}
 
-    // Calculate position
-    const rect = targetElement.getBoundingClientRect();
-    const targetTop = Math.max(10, rect.top + window.scrollY);
-    const targetLeft = Math.max(10, rect.left + window.scrollX);
+    // Smoothly scroll both window and any inner scrollable container (modal/dashboard)
+    scrollElementIntoViewSafe(targetElement);
 
-    // 1. Create Beacon Tooltip
+    // 1. Create Beacon Tooltip with FIXED positioning
     const beacon = document.createElement('div');
     beacon.className = 'telmy-action-beacon';
     const cleanLabel = (labelText || 'Ditemukan di sini').replace(/^👉\s*/, '');
     beacon.innerHTML = `<span>👉</span> <span>${cleanLabel}</span>`;
-    beacon.style.top = `${targetTop - 44}px`;
-    beacon.style.left = `${targetLeft}px`;
+    // Initial off-screen placement before first position calculation
+    beacon.style.top = '-999px';
+    beacon.style.left = '-999px';
     document.body.appendChild(beacon);
     currentActionBeacon = beacon;
 
-    // 2. Create Flying Virtual Pointer (Glides from right side toward target element)
+    // 2. Create Flying Virtual Pointer with FIXED positioning
     const pointer = document.createElement('div');
     pointer.className = 'telmy-virtual-pointer';
-    // Start position near top-right
-    pointer.style.top = `${window.scrollY + 100}px`;
-    pointer.style.left = `${window.scrollX + window.innerWidth - 80}px`;
+    // Initial start position near top-right of the current viewport
+    pointer.style.top = '60px';
+    pointer.style.left = `${window.innerWidth - 80}px`;
     pointer.innerHTML = `
       <div class="telmy-pointer-ripple"></div>
       <div class="telmy-pointer-hand">👆</div>
@@ -166,23 +228,41 @@ window.GMTHighlighter = (function () {
     document.body.appendChild(pointer);
     currentVirtualPointer = pointer;
 
-    // Glide smoothly into position above target element
-    requestAnimationFrame(() => {
-      setTimeout(() => {
-        if (currentVirtualPointer && targetElement.isConnected) {
-          const freshRect = targetElement.getBoundingClientRect();
-          if (freshRect.height > 80) {
-            currentVirtualPointer.style.top = `${freshRect.top + window.scrollY - 24}px`;
-            currentVirtualPointer.style.left = `${freshRect.left + window.scrollX + 16}px`;
-          } else {
-            currentVirtualPointer.style.top = `${freshRect.top + window.scrollY + freshRect.height + 4}px`;
-            currentVirtualPointer.style.left = `${freshRect.left + window.scrollX + Math.min(freshRect.width / 2, 60)}px`;
-          }
-        }
-      }, 60);
-    });
+    // Update positions immediately and continuously during smooth scroll
+    updateActionVisualsPosition();
 
-    // Auto-clear after 9 seconds or when element is clicked
+    // Loop position updates during smooth scroll animation (0ms -> 600ms)
+    let animFrames = 0;
+    const trackAnimation = () => {
+      updateActionVisualsPosition();
+      animFrames++;
+      if (animFrames < 40 && currentActionTarget) {
+        requestAnimationFrame(trackAnimation);
+      }
+    };
+    requestAnimationFrame(trackAnimation);
+
+    // Dynamic sticky tracking: listen to window & container scrolls/resizes
+    const scrollParent = findScrollableParent(targetElement);
+    const onScrollOrResize = () => {
+      updateActionVisualsPosition();
+    };
+
+    window.addEventListener('scroll', onScrollOrResize, { passive: true, capture: true });
+    window.addEventListener('resize', onScrollOrResize, { passive: true });
+    if (scrollParent && scrollParent !== window) {
+      scrollParent.addEventListener('scroll', onScrollOrResize, { passive: true });
+    }
+
+    actionRepositionCleanup = () => {
+      window.removeEventListener('scroll', onScrollOrResize, { capture: true });
+      window.removeEventListener('resize', onScrollOrResize);
+      if (scrollParent && scrollParent !== window) {
+        scrollParent.removeEventListener('scroll', onScrollOrResize);
+      }
+    };
+
+    // Auto-clear after 9 seconds or when element is clicked/interacted with
     if (actionHighlightTimeout) clearTimeout(actionHighlightTimeout);
     actionHighlightTimeout = setTimeout(() => {
       clearActionButtonHighlight();
@@ -199,6 +279,10 @@ window.GMTHighlighter = (function () {
     if (actionHighlightTimeout) {
       clearTimeout(actionHighlightTimeout);
       actionHighlightTimeout = null;
+    }
+    if (actionRepositionCleanup) {
+      actionRepositionCleanup();
+      actionRepositionCleanup = null;
     }
     document.querySelectorAll('.telmy-action-spotlight').forEach(el => el.classList.remove('telmy-action-spotlight'));
     if (currentActionBeacon) {
