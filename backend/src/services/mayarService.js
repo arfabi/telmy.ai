@@ -61,7 +61,7 @@ export async function createMayarCheckout({ plan, uid = 'guest_user', userEmail,
 
   // 2. Live / Sandbox Mode: Call Mayar Headless API v2
   try {
-    const defaultRedirect = redirectUrl || 'https://telmy-ai.cloud.run/dashboard.html';
+    const defaultRedirect = redirectUrl || 'https://telmy.id/dashboard';
     const payload = {
       name: `Telmy.ai ${plan.name} (1 Bulan)`,
       amount: plan.priceIdr,

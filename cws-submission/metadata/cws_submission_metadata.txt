@@ -21,16 +21,16 @@ Default Language:
 English (en)
 
 Official Website:
-https://telmy-ai.cloud.run
+https://telmy.id
 
 Privacy Policy URL:
-https://telmy-ai.cloud.run/privacy
+https://telmy.id/privacy
 
 Support & FAQ URL:
-https://telmy-ai.cloud.run#faq
+https://telmy.id/faq
 
 Developer / Support Email:
-support@telmy-ai.cloud.run
+support@telmy.id
 
 
 --------------------------------------------------------------------------------
@@ -104,7 +104,7 @@ Telmy.ai has a single unified purpose: assisting users in understanding, accurat
 4. sidePanel:
    Used to display the companion interface, multilingual translations, voice narration controls, and pre-submission audit cards inside Chrome's native Side Panel, ensuring form pages remain unobstructed.
 
-5. host_permissions (https://telmy-ai.cloud.run/*):
+5. host_permissions (https://telmy.id/*):
    Required strictly to communicate with the Telmy backend API hosted on Google Cloud Run for AI field translation, multimodal PDF form parsing, and secure synchronization of ciphertext vault envelopes. No other external hosts are requested or accessed.
 
 
@@ -127,18 +127,18 @@ Dear Chrome Web Store Review Team,
 Thank you for reviewing Telmy.ai! To make your evaluation as smooth and rapid as possible, we have deployed a live, interactive test portal with pre-configured dummy credentials:
 
 1. Interactive Simulator Web Portal:
-   URL: https://telmy-ai.cloud.run/demo
+   URL: https://telmy.id/demo
    (Contains a realistic multi-language Visa Application Form with date inputs, passport numbers, and file upload fields).
 
 2. Test Account Credentials:
-   • Email: reviewer@telmy-ai.cloud.run
+   • Email: reviewer@telmy.id
    • Test Master Password: Reviewer2026!
    • Backup 12 Seed Words:
      abandon ability able about above absent absorb abstract absurd abuse access accident
 
 3. Steps to Verify Extension Functionality:
    a. Install the extension unpacked and pin the Telmy icon to Chrome toolbar.
-   b. Navigate to https://telmy-ai.cloud.run/demo.
+   b. Navigate to https://telmy.id/demo.
    c. Press Alt + G or click the Telmy extension icon. The Side Panel will open on the right side.
    d. Click on "Full Legal Name" or "Passport Number". Telmy will display a friendly field explanation card with examples and pitfalls to avoid.
    e. Click "🔊 Listen" to test WaveNet neural voice playback in the selected language.
@@ -146,5 +146,5 @@ Thank you for reviewing Telmy.ai! To make your evaluation as smooth and rapid as
    g. Open the "Vault" tab to test Zero-Knowledge unlocking with either the Master Password or the 12 Seed Words above.
    h. Test 1-Click AutoFill to populate the demo visa form instantly.
 
-If you have any questions or require additional information, please contact us immediately at support@telmy-ai.cloud.run. We appreciate your assistance!
+If you have any questions or require additional information, please contact us immediately at support@telmy.id. We appreciate your assistance!
 ================================================================================

@@ -857,17 +857,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       ms: 'Tolong jelaskan ringkasan borang ini dan apa yang diperlukan.'
     },
     autofill_not_configured_msg: {
-      en: '⚡ **1-Click AutoFill**: Your master profile is not configured yet. Visit your Member Area at https://telmy-ai.cloud.run/dashboard#autofill to set up your legal name, passport, and identity info!',
-      id: '⚡ **1-Click AutoFill**: Data profil tersimpan Anda belum diisi. Kunjungi Member Area di https://telmy-ai.cloud.run/dashboard#autofill untuk menyimpan data paspor, NIK, dan identitas Anda!',
-      ja: '⚡ **1-クリック自動入力**: マスタープロファイルが未設定です。https://telmy-ai.cloud.run/dashboard#autofill で身元情報を登録してください！',
-      ko: '⚡ **1-클릭 자동완성**: 마스터 프로필이 설정되지 않았습니다. https://telmy-ai.cloud.run/dashboard#autofill 에서 정보를 등록하세요!',
-      zh: '⚡ **一键自动填写**：您的个人主配置文件尚未设置。请访问 https://telmy-ai.cloud.run/dashboard#autofill 设置您的身份信息！',
-      'zh-TW': '⚡ **一鍵自動填寫**：您的個人主設定檔尚未設定。請訪問 https://telmy-ai.cloud.run/dashboard#autofill 設定您的身分資料！',
-      vi: '⚡ **Tự động điền 1 chạm**: Hồ sơ của bạn chưa được thiết lập. Hãy truy cập https://telmy-ai.cloud.run/dashboard#autofill để cài đặt!',
-      th: '⚡ **กรอกอัตโนมัติใน 1 คลิก**: คุณยังไม่ได้ตั้งค่าโปรไฟล์หลัก ไปที่ https://telmy-ai.cloud.run/dashboard#autofill เพื่อตั้งค่า!',
-      hi: '⚡ **1-क्लिक ऑटोफ़िल**: आपकी प्रोफ़ाइल अभी कॉन्फ़िगर नहीं है। अपनी जानकारी सेट करने के लिए https://telmy-ai.cloud.run/dashboard#autofill पर जाएं!',
-      fil: '⚡ **1-Click AutoFill**: Hindi pa naka-configure ang iyong profile. Pumunta sa https://telmy-ai.cloud.run/dashboard#autofill!',
-      ms: '⚡ **1-Click AutoFill**: Profil utama anda belum ditetapkan. Layari https://telmy-ai.cloud.run/dashboard#autofill untuk menyediakannya!'
+      en: '⚡ **1-Click AutoFill**: Your master profile is not configured yet. Visit your Member Area at https://telmy.id/dashboard#autofill to set up your legal name, passport, and identity info!',
+      id: '⚡ **1-Click AutoFill**: Data profil tersimpan Anda belum diisi. Kunjungi Member Area di https://telmy.id/dashboard#autofill untuk menyimpan data paspor, NIK, dan identitas Anda!',
+      ja: '⚡ **1-クリック自動入力**: マスタープロファイルが未設定です。https://telmy.id/dashboard#autofill で身元情報を登録してください！',
+      ko: '⚡ **1-클릭 자동완성**: 마스터 프로필이 설정되지 않았습니다. https://telmy.id/dashboard#autofill 에서 정보를 등록하세요!',
+      zh: '⚡ **一键自动填写**：您的个人主配置文件尚未设置。请访问 https://telmy.id/dashboard#autofill 设置您的身份信息！',
+      'zh-TW': '⚡ **一鍵自動填寫**：您的個人主設定檔尚未設定。請訪問 https://telmy.id/dashboard#autofill 設定您的身分資料！',
+      vi: '⚡ **Tự động điền 1 chạm**: Hồ sơ của bạn chưa được thiết lập. Hãy truy cập https://telmy.id/dashboard#autofill để cài đặt!',
+      th: '⚡ **กรอกอัตโนมัติใน 1 คลิก**: คุณยังไม่ได้ตั้งค่าโปรไฟล์หลัก ไปที่ https://telmy.id/dashboard#autofill เพื่อตั้งค่า!',
+      hi: '⚡ **1-क्लिक ऑटोफ़िल**: आपकी प्रोफ़ाइल अभी कॉन्फ़िगर नहीं है। अपनी जानकारी सेट करने के लिए https://telmy.id/dashboard#autofill पर जाएं!',
+      fil: '⚡ **1-Click AutoFill**: Hindi pa naka-configure ang iyong profile. Pumunta sa https://telmy.id/dashboard#autofill!',
+      ms: '⚡ **1-Click AutoFill**: Profil utama anda belum ditetapkan. Layari https://telmy.id/dashboard#autofill untuk menyediakannya!'
     },
     autofill_complete_msg: {
       en: '⚡ **1-Click AutoFill Complete**: Successfully filled {count} using your encrypted profile vault. Please review all entries before submitting!',
@@ -1496,14 +1496,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Load Settings & User
     const stored = await chrome.storage.local.get(['settings', 'hasCompletedOnboarding', 'user', 'telmyBotMode']);
     if (stored.settings) {
-      if (!stored.settings.apiUrl || stored.settings.apiUrl.includes('localhost') || stored.settings.apiUrl.includes('127.0.0.1') || stored.settings.apiUrl.includes('telmy.web.app') || stored.settings.apiUrl.includes('asia-northeast1.run.app')) {
-        stored.settings.apiUrl = 'https://telmy-ai.cloud.run/api';
+      if (!stored.settings.apiUrl || stored.settings.apiUrl.includes('localhost') || stored.settings.apiUrl.includes('127.0.0.1') || stored.settings.apiUrl.includes('telmy.web.app') || stored.settings.apiUrl.includes('cloud.run')) {
+        stored.settings.apiUrl = 'https://telmy.id/api';
         chrome.storage.local.set({ settings: stored.settings });
       }
       currentLanguage = stored.settings.language || 'en';
       langSelect.value = currentLanguage;
     } else {
-      chrome.storage.local.set({ settings: { language: 'en', apiUrl: 'https://telmy-ai.cloud.run/api', isActive: true } });
+      chrome.storage.local.set({ settings: { language: 'en', apiUrl: 'https://telmy.id/api', isActive: true } });
       langSelect.value = 'en';
     }
 
@@ -1858,9 +1858,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Handle Firebase Google Sign-In Connect Flow
   async function handleUserAuthConnect() {
     const settings = (await chrome.storage.local.get(['settings'])).settings || {};
-    let apiUrl = settings.apiUrl || 'https://telmy-ai.cloud.run/api';
-    if (apiUrl.includes('localhost') || apiUrl.includes('127.0.0.1') || apiUrl.includes('telmy.web.app') || apiUrl.includes('asia-northeast1.run.app')) {
-      apiUrl = 'https://telmy-ai.cloud.run/api';
+    let apiUrl = settings.apiUrl || 'https://telmy.id/api';
+    if (apiUrl.includes('localhost') || apiUrl.includes('127.0.0.1') || apiUrl.includes('telmy.web.app') || apiUrl.includes('cloud.run')) {
+      apiUrl = 'https://telmy.id/api';
     }
     const baseUrl = apiUrl.replace(/\/api\/?$/, '');
 

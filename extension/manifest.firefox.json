@@ -23,7 +23,8 @@
     "contextMenus"
   ],
   "host_permissions": [
-    "https://telmy-ai.cloud.run/*"
+    "https://telmy.id/*",
+    "https://*.telmy.id/*"
   ],
   "action": {
     "default_icon": {

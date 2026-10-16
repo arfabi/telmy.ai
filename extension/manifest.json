@@ -19,7 +19,8 @@
     "contextMenus"
   ],
   "host_permissions": [
-    "https://telmy-ai.cloud.run/*"
+    "https://telmy.id/*",
+    "https://*.telmy.id/*"
   ],
   "action": {
     "default_icon": {
@@ -44,8 +45,8 @@
   },
   "externally_connectable": {
     "matches": [
-      "https://telmy-ai.cloud.run/*",
-      "https://*.cloud.run/*"
+      "https://telmy.id/*",
+      "https://*.telmy.id/*"
     ]
   },
   "content_scripts": [

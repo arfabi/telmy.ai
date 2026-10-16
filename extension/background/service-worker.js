@@ -4,19 +4,19 @@ const DEFAULT_SETTINGS = {
   isActive: true,
   theme: 'light',
   highlightColor: '#2563eb',
-  apiUrl: 'https://telmy-ai.cloud.run/api'
+  apiUrl: 'https://telmy.id/api'
 };
 
 // Helper: resolve safe API URL (strips legacy localhost or stale domains)
 function getEffectiveApiUrl(settings) {
   const url = settings?.apiUrl;
-  if (!url || url.includes('localhost') || url.includes('127.0.0.1') || url.includes('telmy.web.app') || url.includes('asia-northeast1.run.app')) {
+  if (!url || url.includes('localhost') || url.includes('127.0.0.1') || url.includes('telmy.web.app') || url.includes('cloud.run')) {
     return DEFAULT_SETTINGS.apiUrl;
   }
   return url;
 }
 
-// Proactive sanitization to purge any stale localhost:8080 from browser storage
+// Proactive sanitization to purge any stale localhost or cloud.run URLs from browser storage
 async function sanitizeSettings() {
   try {
     const stored = await chrome.storage.local.get(['settings', 'suggestions_history']);
@@ -31,7 +31,7 @@ async function sanitizeSettings() {
       settings.apiUrl.includes('localhost') ||
       settings.apiUrl.includes('127.0.0.1') ||
       settings.apiUrl.includes('telmy.web.app') ||
-      settings.apiUrl.includes('asia-northeast1.run.app')
+      settings.apiUrl.includes('cloud.run')
     ) {
       settings = { ...settings, apiUrl: DEFAULT_SETTINGS.apiUrl };
       needsUpdate = true;
@@ -39,7 +39,7 @@ async function sanitizeSettings() {
 
     if (needsUpdate) {
       await chrome.storage.local.set({ settings });
-      console.log('[Telmy] Storage migrated to production Cloud Run API:', settings.apiUrl);
+      console.log('[Telmy] Storage migrated to production API:', settings.apiUrl);
     }
     if (!stored.suggestions_history) {
       await chrome.storage.local.set({ suggestions_history: [] });
@@ -1001,7 +1001,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 });
 
-// External message listener (e.g. from telmy-ai.cloud.run web dashboard)
+// External message listener (e.g. from telmy.id web dashboard)
 if (chrome.runtime.onMessageExternal) {
   chrome.runtime.onMessageExternal.addListener((message, sender, sendResponse) => {
     if (message.type === 'PING') {

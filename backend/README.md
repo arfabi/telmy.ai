@@ -113,7 +113,7 @@ Jika Anda menjalankan backend di lokal (`http://localhost:8080`) atau di Cloud R
 1. **Google Gemini API (`gemini-3.5-flash-lite`)**: Core LLM untuk analisis formulir, chat, dan translasi.
 2. **Google Gemini Embedding (`gemini-embedding-001`)**: Vektor semantik 3.072 dimensi untuk zero-token cache matching.
 3. **Google Cloud Text-to-Speech (TTS WaveNet)**: Sintesis suara alami multibahasa.
-4. **Google Cloud Run**: Serverless container host produksi (`https://telmy-ai.cloud.run`).
+4. **Google Cloud Run**: Serverless container host produksi (`https://telmy.id`).
 5. **Google Cloud Build**: Otomatisasi CI/CD dari repositori GitHub.
 6. **Firebase Cloud Firestore**: Basis data NoSQL real-time.
 7. **Firebase Vector Search**: Pencarian kemiripan vektor cosine similarity $\ge 0.90$.
