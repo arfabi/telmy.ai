@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { auth, TelmyUserProfile, logoutUser } from '@/services/firebase'
 import { onAuthStateChanged, User } from 'firebase/auth'
+import { getApiUrl } from '@/config/api'
 
 interface AuthContextType {
   currentUser: User | null
@@ -8,6 +9,7 @@ interface AuthContextType {
   loading: boolean
   logout: () => Promise<void>
   refreshQuota: () => Promise<void>
+  updateUserProfile: (patch: Partial<TelmyUserProfile>) => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -29,7 +31,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchQuota = async (uid: string) => {
     try {
-      const res = await fetch(`http://127.0.0.1:8080/api/user/quota/${uid}`)
+      const res = await fetch(getApiUrl(`/api/user/quota/${uid}`))
       if (res.ok) {
         const json = await res.json()
         if (json.success && json.data) {
@@ -96,8 +98,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }
 
+  const updateUserProfile = (patch: Partial<TelmyUserProfile>) => {
+    setUserProfile((prev) => {
+      if (!prev) return null
+      const updated = { ...prev, ...patch }
+      localStorage.setItem('telmy_user', JSON.stringify(updated))
+      return updated
+    })
+  }
+
   return (
-    <AuthContext.Provider value={{ currentUser, userProfile, loading, logout, refreshQuota }}>
+    <AuthContext.Provider value={{ currentUser, userProfile, loading, logout, refreshQuota, updateUserProfile }}>
       {children}
     </AuthContext.Provider>
   )

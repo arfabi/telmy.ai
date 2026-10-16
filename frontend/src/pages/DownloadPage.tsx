@@ -178,19 +178,33 @@ export const DownloadPage: React.FC = () => {
             {getStr('subtitle')}
           </p>
 
-          {/* Browser Selection Tabs */}
-          <div className="mt-8 flex flex-wrap justify-center gap-2">
-            {(['chrome', 'edge', 'firefox', 'opera'] as const).map((b) => (
+          {/* Browser Selection Tabs — Horizontal Client Grid Style */}
+          <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-3.5 max-w-2xl mx-auto">
+            {([
+              { id: 'chrome', name: 'Google Chrome', icon: '/chrome.png' },
+              { id: 'edge', name: 'Microsoft Edge', icon: '/edge.png' },
+              { id: 'firefox', name: 'Mozilla Firefox', icon: '/firefox.png' },
+              { id: 'opera', name: 'Opera Browser', icon: '/opera.png' },
+            ] as const).map((b) => (
               <button
-                key={b}
-                onClick={() => setActiveTab(b)}
-                className={`px-6 py-2.5 rounded-full text-sm font-bold capitalize transition-all cursor-pointer ${
-                  activeTab === b
-                    ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                key={b.id}
+                onClick={() => setActiveTab(b.id)}
+                className={`p-4 rounded-2xl flex flex-col items-center justify-center gap-2.5 transition-all cursor-pointer border ${
+                  activeTab === b.id
+                    ? 'bg-white border-blue-600 shadow-lg shadow-blue-500/15 ring-2 ring-blue-600/20 scale-[1.02]'
+                    : 'bg-white/80 border-slate-200/80 hover:bg-white hover:border-slate-300 shadow-2xs hover:shadow-xs'
                 }`}
               >
-                {b}
+                <img
+                  src={b.icon}
+                  alt={b.name}
+                  className="w-10 h-10 object-contain drop-shadow-xs"
+                />
+                <span className={`text-xs font-bold capitalize ${
+                  activeTab === b.id ? 'text-blue-600' : 'text-slate-700'
+                }`}>
+                  {b.id}
+                </span>
               </button>
             ))}
           </div>
@@ -204,8 +218,12 @@ export const DownloadPage: React.FC = () => {
           {/* Main Action Banner */}
           <Card className="p-8 bg-blue-50 border border-blue-200 rounded-3xl flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xs">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-bold shadow-md shadow-blue-500/20">
-                <DownloadCloud className="w-8 h-8" />
+              <div className="w-16 h-16 rounded-2xl bg-white border border-blue-100 flex items-center justify-center font-bold shadow-md shadow-blue-500/10 p-2.5">
+                <img
+                  src={`/${activeTab}.png`}
+                  alt={activeTab}
+                  className="w-full h-full object-contain"
+                />
               </div>
               <div>
                 <h3 className="text-xl font-bold text-slate-900 capitalize">

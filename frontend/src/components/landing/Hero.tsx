@@ -66,13 +66,39 @@ export const Hero: React.FC<HeroProps> = ({ t }) => {
               <span>{t.heroTrustline}</span>
             </div>
 
-            {/* Browser Support Badges */}
-            <div className="mt-6 pt-5 border-t border-slate-200/70 flex flex-wrap items-center justify-center lg:justify-start gap-2 text-xs text-slate-500">
-              <span className="font-semibold text-slate-700">{t.heroWorksOn}:</span>
-              <span className="px-2.5 py-1 rounded-md bg-white border border-slate-200 font-medium text-slate-700 shadow-2xs">Chrome</span>
-              <span className="px-2.5 py-1 rounded-md bg-white border border-slate-200 font-medium text-slate-700 shadow-2xs">Edge</span>
-              <span className="px-2.5 py-1 rounded-md bg-white border border-slate-200 font-medium text-slate-700 shadow-2xs">Firefox</span>
-              <span className="px-2.5 py-1 rounded-md bg-white border border-slate-200 font-medium text-slate-700 shadow-2xs">Opera</span>
+            {/* Browser Support Badges / Horizontal Logo Showcase Grid */}
+            <div className="mt-8 pt-6 border-t border-slate-200/80">
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 text-center lg:text-left mb-3.5">
+                {t.heroWorksOn}:
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-md mx-auto lg:mx-0">
+                {[
+                  { name: 'Chrome', icon: '/chrome.png', desc: 'Google Chrome' },
+                  { name: 'Edge', icon: '/edge.png', desc: 'Microsoft Edge' },
+                  { name: 'Firefox', icon: '/firefox.png', desc: 'Mozilla Firefox' },
+                  { name: 'Opera', icon: '/opera.png', desc: 'Opera Browser' },
+                ].map((b) => (
+                  <div
+                    key={b.name}
+                    className="group flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-white/90 hover:bg-white border border-slate-200/90 hover:border-blue-400/80 shadow-xs hover:shadow-md transition-all duration-200"
+                  >
+                    <img
+                      src={b.icon}
+                      alt={b.name}
+                      className="w-7 h-7 object-contain shrink-0 transition-transform group-hover:scale-110 drop-shadow-xs"
+                      loading="lazy"
+                    />
+                    <div className="min-w-0">
+                      <span className="block text-xs font-bold text-slate-800 group-hover:text-blue-600 transition-colors leading-tight">
+                        {b.name}
+                      </span>
+                      <span className="block text-[10px] text-slate-500 truncate leading-tight">
+                        Desktop
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 

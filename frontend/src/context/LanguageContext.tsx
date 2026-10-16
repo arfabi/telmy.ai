@@ -97,9 +97,21 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     localStorage.setItem('telmy_lang', newLang)
     document.documentElement.lang = newLang
 
-    // Alihkan rute URL ke subpath bahasa yang baru
-    const subpath = newLang === 'zh-TW' ? 'tw' : newLang.toLowerCase()
-    navigate(`/${subpath}`)
+    // Alihkan rute URL ke subpath bahasa yang baru jika sedang di landing page
+    const pathname = location.pathname.toLowerCase()
+    const isAppPage = pathname.startsWith('/dashboard') || 
+                      pathname.startsWith('/connect') || 
+                      pathname.startsWith('/signin') || 
+                      pathname.startsWith('/help') ||
+                      pathname.startsWith('/features') ||
+                      pathname.startsWith('/pricing') ||
+                      pathname.startsWith('/download') ||
+                      pathname.startsWith('/academy') ||
+                      pathname.startsWith('/faq')
+    if (!isAppPage) {
+      const subpath = newLang === 'zh-TW' ? 'tw' : newLang.toLowerCase()
+      navigate(`/${subpath}`)
+    }
   }
 
   return (

@@ -8,6 +8,7 @@ import { DASHBOARD_I18N, DashboardI18n } from '@/data/dashboardI18n'
 import { PRICING_TIERS_DATA, PricingTierItem } from '@/data/pricingData'
 import { JAPAC_LANGUAGES } from '@/data/languages'
 import { encryptVault, decryptVault, VaultEnvelope } from '@/lib/cryptoVault'
+import { getApiUrl } from '@/config/api'
 import { 
   Zap, 
   Key, 
@@ -42,7 +43,9 @@ import {
   Award,
   Laptop,
   Smartphone,
-  Globe
+  Globe,
+  Upload,
+  X
 } from 'lucide-react'
 
 // 11 Asia-Pacific Countries (Displayed by country name & native language with cross-platform SVG flag)
@@ -112,7 +115,7 @@ const FORM_FRUSTRATION_QUOTES = [
 ]
 
 export const DashboardPage: React.FC = () => {
-  const { userProfile, logout, refreshQuota } = useAuth()
+  const { userProfile, logout, refreshQuota, updateUserProfile } = useAuth()
   const { currentLang, setLang } = useLanguage()
   const navigate = useNavigate()
 
@@ -238,7 +241,7 @@ export const DashboardPage: React.FC = () => {
 
     try {
       const uid = userProfile?.uid || 'guest_user'
-      const res = await fetch('/api/user/claim-academy-reward', {
+      const res = await fetch(getApiUrl('/api/user/claim-academy-reward'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ uid })
@@ -264,7 +267,7 @@ export const DashboardPage: React.FC = () => {
   const handleSaveProfile = async () => {
     try {
       const uid = userProfile?.uid || 'guest_user'
-      await fetch('/api/user/sync', {
+      await fetch(getApiUrl('/api/user/sync'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -274,13 +277,19 @@ export const DashboardPage: React.FC = () => {
           email: userProfile?.email || ''
         })
       })
-      setLang(selectedCountryCode)
-      setProfileSavedToast(true)
-      setTimeout(() => setProfileSavedToast(false), 3000)
     } catch (e) {
-      setProfileSavedToast(true)
-      setTimeout(() => setProfileSavedToast(false), 3000)
+      console.warn('Sync profile warning:', e)
     }
+
+    if (updateUserProfile) {
+      updateUserProfile({
+        displayName: profileName,
+        language: selectedCountryCode
+      })
+    }
+    setLang(selectedCountryCode)
+    setProfileSavedToast(true)
+    setTimeout(() => setProfileSavedToast(false), 3000)
   }
 
   // ==========================================
@@ -294,7 +303,7 @@ export const DashboardPage: React.FC = () => {
     if (!userProfile?.uid) return
     setFormsLoading(true)
     try {
-      const res = await fetch(`/api/user/saved-forms/${userProfile.uid}`)
+      const res = await fetch(getApiUrl(`/api/user/saved-forms/${userProfile.uid}`))
       const data = await res.json()
       if (data.success && Array.isArray(data.data)) {
         setFormsHistoryList(data.data)
@@ -350,7 +359,7 @@ export const DashboardPage: React.FC = () => {
     const fetchVaultEnvelope = async () => {
       if (!userProfile?.uid) return
       try {
-        const res = await fetch(`/api/user/vault/${userProfile.uid}`)
+        const res = await fetch(getApiUrl(`/api/user/vault/${userProfile.uid}`))
         const data = await res.json()
         if (data.success && data.data && data.data.ciphertext) {
           setVaultEnvelope(data.data)
@@ -429,7 +438,7 @@ export const DashboardPage: React.FC = () => {
         fields: []
       }
       const envelope = await encryptVault(vaultPayload, currentVaultSecret)
-      await fetch(`/api/user/vault/${userProfile.uid}`, {
+      await fetch(getApiUrl(`/api/user/vault/${userProfile.uid}`), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(envelope)
@@ -463,17 +472,80 @@ export const DashboardPage: React.FC = () => {
     }
   }
 
-  const handleAddCompartment = () => {
-    if (!newCompartmentTitle.trim()) return
-    const newC = {
+  // ==========================================
+  // STATE: RICH VAULT COMPARTMENT & FIELD MODAL
+  // ==========================================
+  interface ActiveEditingCompartment {
+    id: string
+    title: string
+    badge: string
+    fields: Array<{ key: string; value: string }>
+  }
+
+  const [activeEditingComp, setActiveEditingComp] = useState<ActiveEditingCompartment | null>(null)
+  const [isCompModalOpen, setIsCompModalOpen] = useState(false)
+  const [isIngestModalOpen, setIsIngestModalOpen] = useState(false)
+  const [ingestLoading, setIngestLoading] = useState(false)
+  const [ingestError, setIngestError] = useState<string | null>(null)
+
+  // Open modal to create brand new compartment
+  const handleOpenCreateCompartment = () => {
+    setActiveEditingComp({
       id: 'c_' + Date.now(),
-      title: newCompartmentTitle,
-      badge: 'Custom',
-      fields: []
+      title: '',
+      badge: 'Utama',
+      fields: [
+        { key: 'Nama Lengkap', value: '' },
+        { key: 'Nomor Identitas', value: '' }
+      ]
+    })
+    setIsCompModalOpen(true)
+  }
+
+  // Open modal to edit existing compartment
+  const handleOpenEditCompartment = (comp: any) => {
+    setActiveEditingComp({
+      id: comp.id,
+      title: comp.title,
+      badge: comp.badge || 'Custom',
+      fields: Array.isArray(comp.fields) && comp.fields.length > 0 
+        ? comp.fields.map((f: any) => ({ key: f.key, value: f.value }))
+        : [{ key: '', value: '' }]
+    })
+    setIsCompModalOpen(true)
+  }
+
+  // Save changes from modal
+  const handleSaveCompartmentModal = () => {
+    if (!activeEditingComp) return
+    if (!activeEditingComp.title.trim()) {
+      alert('Nama koper data wajib diisi.')
+      return
     }
-    const updated = [...vaultCompartments, newC]
+
+    // Clean up empty fields
+    const cleanFields = activeEditingComp.fields
+      .map(f => ({ key: f.key.trim(), value: f.value.trim() }))
+      .filter(f => f.key.length > 0)
+
+    const updatedComp = {
+      ...activeEditingComp,
+      title: activeEditingComp.title.trim(),
+      fields: cleanFields
+    }
+
+    const existingIdx = vaultCompartments.findIndex(c => c.id === activeEditingComp.id)
+    let updated: any[]
+    if (existingIdx >= 0) {
+      updated = [...vaultCompartments]
+      updated[existingIdx] = updatedComp
+    } else {
+      updated = [...vaultCompartments, updatedComp]
+    }
+
     setVaultCompartments(updated)
-    setNewCompartmentTitle('')
+    setIsCompModalOpen(false)
+    setActiveEditingComp(null)
     saveVaultToFirestore(updated)
   }
 
@@ -484,72 +556,63 @@ export const DashboardPage: React.FC = () => {
     saveVaultToFirestore(updated)
   }
 
-  // Edit / Rename Compartment Title
-  const handleEditCompartmentTitle = (compId: string, currentTitle: string) => {
-    const newTitle = prompt('Ubah nama koper data:', currentTitle)
-    if (!newTitle || !newTitle.trim() || newTitle.trim() === currentTitle) return
-    const updated = vaultCompartments.map(comp => {
-      if (comp.id === compId) {
-        return { ...comp, title: newTitle.trim() }
-      }
-      return comp
-    })
-    setVaultCompartments(updated)
-    saveVaultToFirestore(updated)
-  }
+  // Ingest Document (KTP, Passport, Diploma) via Gemini Multimodal OCR
+  const handleFileIngest = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
 
-  // Add field to compartment
-  const handleAddField = (compId: string) => {
-    const key = prompt('Nama label kolom (contoh: Nomor Paspor, NIK, Alamat):')
-    if (!key || !key.trim()) return
-    const val = prompt(`Nilai untuk "${key.trim()}":`)
-    if (val === null) return
+    setIngestLoading(true)
+    setIngestError(null)
 
-    const updated = vaultCompartments.map(comp => {
-      if (comp.id === compId) {
-        const fields = Array.isArray(comp.fields) ? [...comp.fields] : []
-        fields.push({ key: key.trim(), value: val.trim() })
-        return { ...comp, fields }
-      }
-      return comp
-    })
-    setVaultCompartments(updated)
-    saveVaultToFirestore(updated)
-  }
+    const reader = new FileReader()
+    reader.onload = async () => {
+      try {
+        const base64 = (reader.result as string) || ''
+        const res = await fetch(getApiUrl('/api/pdf/extract-vault'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fileBase64: base64,
+            fileName: file.name,
+            mimeType: file.type || 'application/pdf'
+          })
+        })
+        const data = await res.json()
 
-  // Update existing field
-  const handleUpdateField = (compId: string, fieldIdx: number, currentKey: string, currentVal: string) => {
-    const newKey = prompt('Ubah nama kolom:', currentKey)
-    if (newKey === null) return
-    const newVal = prompt('Ubah nilai isian:', currentVal)
-    if (newVal === null) return
+        if (data.success && Array.isArray(data.fields) && data.fields.length > 0) {
+          const docType = data.documentType || 'Dokumen'
+          const extractedFields = data.fields.map((f: any) => ({
+            key: f.label || f.key,
+            value: f.value
+          }))
 
-    const updated = vaultCompartments.map(comp => {
-      if (comp.id === compId) {
-        const fields = [...comp.fields]
-        fields[fieldIdx] = {
-          key: newKey.trim() || currentKey,
-          value: newVal.trim()
+          const newCompartment = {
+            id: 'c_ingest_' + Date.now(),
+            title: `${docType}: ${file.name.replace(/\.[^/.]+$/, "")}`,
+            badge: 'Extracted',
+            fields: extractedFields
+          }
+
+          const updated = [...vaultCompartments, newCompartment]
+          setVaultCompartments(updated)
+          saveVaultToFirestore(updated)
+          setIsIngestModalOpen(false)
+          alert(`🎉 Berhasil mengekstrak ${extractedFields.length} entitas data dari ${file.name}!`)
+        } else {
+          setIngestError(data.error || 'Tidak ada entitas data yang dapat diekstrak dari dokumen ini.')
         }
-        return { ...comp, fields }
+      } catch (err: any) {
+        setIngestError('Gagal memproses dokumen: ' + err.message)
+      } finally {
+        setIngestLoading(false)
+        e.target.value = ''
       }
-      return comp
-    })
-    setVaultCompartments(updated)
-    saveVaultToFirestore(updated)
-  }
-
-  // Delete field from compartment
-  const handleDeleteField = (compId: string, fieldIdx: number) => {
-    const updated = vaultCompartments.map(comp => {
-      if (comp.id === compId) {
-        const fields = comp.fields.filter((_: any, idx: number) => idx !== fieldIdx)
-        return { ...comp, fields }
-      }
-      return comp
-    })
-    setVaultCompartments(updated)
-    saveVaultToFirestore(updated)
+    }
+    reader.onerror = () => {
+      setIngestLoading(false)
+      setIngestError('Gagal membaca file lokal.')
+    }
+    reader.readAsDataURL(file)
   }
 
   // ==========================================
@@ -562,7 +625,7 @@ export const DashboardPage: React.FC = () => {
     if (!userProfile?.uid) return
     setDevicesLoading(true)
     try {
-      const res = await fetch(`/api/user/devices/${userProfile.uid}`)
+      const res = await fetch(getApiUrl(`/api/user/devices/${userProfile.uid}`))
       const data = await res.json()
       if (data.success && Array.isArray(data.data) && data.data.length > 0) {
         setActiveDevicesList(data.data)
@@ -605,7 +668,7 @@ export const DashboardPage: React.FC = () => {
     setInvoicesLoading(true)
     try {
       const uid = userProfile?.uid || 'guest_user'
-      const res = await fetch(`/api/payment/invoices/${uid}`)
+      const res = await fetch(getApiUrl(`/api/payment/invoices/${uid}`))
       const data = await res.json()
       if (data.success && Array.isArray(data.data) && data.data.length > 0) {
         setInvoicesList(data.data)
@@ -643,7 +706,7 @@ export const DashboardPage: React.FC = () => {
       
       // Register device session to Firestore
       try {
-        await fetch('/api/user/device', {
+        await fetch(getApiUrl('/api/user/device'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -1676,26 +1739,32 @@ export const DashboardPage: React.FC = () => {
 
             {/* List of Dynamic Vault Compartments */}
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h4 className="text-sm font-bold text-slate-900">
-                  {dI18n.vaultListTitle} ({vaultCompartments.length})
-                </h4>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900">
+                    {dI18n.vaultListTitle} ({vaultCompartments.length})
+                  </h4>
+                  <p className="text-xs text-slate-500">
+                    Kelola koper data profil terenkripsi untuk autofill instan 1-klik di ekstensi.
+                  </p>
+                </div>
                 {vaultUnlocked && (
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      placeholder="Nama Koper Baru..."
-                      value={newCompartmentTitle}
-                      onChange={(e) => setNewCompartmentTitle(e.target.value)}
-                      className="h-8 px-3 rounded-lg border border-slate-200 text-xs focus:outline-none focus:border-blue-600"
-                    />
+                  <div className="flex items-center gap-2 flex-wrap">
                     <Button
-                      onClick={handleAddCompartment}
+                      onClick={() => setIsIngestModalOpen(true)}
                       size="sm"
-                      className="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs h-8 px-3"
+                      className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs h-9 px-3.5 rounded-xl shadow-xs"
                     >
-                      <Plus className="w-3 h-3 mr-1" />
-                      <span>{dI18n.vaultAddBtn}</span>
+                      <Upload className="w-3.5 h-3.5 mr-1.5" />
+                      <span>Upload Dokumen / ID</span>
+                    </Button>
+                    <Button
+                      onClick={handleOpenCreateCompartment}
+                      size="sm"
+                      className="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs h-9 px-3.5 rounded-xl shadow-xs"
+                    >
+                      <Plus className="w-3.5 h-3.5 mr-1.5" />
+                      <span>Buat Koper Baru</span>
                     </Button>
                   </div>
                 )}
@@ -1707,106 +1776,96 @@ export const DashboardPage: React.FC = () => {
                   <h5 className="text-sm font-bold text-slate-700">Belum Ada Kompartmen Data</h5>
                   <p className="text-xs text-slate-400 max-w-sm mx-auto mt-1">
                     {vaultUnlocked 
-                      ? 'Buka ekstensi Telmy untuk upload dokumen identitas atau buat koper data baru di atas.' 
+                      ? 'Upload KTP, Paspor, Ijazah untuk ekstrak otomatis dengan AI, atau klik Buat Koper Baru di atas.' 
                       : 'Buka brankas dengan password atau seed phrase untuk melihat data profil yang tersimpan.'}
                   </p>
+                  {vaultUnlocked && (
+                    <div className="flex items-center justify-center gap-3 mt-4">
+                      <Button
+                        onClick={() => setIsIngestModalOpen(true)}
+                        size="sm"
+                        className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs h-9 px-4 rounded-xl"
+                      >
+                        <Upload className="w-3.5 h-3.5 mr-1.5" />
+                        <span>Upload Dokumen (AI Auto-Extract)</span>
+                      </Button>
+                      <Button
+                        onClick={handleOpenCreateCompartment}
+                        size="sm"
+                        variant="outline"
+                        className="font-bold text-xs h-9 px-4 rounded-xl"
+                      >
+                        <Plus className="w-3.5 h-3.5 mr-1.5" />
+                        <span>Buat Manual</span>
+                      </Button>
+                    </div>
+                  )}
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {vaultCompartments.map((comp) => (
-                    <Card key={comp.id} className="p-5 bg-white border border-slate-200 rounded-3xl shadow-xs space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-blue-50 text-blue-700">
-                          {comp.badge}
-                        </span>
-                        {vaultUnlocked && (
-                          <button
-                            onClick={() => handleDeleteCompartment(comp.id)}
-                            className="text-slate-400 hover:text-red-600 p-1 cursor-pointer"
-                            title="Hapus koper ini"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        )}
-                      </div>
+                    <Card key={comp.id} className="p-5 bg-white border border-slate-200 rounded-3xl shadow-xs space-y-3 flex flex-col justify-between">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-blue-50 text-blue-700">
+                            {comp.badge || 'Koper'}
+                          </span>
+                          {vaultUnlocked && (
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => handleOpenEditCompartment(comp)}
+                                className="text-slate-400 hover:text-blue-600 p-1 cursor-pointer transition-colors"
+                                title="Edit koper & kolom"
+                              >
+                                <Edit2 className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteCompartment(comp.id)}
+                                className="text-slate-400 hover:text-red-600 p-1 cursor-pointer transition-colors"
+                                title="Hapus koper ini"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          )}
+                        </div>
 
-                      <div className="flex items-center justify-between gap-2">
-                        <h5 className="font-bold text-slate-900 text-sm leading-tight flex-1">
+                        <h5 className="font-bold text-slate-900 text-sm leading-tight">
                           {comp.title}
                         </h5>
-                        {vaultUnlocked && (
-                          <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => handleEditCompartmentTitle(comp.id, comp.title)}
-                              className="text-slate-400 hover:text-blue-600 p-1 cursor-pointer transition-colors"
-                              title="Ubah nama koper"
-                            >
-                              <Edit2 className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              onClick={() => handleAddField(comp.id)}
-                              className="text-slate-400 hover:text-emerald-600 p-1 cursor-pointer transition-colors"
-                              title="Tambah kolom baru ke koper ini"
-                            >
-                              <Plus className="w-3.5 h-3.5" />
-                            </button>
+
+                        {vaultUnlocked ? (
+                          <div className="space-y-1.5 pt-2 border-t border-slate-100 text-xs">
+                            {Array.isArray(comp.fields) && comp.fields.length > 0 ? (
+                              comp.fields.map((f: any, idx: number) => (
+                                <div key={idx} className="flex items-baseline justify-between gap-2 font-mono text-[11px] py-0.5">
+                                  <span className="text-slate-500 font-sans truncate max-w-[45%]">{f.key}:</span>
+                                  <span className="font-bold text-slate-800 truncate text-right">{f.value || '—'}</span>
+                                </div>
+                              ))
+                            ) : (
+                              <div className="py-2 text-center text-[11px] text-slate-400">
+                                Belum ada kolom terdaftar.
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="py-6 text-center text-xs text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                            <Lock className="w-4 h-4 mx-auto mb-1 text-slate-400" />
+                            <span>{dI18n.vaultLockedData}</span>
                           </div>
                         )}
                       </div>
 
-                      {vaultUnlocked ? (
-                        <div className="space-y-2 pt-2 border-t border-slate-100 text-xs">
-                          {Array.isArray(comp.fields) && comp.fields.length > 0 ? (
-                            comp.fields.map((f: any, idx: number) => (
-                              <div key={idx} className="group/item flex items-center justify-between gap-2 font-mono text-[11px] hover:bg-slate-50 p-1 rounded-lg transition-colors">
-                                <span className="text-slate-500 font-sans truncate max-w-[40%]">{f.key}:</span>
-                                <div className="flex items-center gap-1.5 min-w-0">
-                                  <span className="font-bold text-slate-800 truncate">{f.value}</span>
-                                  <div className="opacity-0 group-hover/item:opacity-100 flex items-center transition-opacity shrink-0">
-                                    <button
-                                      onClick={() => handleUpdateField(comp.id, idx, f.key, f.value)}
-                                      className="text-slate-400 hover:text-blue-600 p-0.5 cursor-pointer"
-                                      title="Edit baris data ini"
-                                    >
-                                      <Edit2 className="w-3 h-3" />
-                                    </button>
-                                    <button
-                                      onClick={() => handleDeleteField(comp.id, idx)}
-                                      className="text-slate-400 hover:text-red-600 p-0.5 cursor-pointer"
-                                      title="Hapus baris data ini"
-                                    >
-                                      <Trash2 className="w-3 h-3" />
-                                    </button>
-                                  </div>
-                                </div>
-                              </div>
-                            ))
-                          ) : (
-                            <div className="py-3 text-center text-[11px] text-slate-400">
-                              <span>Belum ada kolom. Klik </span>
-                              <button
-                                onClick={() => handleAddField(comp.id)}
-                                className="text-blue-600 font-bold hover:underline inline-flex items-center gap-0.5"
-                              >
-                                + Tambah Kolom
-                              </button>
-                            </div>
-                          )}
-
-                          {Array.isArray(comp.fields) && comp.fields.length > 0 && (
-                            <button
-                              onClick={() => handleAddField(comp.id)}
-                              className="w-full mt-2 py-1.5 rounded-lg border border-dashed border-slate-200 hover:border-blue-400 hover:bg-blue-50/50 text-[11px] font-bold text-slate-500 hover:text-blue-600 flex items-center justify-center gap-1 transition-all cursor-pointer"
-                            >
-                              <Plus className="w-3 h-3" />
-                              <span>Tambah Kolom</span>
-                            </button>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="py-6 text-center text-xs text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                          <Lock className="w-4 h-4 mx-auto mb-1 text-slate-400" />
-                          <span>{dI18n.vaultLockedData}</span>
+                      {vaultUnlocked && (
+                        <div className="pt-2 border-t border-slate-100">
+                          <button
+                            onClick={() => handleOpenEditCompartment(comp)}
+                            className="w-full py-1.5 rounded-xl bg-slate-50 hover:bg-blue-50 hover:text-blue-600 text-slate-600 text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer"
+                          >
+                            <Edit2 className="w-3 h-3" />
+                            <span>Kelola Kolom & Nilai</span>
+                          </button>
                         </div>
                       )}
                     </Card>
@@ -1927,6 +1986,227 @@ export const DashboardPage: React.FC = () => {
                       className="bg-red-600 hover:bg-red-500 text-white font-bold text-xs px-4 h-9"
                     >
                       Saya Paham, Reset & Generate Baru
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* RICH MODAL: EDIT / CREATE VAULT COMPARTMENT (DYNAMIC FIELD BUILDER) */}
+            {isCompModalOpen && activeEditingComp && (
+              <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
+                <div className="bg-white rounded-3xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 space-y-5 max-h-[90vh] flex flex-col">
+                  <div className="flex items-center justify-between border-b pb-3 shrink-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">🗂️</span>
+                      <strong className="text-sm font-bold text-slate-900">
+                        {vaultCompartments.some(c => c.id === activeEditingComp.id) ? 'Edit Koper Data' : 'Buat Koper Data Baru'}
+                      </strong>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setIsCompModalOpen(false)
+                        setActiveEditingComp(null)
+                      }}
+                      className="text-slate-400 hover:text-slate-600 text-sm p-1 cursor-pointer"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  <div className="space-y-4 overflow-y-auto flex-1 pr-1">
+                    {/* Compartment Title & Badge */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="sm:col-span-2 space-y-1">
+                        <label className="text-xs font-bold text-slate-700">Nama Koper / Kompartmen</label>
+                        <input
+                          type="text"
+                          placeholder="misal: Paspor & Visa, Ijazah, Data Bank"
+                          value={activeEditingComp.title}
+                          onChange={(e) => setActiveEditingComp({ ...activeEditingComp, title: e.target.value })}
+                          className="w-full h-9 px-3 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:border-blue-600"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-bold text-slate-700">Kategori Badge</label>
+                        <select
+                          value={activeEditingComp.badge}
+                          onChange={(e) => setActiveEditingComp({ ...activeEditingComp, badge: e.target.value })}
+                          className="w-full h-9 px-3 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:border-blue-600 bg-white"
+                        >
+                          <option value="Utama">Utama</option>
+                          <option value="Travel">Travel</option>
+                          <option value="Akademik">Akademik</option>
+                          <option value="Keuangan">Keuangan</option>
+                          <option value="Keluarga">Keluarga</option>
+                          <option value="Custom">Custom</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Dynamic Fields Table */}
+                    <div className="space-y-2 pt-2 border-t border-slate-100">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold text-slate-800">
+                          Kolom Data Profil ({activeEditingComp.fields.length})
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveEditingComp({
+                              ...activeEditingComp,
+                              fields: [...activeEditingComp.fields, { key: '', value: '' }]
+                            })
+                          }}
+                          className="text-xs font-bold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1 cursor-pointer"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>+ Tambah Baris Kolom</span>
+                        </button>
+                      </div>
+
+                      <div className="space-y-2">
+                        {activeEditingComp.fields.map((f, idx) => (
+                          <div key={idx} className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-200/80">
+                            <input
+                              type="text"
+                              placeholder="Nama Kolom (Key)"
+                              value={f.key}
+                              onChange={(e) => {
+                                const fields = [...activeEditingComp.fields]
+                                fields[idx].key = e.target.value
+                                setActiveEditingComp({ ...activeEditingComp, fields })
+                              }}
+                              className="w-2/5 h-8 px-2.5 rounded-lg border border-slate-200 bg-white text-xs font-semibold focus:outline-none focus:border-blue-600"
+                            />
+                            <span className="text-slate-400 font-bold text-xs">:</span>
+                            <input
+                              type="text"
+                              placeholder="Nilai Data (Value)"
+                              value={f.value}
+                              onChange={(e) => {
+                                const fields = [...activeEditingComp.fields]
+                                fields[idx].value = e.target.value
+                                setActiveEditingComp({ ...activeEditingComp, fields })
+                              }}
+                              className="flex-1 h-8 px-2.5 rounded-lg border border-slate-200 bg-white text-xs focus:outline-none focus:border-blue-600"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const fields = activeEditingComp.fields.filter((_, i) => i !== idx)
+                                setActiveEditingComp({ ...activeEditingComp, fields })
+                              }}
+                              className="text-slate-400 hover:text-red-600 p-1 cursor-pointer transition-colors"
+                              title="Hapus baris kolom ini"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveEditingComp({
+                            ...activeEditingComp,
+                            fields: [...activeEditingComp.fields, { key: '', value: '' }]
+                          })
+                        }}
+                        className="w-full py-2 rounded-xl border border-dashed border-slate-200 hover:border-blue-400 hover:bg-blue-50/50 text-xs font-bold text-slate-500 hover:text-blue-600 flex items-center justify-center gap-1 transition-all cursor-pointer mt-2"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Tambah Kolom Baru</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 pt-3 border-t shrink-0">
+                    <Button
+                      onClick={() => {
+                        setIsCompModalOpen(false)
+                        setActiveEditingComp(null)
+                      }}
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs font-bold"
+                    >
+                      Batal
+                    </Button>
+                    <Button
+                      onClick={handleSaveCompartmentModal}
+                      size="sm"
+                      className="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-5 h-9 rounded-xl shadow-xs"
+                    >
+                      Simpan Koper Data (AES-256)
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* DOCUMENT INGEST MODAL: AI EXTRACT FROM KTP / PASSPORT / DIPLOMA */}
+            {isIngestModalOpen && (
+              <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
+                <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+                  <div className="flex items-center justify-between border-b pb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">📄</span>
+                      <strong className="text-sm font-bold text-slate-900">Upload Dokumen Identitas</strong>
+                    </div>
+                    <button
+                      onClick={() => setIsIngestModalOpen(false)}
+                      className="text-slate-400 hover:text-slate-600 text-sm p-1 cursor-pointer"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    Upload foto/file KTP, Paspor, atau Ijazah (PDF, PNG, JPG). AI Multimodal akan mengekstrak nama, NIK, tanggal lahir, dan entitas resmi otomatis ke dalam koper baru.
+                  </p>
+
+                  <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200/60 text-[11px] text-emerald-800">
+                    🔒 <strong>Zero-Retention Policy</strong>: File dokumen asli tidak pernah disimpan di server kami dan langsung dihapus dari memori setelah entitas diekstrak.
+                  </div>
+
+                  {ingestError && (
+                    <div className="p-2.5 rounded-xl bg-red-50 border border-red-200 text-xs text-red-600 font-semibold">
+                      ⚠️ {ingestError}
+                    </div>
+                  )}
+
+                  <div className="pt-2">
+                    <label className="block w-full cursor-pointer">
+                      <div className="border-2 border-dashed border-slate-300 hover:border-emerald-500 hover:bg-emerald-50/40 rounded-2xl p-6 text-center transition-all">
+                        <Upload className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                        <span className="text-xs font-bold text-slate-700 block">
+                          {ingestLoading ? 'Memproses Ekstraksi AI...' : 'Klik untuk Pilih Dokumen / Seret File'}
+                        </span>
+                        <span className="text-[10px] text-slate-400 mt-1 block">
+                          PDF, PNG, JPG hingga 10MB
+                        </span>
+                      </div>
+                      <input
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp,application/pdf"
+                        disabled={ingestLoading}
+                        onChange={handleFileIngest}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+
+                  <div className="flex justify-end pt-2">
+                    <Button
+                      onClick={() => setIsIngestModalOpen(false)}
+                      disabled={ingestLoading}
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs font-bold"
+                    >
+                      Tutup
                     </Button>
                   </div>
                 </div>
@@ -2166,7 +2446,7 @@ export const DashboardPage: React.FC = () => {
                               try {
                                 const uid = userProfile?.uid || 'guest_user'
                                 // 1. First attempt direct Mayar Checkout
-                                const checkoutRes = await fetch('/api/payment/checkout', {
+                                const checkoutRes = await fetch(getApiUrl('/api/payment/checkout'), {
                                   method: 'POST',
                                   headers: { 'Content-Type': 'application/json' },
                                   body: JSON.stringify({
@@ -2184,7 +2464,7 @@ export const DashboardPage: React.FC = () => {
                                 }
 
                                 // 2. Also run instant fulfillment simulation to guarantee immediate credit addition
-                                const simRes = await fetch('/api/payment/simulate-purchase', {
+                                const simRes = await fetch(getApiUrl('/api/payment/simulate-purchase'), {
                                   method: 'POST',
                                   headers: { 'Content-Type': 'application/json' },
                                   body: JSON.stringify({ uid, planId: tier.id })

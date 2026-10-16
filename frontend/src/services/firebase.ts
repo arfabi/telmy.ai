@@ -9,6 +9,7 @@ import {
   onAuthStateChanged,
   User 
 } from 'firebase/auth'
+import { getApiUrl } from '../config/api'
 
 export const firebaseConfig = {
   apiKey: "AIzaSyBibds09YOwLFUaEk8p_W-vEP1OI1RNwkk",
@@ -77,7 +78,7 @@ export async function syncUserWithBackend(user: User): Promise<void> {
 
   // 3. Post to backend Express server if available
   try {
-    const res = await fetch('http://127.0.0.1:8080/api/user/sync', {
+    const res = await fetch(getApiUrl('/api/user/sync'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(profilePayload)
