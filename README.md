@@ -33,10 +33,10 @@
 ## 📑 Table of Contents
 
 - [📖 The Story & Problem](#-the-story--problem-why-we-built-telmyai)
-- [🏛️ System Architecture](#️-system-architecture)
-- [🛠️ Google Technology Stack](#️-complete-google-technology-stack-100-google-ai--cloud-native)
 - [🌟 Feature Highlights (Extension & Dashboard)](#-comprehensive-feature-breakdown-extension--dashboard)
 - [🌍 Supported Languages](#-supported-languages-11-japac--global-languages)
+- [🏛️ System Architecture](#️-system-architecture)
+- [🛠️ Google Technology Stack](#️-complete-google-technology-stack-100-google-ai--cloud-native)
 - [🚀 Quickstart & Setup Guide](#-quickstart--setup-guide)
   - [Step 1: Backend Setup](#step-1-configure--start-backend)
   - [Step 2: Frontend Setup](#step-2-configure--start-frontend-web-platform)
@@ -61,6 +61,58 @@ Every year, millions of citizens, international students, foreign travelers, and
 **Telmy.ai** was built upon a simple human principle: **No one should ever feel alone, anxious, or helpless when completing official digital paperwork.**
 
 Telmy is a warm, intelligent companion that lives in your browser's native **Chrome Side Panel** and is supported by a comprehensive web dashboard. As you navigate any complex portal or open a downloaded embassy PDF form, Telmy sits right alongside your page. It points to each question, explains what it means in plain everyday words, offers realistic examples, validates your input before submission, and narrates answers aloud with a talking mascot avatar.
+
+---
+
+
+## 🌟 Comprehensive Feature Breakdown (Extension & Dashboard)
+
+### 🧩 1. Browser Extension Core Features (8 Main Action Suite)
+
+The Telmy Side Panel features 8 unified, one-click action cards designed to guide users through every stage of online bureaucracy:
+
+| Feature Name | Benefits | Real-World Use Case | How-To Tutorial (Step-by-Step) |
+| :--- | :--- | :--- | :--- |
+| **🔍 Analyze Form** | Instantly scans the entire web page, removes noise, identifies all interactive inputs, renders sequential numbered badge overlays on the DOM, and generates plain-language explanations in the Forms Guide. | Navigating a 30-field scholarship application or embassy visa portal packed with confusing legal acronyms and unorganized sections. | 1. Open any complex form in your browser.<br>2. Press `Alt + T` or click the Telmy icon in your toolbar to open the Side Panel.<br>3. Click the **"Analyze Form"** card.<br>4. Telmy scans the page and paints numbered badges (`1, 2, 3...`) next to every input.<br>5. Check the **Forms Guide** tab to review field meanings one by one. |
+| **✂️ Explain This** | Pixel-precise screen snipping tool (Lightshot-style). Crop any confusing button, seal, ambiguous sentence, or table on your screen. Gemini Multimodal Vision combines the crop with page metadata (`title`, `URL`, surrounding DOM text) to provide instant clarity. | Encountering an ambiguous checkbox, unfamiliar fee table, or confusing government apostille instruction that generic translators cannot interpret. | 1. Click the **"Explain This"** card in the Side Panel.<br>2. The webpage dims with a semi-transparent overlay and your cursor turns into a crosshair.<br>3. Click and drag a rectangular box over the confusing element.<br>4. Release the mouse. Telmy automatically crops the pixels, extracts surrounding context, and sends it to the AI assistant.<br>5. Read the explanation and actionable advice directly in the chat! |
+| **⚡ 1-Click Auto Fill** | Safely decrypts your client-side profile vault and populates matching form fields in under 1 second without typing mistakes or copy-pasting. | Entering repetitive personal details (passport number, expiry date, national ID, address, phone) across multiple portals. | 1. Ensure you have saved your profile credentials in the **AutoFill / Vault** tab.<br>2. Click **"1-Click Auto Fill"** on the welcome menu or open the AutoFill tab.<br>3. Enter your Master PIN or 12-word recovery seed phrase.<br>4. Telmy matches inputs semantically and fills all corresponding fields automatically with zero typing errors. |
+| **📄 Upload Local Form** | In-browser PDF engine powered by `pdf-lib` (WASM/JS). Reads, explains, fills, and certifies downloaded government PDF forms 100% locally with zero data leaks. | Filling downloaded embassy visa application PDFs, tax forms, or university enrollment paperwork offline or in-browser. | 1. Click **"Upload Local Form"** in the Side Panel.<br>2. Drag and drop your `.pdf` file into the designated upload area.<br>3. Telmy parses the interactive AcroForm fields and explains each clause step-by-step.<br>4. Fill in your answers and click **"Export Filled PDF"** to download the completed official document. |
+| **🌐 Translate Page** | In-place, context-aware DOM translation that translates labels, placeholders, and buttons into your native language without breaking React/Angular state or event listeners. | Completing a Japanese MEXT, German DAAD, or South Korean KGSP scholarship form written entirely in a foreign language. | 1. While on the foreign language portal, click **"Translate Page"**.<br>2. Telmy swaps labels and placeholders into your selected language in real time.<br>3. Click the button again at any time to toggle back to the original source text. |
+| **👆 Show Me** | Spatial visual spotlight navigation. Type or ask where an elusive button, section, or link is located, and Telmy glides an animated pointer and neon beacon directly to it. | Frantically searching for hidden buttons like *"Submit Application"*, *"Add Recommendation"*, or *"Download Receipt"*. | 1. Click **"Show Me"** on the welcome menu (or type `"Show me section about [keyword]"` in chat).<br>2. Enter the name of the button or section you are looking for.<br>3. Watch the webpage smoothly scroll: a glowing neon spotlight beacon and flying pointer will pulse right on top of the target element! |
+| **🛡️ Form Auditor** | Pre-submission sanity checker utilizing a Traffic Light verification system (🟢 Green, 🟡 Yellow, 🔴 Red) to catch critical mistakes before submitting. | Preventing application disqualification due to missing mandatory inputs, inverted dates (`MM/DD/YYYY` vs `DD/MM/YYYY`), or academic titles in passport name fields. | 1. Complete your form inputs on the webpage.<br>2. Click **"Form Auditor"** in the Side Panel before pressing the official Submit button.<br>3. Telmy runs client-side audit rules across all inputs.<br>4. Review the traffic light report: fix any 🔴 Critical missing fields or 🟡 Formatting warnings. When 🟢 Ready to Submit appears, you're safe to submit! |
+| **♿ Accessibility** | Full WCAG 2.2 AA compliant dedicated hub featuring 1-click situational presets (ADHD Focus, Dyslexia Font, Low Vision, Senior Friendly) and customizable visual adjustments. | Users with visual fatigue, ADHD, dyslexia, or seniors who need high contrast, larger text, or guided reading bars to complete forms comfortably. | 1. Click **"Accessibility"** in the Side Panel (or press `Ctrl + U`).<br>2. Select a preset (e.g., **ADHD Focus** to dim distractions or **Dyslexia** to switch to dyslexia-friendly fonts).<br>3. Customize line spacing, text alignment, or contrast themes.<br>4. Click **"Reset"** or **"Kembali"** when finished to restore normal website styling. |
+
+---
+
+### 💻 2. Modern Web Dashboard Platform (`/dashboard`)
+
+| Feature Name | Benefits | Real-World Use Case | How-To Tutorial (Step-by-Step) |
+| :--- | :--- | :--- | :--- |
+| **📊 Overview & Quota Monitor** | Live visibility over remaining form credits, active membership tiers, connected devices, and anxiety-reduction daily tips. | Monitoring daily form analysis quota and checking subscription limits before starting a major visa application session. | 1. Log in at `https://telmy.id/dashboard`.<br>2. View your real-time quota pill and active tier badge at the top of the page.<br>3. Check recent activity logs and quick-launch links. |
+| **🎓 Telmy Academy** | Interactive gamified onboarding with 5 structured missions. Educates users on form navigation while awarding instant bonus form credits. | New users learning how to use browser side panels, configure vault encryption, and audit documents safely. | 1. Navigate to the **Academy** tab in the dashboard.<br>2. Complete missions (e.g., install extension, setup master vault, run first audit).<br>3. Click **"Claim Reward"** to unlock bonus form credits added straight to your balance. |
+| **🔐 Zero-Knowledge Multi-Vault** | Mathematical client-side encryption (AES-256-GCM + PBKDF2 100k iterations). Organize custom profiles (Personal, Spouse, Children, Parents) with unlimited custom key-value pairs. | Securely storing sensitive NIK, passport numbers, birth certificate dates, and family records with zero server-side plaintext leakage. | 1. Open the **Vault** page in the dashboard.<br>2. Enter your 6-digit Master PIN or 12-word seed phrase.<br>3. Add or edit custom fields (e.g., `Passport No | A1234567`).<br>4. Click **Save**: data is encrypted in your browser's RAM before sync. |
+| **📑 Forms History & Draft Locker** | Cloud draft management allowing users to track previously analyzed forms, view past audit reports, and resume interrupted applications. | Resuming a complex visa application that spans across multiple days without losing entered information or past audit advice. | 1. Open **Forms History** in the dashboard.<br>2. Locate your application by domain name or date.<br>3. Click **"Resume"** to reopen the portal with all previously mapped badges intact. |
+| **💳 Mayar.id Payments & Tiers** | Instant self-serve credit top-ups supporting Indonesian QRIS (GoPay, OVO, DANA, ShopeePay), Virtual Accounts, and international credit cards. | Upgrading from Free Tier (5 forms) to Standard/Pro tiers during peak scholarship or visa filing seasons. | 1. Go to the **Pricing & Credits** section.<br>2. Select your desired tier (Standard 25, Pro 75, or Max 200).<br>3. Scan the generated QRIS code with any Indonesian e-wallet or pay via bank transfer.<br>4. Credits are credited instantly via automated webhook. |
+
+---
+
+## 🌍 Supported Languages (11 JAPAC & Global Languages)
+
+Telmy supports 11 major languages natively across guidance, translation, voice synthesis, and UI:
+
+| Flag | Language | Native Name | Code | Voice Engine |
+| :---: | :--- | :--- | :---: | :---: |
+| 🇬🇧 | **English (Default)** | English | `en` | ✅ WaveNet Neural (`en-US-Wavenet-F`) |
+| 🇮🇩 | **Indonesian** | Bahasa Indonesia | `id` | ✅ WaveNet Neural (`id-ID-Wavenet-A`) |
+| 🇯🇵 | **Japanese** | 日本語 | `ja` | ✅ WaveNet Neural (`ja-JP-Wavenet-B`) |
+| 🇰🇷 | **Korean** | 한국어 | `ko` | ✅ WaveNet Neural (`ko-KR-Wavenet-A`) |
+| 🇨🇳 | **Simplified Chinese** | 简体中文 | `zh` | ✅ WaveNet Neural (`cmn-CN-Wavenet-A`) |
+| 🇹🇼 | **Traditional Chinese** | 繁體中文 | `zh-TW` | ✅ WaveNet Neural (`cmn-TW-Wavenet-A`) |
+| 🇻🇳 | **Vietnamese** | Tiếng Việt | `vi` | ✅ WaveNet Neural (`vi-VN-Wavenet-A`) |
+| 🇹🇭 | **Thai** | ไทย | `th` | ✅ WaveNet Neural (`th-TH-Standard-A`) |
+| 🇮🇳 | **Hindi** | हिन्दी | `hi` | ✅ WaveNet Neural (`hi-IN-Wavenet-A`) |
+| 🇵🇭 | **Filipino** | Filipino | `fil` | ✅ Web Speech Synthesis |
+| 🇲🇾 | **Malay** | Bahasa Melayu | `ms` | ✅ Web Speech Synthesis |
 
 ---
 
@@ -122,7 +174,7 @@ graph TD
 
 ---
 
-## 🛠️ Complete Google Technology Stack (100% Google AI & Cloud Native)
+## 🛠️ Technology Stack
 
 Telmy.ai is architected natively around the Google Cloud & Google AI ecosystem:
 
@@ -144,56 +196,6 @@ Telmy.ai is architected natively around the Google Cloud & Google AI ecosystem:
 
 ---
 
-## 🌟 Comprehensive Feature Breakdown (Extension & Dashboard)
-
-### 🧩 1. Browser Extension Core Features (8 Main Action Suite)
-
-The Telmy Side Panel features 8 unified, one-click action cards designed to guide users through every stage of online bureaucracy:
-
-| Feature Name | Benefits | Real-World Use Case | How-To Tutorial (Step-by-Step) |
-| :--- | :--- | :--- | :--- |
-| **🔍 Analyze Form** | Instantly scans the entire web page, removes noise, identifies all interactive inputs, renders sequential numbered badge overlays on the DOM, and generates plain-language explanations in the Forms Guide. | Navigating a 30-field scholarship application or embassy visa portal packed with confusing legal acronyms and unorganized sections. | 1. Open any complex form in your browser.<br>2. Press `Alt + T` or click the Telmy icon in your toolbar to open the Side Panel.<br>3. Click the **"Analyze Form"** card.<br>4. Telmy scans the page and paints numbered badges (`1, 2, 3...`) next to every input.<br>5. Check the **Forms Guide** tab to review field meanings one by one. |
-| **✂️ Explain This** | Pixel-precise screen snipping tool (Lightshot-style). Crop any confusing button, seal, ambiguous sentence, or table on your screen. Gemini Multimodal Vision combines the crop with page metadata (`title`, `URL`, surrounding DOM text) to provide instant clarity. | Encountering an ambiguous checkbox, unfamiliar fee table, or confusing government apostille instruction that generic translators cannot interpret. | 1. Click the **"Explain This"** card in the Side Panel.<br>2. The webpage dims with a semi-transparent overlay and your cursor turns into a crosshair.<br>3. Click and drag a rectangular box over the confusing element.<br>4. Release the mouse. Telmy automatically crops the pixels, extracts surrounding context, and sends it to the AI assistant.<br>5. Read the explanation and actionable advice directly in the chat! |
-| **⚡ 1-Click Auto Fill** | Safely decrypts your client-side profile vault and populates matching form fields in under 1 second without typing mistakes or copy-pasting. | Entering repetitive personal details (passport number, expiry date, national ID, address, phone) across multiple portals. | 1. Ensure you have saved your profile credentials in the **AutoFill / Vault** tab.<br>2. Click **"1-Click Auto Fill"** on the welcome menu or open the AutoFill tab.<br>3. Enter your Master PIN or 12-word recovery seed phrase.<br>4. Telmy matches inputs semantically and fills all corresponding fields automatically with zero typing errors. |
-| **📄 Upload Local Form** | In-browser PDF engine powered by `pdf-lib` (WASM/JS). Reads, explains, fills, and certifies downloaded government PDF forms 100% locally with zero data leaks. | Filling downloaded embassy visa application PDFs, tax forms, or university enrollment paperwork offline or in-browser. | 1. Click **"Upload Local Form"** in the Side Panel.<br>2. Drag and drop your `.pdf` file into the designated upload area.<br>3. Telmy parses the interactive AcroForm fields and explains each clause step-by-step.<br>4. Fill in your answers and click **"Export Filled PDF"** to download the completed official document. |
-| **🌐 Translate Page** | In-place, context-aware DOM translation that translates labels, placeholders, and buttons into your native language without breaking React/Angular state or event listeners. | Completing a Japanese MEXT, German DAAD, or South Korean KGSP scholarship form written entirely in a foreign language. | 1. While on the foreign language portal, click **"Translate Page"**.<br>2. Telmy swaps labels and placeholders into your selected language in real time.<br>3. Click the button again at any time to toggle back to the original source text. |
-| **👆 Show Me** | Spatial visual spotlight navigation. Type or ask where an elusive button, section, or link is located, and Telmy glides an animated pointer and neon beacon directly to it. | Frantically searching for hidden buttons like *"Submit Application"*, *"Add Recommendation"*, or *"Download Receipt"*. | 1. Click **"Show Me"** on the welcome menu (or type `"Show me section about [keyword]"` in chat).<br>2. Enter the name of the button or section you are looking for.<br>3. Watch the webpage smoothly scroll: a glowing neon spotlight beacon and flying pointer will pulse right on top of the target element! |
-| **🛡️ Form Auditor** | Pre-submission sanity checker utilizing a Traffic Light verification system (🟢 Green, 🟡 Yellow, 🔴 Red) to catch critical mistakes before submitting. | Preventing application disqualification due to missing mandatory inputs, inverted dates (`MM/DD/YYYY` vs `DD/MM/YYYY`), or academic titles in passport name fields. | 1. Complete your form inputs on the webpage.<br>2. Click **"Form Auditor"** in the Side Panel before pressing the official Submit button.<br>3. Telmy runs client-side audit rules across all inputs.<br>4. Review the traffic light report: fix any 🔴 Critical missing fields or 🟡 Formatting warnings. When 🟢 Ready to Submit appears, you're safe to submit! |
-| **♿ Accessibility** | Full WCAG 2.2 AA compliant dedicated hub featuring 1-click situational presets (ADHD Focus, Dyslexia Font, Low Vision, Senior Friendly) and customizable visual adjustments. | Users with visual fatigue, ADHD, dyslexia, or seniors who need high contrast, larger text, or guided reading bars to complete forms comfortably. | 1. Click **"Accessibility"** in the Side Panel (or press `Ctrl + U`).<br>2. Select a preset (e.g., **ADHD Focus** to dim distractions or **Dyslexia** to switch to dyslexia-friendly fonts).<br>3. Customize line spacing, text alignment, or contrast themes.<br>4. Click **"Reset"** or **"Kembali"** when finished to restore normal website styling. |
-
----
-
-### 💻 2. Modern Web Dashboard Platform (`/dashboard`)
-
-| Feature Name | Benefits | Real-World Use Case | How-To Tutorial (Step-by-Step) |
-| :--- | :--- | :--- | :--- |
-| **📊 Overview & Quota Monitor** | Live visibility over remaining form credits, active membership tiers, connected devices, and anxiety-reduction daily tips. | Monitoring daily form analysis quota and checking subscription limits before starting a major visa application session. | 1. Log in at `https://telmy.id/dashboard`.<br>2. View your real-time quota pill and active tier badge at the top of the page.<br>3. Check recent activity logs and quick-launch links. |
-| **🎓 Telmy Academy** | Interactive gamified onboarding with 5 structured missions. Educates users on form navigation while awarding instant bonus form credits. | New users learning how to use browser side panels, configure vault encryption, and audit documents safely. | 1. Navigate to the **Academy** tab in the dashboard.<br>2. Complete missions (e.g., install extension, setup master vault, run first audit).<br>3. Click **"Claim Reward"** to unlock bonus form credits added straight to your balance. |
-| **🔐 Zero-Knowledge Multi-Vault** | Mathematical client-side encryption (AES-256-GCM + PBKDF2 100k iterations). Organize custom profiles (Personal, Spouse, Children, Parents) with unlimited custom key-value pairs. | Securely storing sensitive NIK, passport numbers, birth certificate dates, and family records with zero server-side plaintext leakage. | 1. Open the **Vault** page in the dashboard.<br>2. Enter your 6-digit Master PIN or 12-word seed phrase.<br>3. Add or edit custom fields (e.g., `Passport No | A1234567`).<br>4. Click **Save**: data is encrypted in your browser's RAM before sync. |
-| **📑 Forms History & Draft Locker** | Cloud draft management allowing users to track previously analyzed forms, view past audit reports, and resume interrupted applications. | Resuming a complex visa application that spans across multiple days without losing entered information or past audit advice. | 1. Open **Forms History** in the dashboard.<br>2. Locate your application by domain name or date.<br>3. Click **"Resume"** to reopen the portal with all previously mapped badges intact. |
-| **💳 Mayar.id Payments & Tiers** | Instant self-serve credit top-ups supporting Indonesian QRIS (GoPay, OVO, DANA, ShopeePay), Virtual Accounts, and international credit cards. | Upgrading from Free Tier (5 forms) to Standard/Pro tiers during peak scholarship or visa filing seasons. | 1. Go to the **Pricing & Credits** section.<br>2. Select your desired tier (Standard 25, Pro 75, or Max 200).<br>3. Scan the generated QRIS code with any Indonesian e-wallet or pay via bank transfer.<br>4. Credits are credited instantly via automated webhook. |
-
----
-
-## 🌍 Supported Languages (11 JAPAC & Global Languages)
-
-Telmy supports 11 major languages natively across guidance, translation, voice synthesis, and UI:
-
-| Flag | Language | Native Name | Code | Voice Engine |
-| :---: | :--- | :--- | :---: | :---: |
-| 🇬🇧 | **English (Default)** | English | `en` | ✅ WaveNet Neural (`en-US-Wavenet-F`) |
-| 🇮🇩 | **Indonesian** | Bahasa Indonesia | `id` | ✅ WaveNet Neural (`id-ID-Wavenet-A`) |
-| 🇯🇵 | **Japanese** | 日本語 | `ja` | ✅ WaveNet Neural (`ja-JP-Wavenet-B`) |
-| 🇰🇷 | **Korean** | 한국어 | `ko` | ✅ WaveNet Neural (`ko-KR-Wavenet-A`) |
-| 🇨🇳 | **Simplified Chinese** | 简体中文 | `zh` | ✅ WaveNet Neural (`cmn-CN-Wavenet-A`) |
-| 🇹🇼 | **Traditional Chinese** | 繁體中文 | `zh-TW` | ✅ WaveNet Neural (`cmn-TW-Wavenet-A`) |
-| 🇻🇳 | **Vietnamese** | Tiếng Việt | `vi` | ✅ WaveNet Neural (`vi-VN-Wavenet-A`) |
-| 🇹🇭 | **Thai** | ไทย | `th` | ✅ WaveNet Neural (`th-TH-Standard-A`) |
-| 🇮🇳 | **Hindi** | हिन्दी | `hi` | ✅ WaveNet Neural (`hi-IN-Wavenet-A`) |
-| 🇵🇭 | **Filipino** | Filipino | `fil` | ✅ Web Speech Synthesis |
-| 🇲🇾 | **Malay** | Bahasa Melayu | `ms` | ✅ Web Speech Synthesis |
-
----
 
 ## 🚀 Quickstart & Setup Guide
 
@@ -312,5 +314,5 @@ Telmy.ai was engineered to be **100% compliant** with Google Chrome Web Store De
 ---
 
 ## 📄 License & Credits
-Created with ❤️ by the **Telmy.ai Team** for the **Google AI Hackathon 2026** (Hack2skill).  
+Created with ❤️ by the **Telmy.ai Team** - From Indonesia to the World.
 *Empowering digital accessibility, cross-border paperwork, and barrier-free opportunities for all.*
