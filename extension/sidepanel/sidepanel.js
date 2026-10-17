@@ -5765,7 +5765,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         if (lblVaultGateDesc) {
           lblVaultGateDesc.textContent = hasVault
-            ? 'Your personal data and documents are stored with Zero-Knowledge Client-Side Encryption (AES-256). Unlock to autofill forms or manage credentials.'
+            ? 'Your personal profile data is protected with Client-Side Encryption (AES-256-GCM), and document processing adheres to strict Zero-Retention. Unlock to autofill forms or manage credentials.'
             : 'Protect your identity data (KTP, Passport, Academic Diplomas) with bank-grade encryption before using 1-Click AutoFill.';
         }
         if (lblVaultGateBtn) {

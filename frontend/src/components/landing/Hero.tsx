@@ -76,7 +76,7 @@ export const Hero: React.FC<HeroProps> = ({ t }) => {
                   { name: 'Chrome', icon: '/chrome.png', desc: 'Google Chrome' },
                   { name: 'Edge', icon: '/edge.png', desc: 'Microsoft Edge' },
                   { name: 'Firefox', icon: '/firefox.png', desc: 'Mozilla Firefox' },
-                  { name: 'Opera', icon: '/opera.png', desc: 'Opera Browser' },
+                  { name: 'Opera', icon: '/opera.webp', desc: 'Opera Browser' },
                 ].map((b) => (
                   <div
                     key={b.name}
@@ -92,9 +92,7 @@ export const Hero: React.FC<HeroProps> = ({ t }) => {
                       <span className="block text-xs font-bold text-slate-800 group-hover:text-blue-600 transition-colors leading-tight">
                         {b.name}
                       </span>
-                      <span className="block text-[10px] text-slate-500 truncate leading-tight">
-                        Desktop
-                      </span>
+
                     </div>
                   </div>
                 ))}
@@ -227,7 +225,7 @@ export const Hero: React.FC<HeroProps> = ({ t }) => {
 
                     {/* Bottom Mini Status */}
                     <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[9px] text-slate-400">
-                      <span>Zero-Knowledge Vault</span>
+                      <span>Client-Encrypted Vault</span>
                       <span className="text-blue-400 font-semibold">11 Languages</span>
                     </div>
                   </div>

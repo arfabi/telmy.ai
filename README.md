@@ -24,8 +24,18 @@
   <img src="https://img.shields.io/badge/Voice%20Synthesis-Google%20Cloud%20WaveNet-34A853?logo=googlecloud&logoColor=white" alt="WaveNet TTS" />
   <img src="https://img.shields.io/badge/Database-Firebase%20Cloud%20Firestore-FFCA28?logo=firebase&logoColor=black" alt="Firestore" />
   <img src="https://img.shields.io/badge/Hosting-Google%20Cloud%20Run-4285F4?logo=googlecloud&logoColor=white" alt="Cloud Run" />
-  <img src="https://img.shields.io/badge/Extension-Chrome%20MV3%20Side%20Panel-0071e3?logo=googlechrome&logoColor=white" alt="Chrome MV3" />
-  <img src="https://img.shields.io/badge/Security-AES--256--GCM%20Zero--Knowledge-00C853?logo=shield&logoColor=white" alt="Zero Knowledge" />
+  <img src="https://img.shields.io/badge/Extension-Cross--Browser%20MV3%20Side%20Panel-0071e3?logo=googlechrome&logoColor=white" alt="Cross-Browser MV3" />
+  <img src="https://img.shields.io/badge/Security-Client--Side%20AES--256--GCM-00C853?logo=shield&logoColor=white" alt="Client-Side Encryption" />
+  <img src="https://img.shields.io/badge/Privacy-Zero--Retention%20OCR-00C853?logo=shield&logoColor=white" alt="Zero-Retention OCR" />
+</p>
+
+<p align="center">
+  <strong>Works Seamlessly On All Modern Desktop Browsers:</strong><br>
+  <img src="https://img.shields.io/badge/Google%20Chrome-4285F4?style=flat-square&logo=googlechrome&logoColor=white" alt="Google Chrome" />
+  <img src="https://img.shields.io/badge/Microsoft%20Edge-0078D7?style=flat-square&logo=microsoftedge&logoColor=white" alt="Microsoft Edge" />
+  <img src="https://img.shields.io/badge/Mozilla%20Firefox-FF7139?style=flat-square&logo=firefoxbrowser&logoColor=white" alt="Mozilla Firefox" />
+  <img src="https://img.shields.io/badge/Opera%20Browser-FF1B2D?style=flat-square&logo=opera&logoColor=white" alt="Opera" />
+  <img src="https://img.shields.io/badge/Brave%20Browser-FB542B?style=flat-square&logo=brave&logoColor=white" alt="Brave" />
 </p>
 
 ---
@@ -34,15 +44,15 @@
 
 - [📖 The Story & Problem](#-the-story--problem-why-we-built-telmyai)
 - [🌟 Feature Highlights (Extension & Dashboard)](#-comprehensive-feature-breakdown-extension--dashboard)
-- [🌍 Supported Languages](#-supported-languages-11-japac--global-languages)
+- [🌍 Supported Languages](#-supported-languages-11-jAPAC--global-languages)
 - [🏛️ System Architecture](#️-system-architecture)
-- [🛠️ Google Technology Stack](#️-complete-google-technology-stack-100-google-ai--cloud-native)
+- [🛠️ Technology Stack](#️-technology-stack)
 - [🚀 Quickstart & Setup Guide](#-quickstart--setup-guide)
   - [Step 1: Backend Setup](#step-1-configure--start-backend)
   - [Step 2: Frontend Setup](#step-2-configure--start-frontend-web-platform)
-  - [Step 3: Browser Extension Installation](#step-3-install-browser-extension-chrome-edge-opera--firefox)
+  - [Step 3: Browser Extension Installation (Load Unpacked / ZIP Package)](#step-3-install-browser-extension-chrome-edge-opera--firefox)
 - [☁️ Cloud Run Deployment](#️-deployment-to-google-cloud-run)
-- [🔒 Chrome Web Store & Privacy Compliance](#-chrome-web-store--privacy-compliance)
+- [🔒 Browser Web Stores & Privacy Compliance](#-browser-web-stores--privacy-compliance)
 - [💎 Why Telmy.ai Stands Out](#-why-telmyai-stands-out)
 - [📄 License & Credits](#-license--credits)
 
@@ -60,7 +70,7 @@ Every year, millions of citizens, international students, foreign travelers, and
 ### Meet Telmy: Your Patient, Friendly Co-Pilot
 **Telmy.ai** was built upon a simple human principle: **No one should ever feel alone, anxious, or helpless when completing official digital paperwork.**
 
-Telmy is a warm, intelligent companion that lives in your browser's native **Chrome Side Panel** and is supported by a comprehensive web dashboard. As you navigate any complex portal or open a downloaded embassy PDF form, Telmy sits right alongside your page. It points to each question, explains what it means in plain everyday words, offers realistic examples, validates your input before submission, and narrates answers aloud with a talking mascot avatar.
+Telmy is a warm, intelligent companion that lives right in your native **Browser Side Panel** (supporting **Google Chrome, Microsoft Edge, Mozilla Firefox, Opera, and Brave**) and is supported by a comprehensive web dashboard. As you navigate any complex portal or open a downloaded embassy PDF form, Telmy sits right alongside your page. It points to each question, explains what it means in plain everyday words, offers realistic examples, validates your input before submission, and narrates answers aloud with a talking mascot avatar.
 
 ---
 
@@ -90,7 +100,7 @@ The Telmy Side Panel features 8 unified, one-click action cards designed to guid
 | :--- | :--- | :--- | :--- |
 | **📊 Overview & Quota Monitor** | Live visibility over remaining form credits, active membership tiers, connected devices, and anxiety-reduction daily tips. | Monitoring daily form analysis quota and checking subscription limits before starting a major visa application session. | 1. Log in at `https://telmy.id/dashboard`.<br>2. View your real-time quota pill and active tier badge at the top of the page.<br>3. Check recent activity logs and quick-launch links. |
 | **🎓 Telmy Academy** | Interactive gamified onboarding with 5 structured missions. Educates users on form navigation while awarding instant bonus form credits. | New users learning how to use browser side panels, configure vault encryption, and audit documents safely. | 1. Navigate to the **Academy** tab in the dashboard.<br>2. Complete missions (e.g., install extension, setup master vault, run first audit).<br>3. Click **"Claim Reward"** to unlock bonus form credits added straight to your balance. |
-| **🔐 Zero-Knowledge Multi-Vault** | Mathematical client-side encryption (AES-256-GCM + PBKDF2 100k iterations). Organize custom profiles (Personal, Spouse, Children, Parents) with unlimited custom key-value pairs. | Securely storing sensitive NIK, passport numbers, birth certificate dates, and family records with zero server-side plaintext leakage. | 1. Open the **Vault** page in the dashboard.<br>2. Enter your 6-digit Master PIN or 12-word seed phrase.<br>3. Add or edit custom fields (e.g., `Passport No | A1234567`).<br>4. Click **Save**: data is encrypted in your browser's RAM before sync. |
+| **🔐 Client-Side Encrypted Multi-Vault** | Mathematical client-side encryption (AES-256-GCM + PBKDF2 100k iterations). Organize custom profiles (Personal, Spouse, Children, Parents) with unlimited custom key-value pairs. | Securely storing sensitive NIK, passport numbers, birth certificate dates, and family records with zero server-side plaintext leakage. | 1. Open the **Vault** page in the dashboard.<br>2. Enter your 6-digit Master PIN or 12-word seed phrase.<br>3. Add or edit custom fields (e.g., `Passport No | A1234567`).<br>4. Click **Save**: data is encrypted in your browser's RAM before sync. |
 | **📑 Forms History & Draft Locker** | Cloud draft management allowing users to track previously analyzed forms, view past audit reports, and resume interrupted applications. | Resuming a complex visa application that spans across multiple days without losing entered information or past audit advice. | 1. Open **Forms History** in the dashboard.<br>2. Locate your application by domain name or date.<br>3. Click **"Resume"** to reopen the portal with all previously mapped badges intact. |
 | **💳 Mayar.id Payments & Tiers** | Instant self-serve credit top-ups supporting Indonesian QRIS (GoPay, OVO, DANA, ShopeePay), Virtual Accounts, and international credit cards. | Upgrading from Free Tier (5 forms) to Standard/Pro tiers during peak scholarship or visa filing seasons. | 1. Go to the **Pricing & Credits** section.<br>2. Select your desired tier (Standard 25, Pro 75, or Max 200).<br>3. Scan the generated QRIS code with any Indonesian e-wallet or pay via bank transfer.<br>4. Credits are credited instantly via automated webhook. |
 
@@ -190,7 +200,7 @@ Telmy.ai is architected natively around the Google Cloud & Google AI ecosystem:
 | **User Identity & Auth** | **Firebase Authentication** | Google Identity & OAuth 2.0 | Seamless 1-Click "Sign in with Google" bridging the Web Platform, Member Dashboard, and Chrome Side Panel. |
 | **Production Cloud Hosting** | **Google Cloud Run** | Fully Managed Serverless (`asia-northeast1`) | Unified Docker container serving the Express.js Backend API and the React Web Dashboard with custom domain mapping (`https://telmy.id`). |
 | **Automated CI/CD** | **Google Cloud Build** | Continuous Deployment Pipeline | Automatically triggers multi-stage Docker build and zero-downtime deployment on push to GitHub. |
-| **Client Platform** | **Google Chrome Extensions API** | Manifest V3 (MV3) | Chrome Native Side Panel (`chrome.sidePanel`), Service Worker lifecycle, Chrome Storage (`chrome.storage.local`), Context Menus, and DOM MutationObserver. |
+| **Client Platform** | **Cross-Browser WebExtensions API** | Manifest V3 (Chromium) & MV2/MV3 (Firefox) | Native Browser Side Panel (`chrome.sidePanel` / `sidebar_action`), Background Service Worker lifecycle, Local Secure Storage, Context Menus, and DOM MutationObserver. |
 | **Speech Fallback** | **Google Web Speech API** | Client-Side Speech Synthesis & Recognition | Offline fallback voice synthesis and microphone voice-to-text input. |
 | **Design Typography** | **Google Fonts** | Inter, Outfit, Roboto | Modern, accessible typography system for web and sidepanel interfaces. |
 
@@ -253,26 +263,46 @@ npm run dev
 
 ---
 
-### Step 3: Install Browser Extension (Chrome, Edge, Opera, & Firefox)
+### Step 3: Install Browser Extension (Chrome, Edge, Opera, Brave & Firefox)
 
-#### Google Chrome / Microsoft Edge / Opera / Brave:
-1. Open `chrome://extensions/` (or `edge://extensions/`).
-2. Toggle on **Developer mode** (top-right).
-3. Click **Load unpacked** (top-left) and select the `extension/` folder.
-4. Pin Telmy to your toolbar. Press **`Alt + T`** or click the Telmy icon to open the Sidepanel!
+Telmy is engineered as a cross-browser extension. You can install it either directly via **Load Unpacked** (for development) or via **Pre-built Package (ZIP)**:
 
-#### Mozilla Firefox:
-1. Open `about:debugging#/runtime/this-firefox`.
-2. Click **Load Temporary Add-on...**
-3. Select `dist-extensions/telmy-firefox.zip` (generated via packaging script).
+#### Option A: Quick Install via "Load Unpacked" (Recommended for Local Dev)
 
-#### Automated Dual-Browser Packaging (1-Click):
-Run the packaging script to generate store-ready ZIPs:
+##### 1. Google Chrome & Brave Browser:
+1. Open `chrome://extensions/` (or `brave://extensions/`).
+2. Turn ON **Developer mode** toggle in the top-right corner.
+3. Click the **"Load unpacked"** button in the top-left corner.
+4. Select the `extension/` folder from this repository.
+5. Click the Extensions puzzle icon in your toolbar, **Pin Telmy**, and press **`Alt + T`** to open the Side Panel!
+
+##### 2. Microsoft Edge:
+1. Open `edge://extensions/`.
+2. Turn ON **Developer mode** in the left sidebar or top-right.
+3. Click **"Load unpacked"** and select the `extension/` folder.
+4. Pin Telmy to the Edge toolbar and press **`Alt + T`** to open.
+
+##### 3. Opera & Opera GX:
+1. Open `opera://extensions`.
+2. Enable **Developer Mode** in the top-right corner.
+3. Click **"Load unpacked"** and select the `extension/` folder.
+4. Pin Telmy to your sidebar or address bar.
+
+---
+
+#### Option B: Install via Pre-built Package (ZIP)
+
+You can generate production-ready ZIP packages with one click:
 * **Windows Batch:** Double-click `build-extensions.bat`
 * **PowerShell:** `powershell -ExecutionPolicy Bypass -File .\build-extensions.ps1`
-* Produces:
-  - `dist-extensions/telmy-chrome-edge.zip` (Chrome MV3 Side Panel)
-  - `dist-extensions/telmy-firefox.zip` (Firefox Gecko Sidebar Action)
+
+This produces two store-ready bundles inside `dist-extensions/`:
+1. **`dist-extensions/telmy-chrome-edge.zip`** (For Chrome, Edge, Opera, Brave — Manifest V3 Side Panel)
+   - Extract the ZIP to any folder, then use **"Load unpacked"** on the extracted folder.
+2. **`dist-extensions/telmy-firefox.zip`** (For Mozilla Firefox — Gecko Sidebar Action)
+   - Open `about:debugging#/runtime/this-firefox` in Firefox.
+   - Click **"Load Temporary Add-on..."**
+   - Select the `telmy-firefox.zip` file directly (no extraction needed).
 
 ---
 
@@ -291,14 +321,14 @@ gcloud run deploy telmy-backend \
 
 ---
 
-## 🔒 Chrome Web Store & Privacy Compliance
+## 🔒 Browser Web Stores & Privacy Compliance
 
-Telmy.ai was engineered to be **100% compliant** with Google Chrome Web Store Developer Policies and privacy regulations:
+Telmy.ai was engineered to be **100% compliant** with Google Chrome Web Store, Microsoft Edge Add-ons, and Mozilla AMO Developer Policies and privacy regulations:
 * **Least Privilege Principle:** Only requests essential permissions: `storage`, `activeTab`, `tabs`, `scripting`, `sidePanel`, and `contextMenus`.
 * **Zero Wildcard Hosts:** `host_permissions` only whitelists the official API domain (`https://telmy.id/*`).
 * **Zero Remote Code Execution (No CDN/eval):** All vendor libraries (`pdf-lib.min.js`, Lucide icons, avatar engines) are bundled locally.
 * **User-Initiated Actions Only:** Forms are auto-filled only upon explicit user request; no stealth DOM alterations or passive trackers.
-* **Zero-Knowledge Encryption:** Profile secrets never leave client memory without AES-256 encryption.
+* **Client-Side Encrypted Secrets:** Profile secrets never leave client memory without AES-256-GCM encryption. Master passwords are never transmitted to any server.
 
 ---
 
@@ -308,7 +338,7 @@ Telmy.ai was engineered to be **100% compliant** with Google Chrome Web Store De
 | :--- | :--- |
 | **Comprehensive Google AI Integration** | Fully integrated with **Google Gemini 3.5 Flash-Lite**, **Gemini Multimodal Vision**, **Gemini Embeddings**, **Google Cloud WaveNet TTS**, **Firebase Firestore**, and **Google Cloud Run**. |
 | **Human Impact & Digital Equity** | Solves digital bureaucracy anxiety for international students, job seekers, and senior citizens, supporting 11 native languages with spoken explanations and visual guidance. |
-| **Privacy by Design** | Mathematical Zero-Knowledge Client-Side Encryption (PBKDF2 100k + AES-256-GCM) and Zero Document Retention for uploaded identity cards and diplomas. |
+| **Privacy by Design** | Mathematical Client-Side Encryption (PBKDF2 100k + AES-256-GCM) with Zero Server Plaintext Access, combined with Zero Document Retention for uploaded identity cards and diplomas. |
 | **Product Maturity & Polish** | Full cross-browser support (Chrome, Edge, Firefox, Opera), live web platform with member dashboard, contextual right-click menus, and Mayar payment gateway. |
 
 ---

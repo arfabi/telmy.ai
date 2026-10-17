@@ -188,7 +188,7 @@ export const transEN: TranslationData = {
   heroCta: "Try Telmy for Free",
   heroDemo: "Watch How It Works",
   heroSupportText: "Understand the questions. Fill in your answers. Submit with more confidence.",
-  heroTrustline: "Free tier · Zero-Knowledge Encryption · Built for official forms",
+  heroTrustline: "Free tier · Client-Side Encrypted Vault · Zero-Retention OCR",
   heroWorksOn: "Works on",
 
   cardATitle: "Understand Every Field",
@@ -346,7 +346,7 @@ export const transID: TranslationData = {
   heroSubtitle: "Telmy.ai mendampingi Anda melewati formulir rumit. Menjelaskan setiap kolom dengan bahasa sederhana yang Anda mengerti, dan memeriksa jawaban sebelum dikirim.",
   heroCta: "Dapatkan Telmy.ai (Gratis)",
   heroDemo: "Coba demonya",
-  heroTrustline: "Paket gratis selamanya · Enkripsi Zero-Knowledge · Sesuai W3C WCAG 2.2 AA",
+  heroTrustline: "Paket gratis selamanya · Brankas Terenkripsi di Klien · Zero-Retention OCR",
   heroWorksOn: "Dapat digunakan di",
 
   cardATitle: "Pandu setiap kolom",

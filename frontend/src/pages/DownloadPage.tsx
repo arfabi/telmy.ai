@@ -184,7 +184,7 @@ export const DownloadPage: React.FC = () => {
               { id: 'chrome', name: 'Google Chrome', icon: '/chrome.png' },
               { id: 'edge', name: 'Microsoft Edge', icon: '/edge.png' },
               { id: 'firefox', name: 'Mozilla Firefox', icon: '/firefox.png' },
-              { id: 'opera', name: 'Opera Browser', icon: '/opera.png' },
+              { id: 'opera', name: 'Opera Browser', icon: '/opera.webp' },
             ] as const).map((b) => (
               <button
                 key={b.id}
