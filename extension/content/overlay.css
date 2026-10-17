@@ -1471,9 +1471,51 @@ html.telmy-saturation-1 {
 html.telmy-saturation-2 {
   filter: grayscale(100%) !important;
 }
-html.telmy-saturation-3 {
-  filter: saturate(2.2) !important;
+/* =========================================================
+   Lightshot-Style Snip Tool Overlay for "Explain This"
+   ========================================================= */
+.telmy-snip-backdrop {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 2147483640 !important;
+  background: rgba(15, 23, 42, 0.45) !important;
+  cursor: crosshair !important;
+  user-select: none !important;
 }
+
+.telmy-snip-selection {
+  position: fixed !important;
+  z-index: 2147483642 !important;
+  border: 2px dashed #0071e3 !important;
+  background: rgba(0, 113, 227, 0.08) !important;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.35) !important;
+  pointer-events: none !important;
+  display: none;
+}
+
+.telmy-snip-hint {
+  position: fixed !important;
+  top: 24px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  z-index: 2147483646 !important;
+  background: #0f172a !important;
+  color: #ffffff !important;
+  padding: 10px 20px !important;
+  border-radius: 30px !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  font-size: 13.5px !important;
+  font-weight: 600 !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
+  pointer-events: none !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
 
 
 

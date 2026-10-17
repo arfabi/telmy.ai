@@ -2285,6 +2285,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       return false;
     }
 
+    if (message.type === 'SNIP_AREA_CAPTURED') {
+      const { image, metadata } = message.payload;
+      handleProcessSnipExplain(image, metadata);
+      sendResponse({ success: true });
+      return false;
+    }
+
     if (message.type === 'GMT_FIELD_FOCUSED') {
       const idx = message.index;
       selectFieldByIndex(idx, false);
@@ -2322,7 +2329,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     btn.addEventListener('click', () => {
       const targetTab = btn.getAttribute('data-tab');
       tabBtns.forEach((b) => b.classList.toggle('active', b === btn));
+      
+      // Pastikan Accessibility Hub tertutup saat berpindah tab
+      if (paneA11yHub) {
+        paneA11yHub.style.display = 'none';
+        paneA11yHub.classList.remove('active');
+      }
+
       panes.forEach((p) => {
+        if (p.id === 'pane-a11y-hub') {
+          p.style.display = 'none';
+          p.classList.remove('active');
+          return;
+        }
         p.style.display = '';
         p.classList.toggle('active', p.id === `pane-${targetTab}`);
       });
@@ -2484,46 +2503,60 @@ document.addEventListener('DOMContentLoaded', async () => {
         <h3 class="welcome-title">${escapeHTML(t('welcome_hero_title'))}</h3>
         <p class="welcome-subtitle">${escapeHTML(t('welcome_hero_desc'))}</p>
         <div class="welcome-chips-grid welcome-grid-2col">
-          <!-- Row 1: Col 1 & 2 -->
-          <button type="button" class="welcome-action-card chip-analyze active-chip" data-action="ANALYZE_FORM">
+          <!-- Row 1: Analisis & Snip -->
+          <button type="button" class="welcome-action-card chip-analyze" data-action="ANALYZE_FORM">
             <span class="chip-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             </span>
-            <span class="chip-label">1. Analyze This Form</span>
+            <span class="chip-label">Analyze Form</span>
           </button>
-          <button type="button" class="welcome-action-card chip-translate" data-action="TRANSLATE_PAGE">
+          <button type="button" class="welcome-action-card chip-snip" data-action="EXPLAIN_THIS_SNIP">
             <span class="chip-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>
             </span>
-            <span class="chip-label">2. Translate This Page</span>
+            <span class="chip-label">Explain This</span>
           </button>
 
-          <!-- Row 2: Col 1 & 2 -->
+          <!-- Row 2: Otomasi & Dokumen -->
           <button type="button" class="welcome-action-card chip-autofill" data-action="AUTOFILL_FORM">
             <span class="chip-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
             </span>
-            <span class="chip-label">3. 1-Click Auto Fill</span>
+            <span class="chip-label">1-Click Auto Fill</span>
           </button>
           <button type="button" class="welcome-action-card chip-pdf" data-action="OPEN_PDF">
             <span class="chip-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg>
             </span>
-            <span class="chip-label">4. Upload Local Form (PDF)</span>
+            <span class="chip-label">Upload Local Form</span>
           </button>
 
-          <!-- Row 3: Col 1 & 2 -->
+          <!-- Row 3: Bahasa & Navigasi -->
+          <button type="button" class="welcome-action-card chip-translate" data-action="TRANSLATE_PAGE">
+            <span class="chip-icon">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            </span>
+            <span class="chip-label">Translate Page</span>
+          </button>
           <button type="button" class="welcome-action-card chip-showme" data-action="SHOW_ME_PROMPT">
             <span class="chip-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>
             </span>
-            <span class="chip-label">5. Show Me</span>
+            <span class="chip-label">Show Me</span>
+          </button>
+
+          <!-- Row 4: Verifikasi & Aksesibilitas -->
+          <button type="button" class="welcome-action-card chip-auditor" data-action="AUDIT_FORM">
+            <span class="chip-icon">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+            </span>
+            <span class="chip-label">Form Auditor</span>
           </button>
           <button type="button" class="welcome-action-card chip-a11y" data-action="OPEN_A11Y_HUB">
             <span class="chip-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="8" r="1.5"/><path d="M7 11h10"/><path d="M9 20l3-6 3 6"/><path d="M12 11v4"/></svg>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="8" r="1.5"/><path d="M7 11h10"/><path d="M9 20l3-6 3 6"/><path d="M12 11v4"/></svg>
             </span>
-            <span class="chip-label">6. Accessibility</span>
+            <span class="chip-label">Accessibility</span>
           </button>
         </div>
       `;
@@ -2541,7 +2574,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  async function handleSendMessage(text) {
+  async function handleSendMessage(text, customImage = null) {
     if (!text || !text.trim()) return;
     const cleanText = text.trim();
     chatInput.value = '';
@@ -2550,6 +2583,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const userMsg = {
       role: 'user',
       text: cleanText,
+      image: customImage || null,
       time: formatTime(new Date())
     };
     appendChatMessage(userMsg);
@@ -2581,8 +2615,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       };
       const replyText = localizedReplies[lang] || localizedReplies['en'];
 
-      const targetTabId = currentTabId;
+      const targetTab = await getActiveWebTab();
+      const targetTabId = targetTab?.id || currentTabId;
+
       if (targetTabId) {
+        currentTabId = targetTabId;
         safeSendTabMessage(targetTabId, {
           type: 'SPOTLIGHT_ELEMENT',
           label: `👉 ${labelDisplay}`,
@@ -2618,8 +2655,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                   if (!isMuted) speakResponse(replyText);
                   if (telmyAvatar) telmyAvatar.setState('CELEBRATING');
                 } else {
-                  // Fallback to Gemini AI backend chat if not found directly
-                  executeBackendChat(cleanText);
+                  // If element not found directly on page, ask Gemini AI specifically where it is located
+                  executeBackendChat(`Di halaman web ini, di mana letak "${directShowMe}"? Tolong tunjukkan posisinya.`);
                 }
               });
             });
@@ -2790,7 +2827,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     return null;
   }
 
-  async function executeBackendChat(cleanText) {
+  async function executeBackendChat(cleanText, customImage = null) {
     if (telmyAvatar) telmyAvatar.setState('THINKING');
 
     // Language Intelligence: If user writes in English, prioritize English response
@@ -2842,7 +2879,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             message: cleanText,
             history: chatHistory.slice(-8),
             language: effectiveChatLanguage,
-            formContext: fullFormContext
+            formContext: fullFormContext,
+            screenshot: customImage || null
           }
         }, (res) => {
           if (chrome.runtime.lastError) resolve(null);
@@ -3086,7 +3124,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Format bold markdown (**text**)
     const formatted = escapeHTML(msg.text).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-    bubble.innerHTML = formatted;
+    let contentHtml = formatted;
+    if (msg.image) {
+      contentHtml = `<div style="margin-bottom: 8px;"><img src="${msg.image}" style="max-width: 100%; max-height: 140px; border-radius: 8px; border: 1.5px solid #cbd5e1; box-shadow: 0 2px 6px rgba(0,0,0,0.08); display: block;" alt="Snip Selection"></div>` + contentHtml;
+    }
+    bubble.innerHTML = contentHtml;
 
     if (msg.actions && msg.actions.length > 0) {
       const chips = document.createElement('div');
@@ -3176,6 +3218,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     } else if (act.type === 'OPEN_A11Y_HUB') {
       showA11yHub();
+    } else if (act.type === 'AUDIT_FORM') {
+      runPreSubmissionAudit();
+    } else if (act.type === 'EXPLAIN_THIS_SNIP') {
+      handleExplainThisSnipAction();
     }
   }
 
@@ -5204,6 +5250,47 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.error('[PDF Export Error]', e);
       alert('Failed to export PDF: ' + e.message);
     }
+  }
+
+  // Explain This (Snip Area Mode - Lightshot Style)
+  async function handleExplainThisSnipAction() {
+    if (!currentTabId) {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (tab) currentTabId = tab.id;
+    }
+    if (!currentTabId) {
+      alert('Tab aktif tidak ditemukan. Silakan buka halaman web formulir terlebih dahulu.');
+      return;
+    }
+
+    // Kirim perintah ke Content Script untuk memunculkan overlay seleksi snip
+    chrome.tabs.sendMessage(currentTabId, { type: 'TRIGGER_SNIP_TOOL' }, (res) => {
+      if (chrome.runtime.lastError || !res || !res.success) {
+        // Jika content script belum terinjeksi, injeksi dan coba lagi
+        ensureContentScriptInjected(currentTabId);
+        setTimeout(() => {
+          chrome.tabs.sendMessage(currentTabId, { type: 'TRIGGER_SNIP_TOOL' });
+        }, 300);
+      }
+    });
+  }
+
+  // Handle hasil seleksi snip yang dikirim balik oleh Content Script
+  function handleProcessSnipExplain(croppedImageBase64, metadata) {
+    if (!croppedImageBase64) return;
+
+    // Pastikan tab Chat aktif
+    if (tabBtns && tabBtns[0]) tabBtns[0].click();
+
+    // Buat prompt eksplisit yang menyertakan metadata halaman
+    const pageTitle = metadata?.title || '';
+    const pageUrl = metadata?.url || '';
+    const surroundingText = metadata?.surrounding_text ? ` (${metadata.surrounding_text.substring(0, 100)}...)` : '';
+
+    const userPrompt = `Explain This: Mohon jelaskan bagian yang saya potong ini di halaman "${pageTitle}"${surroundingText}. Apa maksudnya dan bagaimana cara mengisinya dengan benar?`;
+
+    // Kirim pesan chat dengan melampirkan screenshot potongan piksel terpilih
+    handleSendMessage(userPrompt, croppedImageBase64);
   }
 
   // Priority 9.2: Form Pre-Submission Auditor (Traffic Light Sanity Verification)

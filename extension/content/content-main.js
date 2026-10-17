@@ -603,6 +603,13 @@
       return false;
     }
 
+    // Trigger Interactive Lightshot-Style Snip Tool for "Explain This"
+    if (message.type === 'TRIGGER_SNIP_TOOL') {
+      startSnipTool();
+      sendResponse({ success: true });
+      return false;
+    }
+
     // I. Plan V7: Accessibility Bridge Runtime Handlers
     if (message.type === 'A11Y_TOGGLE_SPOTLIGHT') {
       const enabled = window.TelmyA11y ? window.TelmyA11y.toggleSpotlight() : false;
@@ -871,6 +878,160 @@
     } finally {
       isScanning = false;
     }
+  }
+
+  // Interactive Snip Tool for "Explain This"
+  function startSnipTool() {
+    // Remove existing if any
+    const existingBackdrop = document.querySelector('.telmy-snip-backdrop');
+    if (existingBackdrop) existingBackdrop.remove();
+
+    const backdrop = document.createElement('div');
+    backdrop.className = 'telmy-snip-backdrop';
+
+    const selectionBox = document.createElement('div');
+    selectionBox.className = 'telmy-snip-selection';
+
+    const hint = document.createElement('div');
+    hint.className = 'telmy-snip-hint';
+    hint.innerHTML = `<span>✂️ Drag area yang ingin dijelaskan (Tekan ESC untuk batal)</span>`;
+
+    backdrop.appendChild(selectionBox);
+    backdrop.appendChild(hint);
+    document.body.appendChild(backdrop);
+
+    let isSelecting = false;
+    let startX = 0;
+    let startY = 0;
+
+    function onMouseDown(e) {
+      if (e.button !== 0) return;
+      isSelecting = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      selectionBox.style.left = `${startX}px`;
+      selectionBox.style.top = `${startY}px`;
+      selectionBox.style.width = '0px';
+      selectionBox.style.height = '0px';
+      selectionBox.style.display = 'block';
+    }
+
+    function onMouseMove(e) {
+      if (!isSelecting) return;
+      const curX = e.clientX;
+      const curY = e.clientY;
+      const left = Math.min(startX, curX);
+      const top = Math.min(startY, curY);
+      const width = Math.abs(curX - startX);
+      const height = Math.abs(curY - startY);
+
+      selectionBox.style.left = `${left}px`;
+      selectionBox.style.top = `${top}px`;
+      selectionBox.style.width = `${width}px`;
+      selectionBox.style.height = `${height}px`;
+    }
+
+    async function onMouseUp(e) {
+      if (!isSelecting) return;
+      isSelecting = false;
+      const rect = selectionBox.getBoundingClientRect();
+
+      if (rect.width < 20 || rect.height < 20) {
+        cleanup();
+        return;
+      }
+
+      hint.innerHTML = `<span>⏳ Mengambil tangkapan layar...</span>`;
+
+      // Request full screenshot from Service Worker
+      chrome.runtime.sendMessage({ type: 'CAPTURE_VISIBLE_TAB' }, async (response) => {
+        cleanup();
+        if (!response || !response.success || !response.dataUrl) {
+          console.warn('[Telmy Snip] Failed to capture tab screenshot.');
+          return;
+        }
+
+        // Crop image using offscreen canvas
+        const croppedBase64 = await cropImageDataUrl(response.dataUrl, rect);
+
+        // Gather rich page metadata
+        const metadata = {
+          url: window.location.href,
+          title: document.title || '',
+          meta_description: document.querySelector('meta[name="description"]')?.content || '',
+          meta_keywords: document.querySelector('meta[name="keywords"]')?.content || '',
+          og_title: document.querySelector('meta[property="og:title"]')?.content || '',
+          surrounding_text: extractTextInRect(rect)
+        };
+
+        // Send to Sidepanel
+        safeSendMessage({
+          type: 'SNIP_AREA_CAPTURED',
+          payload: {
+            image: croppedBase64,
+            metadata
+          }
+        });
+      });
+    }
+
+    function onKeyDown(e) {
+      if (e.key === 'Escape') {
+        cleanup();
+      }
+    }
+
+    function cleanup() {
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+      window.removeEventListener('keydown', onKeyDown);
+      backdrop.remove();
+    }
+
+    backdrop.addEventListener('mousedown', onMouseDown);
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+    window.addEventListener('keydown', onKeyDown);
+  }
+
+  function cropImageDataUrl(dataUrl, rect) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const dpr = window.devicePixelRatio || 1;
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(rect.width * dpr));
+        canvas.height = Math.max(1, Math.round(rect.height * dpr));
+        const ctx = canvas.getContext('2d');
+
+        ctx.drawImage(
+          img,
+          Math.round(rect.left * dpr),
+          Math.round(rect.top * dpr),
+          canvas.width,
+          canvas.height,
+          0,
+          0,
+          canvas.width,
+          canvas.height
+        );
+        resolve(canvas.toDataURL('image/jpeg', 0.85));
+      };
+      img.onerror = () => resolve(null);
+      img.src = dataUrl;
+    });
+  }
+
+  function extractTextInRect(rect) {
+    try {
+      const elements = document.elementsFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+      for (const el of elements) {
+        if (el.className && typeof el.className === 'string' && el.className.includes('telmy')) continue;
+        const text = (el.innerText || el.textContent || '').trim();
+        if (text.length > 5 && text.length < 500) return text;
+      }
+    } catch (e) {}
+    return '';
   }
 
   // Initial standby boot (Purges any leftover floating UI, waits in passive standby)

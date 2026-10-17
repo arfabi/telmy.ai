@@ -5578,13 +5578,14 @@ body {
   box-shadow: 0 4px 12px rgba(11, 99, 240, 0.08) !important;
 }
 
+/* Unified Clean Styling for All 8 Action Cards with Consistent Color */
 .welcome-action-card .chip-icon {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   color: #0A2357 !important;
   flex-shrink: 0 !important;
-  transition: color 0.2s ease !important;
+  transition: all 0.2s ease !important;
 }
 
 .welcome-action-card .chip-label {
@@ -5598,27 +5599,14 @@ body {
   white-space: nowrap !important;
 }
 
-/* Active Highlight Chip (Photo 1 - 1. Analyze This Form) */
-.welcome-action-card.active-chip,
-.welcome-action-card.chip-analyze {
-  background: #F0F6FF !important;
-  border: 1.5px solid #2B7FFF !important;
-  color: #0B63F0 !important;
-}
-
-.welcome-action-card.active-chip .chip-icon,
-.welcome-action-card.chip-analyze .chip-icon {
-  color: #0B63F0 !important;
-}
-
-.welcome-action-card.active-chip .chip-label,
-.welcome-action-card.chip-analyze .chip-label {
+.welcome-action-card:hover .chip-icon,
+.welcome-action-card:hover .chip-label {
   color: #0B63F0 !important;
 }
 
 /* UserWay-Style A11y Hub Dedicated Section */
 .sp-a11y-hub-view {
-  display: flex;
+  display: none;
   flex-direction: column;
   position: absolute;
   top: 0;

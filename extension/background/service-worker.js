@@ -227,6 +227,20 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = 30000) {
 
 // Message listener
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === 'CAPTURE_VISIBLE_TAB') {
+    const targetWinId = sender.tab?.windowId || null;
+    chrome.tabs.captureVisibleTab(targetWinId, { format: 'png' }, (dataUrl) => {
+      if (chrome.runtime.lastError || !dataUrl) {
+        chrome.tabs.captureVisibleTab(null, { format: 'png' }, (fallbackUrl) => {
+          sendResponse({ success: Boolean(fallbackUrl), dataUrl: fallbackUrl || null });
+        });
+      } else {
+        sendResponse({ success: true, dataUrl });
+      }
+    });
+    return true; // async
+  }
+
   if (message.type === 'OPEN_SIDEPANEL_REQUEST') {
     const tabId = sender.tab?.id;
     if (tabId) {
@@ -519,27 +533,29 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     chrome.storage.local.get(['settings']).then(async (res) => {
       const settings = res.settings || DEFAULT_SETTINGS;
       const apiUrl = getEffectiveApiUrl(settings);
-      const { message: chatMsg, history, language, formContext } = message.payload;
+      const { message: chatMsg, history, language, formContext, screenshot: customScreenshot } = message.payload;
 
-      // Capture lightweight viewport screenshot for Gemini Multimodal Vision reasoning
-      let screenshot = null;
-      try {
-        const [activeTab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
-        const targetWindowId = (activeTab && activeTab.windowId) ? activeTab.windowId : null;
-        screenshot = await new Promise((resolve) => {
-          chrome.tabs.captureVisibleTab(targetWindowId, { format: 'jpeg', quality: 50 }, (dataUrl) => {
-            if (chrome.runtime.lastError || !dataUrl) {
-              chrome.tabs.captureVisibleTab(null, { format: 'jpeg', quality: 50 }, (dataUrlFallback) => {
-                if (chrome.runtime.lastError || !dataUrlFallback) resolve(null);
-                else resolve(dataUrlFallback);
-              });
-            } else {
-              resolve(dataUrl);
-            }
+      // Capture lightweight viewport screenshot for Gemini Multimodal Vision reasoning (or use provided custom snip)
+      let screenshot = customScreenshot || null;
+      if (!screenshot) {
+        try {
+          const [activeTab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+          const targetWindowId = (activeTab && activeTab.windowId) ? activeTab.windowId : null;
+          screenshot = await new Promise((resolve) => {
+            chrome.tabs.captureVisibleTab(targetWindowId, { format: 'jpeg', quality: 50 }, (dataUrl) => {
+              if (chrome.runtime.lastError || !dataUrl) {
+                chrome.tabs.captureVisibleTab(null, { format: 'jpeg', quality: 50 }, (dataUrlFallback) => {
+                  if (chrome.runtime.lastError || !dataUrlFallback) resolve(null);
+                  else resolve(dataUrlFallback);
+                });
+              } else {
+                resolve(dataUrl);
+              }
+            });
           });
-        });
-      } catch (err) {
-        screenshot = null;
+        } catch (err) {
+          screenshot = null;
+        }
       }
 
       try {
