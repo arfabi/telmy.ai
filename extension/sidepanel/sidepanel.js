@@ -7817,16 +7817,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             bannerDesc.textContent = t('audit_banner_empty_desc');
           } else if (warningCount > 0) {
             banner.className = 'audit-passed-banner';
-            banner.style.background = 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
+            banner.style.background = 'linear-gradient(135deg, #b45309 0%, #92400e 100%)';
+            banner.style.color = '#ffffff';
             bannerIcon.textContent = '💡';
             bannerTitle.textContent = t('audit_banner_warning_title', { count: warningCount });
             bannerDesc.textContent = t('audit_banner_warning_desc');
+            bannerDesc.style.color = '#fffbeb';
           } else {
             banner.className = 'audit-passed-banner';
-            banner.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+            banner.style.background = 'linear-gradient(135deg, #059669 0%, #047857 100%)';
+            banner.style.color = '#ffffff';
             bannerIcon.textContent = '🎉';
             bannerTitle.textContent = t('audit_banner_clean_title');
             bannerDesc.textContent = t('audit_banner_clean_desc');
+            bannerDesc.style.color = '#f0fdf4';
           }
         }
 
