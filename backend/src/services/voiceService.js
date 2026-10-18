@@ -62,10 +62,10 @@ export async function synthesizeSpeechStream({ text, language = 'en' }) {
   }
 
   // CRITICAL HIGHER PRIORITY LANGUAGE POLICY FOR TTS:
-  // Detect the actual language of the text to be spoken. If text clearly matches another language
-  // (e.g. Indonesian response while session/user language was 'en'), use the native voice of the text!
+  // If the user explicitly requested a language (e.g. 'en'), respect it unless the text is overwhelmingly another language.
   const effectiveLanguage = detectTextLanguage(cleanText, language);
-  const voiceConfig = GOOGLE_VOICE_MAP[effectiveLanguage] || GOOGLE_VOICE_MAP[language] || GOOGLE_VOICE_MAP['en'];
+  const selectedLang = (language && language !== 'auto') ? language : effectiveLanguage;
+  const voiceConfig = GOOGLE_VOICE_MAP[effectiveLanguage] || GOOGLE_VOICE_MAP[selectedLang] || GOOGLE_VOICE_MAP['en'];
   const requestHeaders = {
     'Content-Type': 'application/json'
   };

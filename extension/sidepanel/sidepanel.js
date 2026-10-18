@@ -5911,7 +5911,7 @@ document.addEventListener('DOMContentLoaded', async () => {
               ],
               time: formatTime(new Date())
             });
-            if (!isMuted) speakResponse(replyText);
+            if (!isMuted) speakResponse(replyText, lang);
             if (telmyAvatar) telmyAvatar.setState('CELEBRATING');
           } else {
             injectContentScript(targetTabId, () => {
@@ -5929,7 +5929,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     ],
                     time: formatTime(new Date())
                   });
-                  if (!isMuted) speakResponse(replyText);
+                  if (!isMuted) speakResponse(replyText, lang);
                   if (telmyAvatar) telmyAvatar.setState('CELEBRATING');
                 } else {
                   // If element not found directly on page, ask Gemini AI specifically where it is located
@@ -6275,9 +6275,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         triggerSpotlightOnTab(currentTabId, spotlightAct);
       }
 
-      // Speak response using Gemini TTS with detected response language
+      // Speak response using Gemini TTS with detected response language or active language
       if (!isMuted) {
-        speakResponse(effectiveReply, detectedLang);
+        const voiceLang = (effectiveChatLanguage === 'en' || detectedLang === 'en') ? 'en' : (detectedLang || effectiveChatLanguage || 'en');
+        speakResponse(effectiveReply, voiceLang);
       } else {
         if (telmyAvatar) telmyAvatar.setState('IDLE');
       }

@@ -140,30 +140,29 @@ export function detectTextLanguage(text, defaultLanguage = 'en') {
   if (!text || typeof text !== 'string') return defaultLanguage;
   const clean = text.toLowerCase();
 
-  // 1. Indonesian / Malay markers
-  const idMarkers = /\b(ini|itu|adalah|formulir|halaman|tombol|anda|kamu|silakan|mohon|klik|bisa|untuk|pada|di|ke|dari|saya|kami|sudah|tidak|belum|kolom|bantuan|data|masuk|daftar)\b/i;
-  if (idMarkers.test(clean)) {
-    return 'id';
-  }
-
-  // 2. CJK Scripts (Japanese, Chinese, Korean)
+  // 1. CJK Scripts (Japanese, Chinese, Korean)
   if (/[\u3040-\u309f\u30a0-\u30ff]/.test(text)) return 'ja'; // Japanese Hiragana/Katakana
   if (/[\u4e00-\u9fff]/.test(text)) return 'zh'; // Chinese Hanzi
   if (/[\uac00-\ud7af]/.test(text)) return 'ko'; // Korean Hangul
 
-  // 3. Southeast & South Asian scripts
+  // 2. Southeast & South Asian scripts
   if (/[\u0e00-\u0e7f]/.test(text)) return 'th'; // Thai
   if (/[\u0900-\u097f]/.test(text)) return 'hi'; // Hindi
 
-  // 4. Vietnamese specific tone marks
+  // 3. Vietnamese specific tone marks
   if (/[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/i.test(text)) {
     return 'vi';
   }
 
-  // 5. English common words marker
-  const enMarkers = /\b(the|this|that|form|page|button|please|you|your|click|enter|field|fields|login|submit|help|welcome)\b/i;
-  if (enMarkers.test(clean)) {
+  // 4. Token-based scoring for Latin scripts (English vs Indonesian/Malay)
+  const idMatches = clean.match(/\b(ini|itu|adalah|formulir|halaman|tombol|anda|kamu|silakan|mohon|klik|bisa|untuk|pada|di|ke|dari|saya|kami|sudah|tidak|belum|kolom|bantuan|data|masuk|daftar|bagian|jelaskan)\b/gi) || [];
+  const enMatches = clean.match(/\b(the|this|that|form|page|button|please|you|your|click|enter|field|fields|login|submit|help|welcome|is|are|it|and|to|in|for|of|with|here|can|will|should|must)\b/gi) || [];
+
+  if (enMatches.length > idMatches.length) {
     return 'en';
+  }
+  if (idMatches.length > enMatches.length) {
+    return 'id';
   }
 
   return defaultLanguage || 'en';
