@@ -1,12 +1,20 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
+import React, { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { useLanguage } from '@/context/LanguageContext'
-import { ArrowLeft, CheckCircle2, Laptop, ShieldCheck } from 'lucide-react'
+import { useAuth } from '@/context/AuthContext'
+import { loginWithGoogle, syncUserWithBackend } from '@/services/firebase'
+import { ArrowLeft, CheckCircle2, Laptop, ShieldCheck, Sparkles, AlertCircle } from 'lucide-react'
 
 export const ConnectPage: React.FC = () => {
   const { currentLang } = useLanguage()
+  const { userProfile, updateUserProfile } = useAuth()
+  const navigate = useNavigate()
+
+  const [connecting, setConnecting] = useState(false)
+  const [success, setSuccess] = useState(false)
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   const strings: Record<string, {
     back: string
@@ -15,6 +23,8 @@ export const ConnectPage: React.FC = () => {
     tokenReady: string
     vaultEncrypted: string
     connectBtn: string
+    connectingBtn: string
+    successMsg: string
     cancelBtn: string
   }> = {
     en: {
@@ -24,6 +34,8 @@ export const ConnectPage: React.FC = () => {
       tokenReady: "Secure pairing token is ready to connect",
       vaultEncrypted: "Vault data remains encrypted client-side on your device",
       connectBtn: "Connect Extension Now",
+      connectingBtn: "Pairing Extension...",
+      successMsg: "Extension Connected! Redirecting to Dashboard...",
       cancelBtn: "Cancel and return to dashboard"
     },
     id: {
@@ -33,6 +45,8 @@ export const ConnectPage: React.FC = () => {
       tokenReady: "Token autentikasi aman siap dipasangkan",
       vaultEncrypted: "Data brankas tetap terenkripsi di sisi klien",
       connectBtn: "Hubungkan Sekarang",
+      connectingBtn: "Menghubungkan Ekstensi...",
+      successMsg: "Ekstensi Berhasil Terhubung! Mengalihkan ke Dashboard...",
       cancelBtn: "Batalkan dan kembali"
     },
     ja: {
@@ -42,6 +56,8 @@ export const ConnectPage: React.FC = () => {
       tokenReady: "安全なペアリングトークンの準備が完了しました",
       vaultEncrypted: "保管庫データはお手元の端末内で暗号化されたまま保護されます",
       connectBtn: "今すぐ拡張機能を連携",
+      connectingBtn: "拡張機能を連携中...",
+      successMsg: "連携完了！ダッシュボードに移動します...",
       cancelBtn: "キャンセルして戻る"
     },
     ko: {
@@ -51,6 +67,8 @@ export const ConnectPage: React.FC = () => {
       tokenReady: "안전한 기기 페어링 토큰 준비 완료",
       vaultEncrypted: "개인 볼트 데이터는 오직 사용자 기기 내에서만 암호화 유지",
       connectBtn: "지금 확장 프로그램 연동하기",
+      connectingBtn: "확장 프로그램 연동 중...",
+      successMsg: "확장 프로그램 연동 완료! 대시보드로 이동합니다...",
       cancelBtn: "취소하고 돌아가기"
     },
     zh: {
@@ -60,6 +78,8 @@ export const ConnectPage: React.FC = () => {
       tokenReady: "高强度安全配对密钥已准备就绪",
       vaultEncrypted: "保险库敏感数据始终在您本地设备端保持加密",
       connectBtn: "立即连接扩展程序",
+      connectingBtn: "正在配对扩展程序...",
+      successMsg: "扩展程序已成功连接！正在返回控制面板...",
       cancelBtn: "取消并返回控制台"
     },
     'zh-TW': {
@@ -69,6 +89,8 @@ export const ConnectPage: React.FC = () => {
       tokenReady: "高強度安全配對金鑰已準備就緒",
       vaultEncrypted: "保險庫敏感資料始終在您本機裝置端保持加密",
       connectBtn: "立即連接擴充功能",
+      connectingBtn: "正在配對擴充功能...",
+      successMsg: "擴充功能已成功連接！正在返回控制台...",
       cancelBtn: "取消並返回控制台"
     },
     vi: {
@@ -78,6 +100,8 @@ export const ConnectPage: React.FC = () => {
       tokenReady: "Mã ghép nối an toàn đã sẵn sàng",
       vaultEncrypted: "Dữ liệu két luôn được mã hóa an toàn trên thiết bị của bạn",
       connectBtn: "Kết nối tiện ích ngay",
+      connectingBtn: "Đang ghép nối tiện ích...",
+      successMsg: "Đã kết nối thành công! Đang chuyển hướng...",
       cancelBtn: "Hủy và quay lại"
     },
     th: {
@@ -87,6 +111,8 @@ export const ConnectPage: React.FC = () => {
       tokenReady: "โทเค็นการจับคู่อย่างปลอดภัยพร้อมใช้งานแล้ว",
       vaultEncrypted: "ข้อมูลตู้นิรภัยยังคงได้รับการเข้ารหัสบนอุปกรณ์ของคุณ",
       connectBtn: "เชื่อมต่อส่วนขยายตอนนี้",
+      connectingBtn: "กำลังจับคู่ส่วนขยาย...",
+      successMsg: "เชื่อมต่อส่วนขยายสำเร็จ! กำลังนำทาง...",
       cancelBtn: "ยกเลิกและย้อนกลับ"
     },
     hi: {
@@ -96,6 +122,8 @@ export const ConnectPage: React.FC = () => {
       tokenReady: "सुरक्षित पेयरिंग टोकन तैयार है",
       vaultEncrypted: "वॉल्ट डेटा केवल आपके डिवाइस पर ही एन्क्रिप्ट रहता है",
       connectBtn: "अभी एक्सटेंशन कनेक्ट करें",
+      connectingBtn: "एक्सटेंशन जोड़ा जा रहा है...",
+      successMsg: "एक्सटेंशन सफलतापूर्वक कनेक्ट हो गया! रीडायरेक्ट हो रहा है...",
       cancelBtn: "रद्द करें और वापस जाएं"
     },
     fil: {
@@ -105,6 +133,8 @@ export const ConnectPage: React.FC = () => {
       tokenReady: "Handa na ang secure pairing token",
       vaultEncrypted: "Ang data ng vault ay nananatiling naka-encrypt sa iyong device",
       connectBtn: "Ikonekta ang Extension Ngayon",
+      connectingBtn: "Ikinokonekta ang Extension...",
+      successMsg: "Matagumpay na Naikonekta ang Extension! Nagre-redirect...",
       cancelBtn: "Kanselahin at bumalik"
     },
     ms: {
@@ -114,11 +144,61 @@ export const ConnectPage: React.FC = () => {
       tokenReady: "Token pasangan selamat sedia disambungkan",
       vaultEncrypted: "Data peti kebal kekal terenkripsi pada peranti anda",
       connectBtn: "Sambungkan Sambungan Sekarang",
+      connectingBtn: "Menyambungkan Sambungan...",
+      successMsg: "Sambungan Berjaya Dihubungkan! Mengalihkan ke Papan Pemuka...",
       cancelBtn: "Batal dan kembali"
     }
   }
 
   const s = strings[currentLang] || strings.en
+
+  const handleConnect = async () => {
+    try {
+      setConnecting(true)
+      setErrorMsg(null)
+
+      let targetUser = userProfile
+
+      // If user is not yet logged in or has no account on this machine, trigger Google Sign-In
+      if (!targetUser || !targetUser.uid) {
+        const authedUser = await loginWithGoogle()
+        targetUser = {
+          uid: authedUser.uid,
+          displayName: authedUser.displayName || authedUser.email?.split('@')[0] || 'Telmy User',
+          email: authedUser.email || '',
+          photoURL: authedUser.photoURL || '',
+          plan: 'free',
+          credits: 5,
+          language: localStorage.getItem('telmy_lang') || 'en',
+          isExtensionConnected: true
+        }
+      } else {
+        targetUser = {
+          ...targetUser,
+          isExtensionConnected: true
+        }
+      }
+
+      // Update state and localStorage
+      updateUserProfile(targetUser)
+      localStorage.setItem('telmy_user', JSON.stringify(targetUser))
+
+      // Broadcast to Extension Content Script and Storage
+      window.postMessage({ type: 'TELMY_USER_SESSION_SYNC', user: targetUser }, '*')
+
+      setSuccess(true)
+
+      // Gracefully redirect to dashboard after brief success confirmation
+      setTimeout(() => {
+        navigate('/dashboard')
+      }, 1200)
+    } catch (err: any) {
+      console.error('[ConnectPage] Connection error:', err)
+      setErrorMsg(err.message || 'Failed to connect extension. Please try again.')
+    } finally {
+      setConnecting(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
@@ -155,9 +235,28 @@ export const ConnectPage: React.FC = () => {
             </div>
           </div>
 
+          {errorMsg && (
+            <div className="mt-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2 text-left">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <span>{errorMsg}</span>
+            </div>
+          )}
+
+          {success && (
+            <div className="mt-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs flex items-center justify-center gap-2 font-semibold">
+              <Sparkles className="w-4 h-4 text-emerald-600 animate-pulse" />
+              <span>{s.successMsg}</span>
+            </div>
+          )}
+
           <div className="mt-8 space-y-3">
-            <Button size="lg" className="w-full font-bold">
-              {s.connectBtn}
+            <Button 
+              size="lg" 
+              className="w-full font-bold shadow-md hover:shadow-lg transition-all"
+              onClick={handleConnect}
+              disabled={connecting || success}
+            >
+              {connecting ? s.connectingBtn : success ? s.successMsg : s.connectBtn}
             </Button>
             <Link to="/dashboard" className="block text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors">
               {s.cancelBtn}
@@ -168,4 +267,3 @@ export const ConnectPage: React.FC = () => {
     </div>
   )
 }
-

@@ -263,11 +263,26 @@ npm run dev
 
 ---
 
+### ⚖️ For Hackathon Evaluators & Judges (Zero Barrier Testing)
+
+> [!TIP]
+> **No Login Required for Core Testing:**
+> The Telmy extension is pre-configured with **5 free AI quota credits per session** out of the box. Judges and reviewers do **not** need to register or sign in to test form scanning, bilingual explanation, or voice guidance.
+> - **Test Web Form:** You can test immediately on our [Interactive Form Simulator Sandbox](https://telmy.id/#simulator) or any public visa/government portal.
+> - **Preloaded AI Quota:** 5 free forms replenished monthly.
+> - **Smart Vault Sync (Optional):** If you wish to test client-side AES-256 encrypted vault sync across devices, simply click *"Connect with Google"* in the sidepanel using any standard Google account.
+
+---
+
 ### Step 3: Install Browser Extension (Chrome, Edge, Opera, Brave & Firefox)
 
 Telmy is engineered as a cross-browser extension. You can install it either directly via **Load Unpacked** (for development) or via **Pre-built Package (ZIP)**:
 
-#### Option A: Quick Install via "Load Unpacked" (Recommended for Local Dev)
+#### Direct ZIP Download:
+- **Downloadable directly from web:** You can download the package anytime from [`https://telmy.id/download`](https://telmy.id/download) (or local `frontend/public/telmy-extension.zip`).
+- **Or build fresh:** Windows batch `build-extensions.bat` or PowerShell `./build-extensions.ps1`.
+
+#### Option A: Quick Install via "Load Unpacked" (Recommended for Local Dev & Evaluation)
 
 ##### 1. Google Chrome & Brave Browser:
 1. Open `chrome://extensions/` (or `brave://extensions/`).

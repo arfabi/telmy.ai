@@ -1,32 +1,33 @@
 import React from 'react'
 import { TranslationData } from '@/data/translations'
-import { Lock, EyeOff, FileText, KeyRound } from 'lucide-react'
+import { Lock, EyeOff, FileText, KeyRound, ArrowRight, ShieldCheck } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 interface PrivacySummaryProps {
-  t: TranslationData
+  t?: TranslationData
 }
 
-export const PrivacySummary: React.FC<PrivacySummaryProps> = ({ t }) => {
+export const PrivacySummary: React.FC<PrivacySummaryProps> = () => {
   const cards = [
     {
       icon: Lock,
-      title: t.priv1Title,
-      desc: t.priv1Desc,
-    },
-    {
-      icon: EyeOff,
-      title: t.priv2Title,
-      desc: t.priv2Desc,
+      title: "Encrypted on your device",
+      desc: "Your saved profile is encrypted directly in your browser using AES-256-GCM before storage. Encryption keys never leave your machine.",
     },
     {
       icon: FileText,
-      title: t.priv3Title,
-      desc: t.priv3Desc,
+      title: "Documents aren't kept",
+      desc: "Uploaded ID cards, diplomas, or passport photos are read by OCR in volatile memory and discarded immediately with zero document retention.",
+    },
+    {
+      icon: EyeOff,
+      title: "Personal data masked",
+      desc: "Sensitive details like NIK, passport numbers, and phone numbers are strictly masked before form layout context is sent for AI analysis.",
     },
     {
       icon: KeyRound,
-      title: t.priv4Title,
-      desc: t.priv4Desc,
+      title: "Passwords stay private",
+      desc: "Password fields, credit card numbers, and security codes (CVV) are completely ignored and never captured or read by Telmy.",
     },
   ]
 
@@ -34,11 +35,15 @@ export const PrivacySummary: React.FC<PrivacySummaryProps> = ({ t }) => {
     <section className="py-20 bg-slate-900 text-white relative overflow-hidden">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center max-w-3xl mx-auto mb-16">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs font-bold uppercase tracking-wider mb-4">
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>Security by Design</span>
+          </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
-            {t.privacyTitle}
+            Your information stays yours
           </h2>
-          <p className="mt-3 text-lg text-slate-400">
-            {t.privacySubtitle}
+          <p className="mt-3 text-base sm:text-lg text-slate-400">
+            Forms hold your most personal details. Here is exactly how Telmy handles and protects them.
           </p>
         </div>
 
@@ -57,13 +62,24 @@ export const PrivacySummary: React.FC<PrivacySummaryProps> = ({ t }) => {
                   <h3 className="text-lg font-bold text-white mb-2">
                     {card.title}
                   </h3>
-                  <p className="text-slate-400 text-sm leading-relaxed">
+                  <p className="text-slate-400 text-xs sm:text-sm leading-relaxed">
                     {card.desc}
                   </p>
                 </div>
               </div>
             )
           })}
+        </div>
+
+        {/* Mandatory Transparency Disclosure Notice */}
+        <div className="mt-12 p-6 rounded-2xl bg-slate-800/60 border border-slate-700/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs sm:text-sm text-slate-300">
+          <div className="text-left">
+            <span className="font-bold text-white">Cloud AI Transparency:</span> To explain a form, Telmy sends field labels, contextual instructions, and page layouts to <strong className="text-blue-400">Google Gemini</strong> for analysis, with all personal identification data masked first.
+          </div>
+          <Link to="/features" className="shrink-0 text-blue-400 hover:text-blue-300 font-semibold flex items-center gap-1">
+            <span>Read security details</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
         </div>
       </div>
     </section>

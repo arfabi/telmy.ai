@@ -47,7 +47,12 @@
   "externally_connectable": {
     "matches": [
       "https://telmy.id/*",
-      "https://*.telmy.id/*"
+      "https://*.telmy.id/*",
+      "https://*.run.app/*",
+      "http://localhost/*",
+      "http://localhost:*/*",
+      "http://127.0.0.1/*",
+      "http://127.0.0.1:*/*"
     ]
   },
   "content_scripts": [
