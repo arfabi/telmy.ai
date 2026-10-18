@@ -605,7 +605,7 @@
 
     // Trigger Interactive Lightshot-Style Snip Tool for "Explain This"
     if (message.type === 'TRIGGER_SNIP_TOOL') {
-      startSnipTool();
+      startSnipTool(message);
       sendResponse({ success: true });
       return false;
     }
@@ -881,7 +881,10 @@
   }
 
   // Interactive Snip Tool for "Explain This"
-  function startSnipTool() {
+  function startSnipTool(options = {}) {
+    const textDrag = options?.hintDrag || '✂️ Drag the area you want explained (Press ESC to cancel)';
+    const textCapturing = options?.hintCapturing || '⏳ Capturing screenshot...';
+
     // Remove existing if any
     const existingBackdrop = document.querySelector('.telmy-snip-backdrop');
     if (existingBackdrop) existingBackdrop.remove();
@@ -894,7 +897,7 @@
 
     const hint = document.createElement('div');
     hint.className = 'telmy-snip-hint';
-    hint.innerHTML = `<span>✂️ Drag area yang ingin dijelaskan (Tekan ESC untuk batal)</span>`;
+    hint.innerHTML = `<span>${textDrag}</span>`;
 
     backdrop.appendChild(selectionBox);
     backdrop.appendChild(hint);
@@ -941,7 +944,7 @@
         return;
       }
 
-      hint.innerHTML = `<span>⏳ Mengambil tangkapan layar...</span>`;
+      hint.innerHTML = `<span>${textCapturing}</span>`;
 
       // Request full screenshot from Service Worker
       chrome.runtime.sendMessage({ type: 'CAPTURE_VISIBLE_TAB' }, async (response) => {

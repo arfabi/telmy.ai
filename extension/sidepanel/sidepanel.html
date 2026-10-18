@@ -11,6 +11,9 @@
     <!-- Brand Header -->
     <header class="sp-header">
       <div class="sp-brand">
+        <button type="button" id="btn-a11y-header-back" class="sp-icon-btn sp-header-back-btn" title="Back / Kembali" style="display: none;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
         <div id="sp-avatar-slot" class="sp-avatar-slot" title="Telmy AI Companion (Click to interact)"></div>
         <div class="sp-brand-text">
           <span class="sp-brand-title">Telmy<span class="sp-brand-dotai">.ai</span></span>
@@ -791,8 +794,8 @@
         <div class="sp-paywall-title-row">
           <span class="sp-paywall-badge-icon">💎</span>
           <div>
-            <h3>Form Analysis Quota</h3>
-            <p class="sp-paywall-subtitle" id="paywall-status-subtitle">Manage your Telmy form guidance credits & tier</p>
+            <h3 id="lbl-paywall-title">Form Analysis Quota</h3>
+            <p class="sp-paywall-subtitle" id="paywall-status-subtitle">Upgrade your form quota for uninterrupted assistance</p>
           </div>
         </div>
         <button id="btn-close-paywall" class="sp-modal-close" title="Close">&times;</button>
@@ -802,80 +805,26 @@
         <div class="sp-quota-summary-card">
           <div class="quota-summary-metric">
             <span class="quota-sum-num" id="paywall-sum-remaining">5</span>
-            <span class="quota-sum-label">Forms Remaining</span>
+            <span class="quota-sum-label" id="lbl-paywall-sum-remaining">Forms Remaining</span>
           </div>
           <div class="quota-summary-details">
-            <div class="quota-row"><span class="q-label">Active Tier:</span> <strong id="paywall-sum-plan">Free Tier</strong></div>
-            <div class="quota-row"><span class="q-label">Permanent Credits (PAYG):</span> <span id="paywall-sum-payg">0 Forms</span></div>
-            <div class="quota-row"><span class="q-label">Pro Subscription (Monthly):</span> <span id="paywall-sum-pro">0 Forms</span></div>
+            <div class="quota-row"><span class="q-label" id="lbl-paywall-active-tier">Active Tier:</span> <strong id="paywall-sum-plan">Free Tier</strong></div>
+            <div class="quota-row"><span class="q-label" id="lbl-paywall-payg">Permanent Credits (PAYG):</span> <span id="paywall-sum-payg">0 Forms</span></div>
+            <div class="quota-row"><span class="q-label" id="lbl-paywall-pro">Monthly Subscription:</span> <span id="paywall-sum-pro">0 Forms</span></div>
           </div>
         </div>
 
-        <div class="sp-paywall-tiers">
-          <!-- Tier 1: Standard -->
-          <div class="paywall-tier-card" id="card-tier-standard">
-            <div class="tier-badge-pill">Hemat & Fleksibel</div>
-            <div class="tier-header">
-              <h4>Standard</h4>
-              <div class="tier-price"><span class="currency">Rp</span><span class="amount">49.000</span> <span class="unit">/ bln</span></div>
-              <div class="tier-subtext">25 Forms &bull; ~$3 / bulan &bull; QRIS & VA</div>
-            </div>
-            <ul class="tier-features">
-              <li>✓ 25 interactive form credits (30 hari)</li>
-              <li>✓ Pre-Submission Form Error Auditor</li>
-              <li>✓ Universal PDF hingga 15 halaman</li>
-              <li>✓ Simpan 3 Profil Pintar di Vault</li>
-            </ul>
-            <button class="btn-tier-purchase btn-tier-standard" data-plan="standard">
-              ⚡ Pilih Standard Rp 49.000
-            </button>
+        <!-- Dashboard Upgrade Action Card -->
+        <div class="sp-paywall-dashboard-card" style="background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%); border: 1.5px solid #86efac; border-radius: 14px; padding: 18px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 12px; box-shadow: 0 4px 14px rgba(34, 197, 94, 0.08);">
+          <div style="width: 48px; height: 48px; border-radius: 50%; background: #dcfce7; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+            ⚡
           </div>
-
-          <!-- Tier 2: Pro Subscription (Recommended) -->
-          <div class="paywall-tier-card recommended" id="card-tier-pro">
-            <div class="tier-badge-pill highlight">Paling Populer</div>
-            <div class="tier-header">
-              <h4>Pro</h4>
-              <div class="tier-price"><span class="currency">Rp</span><span class="amount">99.000</span> <span class="unit">/ bln</span></div>
-              <div class="tier-subtext">75 Forms &bull; ~$7 / bulan &bull; QRIS & VA</div>
-            </div>
-            <ul class="tier-features">
-              <li>✓ <strong>75 Forms</strong> / bulan (Rp 1.320/form)</li>
-              <li>✓ Prioritas AI Gemini 3.5 Flash-Lite</li>
-              <li>✓ Unlimited Voice WaveNet Lip-Sync</li>
-              <li>✓ Universal PDF hingga 50 halaman</li>
-              <li>✓ 10 Profil Multi-Anggota di Vault</li>
-            </ul>
-            <button class="btn-tier-purchase btn-tier-pro" data-plan="pro">
-              ✨ Pilih Pro Rp 99.000
-            </button>
-          </div>
-
-          <!-- Tier 3: Max Tier -->
-          <div class="paywall-tier-card" id="card-tier-max">
-            <div class="tier-badge-pill">Power User / Agensi</div>
-            <div class="tier-header">
-              <h4>Max</h4>
-              <div class="tier-price"><span class="currency">Rp</span><span class="amount">199.000</span> <span class="unit">/ bln</span></div>
-              <div class="tier-subtext">200 Forms &bull; <strong style="color: #16a34a;">Rp 995/form!</strong> &bull; ~$13</div>
-            </div>
-            <ul class="tier-features">
-              <li>✓ <strong>200 Forms</strong> / bulan (Di bawah Rp 1.000/form)</li>
-              <li>✓ Prioritas Tertinggi Gemini AI + Vision</li>
-              <li>✓ Universal PDF Dokumen Tanpa Batas</li>
-              <li>✓ Multi-Vault Client Profiles Tanpa Batas</li>
-              <li>✓ Export Laporan Form Audit & VIP Support</li>
-            </ul>
-            <button class="btn-tier-purchase btn-tier-max" data-plan="max">
-              🚀 Pilih Max Rp 199.000
-            </button>
-          </div>
-        </div>
-
-        <!-- Mayar Payment Channels Info Banner -->
-        <div class="sp-mayar-channels-banner">
-          <span class="mayar-icon">🇮🇩</span>
-          <span>Pembayaran instan via <strong>Mayar.id</strong>: QRIS (GoPay, OVO, ShopeePay, DANA), Virtual Account (BCA, Mandiri, BRI, BNI), & Kartu Kredit.</span>
+          <p id="lbl-paywall-dashboard-info" style="font-size: 12.5px; color: #166534; line-height: 1.5; margin: 0; font-weight: 500;">
+            Upgrade subscription, purchase extra credits, or manage billing easily on the Telmy Web Dashboard.
+          </p>
+          <button type="button" id="btn-upgrade-dashboard" class="btn-guide-me-cta" style="width: 100%; justify-content: center; font-size: 13.5px; padding: 12px 18px; background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: #ffffff; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.28); transition: transform 0.15s ease;">
+            <span id="lbl-btn-upgrade-dashboard">Upgrade Quota on Dashboard ↗</span>
+          </button>
         </div>
       </div>
     </div>

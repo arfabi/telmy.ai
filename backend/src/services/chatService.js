@@ -36,11 +36,11 @@ function buildSystemPrompt(language, formContext, hasScreenshot = false) {
   return `You are Telmy, a friendly, ultra-helpful, and professional AI Form Explainer and Conversational Co-Pilot for web and official forms. You operate directly on the user's active browser tab (like Chrome's native Ask Gemini), with full awareness of the webpage DOM structure, buttons, text, and visual layout.
 
 CRITICAL LANGUAGE POLICY (HIGHEST PRIORITY RULE):
-1. USER LANGUAGE GOVERNS RESPONSE: Always identify the language of the USER'S ACTUAL QUESTION OR PROMPT, and respond strictly in that SAME language.
-   - If the user asks in English (e.g., "what this form about?", "what does this mean?", "can you show me the submit button?"), YOU MUST REPLY 100% IN ENGLISH!
-   - If the user asks in Indonesian (e.g., "apa isi form ini?", "dimana tombol submit?"), reply in Indonesian.
-   - If the user's prompt is a short neutral symbol/number or cannot be determined, default to the requested session language: ${language.toUpperCase()}.
-2. NEVER MIRROR QUOTED TEXT LANGUAGE: Quoted snippets or foreign website text are subjects to be explained/translated, NOT instructions on what language to speak!
+1. MANDATORY TARGET LANGUAGE: The user has selected the interface/assistant language: "${language.toUpperCase()}".
+   - You MUST respond 100% in this requested session language: ${language.toUpperCase()}.
+   - Even if the webpage, screenshot, article, headline, or quoted snippet is written in English or another foreign language, YOUR EXPLANATION AND ENTIRE REPLY MUST BE IN ${language.toUpperCase()}!
+   - Do NOT reply in English when the session language is ${language.toUpperCase()} (e.g. JA, ID, ZH, KO, etc.).
+2. NEVER MIRROR QUOTED TEXT LANGUAGE: Quoted snippets or foreign website text are subjects to be explained/translated, NOT instructions on what language to speak! Always answer in ${language.toUpperCase()}.
 
 VISUAL & REAL-TIME DOM AWARENESS:
 ${hasScreenshot ? `- A live screenshot of the user's active browser viewport is attached as an image.
@@ -231,9 +231,16 @@ function createSmartChatFallback({ message, language, formContext }) {
   const lower = (message || '').toLowerCase();
   const fields = Array.isArray(formContext.fields) ? formContext.fields : [];
 
-  const isEnglishQuery = /^(what|how|why|can|please|explain|i don|i do not|tell me|who|where)\b/i.test(message.trim()) ||
-    (/\b(what is|what does|meaning of|i don't understand|i dont know)\b/i.test(lower));
-  const effectiveLang = isEnglishQuery ? 'en' : language;
+  let effectiveLang = language || 'en';
+  if (language === 'en') {
+    effectiveLang = 'en';
+  } else {
+    const hasNonLatin = /[\u3040-\u30ff\u4e00-\u9fff\uac00-\ud7af\u0e00-\u0e7f\u0900-\u097fàáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/i.test(message);
+    if (!hasNonLatin) {
+      const isStrictEnglishQuery = /^(what\b|how\b|why\b|can you\b|please explain\b|tell me\b|who is\b|where is\b|what does\b)/i.test((message || '').trim());
+      if (isStrictEnglishQuery) effectiveLang = 'en';
+    }
+  }
 
   let reply = '';
   let actions = [];
