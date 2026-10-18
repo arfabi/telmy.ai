@@ -6010,7 +6010,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    executeBackendChat(cleanText);
+    executeBackendChat(cleanText, customImage);
   }
 
   // Multi-lingual "Show Me / Tunjukkan" Action Intent Parser (11+ Languages)

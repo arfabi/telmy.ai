@@ -899,6 +899,8 @@
     hint.className = 'telmy-snip-hint';
     hint.innerHTML = `<span>${textDrag}</span>`;
 
+    backdrop.style.background = 'rgba(15, 23, 42, 0.45)';
+
     backdrop.appendChild(selectionBox);
     backdrop.appendChild(hint);
     document.body.appendChild(backdrop);
@@ -910,6 +912,7 @@
     function onMouseDown(e) {
       if (e.button !== 0) return;
       isSelecting = true;
+      backdrop.style.background = 'transparent';
       startX = e.clientX;
       startY = e.clientY;
       selectionBox.style.left = `${startX}px`;
@@ -945,6 +948,10 @@
       }
 
       hint.innerHTML = `<span>${textCapturing}</span>`;
+
+      // Temporarily hide backdrop during capture so the captured screen is 100% natural color (not dimmed)
+      backdrop.style.opacity = '0';
+      backdrop.style.pointerEvents = 'none';
 
       // Request full screenshot from Service Worker
       chrome.runtime.sendMessage({ type: 'CAPTURE_VISIBLE_TAB' }, async (response) => {

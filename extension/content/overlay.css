@@ -1481,7 +1481,7 @@ html.telmy-saturation-2 {
   width: 100vw !important;
   height: 100vh !important;
   z-index: 2147483640 !important;
-  background: rgba(15, 23, 42, 0.45) !important;
+  background: transparent !important;
   cursor: crosshair !important;
   user-select: none !important;
 }
@@ -1489,9 +1489,9 @@ html.telmy-saturation-2 {
 .telmy-snip-selection {
   position: fixed !important;
   z-index: 2147483642 !important;
-  border: 2px dashed #0071e3 !important;
-  background: rgba(0, 113, 227, 0.08) !important;
-  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.35) !important;
+  border: 2px solid #0071e3 !important;
+  background: transparent !important;
+  box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.45) !important;
   pointer-events: none !important;
   display: none;
 }
