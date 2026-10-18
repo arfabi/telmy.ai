@@ -43,8 +43,12 @@ CRITICAL LANGUAGE POLICY (HIGHEST PRIORITY RULE):
 2. NEVER MIRROR QUOTED TEXT LANGUAGE: Quoted snippets or foreign website text are subjects to be explained/translated, NOT instructions on what language to speak! Always answer in ${language.toUpperCase()}.
 
 VISUAL & REAL-TIME DOM AWARENESS:
-${hasScreenshot ? `- A live screenshot of the user's active browser viewport is attached as an image.
-- You can SEE the visual design, logos, official seals, banners, dialogs, and button positions.` : '- Webpage text context and DOM structure provided.'}
+${hasScreenshot ? `- IMPORTANT (MULTIMODAL SNIP & VIEWPORT): A live image snippet or screenshot from the user's active screen is attached to this request!
+  * If the user message asks to explain a cropped snip or selected area (e.g. "Explain This", "Jelaskan Ini", "bagian yang saya potong ini"):
+    THE ATTACHED IMAGE IS A DIRECT PIXEL CROP OF THAT EXACT ELEMENT/TEXT/FORM FIELD.
+    You MUST prioritize reading and analyzing the exact text, buttons, instructions, checkboxes, or input requirements VISIBLE INSIDE THIS ATTACHED IMAGE!
+    Explain what that cropped snippet means, what it asks for, and how the user should fill or respond to it properly.
+  * If the image is a full viewport capture, examine the visual layout, logos, banners, and button positions.` : '- Webpage text context and DOM structure provided.'}
 - You know the exact Page Title, Web URL, headings, buttons, and text content of the active tab.
 - If user asks "what this form about?" or "ini website apa", explain the purpose of this specific website/form based on the Page Title, Headings, Summary, and Page Text below. NEVER say "this appears to be a general public form" or "no specific fields are detected" when Page Title or Page Text are provided!
 - If user asks for login, register, submit, or any action button (e.g. "where i must login?", "dimana login?", "show me the submit button", "where is the register button?", "mana tombol daftarnya?"):
@@ -245,7 +249,13 @@ function createSmartChatFallback({ message, language, formContext }) {
   let reply = '';
   let actions = [];
 
-  if (lower.includes('what this form about') || lower.includes('what is this form') || lower.includes('tentang apa') || lower.includes('formulir apa ini') || lower.includes('ini website apa') || lower.includes('what website is this')) {
+  // Check if query is an Explain This snip area request
+  if (lower.startsWith('explain this:') || lower.startsWith('jelaskan ini:') || lower.includes('bagian yang saya potong ini') || lower.includes('cropped from the page')) {
+    const pageTitle = formContext.title || 'halaman ini';
+    reply = effectiveLang === 'en'
+      ? `Based on the cropped area on "${pageTitle}", this section outlines a specific input field or form requirement. Please review the highlighted prompt, ensure your response directly answers the question, and adhere to any format rules indicated.`
+      : `Berdasarkan area yang Anda potong pada "${pageTitle}", bagian ini merupakan kolom isian atau persyaratan formulir. Pastikan Anda mengisi data yang sesuai dengan instruksi yang tertera dan periksa kembali formatnya sebelum melanjutkan.`;
+  } else if (lower.includes('what this form about') || lower.includes('what is this form') || lower.includes('tentang apa') || lower.includes('formulir apa ini') || lower.includes('ini website apa') || lower.includes('what website is this')) {
     const title = formContext.title || 'this form';
     const summary = formContext.summary || 'an online digital application form';
     reply = effectiveLang === 'en'

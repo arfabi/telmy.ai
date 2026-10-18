@@ -5859,6 +5859,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
     appendChatMessage(userMsg);
 
+    // If an image screenshot is attached (e.g. Explain This Snip Area), send directly to Gemini Vision!
+    if (customImage) {
+      executeBackendChat(cleanText, customImage);
+      return;
+    }
+
     // Direct Intent 1: Context-Aware Page Translation
     if (/(terjemah.*halaman|translate.*page|translate this page|terjemahkan web|terjemahkan situs)/i.test(cleanText)) {
       handleTogglePageTranslation(true);
