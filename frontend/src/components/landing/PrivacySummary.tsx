@@ -4,30 +4,30 @@ import { Lock, EyeOff, FileText, KeyRound, ArrowRight, ShieldCheck } from 'lucid
 import { Link } from 'react-router-dom'
 
 interface PrivacySummaryProps {
-  t?: TranslationData
+  t: TranslationData
 }
 
-export const PrivacySummary: React.FC<PrivacySummaryProps> = () => {
+export const PrivacySummary: React.FC<PrivacySummaryProps> = ({ t }) => {
   const cards = [
     {
       icon: Lock,
-      title: "Encrypted on your device",
-      desc: "Your saved profile is encrypted directly in your browser using AES-256-GCM before storage. Encryption keys never leave your machine.",
+      title: t.priv1Title,
+      desc: t.priv1Desc,
     },
     {
       icon: FileText,
-      title: "Documents aren't kept",
-      desc: "Uploaded ID cards, diplomas, or passport photos are read by OCR in volatile memory and discarded immediately with zero document retention.",
+      title: t.priv3Title,
+      desc: t.priv3Desc,
     },
     {
       icon: EyeOff,
-      title: "Personal data masked",
-      desc: "Sensitive details like NIK, passport numbers, and phone numbers are strictly masked before form layout context is sent for AI analysis.",
+      title: t.priv2Title,
+      desc: t.priv2Desc,
     },
     {
       icon: KeyRound,
-      title: "Passwords stay private",
-      desc: "Password fields, credit card numbers, and security codes (CVV) are completely ignored and never captured or read by Telmy.",
+      title: t.priv4Title,
+      desc: t.priv4Desc,
     },
   ]
 
@@ -37,13 +37,13 @@ export const PrivacySummary: React.FC<PrivacySummaryProps> = () => {
         <div className="text-center max-w-3xl mx-auto mb-16">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs font-bold uppercase tracking-wider mb-4">
             <ShieldCheck className="w-3.5 h-3.5" />
-            <span>Security by Design</span>
+            <span>{t.footerSecurityBadge}</span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
-            Your information stays yours
+            {t.privacyTitle}
           </h2>
           <p className="mt-3 text-base sm:text-lg text-slate-400">
-            Forms hold your most personal details. Here is exactly how Telmy handles and protects them.
+            {t.privacySubtitle}
           </p>
         </div>
 
@@ -76,14 +76,14 @@ export const PrivacySummary: React.FC<PrivacySummaryProps> = () => {
           <div className="text-left flex items-center gap-3">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
             <span>
-              <strong className="text-white">Zero Plaintext Access & AES-256 Vault:</strong> Want to test our client-side PII sanitizer simulator and verify our encryption model?
+              <strong className="text-white">{t.footerSecurityBadge}:</strong> {t.heroTrustline}
             </span>
           </div>
           <Link
             to="/security"
             className="shrink-0 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold flex items-center gap-1.5 transition-all shadow-md shadow-blue-500/20 group"
           >
-            <span>Explore Security Page</span>
+            <span>{t.footerSecurity}</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
           </Link>
         </div>

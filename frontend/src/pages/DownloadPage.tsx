@@ -110,31 +110,44 @@ export const DownloadPage: React.FC = () => {
       fil: "Chrome Web Store (V2 Roadmap)",
       ms: "Chrome Web Store (Pelan Tindakan V2)",
     },
-    juryNoteTitle: {
-      en: "For Judges & Evaluators (Zero Barrier Testing)",
-      id: "Panduan Khusus Juri & Evaluator (Bebas Hambatan)",
-      ja: "審査員・レビュアーの皆様へ（ログイン不要・簡単テスト）",
-      ko: "심사위원 안내 (무설정 즉시 테스트 가능)",
-      zh: "评审专家指南（零门槛直接体验）",
-      'zh-TW': "評審專家指南（零門檻直接體驗）",
-      vi: "Dành cho Ban giám khảo (Trải nghiệm nhanh không rào cản)",
-      th: "สำหรับคณะกรรมการ (ทดสอบได้ทันทีโดยไม่มีอุปสรรค)",
-      hi: "मूल्यांकनकर्ताओं के लिए (त्वरित परीक्षण गाइड)",
-      fil: "Para sa mga Hurado at Evaluator (Mabilisang Pagsubok)",
-      ms: "Untuk Para Hakim & Penilai (Ujian Pantas Tanpa Halangan)",
+    warningBadge: {
+      en: "Notice",
+      id: "Pemberitahuan",
+      ja: "お知らせ",
+      ko: "안내",
+      zh: "重要通知",
+      'zh-TW': "重要通知",
+      vi: "Thông báo",
+      th: "ข้อควรทราบ",
+      hi: "सूचना",
+      fil: "Abiso",
+      ms: "Pemberitahuan",
     },
-    juryNoteDesc: {
-      en: "The extension comes pre-configured with 5 free AI quota credits per session. No registration required to test page scanning and guidance on test portals! For full Smart Vault sync, click 'Connect' with any Google account.",
-      id: "Ekstensi sudah dilengkapi kuota bawaan 5 formulir AI gratis. Anda bisa langsung mencoba fitur pemindaian formulir & panduan suara tanpa wajib login! Untuk fitur brankas lokal tersinkronisasi, cukup klik 'Connect' dengan akun Google apa pun.",
-      ja: "本拡張機能には初期状態で 5 回分の無料 AI クレジットが付与されています。テスト用フォームでの読み取り・解説機能はログイン不要で即座にお試しいただけます。",
-      ko: "본 확장 프로그램에는 기본 5회 무료 AI 크레딧이 탑재되어 있습니다. 별도의 회원가입 없이도 폼 분석 및 음성 안내를 즉시 테스트하실 수 있습니다.",
-      zh: "插件内置 5 次免费 AI 辅导额度。评审测试任意表单扫描与语音讲解无需强制登录！如需体验多端保险库同步，可在侧边栏点击一键连接 Google 账号。",
-      'zh-TW': "外掛內建 5 次免費 AI 輔導額度。評審測試任意表單掃描與語音解說無需強制登入！如需體驗多端保險庫同步，可在側邊欄點擊一鍵連接 Google 帳戶。",
-      vi: "Tiện ích đã được cấu hình sẵn 5 lượt AI miễn phí. Giám khảo có thể dùng thử quét biểu mẫu ngay mà không bắt buộc đăng nhập!",
-      th: "ส่วนขยายมาพร้อมโควตาฟรี 5 ครั้ง ไม่จำเป็นต้องลงทะเบียนเพื่อทดสอบการสแกนและคำแนะนำเบื้องต้น",
-      hi: "एक्सटेंशन में पहले से 5 मुफ्त एआई क्रेडिट शामिल हैं। परीक्षण के लिए लॉगिन अनिवार्य नहीं है!",
-      fil: "Ang extension ay may kasamang 5 libreng AI credit. Maaari agad subukan nang hindi kinakailangang mag-login!",
-      ms: "Sambungan dilengkapi kuota 5 borang AI percuma. Boleh terus uji tanpa halangan log masuk!",
+    warningTitle: {
+      en: "Extension Marketplace Submission Status",
+      id: "Status Pendaftaran Marketplace Ekstensi",
+      ja: "拡張機能マーケットプレイス審査状況",
+      ko: "확장 프로그램 마켓플레이스 등록 심사 현황",
+      zh: "扩展应用商店审核中提示",
+      'zh-TW': "擴充功能商店審核中提示",
+      vi: "Tình Trạng Đăng Ký Cửa Hàng Tiện Ích",
+      th: "สถานะการลงทะเบียนใน Marketplace ของส่วนขยาย",
+      hi: "एक्सटेंशन मार्केटप्लेस सबमिशन स्थिति",
+      fil: "Katayuan ng Pagpaparehistro sa Extension Marketplace",
+      ms: "Status Pendaftaran Marketplace Sambungan",
+    },
+    warningDesc: {
+      en: "Currently, our extension has been submitted to marketplaces such as the Chrome Web Store. Once approved, the download link will be updated directly to the official marketplace listing.",
+      id: "Saat ini Ekstensi telah kami daftarkan ke marketplace resmi seperti Chrome Web Store. Setelah disetujui, Link Download akan kami ganti ke Link Marketplace resmi.",
+      ja: "現在、本拡張機能は Chrome ウェブストア等の公式マーケットプレイスに申請・登録中です。審査完了および承認され次第、ダウンロードリンクは公式ストアのURLへ順次更新されます。",
+      ko: "현재 본 확장 프로그램은 Chrome 웹 스토어 등 공식 마켓플레이스에 등록 심사 중입니다. 심사 승인이 완료되는 대로 다운로드 링크가 공식 마켓플레이스 링크로 교체됩니다.",
+      zh: "目前我们的浏览器扩展已提交至 Chrome 应用商店等官方市场审核。审核通过并上架后，此处的下载链接将即时更新为官方应用商店链接。",
+      'zh-TW': "目前我們的瀏覽器擴充功能已提交至 Chrome 線上應用程式商店等官方市集審核。審核通過並上架後，此處的下載連結將即刻更新為官方市集連結。",
+      vi: "Hiện tại tiện ích đã được đăng ký trên các cửa hàng chính thức như Chrome Web Store. Sau khi được phê duyệt, liên kết tải xuống sẽ được cập nhật sang liên kết cửa hàng chính thức.",
+      th: "ขณะนี้เราได้ลงทะเบียนส่วนขยายในมาร์เก็ตเพลสอย่างเป็นทางการ เช่น Chrome Web Store แล้ว เมื่อได้รับการอนุมัติ ลิงก์ดาวน์โหลดจะเปลี่ยนเป็นลิงก์ของมาร์เก็ตเพลสอย่างเป็นทางการทันที",
+      hi: "वर्तमान में हमारे एक्सटेंशन को Chrome वेब स्टोर जैसे आधिकारिक मार्केटप्लेस में जमा किया गया है। अनुमोदन के बाद, डाउनलोड लिंक को आधिकारिक मार्केटप्लेस लिंक से बदल दिया जाएगा।",
+      fil: "Sa kasalukuyan, nairehistro na namin ang extension sa mga opisyal na marketplace gaya ng Chrome Web Store. Kapag naaprubahan na, papalitan ang link ng pag-download ng opisyal na link ng marketplace.",
+      ms: "Pada masa ini, sambungan kami telah didaftarkan ke marketplace rasmi seperti Chrome Web Store. Selepas diluluskan, Pautan Muat Turun akan dikemas kini kepada Pautan Marketplace rasmi.",
     },
     step1Title: {
       en: "Step 1: Download & Extract ZIP",
@@ -287,20 +300,20 @@ export const DownloadPage: React.FC = () => {
       {/* Main Container */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full flex-1 space-y-8">
         
-        {/* Judge / Frictionless Notice */}
-        <div className="p-5 rounded-2xl bg-amber-50/80 border border-amber-200/80 flex items-start gap-4">
+        {/* Marketplace Submission Warning / Notice Banner */}
+        <div className="p-5 rounded-2xl bg-amber-50/80 border border-amber-200/80 flex items-start gap-4 shadow-2xs">
           <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center shrink-0 mt-0.5">
-            <Cpu className="w-5 h-5" />
+            <AlertTriangle className="w-5 h-5 text-amber-600" />
           </div>
           <div>
             <h4 className="text-sm font-bold text-amber-900 flex items-center gap-2">
-              <span>{getStr('juryNoteTitle')}</span>
+              <span>{getStr('warningTitle')}</span>
               <span className="px-2 py-0.5 rounded-full bg-amber-200/70 text-amber-900 text-[10px] font-extrabold uppercase">
-                Zero Barrier
+                {getStr('warningBadge')}
               </span>
             </h4>
-            <p className="text-xs text-amber-800/90 mt-1 leading-relaxed">
-              {getStr('juryNoteDesc')}
+            <p className="text-xs text-amber-800/90 mt-1.5 leading-relaxed">
+              {getStr('warningDesc')}
             </p>
           </div>
         </div>

@@ -49,7 +49,7 @@ export const SUPPORTED_LANGUAGES_DATA: SupportedLanguage[] = [
     code: 'ja',
     name: 'Japanese',
     nativeName: '日本語',
-    country: 'Jepang (Japan)',
+    country: '日本 (Nihon)',
     short: 'JA',
     flagSvg: (
       <svg viewBox="0 0 640 480" className="w-full h-full object-cover">
@@ -62,7 +62,7 @@ export const SUPPORTED_LANGUAGES_DATA: SupportedLanguage[] = [
     code: 'ko',
     name: 'Korean',
     nativeName: '한국어',
-    country: 'Korea Selatan (South Korea)',
+    country: '대한민국 (Daehan Minguk)',
     short: 'KO',
     flagSvg: (
       <svg viewBox="0 0 640 480" className="w-full h-full object-cover">
@@ -84,7 +84,7 @@ export const SUPPORTED_LANGUAGES_DATA: SupportedLanguage[] = [
     code: 'zh',
     name: 'Simplified Chinese',
     nativeName: '简体中文',
-    country: 'Tiongkok (China)',
+    country: '中国 (Zhōngguó)',
     short: 'ZH',
     flagSvg: (
       <svg viewBox="0 0 640 480" className="w-full h-full object-cover">
@@ -97,7 +97,7 @@ export const SUPPORTED_LANGUAGES_DATA: SupportedLanguage[] = [
     code: 'zh-TW',
     name: 'Traditional Chinese',
     nativeName: '繁體中文',
-    country: 'Taiwan',
+    country: '台灣 (Taiwan)',
     short: 'TW',
     flagSvg: (
       <svg viewBox="0 0 640 480" className="w-full h-full object-cover">
@@ -113,7 +113,7 @@ export const SUPPORTED_LANGUAGES_DATA: SupportedLanguage[] = [
     code: 'vi',
     name: 'Vietnamese',
     nativeName: 'Tiếng Việt',
-    country: 'Vietnam',
+    country: 'Việt Nam',
     short: 'VI',
     flagSvg: (
       <svg viewBox="0 0 640 480" className="w-full h-full object-cover">
@@ -126,7 +126,7 @@ export const SUPPORTED_LANGUAGES_DATA: SupportedLanguage[] = [
     code: 'th',
     name: 'Thai',
     nativeName: 'ไทย',
-    country: 'Thailand',
+    country: 'ประเทศไทย (Prathet Thai)',
     short: 'TH',
     flagSvg: (
       <svg viewBox="0 0 640 480" className="w-full h-full object-cover">
@@ -140,7 +140,7 @@ export const SUPPORTED_LANGUAGES_DATA: SupportedLanguage[] = [
     code: 'hi',
     name: 'Hindi',
     nativeName: 'हिन्दी',
-    country: 'India',
+    country: 'भारत (Bharat)',
     short: 'HI',
     flagSvg: (
       <svg viewBox="0 0 640 480" className="w-full h-full object-cover">
@@ -156,8 +156,8 @@ export const SUPPORTED_LANGUAGES_DATA: SupportedLanguage[] = [
   {
     code: 'fil',
     name: 'Filipino',
-    nativeName: 'Filipino (Tagalog)',
-    country: 'Filipina (Philippines)',
+    nativeName: 'Filipino',
+    country: 'Pilipinas',
     short: 'FIL',
     flagSvg: (
       <svg viewBox="0 0 640 480" className="w-full h-full object-cover">

@@ -307,13 +307,59 @@ export const FeaturesPage: React.FC = () => {
                       {lang.country}
                     </p>
 
-                    {/* Description: "Gunakan bahasa xxxx" */}
+                    {/* Description: "Use language xxxx" in 11 languages */}
                     <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/70 text-xs text-slate-700 leading-relaxed">
-                      {isIndonesian ? (
+                      {langKey === 'id' && (
                         <span>
                           Gunakan bahasa <strong>{lang.name}</strong> ({lang.nativeName}) untuk memahami dan mengisi formulir resmi tanpa kendala bahasa.
                         </span>
-                      ) : (
+                      )}
+                      {langKey === 'ms' && (
+                        <span>
+                          Gunakan bahasa <strong>{lang.name}</strong> ({lang.nativeName}) untuk memahami dan mengisi borang rasmi dengan yakin.
+                        </span>
+                      )}
+                      {langKey === 'ja' && (
+                        <span>
+                          <strong>{lang.nativeName}</strong> を使用して、公的フォームの意味を正確に理解し、迷わずスムーズに作成できます。
+                        </span>
+                      )}
+                      {langKey === 'ko' && (
+                        <span>
+                          <strong>{lang.nativeName}</strong>로 공공 서식과 비자 신청서를 명확하게 이해하고 완벽하게 작성하세요.
+                        </span>
+                      )}
+                      {langKey === 'zh' && (
+                        <span>
+                          使用 <strong>{lang.nativeName}</strong>，轻松理解并准确填报各类官方表格与签证公文。
+                        </span>
+                      )}
+                      {langKey === 'zh-TW' && (
+                        <span>
+                          以 <strong>{lang.nativeName}</strong> 輕鬆搞懂繁瑣公文表格，清楚掌握官方規定與範例。
+                        </span>
+                      )}
+                      {langKey === 'vi' && (
+                        <span>
+                          Sử dụng <strong>{lang.nativeName}</strong> để hiểu rõ và hoàn thành biểu mẫu chính thức một cách chính xác.
+                        </span>
+                      )}
+                      {langKey === 'th' && (
+                        <span>
+                          ใช้ <strong>{lang.nativeName}</strong> เพื่อทำความเข้าใจและกรอกแบบฟอร์มทางการได้อย่างมั่นใจและชัดเจน
+                        </span>
+                      )}
+                      {langKey === 'hi' && (
+                        <span>
+                          आधिकारिक फॉर्म को समझने और बिना किसी त्रुटि के भरने के लिए <strong>{lang.nativeName}</strong> का उपयोग करें।
+                        </span>
+                      )}
+                      {langKey === 'fil' && (
+                        <span>
+                          Gamitin ang <strong>{lang.nativeName}</strong> upang madaling maunawaan at makumpleto ang mga opisyal na form.
+                        </span>
+                      )}
+                      {langKey === 'en' && (
                         <span>
                           Use <strong>{lang.name}</strong> ({lang.nativeName}) to understand and complete official forms with clarity.
                         </span>
@@ -325,7 +371,7 @@ export const FeaturesPage: React.FC = () => {
             })}
           </div>
 
-          {/* Upcoming Global Languages Section with SOON Badges */}
+          {/* Upcoming Global Languages Section with SOON Badges & SVG Flags */}
           <div className="mt-16 pt-12 border-t border-slate-200">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
               <div>
@@ -334,35 +380,116 @@ export const FeaturesPage: React.FC = () => {
                   <span>Next Global Frontier</span>
                 </div>
                 <h3 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-                  {langKey === 'id' ? 'Bahasa Global Berikutnya (Segera Hadir)' : 'Upcoming Global Languages (Coming Soon)'}
+                  {langKey === 'id' ? 'Bahasa Global Berikutnya (Segera Hadir)' :
+                   langKey === 'ms' ? 'Bahasa Global Seterusnya (Akan Datang)' :
+                   langKey === 'ja' ? '順次拡大予定のグローバル言語（近日公開）' :
+                   langKey === 'ko' ? '추가 예정 글로벌 지원 언어 (출시 예정)' :
+                   langKey === 'zh' ? '即将推出的全球语言（敬请期待）' :
+                   langKey === 'zh-TW' ? '即將推出的全球語言（敬請期待）' :
+                   langKey === 'vi' ? 'Các Ngôn Ngữ Toàn Cầu Sắp Ra Mắt (Sắp Có)' :
+                   langKey === 'th' ? 'ภาษาทั่วโลกที่กำลังจะเปิดตัว (เร็วๆ นี้)' :
+                   langKey === 'hi' ? 'आगामी वैश्विक भाषाएं (जल्द आ रही हैं)' :
+                   langKey === 'fil' ? 'Mga Paparating na Pandaigdigang Wika (Malapit Na)' :
+                   'Upcoming Global Languages (Coming Soon)'}
                 </h3>
                 <p className="mt-1 text-sm text-slate-600">
                   {langKey === 'id'
-                    ? 'Model suara & pemahaman formulir kami sedang dilatih untuk mendukung penutur di Eropa, Timur Tengah, dan Amerika Latin.'
-                    : 'Voice models and context parsing are currently being expanded to serve users across Europe, Latin America, and the Middle East.'}
+                    ? 'Model suara & pemahaman formulir kami sedang dilatih untuk mendukung penutur di Eropa, Timur Tengah, dan Amerika Latin.' :
+                   langKey === 'ms'
+                    ? 'Model suara & pemahaman borang kami sedang dilatih untuk penutur di Eropah, Timur Tengah, dan Amerika Latin.' :
+                   langKey === 'ja'
+                    ? '欧州、中東、中南米のユーザーを支援するため、音声モデルと文脈解析を順次拡大しています。' :
+                   langKey === 'ko'
+                    ? '유럽, 중동, 라틴 아메리카 사용자를 위해 음성 모델과 문맥 분석을 확장하고 있습니다.' :
+                   langKey === 'zh'
+                    ? '我们正持续训练语音模型与表单上下文理解能力，以服务欧洲、中东及拉美地区的用户。' :
+                   langKey === 'zh-TW'
+                    ? '我們正持續訓練語音模型與表單上下文理解能力，以服務歐洲、中東及拉丁美洲的使用者。' :
+                   langKey === 'vi'
+                    ? 'Mô hình giọng nói và phân tích ngữ cảnh đang được mở rộng cho người dùng tại Châu Âu, Trung Đông và Châu Mỹ Latinh.' :
+                   langKey === 'th'
+                    ? 'โมเดลเสียงและการประมวลผลแบบฟอร์มกำลังได้รับการพัฒนาเพื่อรองรับผู้ใช้ในยุโรป ตะวันออกกลาง และละตินอเมริกา' :
+                   langKey === 'hi'
+                    ? 'यूरोप, मध्य पूर्व और लैटिन अमेरिका के उपयोगकर्ताओं की सेवा के लिए हमारे वॉयस मॉडल का विस्तार किया जा रहा है।' :
+                   langKey === 'fil'
+                    ? 'Kasalukuyang pinalalawak ang mga voice model para sa mga gumagamit sa Europa, Gitnang Silangan, at Latin America.' :
+                    'Voice models and context parsing are currently being expanded to serve users across Europe, Latin America, and the Middle East.'}
                 </p>
               </div>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
               {[
-                { name: 'Spanish', nativeName: 'Español', flag: '🇪🇸' },
-                { name: 'French', nativeName: 'Français', flag: '🇫🇷' },
-                { name: 'German', nativeName: 'Deutsch', flag: '🇩🇪' },
-                { name: 'Arabic', nativeName: 'العربية', flag: '🇸🇦' },
-                { name: 'Russian', nativeName: 'Русский', flag: '🇷🇺' },
-                { name: 'Portuguese', nativeName: 'Português', flag: '🇧🇷' },
-                { name: 'Turkish', nativeName: 'Türkçe', flag: '🇹🇷' },
-                { name: 'Italian', nativeName: 'Italiano', flag: '🇮🇹' },
-                { name: 'Dutch', nativeName: 'Nederlands', flag: '🇳🇱' },
-                { name: 'Polish', nativeName: 'Polski', flag: '🇵🇱' },
+                {
+                  name: 'Spanish',
+                  nativeName: 'Español',
+                  flag: '🇪🇸',
+                  svg: '<svg viewBox="0 0 640 480" width="32" height="24" class="rounded shadow-xs"><path fill="#c60b1e" d="M0 0h640v480H0z"/><path fill="#ffc400" d="M0 120h640v240H0z"/></svg>'
+                },
+                {
+                  name: 'French',
+                  nativeName: 'Français',
+                  flag: '🇫🇷',
+                  svg: '<svg viewBox="0 0 640 480" width="32" height="24" class="rounded shadow-xs border border-slate-200"><path fill="#002654" d="M0 0h213.3v480H0z"/><path fill="#fff" d="M213.3 0h213.4v480H213.3z"/><path fill="#ce1126" d="M426.7 0H640v480H426.7z"/></svg>'
+                },
+                {
+                  name: 'German',
+                  nativeName: 'Deutsch',
+                  flag: '🇩🇪',
+                  svg: '<svg viewBox="0 0 640 480" width="32" height="24" class="rounded shadow-xs"><path fill="#000" d="M0 0h640v160H0z"/><path fill="#dd0000" d="M0 160h640v160H0z"/><path fill="#ffce00" d="M0 320h640v160H0z"/></svg>'
+                },
+                {
+                  name: 'Arabic',
+                  nativeName: 'العربية',
+                  flag: '🇸🇦',
+                  svg: '<svg viewBox="0 0 640 480" width="32" height="24" class="rounded shadow-xs"><path fill="#006c35" d="M0 0h640v480H0z"/><circle fill="#fff" cx="320" cy="240" r="40"/></svg>'
+                },
+                {
+                  name: 'Russian',
+                  nativeName: 'Русский',
+                  flag: '🇷🇺',
+                  svg: '<svg viewBox="0 0 640 480" width="32" height="24" class="rounded shadow-xs border border-slate-200"><path fill="#fff" d="M0 0h640v160H0z"/><path fill="#0039a6" d="M0 160h640v160H0z"/><path fill="#d52b1e" d="M0 320h640v160H0z"/></svg>'
+                },
+                {
+                  name: 'Portuguese',
+                  nativeName: 'Português',
+                  flag: '🇧🇷',
+                  svg: '<svg viewBox="0 0 640 480" width="32" height="24" class="rounded shadow-xs"><path fill="#009c3b" d="M0 0h640v480H0z"/><polygon fill="#ffdf00" points="320,60 580,240 320,420 60,240"/><circle fill="#002776" cx="320" cy="240" r="90"/></svg>'
+                },
+                {
+                  name: 'Turkish',
+                  nativeName: 'Türkçe',
+                  flag: '🇹🇷',
+                  svg: '<svg viewBox="0 0 640 480" width="32" height="24" class="rounded shadow-xs"><path fill="#e30a17" d="M0 0h640v480H0z"/><circle fill="#fff" cx="260" cy="240" r="120"/><circle fill="#e30a17" cx="290" cy="240" r="96"/><polygon fill="#fff" points="370,240 410,252 385,220 385,260 410,228"/></svg>'
+                },
+                {
+                  name: 'Italian',
+                  nativeName: 'Italiano',
+                  flag: '🇮🇹',
+                  svg: '<svg viewBox="0 0 640 480" width="32" height="24" class="rounded shadow-xs border border-slate-200"><path fill="#009246" d="M0 0h213.3v480H0z"/><path fill="#fff" d="M213.3 0h213.4v480H213.3z"/><path fill="#ce2b37" d="M426.7 0H640v480H426.7z"/></svg>'
+                },
+                {
+                  name: 'Dutch',
+                  nativeName: 'Nederlands',
+                  flag: '🇳🇱',
+                  svg: '<svg viewBox="0 0 640 480" width="32" height="24" class="rounded shadow-xs border border-slate-200"><path fill="#ae1c28" d="M0 0h640v160H0z"/><path fill="#fff" d="M0 160h640v160H0z"/><path fill="#21468b" d="M0 320h640v160H0z"/></svg>'
+                },
+                {
+                  name: 'Polish',
+                  nativeName: 'Polski',
+                  flag: '🇵🇱',
+                  svg: '<svg viewBox="0 0 640 480" width="32" height="24" class="rounded shadow-xs border border-slate-200"><path fill="#fff" d="M0 0h640v240H0z"/><path fill="#dc143c" d="M0 240h640v240H0z"/></svg>'
+                },
               ].map((item, idx) => (
                 <div
                   key={idx}
                   className="relative p-4 rounded-xl bg-white border border-dashed border-slate-300 hover:border-amber-400 hover:bg-amber-50/20 transition-all shadow-2xs group flex flex-col justify-between"
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-2xl">{item.flag}</span>
+                  <div className="flex items-center justify-between mb-3">
+                    <div
+                      className="w-8 h-6 overflow-hidden rounded shadow-xs shrink-0"
+                      dangerouslySetInnerHTML={{ __html: item.svg }}
+                    />
                     <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-2xs tracking-wider uppercase">
                       SOON
                     </span>

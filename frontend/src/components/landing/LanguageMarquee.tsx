@@ -1,92 +1,15 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { JAPAC_LANGUAGES } from '@/data/languages'
+import { JAPAC_LANGUAGES, UPCOMING_LANGUAGES } from '@/data/languages'
 import { useLanguage } from '@/context/LanguageContext'
-import { Volume2, Sparkles, ArrowRight, Play, Pause } from 'lucide-react'
-
-// Upcoming Global Languages with "SOON" status
-export const UPCOMING_LANGUAGES = [
-  { code: 'es', name: 'Spanish', nativeName: 'Español', flag: '🇪🇸' },
-  { code: 'fr', name: 'French', nativeName: 'Français', flag: '🇫🇷' },
-  { code: 'de', name: 'German', nativeName: 'Deutsch', flag: '🇩🇪' },
-  { code: 'ar', name: 'Arabic', nativeName: 'العربية', flag: '🇸🇦' },
-  { code: 'ru', name: 'Russian', nativeName: 'Русский', flag: '🇷🇺' },
-  { code: 'pt', name: 'Portuguese', nativeName: 'Português', flag: '🇧🇷' },
-  { code: 'tr', name: 'Turkish', nativeName: 'Türkçe', flag: '🇹🇷' },
-  { code: 'it', name: 'Italian', nativeName: 'Italiano', flag: '🇮🇹' },
-  { code: 'nl', name: 'Dutch', nativeName: 'Nederlands', flag: '🇳🇱' },
-  { code: 'pl', name: 'Polish', nativeName: 'Polski', flag: '🇵🇱' },
-]
+import { Sparkles, ArrowRight, Pause, Play, Volume2 } from 'lucide-react'
+import { LANGUAGE_MARQUEE_I18N } from '@/data/languageMarqueeData'
 
 export const LanguageMarquee: React.FC = () => {
   const { lang } = useLanguage()
   const [isPaused, setIsPaused] = useState(false)
 
-  // Localized texts based on active language
-  const texts: Record<string, { badge: string; title: string; subtitle: string; pause: string; play: string; explore: string; note: string; cta: string }> = {
-    en: {
-      badge: "Global Language Coverage",
-      title: "Explanations in your native language",
-      subtitle: "Natural AI voice and form guidance in 11 Asia-Pacific languages today, with European and Middle-Eastern languages actively being rolled out.",
-      pause: "Pause Ticker",
-      play: "Resume Ticker",
-      explore: "Explore Language Details",
-      note: "✓ 11 Asia-Pacific languages fully ready. Have a specific language requirement for your embassy or university?",
-      cta: "Request a Language or Check Features Matrix →"
-    },
-    id: {
-      badge: "Cakupan Bahasa Global",
-      title: "Penjelasan dalam bahasa ibu Anda",
-      subtitle: "Panduan formulir dan suara AI alami dalam 11 bahasa resmi Asia-Pasifik, dengan bahasa Eropa dan Timur Tengah sedang aktif dikembangkan.",
-      pause: "Jeda Ticker",
-      play: "Lanjutkan Ticker",
-      explore: "Lihat Detail Bahasa",
-      note: "✓ 11 bahasa Asia-Pasifik siap digunakan. Butuh bahasa khusus untuk kedutaan atau universitas Anda?",
-      cta: "Minta Bahasa Baru atau Cek Matriks Fitur →"
-    },
-    ja: {
-      badge: "グローバル言語対応",
-      title: "あなたの母国語で、公的フォームをわかりやすく解説",
-      subtitle: "アジア太平洋地域の主要11言語で自然なAI音声と文脈解説を提供中。欧州・中東言語も順次拡大しています。",
-      pause: "停止",
-      play: "再開",
-      explore: "対応言語の詳細を見る",
-      note: "✓ アジア太平洋11言語に完全対応。大使館や大学申請で特定の言語が必要ですか？",
-      cta: "追加言語のリクエスト・機能一覧へ →"
-    },
-    ko: {
-      badge: "글로벌 다국어 지원",
-      title: "가장 편안한 모국어로 공공 서식을 이해하세요",
-      subtitle: "아시아 태평양 11개 주요 언어로 자연스러운 AI 음성 및 문맥 해설 제공. 유럽 및 중동 언어도 적극 확장 중입니다.",
-      pause: "일시정지",
-      play: "재생",
-      explore: "지원 언어 상세 보기",
-      note: "✓ 11개 아시아 태평양 언어 지원 완료. 대사관이나 대학에 필요한 특정 언어가 있으신가요?",
-      cta: "언어 추가 요청 및 기능 매트릭스 확인 →"
-    },
-    zh: {
-      badge: "全球多语言覆盖",
-      title: "用您的母语，轻松理解官方公文表格",
-      subtitle: "目前支持亚太 11 种主要官方语言的自然 AI 语音与填写指引，欧美及中东语言正持续拓展中。",
-      pause: "暂停轮播",
-      play: "恢复轮播",
-      explore: "查看完整语言支持",
-      note: "✓ 亚太 11 种官方语言已全面就绪。您的使领馆或留学申请有特定语言需求吗？",
-      cta: "申请新增语言或查看功能矩阵 →"
-    },
-    'zh-TW': {
-      badge: "全球多語言支援",
-      title: "以您的母語，輕鬆搞懂繁瑣公文表格",
-      subtitle: "目前支援亞太 11 種主要官方語言的自然 AI 語音與填寫指引，歐美及中東語言正持續擴充中。",
-      pause: "暫停輪播",
-      play: "繼續輪播",
-      explore: "查看完整語言支援",
-      note: "✓ 亞太 11 種官方語言已全面就緒。您的使領館或留學申請有特定語言需求嗎？",
-      cta: "申請新增語言或查看功能清單 →"
-    }
-  }
-
-  const cur = texts[lang] || texts.en
+  const cur = LANGUAGE_MARQUEE_I18N[lang] || LANGUAGE_MARQUEE_I18N.en
 
   return (
     <section className="py-16 bg-white border-b border-slate-200/80 overflow-hidden">

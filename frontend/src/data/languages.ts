@@ -28,7 +28,7 @@ export const JAPAC_LANGUAGES: LanguageItem[] = [
     code: 'ja',
     name: 'Japanese',
     nativeName: '日本語',
-    country: 'Japan',
+    country: '日本 (Nihon)',
     flag: '🇯🇵',
     svg: '<svg viewBox="0 0 640 480" width="28" height="20" class="rounded shadow-xs border border-slate-200"><path fill="#ffffff" d="M0 0h640v480H0z"/><circle fill="#bc002d" cx="320" cy="240" r="144"/></svg>'
   },
@@ -36,7 +36,7 @@ export const JAPAC_LANGUAGES: LanguageItem[] = [
     code: 'ko',
     name: 'Korean',
     nativeName: '한국어',
-    country: 'South Korea',
+    country: '대한민국 (Daehan Minguk)',
     flag: '🇰🇷',
     svg: '<svg viewBox="0 0 640 480" width="28" height="20" class="rounded shadow-xs border border-slate-200"><path fill="#ffffff" d="M0 0h640v480H0z"/><g transform="translate(320,240)"><path fill="#cd2e3a" d="M0-120a120 120 0 0 1 120 120 60 60 0 0 1-60 60 60 60 0 0 0-60-60 60 60 0 0 0-60 60 60 60 0 0 1-60-60A120 120 0 0 1 0-120z"/><path fill="#0047a0" d="M0 120a120 120 0 0 1-120-120 60 60 0 0 1 60-60 60 60 0 0 0 60 60 60 60 0 0 0 60-60 60 60 0 0 1 60 60A120 120 0 0 1 0 120z"/></g></svg>'
   },
@@ -44,7 +44,7 @@ export const JAPAC_LANGUAGES: LanguageItem[] = [
     code: 'zh',
     name: 'Simplified Chinese',
     nativeName: '简体中文',
-    country: 'China',
+    country: '中国 (Zhōngguó)',
     flag: '🇨🇳',
     svg: '<svg viewBox="0 0 640 480" width="28" height="20" class="rounded shadow-xs"><path fill="#ee1c25" d="M0 0h640v480H0z"/><polygon fill="#ffde00" points="120,60 133,100 175,100 141,125 154,165 120,140 86,165 99,125 65,100 107,100"/></svg>'
   },
@@ -52,7 +52,7 @@ export const JAPAC_LANGUAGES: LanguageItem[] = [
     code: 'zh-TW',
     name: 'Traditional Chinese',
     nativeName: '繁體中文',
-    country: 'Taiwan',
+    country: '台灣 (Taiwan)',
     flag: '🇹🇼',
     svg: '<svg viewBox="0 0 640 480" width="28" height="20" class="rounded shadow-xs"><path fill="#fe0000" d="M0 0h640v480H0z"/><path fill="#000095" d="M0 0h320v240H0z"/><circle fill="#fff" cx="160" cy="120" r="50"/><circle fill="#000095" cx="160" cy="120" r="34"/><circle fill="#fff" cx="160" cy="120" r="26"/></svg>'
   },
@@ -60,7 +60,7 @@ export const JAPAC_LANGUAGES: LanguageItem[] = [
     code: 'vi',
     name: 'Vietnamese',
     nativeName: 'Tiếng Việt',
-    country: 'Vietnam',
+    country: 'Việt Nam',
     flag: '🇻🇳',
     svg: '<svg viewBox="0 0 640 480" width="28" height="20" class="rounded shadow-xs"><path fill="#da251d" d="M0 0h640v480H0z"/><polygon fill="#ffff00" points="320,90 357,204 477,204 380,274 417,388 320,318 223,388 260,274 163,204 283,204"/></svg>'
   },
@@ -68,7 +68,7 @@ export const JAPAC_LANGUAGES: LanguageItem[] = [
     code: 'th',
     name: 'Thai',
     nativeName: 'ไทย',
-    country: 'Thailand',
+    country: 'ประเทศไทย (Prathet Thai)',
     flag: '🇹🇭',
     svg: '<svg viewBox="0 0 640 480" width="28" height="20" class="rounded shadow-xs"><path fill="#a51931" d="M0 0h640v480H0z"/><path fill="#f4f5f8" d="M0 80h640v320H0z"/><path fill="#2d2a4a" d="M0 160h640v160H0z"/></svg>'
   },
@@ -76,7 +76,7 @@ export const JAPAC_LANGUAGES: LanguageItem[] = [
     code: 'hi',
     name: 'Hindi',
     nativeName: 'हिन्दी',
-    country: 'India',
+    country: 'भारत (Bharat)',
     flag: '🇮🇳',
     svg: '<svg viewBox="0 0 640 480" width="28" height="20" class="rounded shadow-xs border border-slate-200"><path fill="#ff9933" d="M0 0h640v160H0z"/><path fill="#ffffff" d="M0 160h640v160H0z"/><path fill="#128807" d="M0 320h640v160H0z"/><circle fill="#000088" cx="320" cy="240" r="30"/></svg>'
   },
@@ -84,7 +84,7 @@ export const JAPAC_LANGUAGES: LanguageItem[] = [
     code: 'fil',
     name: 'Filipino',
     nativeName: 'Filipino',
-    country: 'Philippines',
+    country: 'Pilipinas',
     flag: '🇵🇭',
     svg: '<svg viewBox="0 0 640 480" width="28" height="20" class="rounded shadow-xs"><path fill="#0038a8" d="M0 0h640v240H0z"/><path fill="#ce1126" d="M0 240h640v240H0z"/><polygon fill="#ffffff" points="0,0 280,240 0,480"/><circle fill="#fcd116" cx="95" cy="240" r="32"/></svg>'
   },
@@ -96,4 +96,85 @@ export const JAPAC_LANGUAGES: LanguageItem[] = [
     flag: '🇲🇾',
     svg: '<svg viewBox="0 0 640 480" width="28" height="20" class="rounded shadow-xs border border-slate-200"><rect width="640" height="34" y="0" fill="#cc0000"/><rect width="640" height="34" y="34" fill="#ffffff"/><rect width="640" height="34" y="68" fill="#cc0000"/><rect width="640" height="34" y="102" fill="#ffffff"/><rect width="640" height="34" y="137" fill="#cc0000"/><rect width="640" height="34" y="171" fill="#ffffff"/><rect width="640" height="34" y="205" fill="#cc0000"/><rect width="640" height="34" y="239" fill="#ffffff"/><rect width="640" height="34" y="274" fill="#cc0000"/><rect width="640" height="34" y="308" fill="#ffffff"/><rect width="640" height="34" y="342" fill="#cc0000"/><rect width="640" height="34" y="377" fill="#ffffff"/><rect width="640" height="34" y="411" fill="#cc0000"/><rect width="640" height="34" y="446" fill="#ffffff"/><rect width="320" height="274" fill="#000066"/><circle cx="160" cy="137" r="75" fill="#ffcc00"/></svg>'
   }
+]
+
+export interface UpcomingLanguageItem {
+  code: string
+  name: string
+  nativeName: string
+  flag: string
+  svg: string
+}
+
+export const UPCOMING_LANGUAGES: UpcomingLanguageItem[] = [
+  {
+    code: 'es',
+    name: 'Spanish',
+    nativeName: 'Español',
+    flag: '🇪🇸',
+    svg: '<svg viewBox="0 0 640 480" width="28" height="20" class="rounded shadow-xs"><path fill="#c60b1e" d="M0 0h640v480H0z"/><path fill="#ffc400" d="M0 120h640v240H0z"/></svg>'
+  },
+  {
+    code: 'fr',
+    name: 'French',
+    nativeName: 'Français',
+    flag: '🇫🇷',
+    svg: '<svg viewBox="0 0 640 480" width="28" height="20" class="rounded shadow-xs border border-slate-200"><path fill="#002654" d="M0 0h213.3v480H0z"/><path fill="#fff" d="M213.3 0h213.4v480H213.3z"/><path fill="#ce1126" d="M426.7 0H640v480H426.7z"/></svg>'
+  },
+  {
+    code: 'de',
+    name: 'German',
+    nativeName: 'Deutsch',
+    flag: '🇩🇪',
+    svg: '<svg viewBox="0 0 640 480" width="28" height="20" class="rounded shadow-xs"><path fill="#000" d="M0 0h640v160H0z"/><path fill="#dd0000" d="M0 160h640v160H0z"/><path fill="#ffce00" d="M0 320h640v160H0z"/></svg>'
+  },
+  {
+    code: 'ar',
+    name: 'Arabic',
+    nativeName: 'العربية',
+    flag: '🇸🇦',
+    svg: '<svg viewBox="0 0 640 480" width="28" height="20" class="rounded shadow-xs"><path fill="#006c35" d="M0 0h640v480H0z"/><text x="320" y="270" font-size="120" fill="#fff" text-anchor="middle" font-family="sans-serif">🇸🇦</text></svg>'
+  },
+  {
+    code: 'ru',
+    name: 'Russian',
+    nativeName: 'Русский',
+    flag: '🇷🇺',
+    svg: '<svg viewBox="0 0 640 480" width="28" height="20" class="rounded shadow-xs border border-slate-200"><path fill="#fff" d="M0 0h640v160H0z"/><path fill="#0039a6" d="M0 160h640v160H0z"/><path fill="#d52b1e" d="M0 320h640v160H0z"/></svg>'
+  },
+  {
+    code: 'pt',
+    name: 'Portuguese',
+    nativeName: 'Português',
+    flag: '🇧🇷',
+    svg: '<svg viewBox="0 0 640 480" width="28" height="20" class="rounded shadow-xs"><path fill="#009c3b" d="M0 0h640v480H0z"/><polygon fill="#ffdf00" points="320,60 580,240 320,420 60,240"/><circle fill="#002776" cx="320" cy="240" r="90"/></svg>'
+  },
+  {
+    code: 'tr',
+    name: 'Turkish',
+    nativeName: 'Türkçe',
+    flag: '🇹🇷',
+    svg: '<svg viewBox="0 0 640 480" width="28" height="20" class="rounded shadow-xs"><path fill="#e30a17" d="M0 0h640v480H0z"/><circle fill="#fff" cx="260" cy="240" r="120"/><circle fill="#e30a17" cx="290" cy="240" r="96"/><polygon fill="#fff" points="370,240 410,252 385,220 385,260 410,228"/></svg>'
+  },
+  {
+    code: 'it',
+    name: 'Italian',
+    nativeName: 'Italiano',
+    flag: '🇮🇹',
+    svg: '<svg viewBox="0 0 640 480" width="28" height="20" class="rounded shadow-xs border border-slate-200"><path fill="#009246" d="M0 0h213.3v480H0z"/><path fill="#fff" d="M213.3 0h213.4v480H213.3z"/><path fill="#ce2b37" d="M426.7 0H640v480H426.7z"/></svg>'
+  },
+  {
+    code: 'nl',
+    name: 'Dutch',
+    nativeName: 'Nederlands',
+    flag: '🇳🇱',
+    svg: '<svg viewBox="0 0 640 480" width="28" height="20" class="rounded shadow-xs border border-slate-200"><path fill="#ae1c28" d="M0 0h640v160H0z"/><path fill="#fff" d="M0 160h640v160H0z"/><path fill="#21468b" d="M0 320h640v160H0z"/></svg>'
+  },
+  {
+    code: 'pl',
+    name: 'Polish',
+    nativeName: 'Polski',
+    flag: '🇵🇱',
+    svg: '<svg viewBox="0 0 640 480" width="28" height="20" class="rounded shadow-xs border border-slate-200"><path fill="#fff" d="M0 0h640v240H0z"/><path fill="#dc143c" d="M0 240h640v240H0z"/></svg>'
+  },
 ]

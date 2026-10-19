@@ -51,15 +51,15 @@ import {
 // 11 Asia-Pacific Countries (Displayed by country name & native language with cross-platform SVG flag)
 export const DASHBOARD_COUNTRIES = [
   { code: 'id', flag: '🇮🇩', country: 'Indonesia', nativeName: 'Bahasa Indonesia', svg: JAPAC_LANGUAGES.find(l => l.code === 'id')?.svg },
-  { code: 'en', flag: '🇺🇸', country: 'United States (Global)', nativeName: 'English', svg: JAPAC_LANGUAGES.find(l => l.code === 'en')?.svg },
-  { code: 'ja', flag: '🇯🇵', country: 'Jepang (Japan)', nativeName: '日本語', svg: JAPAC_LANGUAGES.find(l => l.code === 'ja')?.svg },
-  { code: 'ko', flag: '🇰🇷', country: 'Korea Selatan (South Korea)', nativeName: '한국어', svg: JAPAC_LANGUAGES.find(l => l.code === 'ko')?.svg },
-  { code: 'zh', flag: '🇨🇳', country: 'Tiongkok (China)', nativeName: '简体中文', svg: JAPAC_LANGUAGES.find(l => l.code === 'zh')?.svg },
-  { code: 'zh-tw', flag: '🇹🇼', country: 'Taiwan', nativeName: '繁體中文', svg: JAPAC_LANGUAGES.find(l => l.code.toLowerCase() === 'zh-tw')?.svg },
-  { code: 'vi', flag: '🇻🇳', country: 'Vietnam', nativeName: 'Tiếng Việt', svg: JAPAC_LANGUAGES.find(l => l.code === 'vi')?.svg },
-  { code: 'th', flag: '🇹🇭', country: 'Thailand', nativeName: 'ภาษาไทย', svg: JAPAC_LANGUAGES.find(l => l.code === 'th')?.svg },
-  { code: 'hi', flag: '🇮🇳', country: 'India', nativeName: 'हिन्दी', svg: JAPAC_LANGUAGES.find(l => l.code === 'hi')?.svg },
-  { code: 'fil', flag: '🇵🇭', country: 'Filipina (Philippines)', nativeName: 'Filipino', svg: JAPAC_LANGUAGES.find(l => l.code === 'fil')?.svg },
+  { code: 'en', flag: '🇺🇸', country: 'United States', nativeName: 'English (US)', svg: JAPAC_LANGUAGES.find(l => l.code === 'en')?.svg },
+  { code: 'ja', flag: '🇯🇵', country: '日本 (Nihon)', nativeName: '日本語', svg: JAPAC_LANGUAGES.find(l => l.code === 'ja')?.svg },
+  { code: 'ko', flag: '🇰🇷', country: '대한민국 (Daehan Minguk)', nativeName: '한국어', svg: JAPAC_LANGUAGES.find(l => l.code === 'ko')?.svg },
+  { code: 'zh', flag: '🇨🇳', country: '中国 (Zhōngguó)', nativeName: '简体中文', svg: JAPAC_LANGUAGES.find(l => l.code === 'zh')?.svg },
+  { code: 'zh-tw', flag: '🇹🇼', country: '台灣 (Taiwan)', nativeName: '繁體中文', svg: JAPAC_LANGUAGES.find(l => l.code.toLowerCase() === 'zh-tw')?.svg },
+  { code: 'vi', flag: '🇻🇳', country: 'Việt Nam', nativeName: 'Tiếng Việt', svg: JAPAC_LANGUAGES.find(l => l.code === 'vi')?.svg },
+  { code: 'th', flag: '🇹🇭', country: 'ประเทศไทย (Prathet Thai)', nativeName: 'ภาษาไทย', svg: JAPAC_LANGUAGES.find(l => l.code === 'th')?.svg },
+  { code: 'hi', flag: '🇮🇳', country: 'भारत (Bharat)', nativeName: 'हिन्दी', svg: JAPAC_LANGUAGES.find(l => l.code === 'hi')?.svg },
+  { code: 'fil', flag: '🇵🇭', country: 'Pilipinas', nativeName: 'Filipino', svg: JAPAC_LANGUAGES.find(l => l.code === 'fil')?.svg },
   { code: 'ms', flag: '🇲🇾', country: 'Malaysia', nativeName: 'Bahasa Melayu', svg: JAPAC_LANGUAGES.find(l => l.code === 'ms')?.svg }
 ]
 
@@ -1984,7 +1984,9 @@ export const DashboardPage: React.FC = () => {
 
                   {unlockMode === 'password' ? (
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-slate-700">Masukkan Password Brankas (6-12 Karakter)</label>
+                      <label className="text-xs font-bold text-slate-700">
+                        {dI18n.vaultUnlockPasswordPlaceholder}
+                      </label>
                       <input
                         type="password"
                         placeholder="••••••••"
@@ -1995,7 +1997,9 @@ export const DashboardPage: React.FC = () => {
                     </div>
                   ) : (
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-slate-700">Tempel 12 Kata Rahasia (Dipisahkan Spasi)</label>
+                      <label className="text-xs font-bold text-slate-700">
+                        {dI18n.vaultUnlockSeedPlaceholder}
+                      </label>
                       <textarea
                         rows={3}
                         placeholder="alpha beacon cable daring..."
@@ -2017,13 +2021,13 @@ export const DashboardPage: React.FC = () => {
                       size="sm"
                       className="text-xs font-bold"
                     >
-                      Batal
+                      {dI18n.vaultUnlockBtnCancel}
                     </Button>
                     <Button
                       onClick={handleUnlockVault}
                       className="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-5 h-9"
                     >
-                      Buka Sekarang
+                      {dI18n.vaultUnlockBtnSubmit}
                     </Button>
                   </div>
                 </div>
@@ -2036,10 +2040,10 @@ export const DashboardPage: React.FC = () => {
                 <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-red-200 space-y-4">
                   <div className="flex items-center gap-2 text-red-600 font-bold text-sm">
                     <AlertTriangle className="w-5 h-5" />
-                    <span>Peringatan Keras Kriptografi</span>
+                    <span>{dI18n.seedRegenWarningTitle}</span>
                   </div>
                   <p className="text-xs text-slate-600 leading-relaxed">
-                    Setiap pengguna hanya memiliki <strong>1 set 12-Seed-Words</strong>. Jika Anda men-generate seed baru, maka seluruh koper/brankas existing akan <strong>dihapus total</strong> karena kunci enkripsi berganti secara permanen.
+                    {dI18n.seedRegenWarningDesc}
                   </p>
                   <div className="flex justify-end gap-2 pt-2">
                     <Button
@@ -2048,13 +2052,13 @@ export const DashboardPage: React.FC = () => {
                       size="sm"
                       className="text-xs font-bold"
                     >
-                      Batalkan
+                      {dI18n.seedRegenBtnCancel}
                     </Button>
                     <Button
                       onClick={handleRegenerateSeedWords}
                       className="bg-red-600 hover:bg-red-500 text-white font-bold text-xs px-4 h-9"
                     >
-                      Saya Paham, Reset & Generate Baru
+                      {dI18n.seedRegenBtnConfirm}
                     </Button>
                   </div>
                 </div>
@@ -2383,8 +2387,12 @@ export const DashboardPage: React.FC = () => {
                     <Sparkles className="w-3.5 h-3.5 text-blue-600" />
                     <span>Mayar Gateway & Cloud Quota Integration</span>
                   </div>
-                  <h3 className="text-xl font-black text-slate-900">Pilih Paket Kuota Telmy</h3>
-                  <p className="text-xs text-slate-500">Mendukung aktivasi instan & pembayaran resmi Mayar.id (QRIS, VA, E-Wallet)</p>
+                  <h3 className="text-xl font-black text-slate-900">
+                    {dI18n.quotaModalTitle}
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    {dI18n.quotaModalSubtitle}
+                  </p>
                 </div>
 
                 <div className="flex items-center gap-3">
@@ -2443,7 +2451,7 @@ export const DashboardPage: React.FC = () => {
                     >
                       {tier.isPopular && (
                         <div className="absolute top-0 right-0 bg-blue-600 text-white text-[10px] font-black px-3 py-1 rounded-bl-xl uppercase tracking-wider">
-                          Paling Populer
+                          {dI18n.quotaPopularBadge}
                         </div>
                       )}
 

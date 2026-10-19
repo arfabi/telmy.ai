@@ -25,10 +25,10 @@ export const RealityCheck: React.FC<RealityCheckProps> = ({ t }) => {
             <span className="text-[11px] font-normal lowercase opacity-75 group-hover:translate-x-0.5 transition-transform">↗</span>
           </a>
           <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
-            Governments moved online. Not everyone can keep up.
+            {t.unStatTitle}
           </h2>
           <p className="mt-3 text-slate-400 text-base max-w-2xl mx-auto">
-            Official portals are expanding worldwide, yet digital accessibility barriers and linguistic friction still isolate millions of applicants.
+            {t.unStatSub}
           </p>
         </div>
 
@@ -40,13 +40,13 @@ export const RealityCheck: React.FC<RealityCheckProps> = ({ t }) => {
                 <Globe2 className="w-6 h-6" />
               </div>
               <div className="text-4xl sm:text-5xl font-black text-white tracking-tight font-mono">
-                57%
+                {t.unStat3Num}
               </div>
               <div className="text-base font-bold text-slate-200 mt-3">
-                No Foreign-Language Support
+                {t.unStat3Label}
               </div>
               <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-                57% of national government portals do not offer foreign-language assistance, forcing applicants to rely on risky generic machine translation that distorts legal definitions.
+                {t.unStat3Desc}
               </p>
             </div>
           </div>
@@ -58,31 +58,31 @@ export const RealityCheck: React.FC<RealityCheckProps> = ({ t }) => {
                 <EyeOff className="w-6 h-6" />
               </div>
               <div className="text-4xl sm:text-5xl font-black text-white tracking-tight font-mono text-amber-400">
-                95%
+                {t.unStat4Num}
               </div>
               <div className="text-base font-bold text-slate-200 mt-3">
-                Fail Accessibility Standards
+                {t.unStat4Label}
               </div>
               <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-                95% of public service websites do not meet web accessibility standards (WCAG), leaving older citizens, visually impaired users, and neurodivergent individuals stranded.
+                {t.unStat4Desc}
               </p>
             </div>
           </div>
 
-          {/* Stat 3: Rejected Documents */}
+          {/* Stat 3: 52% Lack Live Help Desk */}
           <div className="p-8 rounded-3xl bg-slate-800/80 border border-slate-700/80 hover:border-rose-500/50 transition-all group flex flex-col justify-between">
             <div>
               <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center mb-6">
                 <FileX2 className="w-6 h-6" />
               </div>
-              <div className="text-2xl sm:text-3xl font-black text-rose-400 tracking-tight">
-                Rejected Documents
+              <div className="text-4xl sm:text-5xl font-black text-white tracking-tight font-mono text-rose-400">
+                {t.unStat2Num}
               </div>
               <div className="text-base font-bold text-slate-200 mt-3">
-                Severe Time & Financial Penalties
+                {t.unStat2Label}
               </div>
               <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-                A single mistranslated field, incorrect format, or inconsistent document name can trigger repeated application fees, delayed visas, and lost life opportunities.
+                {t.unStat2Desc}
               </p>
             </div>
           </div>
@@ -91,7 +91,7 @@ export const RealityCheck: React.FC<RealityCheckProps> = ({ t }) => {
         {/* Conclusion Banner */}
         <div className="mt-10 p-5 rounded-2xl bg-slate-800/50 border border-slate-700/60 text-center max-w-3xl mx-auto">
           <p className="text-xs sm:text-sm text-slate-300 font-medium">
-            💡 <strong className="text-white">Generic browser translation distorts official legal terminology.</strong> Telmy.ai is engineered specifically to close this vital accessibility gap.
+            💡 <strong className="text-white">{t.heroKicker}</strong> {t.compWithout2} {t.compWith1}
           </p>
         </div>
       </div>
