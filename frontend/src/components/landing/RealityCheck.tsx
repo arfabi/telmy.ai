@@ -14,10 +14,16 @@ export const RealityCheck: React.FC<RealityCheckProps> = ({ t }) => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div className="text-center max-w-3xl mx-auto mb-14">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-bold uppercase tracking-wider mb-4">
+          <a
+            href="https://publicadministration.un.org/egovkb/en-us/reports/un-e-government-survey-2024"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 hover:text-rose-300 hover:border-rose-400 text-xs font-bold uppercase tracking-wider mb-4 transition-all group"
+          >
             <AlertCircle className="w-3.5 h-3.5" />
             <span>UN E-Government Survey 2024</span>
-          </div>
+            <span className="text-[11px] font-normal lowercase opacity-75 group-hover:translate-x-0.5 transition-transform">↗</span>
+          </a>
           <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
             Governments moved online. Not everyone can keep up.
           </h2>

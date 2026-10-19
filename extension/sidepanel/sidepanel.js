@@ -1097,17 +1097,17 @@ document.addEventListener('DOMContentLoaded', async () => {
           "ms": "Nota untuk Warga Asing"
     },
     "ai_draft_badge": {
-          "en": "AI Draft",
-          "id": "Draf AI",
-          "ja": "AIドラフト",
-          "ko": "AI 초안",
-          "zh": "AI草案",
-          "zh-TW": "AI草案",
-          "vi": "Bản thảo AI",
-          "th": "ร่างโดย AI",
-          "hi": "एआई प्रारूप",
-          "fil": "AI Draft",
-          "ms": "Draf AI"
+          "en": "AI Suggestion",
+          "id": "Saran AI",
+          "ja": "AI提案",
+          "ko": "AI 제안",
+          "zh": "AI建议",
+          "zh-TW": "AI建議",
+          "vi": "Gợi ý AI",
+          "th": "คำแนะนำ AI",
+          "hi": "एआई सुझाव",
+          "fil": "Mungkahi ng AI",
+          "ms": "Cadangan AI"
     },
     "fields_unit": {
           "en": "Fields",

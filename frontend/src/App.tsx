@@ -12,6 +12,9 @@ import { ConnectPage } from '@/pages/ConnectPage'
 import { HelpPage } from '@/pages/HelpPage'
 import { FaqPage } from '@/pages/FaqPage'
 import { SignInPage } from '@/pages/SignInPage'
+import { SecurityPage } from '@/pages/SecurityPage'
+import { PrivacyPage } from '@/pages/PrivacyPage'
+import { TermsPage } from '@/pages/TermsPage'
 
 export const App: React.FC = () => {
   return (
@@ -43,6 +46,9 @@ export const App: React.FC = () => {
           <Route path="/academy" element={<AcademyPage />} />
           <Route path="/faq" element={<FaqPage />} />
           <Route path="/signin" element={<SignInPage />} />
+          <Route path="/security" element={<SecurityPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/terms" element={<TermsPage />} />
 
           {/* Plan V5 Web Dashboard Platform */}
           <Route path="/dashboard" element={<DashboardPage />} />

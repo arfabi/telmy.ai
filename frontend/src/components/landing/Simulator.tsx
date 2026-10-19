@@ -65,6 +65,17 @@ export const Simulator: React.FC<SimulatorProps> = ({ t }) => {
           <p className="mt-3 text-slate-400 text-base">
             {t.simSubtitle}
           </p>
+
+          {/* Form types supported pill bar */}
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-2 text-xs">
+            <span className="text-slate-400 font-medium">Works with any form:</span>
+            <span className="px-2.5 py-1 rounded-full bg-slate-800 text-slate-200 border border-slate-700">Scholarship Forms</span>
+            <span className="px-2.5 py-1 rounded-full bg-slate-800 text-slate-200 border border-slate-700">Apostille & Legalization</span>
+            <span className="px-2.5 py-1 rounded-full bg-slate-800 text-slate-200 border border-slate-700">Visa & Stay Permits</span>
+            <span className="px-2.5 py-1 rounded-full bg-slate-800 text-slate-200 border border-slate-700">Google Forms</span>
+            <span className="px-2.5 py-1 rounded-full bg-slate-800 text-slate-200 border border-slate-700">Jotform</span>
+            <span className="px-2.5 py-1 rounded-full bg-blue-950/80 text-blue-300 border border-blue-800/60 font-semibold">+ Any Web Portal</span>
+          </div>
         </div>
 
         {/* Simulator Container */}

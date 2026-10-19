@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { PRICING_TIERS_DATA } from '@/data/pricingData'
 import { Check, Sparkles, Shield, Zap } from 'lucide-react'
+import { SEO } from '@/components/common/SEO'
 
 export const PricingPage: React.FC = () => {
   const { currentLang, t } = useLanguage()
@@ -86,6 +87,7 @@ export const PricingPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
+      <SEO />
       <Navbar />
 
       <section className="pt-16 pb-12 px-4 sm:px-6 lg:px-8 text-center bg-white border-b border-slate-200/80">

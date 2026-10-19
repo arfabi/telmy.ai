@@ -31,6 +31,7 @@ import {
   Globe
 } from 'lucide-react'
 import { SUPPORTED_LANGUAGES_DATA } from '@/data/languagesData'
+import { SEO } from '@/components/common/SEO'
 
 // Icon mapper
 const ICON_MAP: Record<string, React.ElementType> = {
@@ -97,6 +98,7 @@ export const FeaturesPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
+      <SEO />
       <Navbar />
 
       {/* Hero Section */}
@@ -321,6 +323,61 @@ export const FeaturesPage: React.FC = () => {
                 </Card>
               )
             })}
+          </div>
+
+          {/* Upcoming Global Languages Section with SOON Badges */}
+          <div className="mt-16 pt-12 border-t border-slate-200">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+              <div>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 border border-amber-200/60 text-amber-800 text-xs font-semibold mb-2">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                  <span>Next Global Frontier</span>
+                </div>
+                <h3 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+                  {langKey === 'id' ? 'Bahasa Global Berikutnya (Segera Hadir)' : 'Upcoming Global Languages (Coming Soon)'}
+                </h3>
+                <p className="mt-1 text-sm text-slate-600">
+                  {langKey === 'id'
+                    ? 'Model suara & pemahaman formulir kami sedang dilatih untuk mendukung penutur di Eropa, Timur Tengah, dan Amerika Latin.'
+                    : 'Voice models and context parsing are currently being expanded to serve users across Europe, Latin America, and the Middle East.'}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+              {[
+                { name: 'Spanish', nativeName: 'Español', flag: '🇪🇸' },
+                { name: 'French', nativeName: 'Français', flag: '🇫🇷' },
+                { name: 'German', nativeName: 'Deutsch', flag: '🇩🇪' },
+                { name: 'Arabic', nativeName: 'العربية', flag: '🇸🇦' },
+                { name: 'Russian', nativeName: 'Русский', flag: '🇷🇺' },
+                { name: 'Portuguese', nativeName: 'Português', flag: '🇧🇷' },
+                { name: 'Turkish', nativeName: 'Türkçe', flag: '🇹🇷' },
+                { name: 'Italian', nativeName: 'Italiano', flag: '🇮🇹' },
+                { name: 'Dutch', nativeName: 'Nederlands', flag: '🇳🇱' },
+                { name: 'Polish', nativeName: 'Polski', flag: '🇵🇱' },
+              ].map((item, idx) => (
+                <div
+                  key={idx}
+                  className="relative p-4 rounded-xl bg-white border border-dashed border-slate-300 hover:border-amber-400 hover:bg-amber-50/20 transition-all shadow-2xs group flex flex-col justify-between"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-2xl">{item.flag}</span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-2xs tracking-wider uppercase">
+                      SOON
+                    </span>
+                  </div>
+                  <div>
+                    <div className="font-bold text-slate-900 text-sm group-hover:text-amber-700 transition-colors">
+                      {item.nativeName}
+                    </div>
+                    <div className="text-xs text-slate-500 font-medium">
+                      {item.name}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>

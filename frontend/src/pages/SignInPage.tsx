@@ -8,6 +8,7 @@ import { Footer } from '@/components/landing/Footer'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Shield, Sparkles, ArrowRight, Lock, CheckCircle2, AlertCircle } from 'lucide-react'
+import { SEO } from '@/components/common/SEO'
 
 export const SignInPage: React.FC = () => {
   const { currentLang, t } = useLanguage()
@@ -156,6 +157,7 @@ export const SignInPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
+      <SEO title={`${s.title} — Telmy.ai`} noIndex={true} />
       <Navbar />
 
       <main className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-16">

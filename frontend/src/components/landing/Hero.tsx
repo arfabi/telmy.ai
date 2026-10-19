@@ -58,10 +58,6 @@ export const Hero: React.FC<HeroProps> = ({ t }) => {
             {/* Supporting Microcopy */}
             <p className="mt-4 text-xs text-slate-500 font-medium flex items-center justify-center lg:justify-start gap-2">
               <span>{t.heroSupportText}</span>
-              <span className="text-slate-300">•</span>
-              <Link to="/download" className="text-blue-600 hover:text-blue-700 font-semibold underline underline-offset-2">
-                Download .ZIP & Install Guide →
-              </Link>
             </p>
 
             {/* Trustline Bar */}

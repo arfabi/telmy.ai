@@ -55,8 +55,7 @@ export const Footer: React.FC<FooterProps> = () => {
             <ul className="space-y-2.5 text-xs sm:text-sm">
               <li><a href="/privacy" className="hover:text-blue-600 transition-colors">Privacy Policy</a></li>
               <li><a href="/terms" className="hover:text-blue-600 transition-colors">Terms of Service</a></li>
-              <li><a href="/features#security" className="hover:text-blue-600 transition-colors">Security Architecture</a></li>
-              <li><a href="https://github.com/arfabi/telmy.ai" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 transition-colors">GitHub Repository</a></li>
+              <li><a href="/security" className="hover:text-blue-600 transition-colors">Security Architecture</a></li>
             </ul>
           </div>
         </div>

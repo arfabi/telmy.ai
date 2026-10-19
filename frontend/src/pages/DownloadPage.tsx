@@ -18,6 +18,7 @@ import {
   ExternalLink, 
   AlertTriangle 
 } from 'lucide-react'
+import { SEO } from '@/components/common/SEO'
 
 export const DownloadPage: React.FC = () => {
   const { currentLang, t } = useLanguage()
@@ -234,6 +235,7 @@ export const DownloadPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
+      <SEO />
       <Navbar />
 
       <section className="pt-16 pb-12 px-4 sm:px-6 lg:px-8 text-center bg-white border-b border-slate-200/80">

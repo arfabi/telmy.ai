@@ -16,6 +16,7 @@ export const WhoFor: React.FC<WhoForProps> = ({ t }) => {
       color: 'from-blue-600 to-indigo-600',
       badge: 'Scholarships & Grants',
       tag: 'Education',
+      examples: ['MEXT', 'LPDP', 'DAAD', 'Chevening', 'University Admissions'],
     },
     {
       title: t.whoForCard2Title,
@@ -24,6 +25,7 @@ export const WhoFor: React.FC<WhoForProps> = ({ t }) => {
       color: 'from-indigo-600 to-violet-600',
       badge: 'Visa & Travel Forms',
       tag: 'Global Mobility',
+      examples: ['Visa Application', 'Stay Permit Renewal', 'Apostille Legalization', 'Passport Extension'],
     },
     {
       title: t.whoForCard3Title,
@@ -31,7 +33,8 @@ export const WhoFor: React.FC<WhoForProps> = ({ t }) => {
       icon: FileText,
       color: 'from-sky-600 to-blue-600',
       badge: 'Official Online Forms',
-      tag: 'Public Services',
+      tag: 'Public Services & Web',
+      examples: ['Google Forms', 'Jotform', 'Typeform', 'Civil Registration', 'Tax & Banking Portals'],
     },
   ]
 
@@ -77,12 +80,24 @@ export const WhoFor: React.FC<WhoForProps> = ({ t }) => {
                   <h3 className="text-xl font-bold text-slate-900 mb-3 group-hover:text-blue-600 transition-colors">
                     {card.title}
                   </h3>
-                  <p className="text-sm text-slate-600 leading-relaxed">
+                  <p className="text-sm text-slate-600 leading-relaxed mb-4">
                     {card.desc}
                   </p>
+
+                  {/* Concrete form tags */}
+                  <div className="flex flex-wrap gap-1.5 pt-2">
+                    {card.examples.map((ex, i) => (
+                      <span
+                        key={i}
+                        className="inline-flex items-center text-[11px] font-medium px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200/70"
+                      >
+                        {ex}
+                      </span>
+                    ))}
+                  </div>
                 </div>
 
-                <div className="mt-8 pt-4 border-t border-slate-100 flex items-center gap-2 text-xs font-medium text-emerald-600">
+                <div className="mt-6 pt-4 border-t border-slate-100 flex items-center gap-2 text-xs font-semibold text-emerald-600">
                   <CheckCircle2 className="w-4 h-4 shrink-0" />
                   <span>{card.badge}</span>
                 </div>

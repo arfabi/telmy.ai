@@ -64,7 +64,7 @@ window.GMTPanel = (function () {
     },
     quick_list_title: { id: 'Daftar Kolom Terdeteksi:', en: 'Detected Fields List:', zh: '已检测到的表单项：', ja: '検出された入力項目：', ko: '감지된 입력란 목록:' },
     source_verified: { id: 'Terverifikasi', en: 'Verified', zh: '已官方验证', ja: '検証済み', ko: '공식 검증됨' },
-    source_ai: { id: 'Draf AI', en: 'AI Draft', zh: 'AI草稿', ja: 'AI生成', ko: 'AI 생성' },
+    source_ai: { id: 'Saran AI', en: 'AI Suggestion', zh: 'AI建议', ja: 'AI提案', ko: 'AI 제안' },
     loading_ai: { id: 'Sedang menyusun panduan AI...', en: 'Generating AI explanation...', zh: '正在生成智能指南...', ja: 'AIガイドを生成中...', ko: 'AI 설명을 생성하는 중...' },
     drawer_title: { id: '💡 Sarankan Perbaikan', en: '💡 Suggest Improvement', zh: '💡 提出修改建议', ja: '💡 改善案の送信', ko: '💡 수정 제안' },
     drawer_placeholder: {

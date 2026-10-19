@@ -71,14 +71,20 @@ export const PrivacySummary: React.FC<PrivacySummaryProps> = () => {
           })}
         </div>
 
-        {/* Mandatory Transparency Disclosure Notice */}
+        {/* Security Architecture & Transparency Link Banner */}
         <div className="mt-12 p-6 rounded-2xl bg-slate-800/60 border border-slate-700/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs sm:text-sm text-slate-300">
-          <div className="text-left">
-            <span className="font-bold text-white">Cloud AI Transparency:</span> To explain a form, Telmy sends field labels, contextual instructions, and page layouts to <strong className="text-blue-400">Google Gemini</strong> for analysis, with all personal identification data masked first.
+          <div className="text-left flex items-center gap-3">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+            <span>
+              <strong className="text-white">Zero Plaintext Access & AES-256 Vault:</strong> Want to test our client-side PII sanitizer simulator and verify our encryption model?
+            </span>
           </div>
-          <Link to="/features" className="shrink-0 text-blue-400 hover:text-blue-300 font-semibold flex items-center gap-1">
-            <span>Read security details</span>
-            <ArrowRight className="w-4 h-4" />
+          <Link
+            to="/security"
+            className="shrink-0 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold flex items-center gap-1.5 transition-all shadow-md shadow-blue-500/20 group"
+          >
+            <span>Explore Security Page</span>
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
           </Link>
         </div>
       </div>
