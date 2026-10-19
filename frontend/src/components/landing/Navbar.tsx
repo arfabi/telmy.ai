@@ -34,11 +34,9 @@ export const Navbar: React.FC = () => {
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-7 text-sm font-medium text-slate-600">
             <Link to="/features" className="hover:text-blue-600 transition-colors">{t.navFeatures}</Link>
-            <Link to="/pricing" className="hover:text-blue-600 transition-colors">{t.navPricing}</Link>
-            <Link to="/academy" className="hover:text-blue-600 transition-colors">
-              {t.navAcademy}
-            </Link>
             <Link to="/download" className="hover:text-blue-600 transition-colors">{t.navDownload}</Link>
+            <Link to="/academy" className="hover:text-blue-600 transition-colors">{t.navAcademy}</Link>
+            <Link to="/pricing" className="hover:text-blue-600 transition-colors">{t.navPricing}</Link>
             <Link to="/faq" className="hover:text-blue-600 transition-colors">{t.navFaq}</Link>
           </nav>
 
@@ -115,11 +113,11 @@ export const Navbar: React.FC = () => {
                 {t.navFeatures}
               </Link>
               <Link
-                to="/pricing"
+                to="/download"
                 onClick={() => setMobileMenuOpen(false)}
                 className="py-1 hover:text-blue-600"
               >
-                {t.navPricing}
+                {t.navDownload}
               </Link>
               <Link
                 to="/academy"
@@ -129,11 +127,11 @@ export const Navbar: React.FC = () => {
                 {t.navAcademy}
               </Link>
               <Link
-                to="/download"
+                to="/pricing"
                 onClick={() => setMobileMenuOpen(false)}
                 className="py-1 hover:text-blue-600"
               >
-                {t.navDownload}
+                {t.navPricing}
               </Link>
               <Link
                 to="/faq"
