@@ -70,47 +70,119 @@ const BIP39_WORDS = [
   'anchor', 'breeze', 'canyon', 'delta', 'ember', 'forest', 'glacier', 'horizon'
 ]
 
-// Animated quotes on form-filling struggles
-const FORM_FRUSTRATION_QUOTES = [
+// Animated quotes on form-filling struggles in 11 JAPAC languages
+const FORM_FRUSTRATION_QUOTES: Array<{ author: string; [langCode: string]: string }> = [
   {
-    en: "Filling out a form shouldn’t feel like solving a puzzle.",
-    id: "Mengisi formulir seharusnya tidak terasa seperti memecahkan teka-teki.",
-    author: "UX Philosophy"
+    en: 'Filling out a form shouldn’t feel like solving a puzzle.',
+    id: 'Mengisi formulir seharusnya tidak terasa seperti memecahkan teka-teki.',
+    ja: 'フォームの入力は、パズルを解くような苦労であるべきではありません。',
+    ko: '양식 작성이 퍼즐을 푸는 것처럼 느껴져서는 안 됩니다.',
+    zh: '填写表单不应该像是在解复杂的谜题。',
+    'zh-tw': '填寫表單不應該像是在解複雜的謎題。',
+    vi: 'Điền biểu mẫu không nên mang lại cảm giác như đang giải câu đố.',
+    th: 'การกรอกแบบฟอร์มไม่ควรให้ความรู้สึกเหมือนกำลังแก้ปริศนา',
+    hi: 'फॉर्म भरना पहेली सुलझाने जैसा नहीं लगना चाहिए।',
+    fil: 'Ang pagpuno ng form ay hindi dapat maging parang paglutas ng puzzle.',
+    ms: 'Mengisi borang tidak sepatutnya terasa seperti menyelesaikan teka-teki.',
+    author: 'UX Philosophy'
   },
   {
-    en: "Why is filling out a simple form harder than it should be?",
-    id: "Kenapa mengisi formulir sederhana bisa jauh lebih sulit dari yang seharusnya?",
-    author: "User Reality"
+    en: 'Why is filling out a simple form harder than it should be?',
+    id: 'Kenapa mengisi formulir sederhana bisa jauh lebih sulit dari yang seharusnya?',
+    ja: 'なぜ簡単な申請フォームの入力が、これほど難しく感じるのでしょうか？',
+    ko: '왜 단순한 양식 작성이 생각보다 훨씬 더 어려운 걸까요?',
+    zh: '为什么填写一份简单的表格会比想象中困难得多？',
+    'zh-tw': '為什麼填寫一份簡單的表格會比想像中困難得多？',
+    vi: 'Tại sao việc điền một biểu mẫu đơn giản lại khó hơn mức cần thiết?',
+    th: 'ทำไมการกรอกแบบฟอร์มง่ายๆ ถึงยากกว่าที่ควรจะเป็น?',
+    hi: 'एक साधारण फॉर्म भरना इतना कठिन क्यों होना चाहिए?',
+    fil: 'Bakit ang pagpuno ng simpleng form ay mas mahirap kaysa sa nararapat?',
+    ms: 'Mengapakah mengisi borang mudah lebih sukar daripada yang sepatutnya?',
+    author: 'User Reality'
   },
   {
-    en: "One form, a hundred questions, and absolutely no patience left.",
-    id: "Satu formulir, seratus pertanyaan, dan kesabaran yang sudah habis.",
-    author: "Citizen Experience"
+    en: 'One form, a hundred questions, and absolutely no patience left.',
+    id: 'Satu formulir, seratus pertanyaan, dan kesabaran yang sudah habis.',
+    ja: 'ひとつの書類に100の質問、そして限界を迎えた忍耐力。',
+    ko: '하나의 양식, 백 개의 질문, 그리고 이미 바닥난 인내심.',
+    zh: '一张表格，上百个问题，早已耗尽所有的耐心。',
+    'zh-tw': '一張表格，上百個問題，早已耗盡所有的耐心。',
+    vi: 'Một biểu mẫu, một trăm câu hỏi, và sự kiên nhẫn đã hoàn toàn cạn kiệt.',
+    th: 'แบบฟอร์มหนึ่งแผ่น คำถามนับร้อย และความอดทนที่ไม่เหลืออีกต่อไป',
+    hi: 'एक फॉर्म, सौ सवाल, और बिल्कुल खत्म हो चुका धैर्य।',
+    fil: 'Isang form, isang daang tanong, at ubos na ang pasensya.',
+    ms: 'Satu borang, seratus soalan, dan kesabaran yang sudah pun habis.',
+    author: 'Citizen Experience'
   },
   {
-    en: "The form is online, but my frustration is very real.",
-    id: "Formulirnya online, tetapi rasa frustrasiku benar-benar nyata.",
-    author: "Modern Bureaucracy"
+    en: 'The form is online, but my frustration is very real.',
+    id: 'Formulirnya online, tetapi rasa frustrasiku benar-benar nyata.',
+    ja: 'フォームはオンラインなのに、感じるストレスはあまりにも現実的です。',
+    ko: '양식은 온라인이지만, 내가 느끼는 좌절감은 너무나 현실적입니다.',
+    zh: '表格虽是在线电子版，但我的挫败感却是无比真实。',
+    'zh-tw': '表格雖是在線電子版，但我的挫折感卻是無比真實。',
+    vi: 'Biểu mẫu là trực tuyến, nhưng sự bực bội của tôi là hoàn toàn có thật.',
+    th: 'แบบฟอร์มเป็นระบบออนไลน์ แต่ความหงุดหงิดนั้นเกิดขึ้นจริงแท้แน่นอน',
+    hi: 'फॉर्म ऑनलाइन है, लेकिन मेरी निराशा पूरी तरह से वास्तविक है।',
+    fil: 'Online nga ang form, ngunit ang aking pagkadismaya ay totoong-totoo.',
+    ms: 'Borangnya dalam talian, tetapi kekecewaan saya benar-benar nyata.',
+    author: 'Modern Bureaucracy'
   },
   {
-    en: "A good form asks for information. A bad form tests your patience.",
-    id: "Formulir yang baik meminta informasi. Formulir yang buruk menguji kesabaranmu.",
-    author: "Design Axiom"
+    en: 'A good form asks for information. A bad form tests your patience.',
+    id: 'Formulir yang baik meminta informasi. Formulir yang buruk menguji kesabaranmu.',
+    ja: '優れたフォームは情報を求め、悪質なフォームはあなたの忍耐力を試します。',
+    ko: '좋은 양식은 정보를 요구하지만, 나쁜 양식은 인내심을 시험합니다.',
+    zh: '好的表单收集信息，糟糕的表单考验耐性。',
+    'zh-tw': '好的表單收集資訊，糟糕的表單考驗耐心。',
+    vi: 'Biểu mẫu tốt thu thập thông tin. Biểu mẫu tồi thử thách lòng kiên nhẫn.',
+    th: 'แบบฟอร์มที่ดีจะขอข้อมูล แต่แบบฟอร์มที่แย่จะทดสอบความอดทนของคุณ',
+    hi: 'एक अच्छा फॉर्म जानकारी मांगता है। एक बुरा फॉर्म आपके धैर्य की परीक्षा लेता है।',
+    fil: 'Ang mabuting form ay humihingi ng impormasyon. Ang masamang form ay sumusubok sa iyong pasensya.',
+    ms: 'Borang yang baik meminta maklumat. Borang yang buruk menguji kesabaran anda.',
+    author: 'Design Axiom'
   },
   {
-    en: "If users struggle to complete your form, the problem might not be the users.",
-    id: "Jika pengguna kesulitan menyelesaikan formulirmu, mungkin masalahnya bukan pada penggunanya.",
-    author: "Usability Rule"
+    en: 'If users struggle to complete your form, the problem might not be the users.',
+    id: 'Jika pengguna kesulitan menyelesaikan formulirmu, mungkin masalahnya bukan pada penggunanya.',
+    ja: 'ユーザーがフォームを完了できないなら、問題はユーザー側にはないかもしれません。',
+    ko: '사용자가 양식 작성에 어려움을 겪는다면, 문제는 사용자가 아닐 수 있습니다.',
+    zh: '如果用户难以完成填写表格，问题或许根本不在用户身上。',
+    'zh-tw': '如果使用者難以完成填寫表格，問題或許根本不在使用者身上。',
+    vi: 'Nếu người dùng gặp khó khăn khi điền biểu mẫu, vấn đề có thể không nằm ở họ.',
+    th: 'หากผู้ใช้กรอกแบบฟอร์มไม่สำเร็จ ปัญหาอาจไม่ได้อยู่ที่ตัวผู้ใช้เอง',
+    hi: 'यदि उपयोगकर्ताओं को फॉर्म भरने में कठिनाई होती है, तो समस्या उपयोगकर्ताओं में नहीं हो सकती है।',
+    fil: 'Kung nahihirapan ang mga gumagamit sa pagkumpleto ng form, baka hindi sila ang problema.',
+    ms: 'Jika pengguna bergelut melengkapkan borang anda, masalahnya mungkin bukan pada mereka.',
+    author: 'Usability Rule'
   },
   {
-    en: "Every unnecessary field is another reason to give up.",
-    id: "Setiap kolom yang tidak diperlukan adalah alasan tambahan untuk menyerah.",
-    author: "Conversion Law"
+    en: 'Every unnecessary field is another reason to give up.',
+    id: 'Setiap kolom yang tidak diperlukan adalah alasan tambahan untuk menyerah.',
+    ja: '不要な入力項目がひとつ増えるたびに、諦める理由がひとつ増えます。',
+    ko: '불필요한 입력 항목 하나하나는 작性を포기하게 만드는 이유가 됩니다.',
+    zh: '每一个多余的输入框，都是用户放弃填写的理由。',
+    'zh-tw': '每一個多餘的輸入欄位，都是使用者放棄填寫的理由。',
+    vi: 'Mỗi trường nhập không cần thiết là một lý do nữa để người ta từ bỏ.',
+    th: 'ทุกช่องที่ไม่จำเป็น คืออีกหนึ่งเหตุผลที่จะทำให้ผู้ใช้ยอมแพ้',
+    hi: 'हर अनावश्यक फ़ील्ड फॉर्म छोड़ने का एक और कारण है।',
+    fil: 'Ang bawat hindi kinakailangang field ay isa pang dahilan upang sumuko.',
+    ms: 'Setiap ruangan yang tidak diperlukan adalah satu lagi sebab untuk berputus asa.',
+    author: 'Conversion Law'
   },
   {
-    en: "A form should make things easier, not make people question their life choices.",
-    id: "Formulir seharusnya mempermudah, bukan membuat orang mempertanyakan pilihan hidup mereka.",
-    author: "Telmy Mission"
+    en: 'A form should make things easier, not make people question their life choices.',
+    id: 'Formulir seharusnya mempermudah, bukan membuat orang mempertanyakan pilihan hidup mereka.',
+    ja: '申請書類は手続きを円滑にするものであり、人生の選択を後悔させるものであってはなりません。',
+    ko: '양식은 절차를 돕는 도구여야지, 인생의 선택을 회의하게 만들어서는 안 됩니다.',
+    zh: '表格的存在本应让事情更轻松，而不是让人怀疑自己的人生选择。',
+    'zh-tw': '表格的存在本應讓事情更輕鬆，而不是讓人懷疑自己的人生選擇。',
+    vi: 'Biểu mẫu phải làm cho mọi việc dễ dàng hơn, chứ không phải khiến người ta nghi ngờ lựa chọn cuộc sống.',
+    th: 'แบบฟอร์มควรช่วยให้ชีวิตง่ายขึ้น ไม่ใช่ทำให้ผู้คนตั้งคำถามกับทางเลือกในชีวิต',
+    hi: 'फॉर्म को चीजों को आसान बनाना चाहिए, न कि लोगों को अपने जीवन के फैसलों पर पछतावा कराना चाहिए।',
+    fil: 'Ang form ay dapat magpadali ng buhay, hindi magpaduda sa mga desisyon sa buhay.',
+    ms: 'Borang sepatutnya memudahkan urusan, bukannya membuat orang mempersoalkan pilihan hidup.',
+    author: 'Telmy Mission'
   }
 ]
 
@@ -1013,7 +1085,7 @@ export const DashboardPage: React.FC = () => {
               <div className="flex items-center justify-between gap-4 mb-3">
                 <div className="flex items-center gap-2 text-blue-700 font-bold text-xs uppercase tracking-wider">
                   <Sparkles className="w-4 h-4 text-blue-600 animate-pulse" />
-                  <span>The Real Pain of Forms • Quote of the Moment</span>
+                  <span>{dI18n.quotesHeader || 'The Real Pain of Forms • Quote of the Moment'}</span>
                 </div>
                 {/* Dots indicator & manual navigation */}
                 <div className="flex items-center gap-1.5">
@@ -1037,16 +1109,13 @@ export const DashboardPage: React.FC = () => {
               </div>
 
               <div className={`transition-all duration-350 transform ${quoteFade ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}>
-                <blockquote className="space-y-1.5">
-                  <p className="text-sm sm:text-base font-black text-slate-900 tracking-tight leading-snug">
-                    “{FORM_FRUSTRATION_QUOTES[currentQuoteIdx].en}”
-                  </p>
-                  <p className="text-xs sm:text-sm font-medium text-slate-600 italic leading-relaxed">
-                    “{FORM_FRUSTRATION_QUOTES[currentQuoteIdx].id}”
+                <blockquote>
+                  <p className="text-base sm:text-lg lg:text-xl font-black text-slate-900 tracking-tight leading-snug">
+                    “{FORM_FRUSTRATION_QUOTES[currentQuoteIdx][effectiveLangCode] || FORM_FRUSTRATION_QUOTES[currentQuoteIdx]['en']}”
                   </p>
                 </blockquote>
-                <div className="mt-2.5 flex items-center justify-between text-[11px] text-slate-500 font-semibold">
-                  <span className="text-blue-700 font-bold bg-blue-100/70 px-2 py-0.5 rounded-md">
+                <div className="mt-3 flex items-center justify-between text-[11px] text-slate-500 font-semibold">
+                  <span className="text-blue-700 font-bold bg-blue-100/70 px-2.5 py-0.5 rounded-md">
                     💡 {FORM_FRUSTRATION_QUOTES[currentQuoteIdx].author}
                   </span>
                   <span className="text-slate-400 text-[10px]">
@@ -1315,10 +1384,10 @@ export const DashboardPage: React.FC = () => {
                 <div>
                   <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                     <Laptop className="w-4 h-4 text-blue-600" />
-                    <span>Perangkat & Ekstensi Terkoneksi</span>
+                    <span>{dI18n.devicesTitle}</span>
                   </h4>
                   <p className="text-xs text-slate-500">
-                    Daftar browser dan ekstensi Chrome yang sedang aktif terhubung dengan akun ini.
+                    {dI18n.devicesDesc}
                   </p>
                 </div>
                 <Button
@@ -1329,7 +1398,7 @@ export const DashboardPage: React.FC = () => {
                   className="text-xs font-bold text-slate-600"
                 >
                   <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${devicesLoading ? 'animate-spin' : ''}`} />
-                  <span>Segarkan</span>
+                  <span>{dI18n.devicesRefreshBtn}</span>
                 </Button>
               </div>
 
@@ -1337,7 +1406,7 @@ export const DashboardPage: React.FC = () => {
                 <div className="p-6 text-center text-xs text-slate-400">Memeriksa perangkat aktif...</div>
               ) : activeDevicesList.length === 0 ? (
                 <div className="p-6 text-center text-xs text-slate-500 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                  Belum ada perangkat ekstensi yang terhubung. Klik "Sync Extension" di dashboard untuk menghubungkan.
+                  {dI18n.devicesEmpty}
                 </div>
               ) : (
                 <div className="divide-y divide-slate-100">
@@ -1446,8 +1515,8 @@ export const DashboardPage: React.FC = () => {
                       <tr>
                         <td colSpan={6} className="py-12 text-center text-slate-400">
                           <FileText className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                          <p className="text-xs font-semibold text-slate-600">Belum ada riwayat formulir tersimpan</p>
-                          <p className="text-[11px] text-slate-400 mt-0.5">Formulir yang Anda isi melalui Ekstensi Telmy akan otomatis tercatat di sini.</p>
+                          <p className="text-xs font-semibold text-slate-600">{dI18n.formsEmptyTitle}</p>
+                          <p className="text-[11px] text-slate-400 mt-0.5">{dI18n.formsEmptyDesc}</p>
                         </td>
                       </tr>
                     ) : (
@@ -1731,7 +1800,7 @@ export const DashboardPage: React.FC = () => {
                 <div className="p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200/60 flex items-center justify-between text-xs text-amber-900">
                   <div className="flex items-center gap-2">
                     <Lock className="w-4 h-4 text-amber-600 shrink-0" />
-                    <span>Master Seed Phrase terenkripsi & tersimpan aman di browser Anda. Buka brankas untuk melihat atau mencadangkan seed phrase.</span>
+                    <span>{dI18n.vaultSeedLockNote}</span>
                   </div>
                 </div>
               )}
@@ -1745,7 +1814,7 @@ export const DashboardPage: React.FC = () => {
                     {dI18n.vaultListTitle} ({vaultCompartments.length})
                   </h4>
                   <p className="text-xs text-slate-500">
-                    Kelola koper data profil terenkripsi untuk autofill instan 1-klik di ekstensi.
+                    {dI18n.vaultManageSubtitle}
                   </p>
                 </div>
                 {vaultUnlocked && (
@@ -1756,7 +1825,7 @@ export const DashboardPage: React.FC = () => {
                       className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs h-9 px-3.5 rounded-xl shadow-xs"
                     >
                       <Upload className="w-3.5 h-3.5 mr-1.5" />
-                      <span>Upload Dokumen / ID</span>
+                      <span>{dI18n.btnUploadDoc}</span>
                     </Button>
                     <Button
                       onClick={handleOpenCreateCompartment}
@@ -1764,7 +1833,7 @@ export const DashboardPage: React.FC = () => {
                       className="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs h-9 px-3.5 rounded-xl shadow-xs"
                     >
                       <Plus className="w-3.5 h-3.5 mr-1.5" />
-                      <span>Buat Koper Baru</span>
+                      <span>{dI18n.btnCreateVault}</span>
                     </Button>
                   </div>
                 )}
@@ -1773,11 +1842,11 @@ export const DashboardPage: React.FC = () => {
               {vaultCompartments.length === 0 ? (
                 <div className="py-12 px-4 text-center rounded-3xl bg-white border border-dashed border-slate-200">
                   <Shield className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                  <h5 className="text-sm font-bold text-slate-700">Belum Ada Kompartmen Data</h5>
+                  <h5 className="text-sm font-bold text-slate-700">{dI18n.vaultEmptyTitle}</h5>
                   <p className="text-xs text-slate-400 max-w-sm mx-auto mt-1">
                     {vaultUnlocked 
-                      ? 'Upload KTP, Paspor, Ijazah untuk ekstrak otomatis dengan AI, atau klik Buat Koper Baru di atas.' 
-                      : 'Buka brankas dengan password atau seed phrase untuk melihat data profil yang tersimpan.'}
+                      ? dI18n.vaultEmptyUnlockedDesc 
+                      : dI18n.vaultEmptyLockedDesc}
                   </p>
                   {vaultUnlocked && (
                     <div className="flex items-center justify-center gap-3 mt-4">
@@ -1787,7 +1856,7 @@ export const DashboardPage: React.FC = () => {
                         className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs h-9 px-4 rounded-xl"
                       >
                         <Upload className="w-3.5 h-3.5 mr-1.5" />
-                        <span>Upload Dokumen (AI Auto-Extract)</span>
+                        <span>{dI18n.btnUploadDoc}</span>
                       </Button>
                       <Button
                         onClick={handleOpenCreateCompartment}
@@ -1796,7 +1865,7 @@ export const DashboardPage: React.FC = () => {
                         className="font-bold text-xs h-9 px-4 rounded-xl"
                       >
                         <Plus className="w-3.5 h-3.5 mr-1.5" />
-                        <span>Buat Manual</span>
+                        <span>{dI18n.btnCreateManual}</span>
                       </Button>
                     </div>
                   )}
@@ -2000,7 +2069,7 @@ export const DashboardPage: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <span className="text-lg">🗂️</span>
                       <strong className="text-sm font-bold text-slate-900">
-                        {vaultCompartments.some(c => c.id === activeEditingComp.id) ? 'Edit Koper Data' : 'Buat Koper Data Baru'}
+                        {vaultCompartments.some(c => c.id === activeEditingComp.id) ? dI18n.modalEditVaultTitle : dI18n.modalCreateVaultTitle}
                       </strong>
                     </div>
                     <button
@@ -2018,28 +2087,28 @@ export const DashboardPage: React.FC = () => {
                     {/* Compartment Title & Badge */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <div className="sm:col-span-2 space-y-1">
-                        <label className="text-xs font-bold text-slate-700">Nama Koper / Kompartmen</label>
+                        <label className="text-xs font-bold text-slate-700">{dI18n.fieldVaultTitle}</label>
                         <input
                           type="text"
-                          placeholder="misal: Paspor & Visa, Ijazah, Data Bank"
+                          placeholder={dI18n.fieldVaultPlaceholder}
                           value={activeEditingComp.title}
                           onChange={(e) => setActiveEditingComp({ ...activeEditingComp, title: e.target.value })}
                           className="w-full h-9 px-3 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:border-blue-600"
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="text-xs font-bold text-slate-700">Kategori Badge</label>
+                        <label className="text-xs font-bold text-slate-700">{dI18n.fieldBadgeCategory}</label>
                         <select
                           value={activeEditingComp.badge}
                           onChange={(e) => setActiveEditingComp({ ...activeEditingComp, badge: e.target.value })}
                           className="w-full h-9 px-3 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:border-blue-600 bg-white"
                         >
-                          <option value="Utama">Utama</option>
-                          <option value="Travel">Travel</option>
-                          <option value="Akademik">Akademik</option>
-                          <option value="Keuangan">Keuangan</option>
-                          <option value="Keluarga">Keluarga</option>
-                          <option value="Custom">Custom</option>
+                          <option value="Utama">{dI18n.badgeMain}</option>
+                          <option value="Travel">{dI18n.badgeTravel}</option>
+                          <option value="Akademik">{dI18n.badgeAcademic}</option>
+                          <option value="Keuangan">{dI18n.badgeFinance}</option>
+                          <option value="Keluarga">{dI18n.badgeFamily}</option>
+                          <option value="Custom">{dI18n.badgeCustom}</option>
                         </select>
                       </div>
                     </div>
@@ -2048,7 +2117,7 @@ export const DashboardPage: React.FC = () => {
                     <div className="space-y-2 pt-2 border-t border-slate-100">
                       <div className="flex items-center justify-between">
                         <label className="text-xs font-bold text-slate-800">
-                          Kolom Data Profil ({activeEditingComp.fields.length})
+                          {dI18n.fieldColsCount} ({activeEditingComp.fields.length})
                         </label>
                         <button
                           type="button"
@@ -2061,7 +2130,7 @@ export const DashboardPage: React.FC = () => {
                           className="text-xs font-bold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1 cursor-pointer"
                         >
                           <Plus className="w-3.5 h-3.5" />
-                          <span>+ Tambah Baris Kolom</span>
+                          <span>{dI18n.btnAddColRow}</span>
                         </button>
                       </div>
 
@@ -2070,7 +2139,7 @@ export const DashboardPage: React.FC = () => {
                           <div key={idx} className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-200/80">
                             <input
                               type="text"
-                              placeholder="Nama Kolom (Key)"
+                              placeholder={dI18n.fieldColKeyPlaceholder}
                               value={f.key}
                               onChange={(e) => {
                                 const fields = [...activeEditingComp.fields]
@@ -2082,7 +2151,7 @@ export const DashboardPage: React.FC = () => {
                             <span className="text-slate-400 font-bold text-xs">:</span>
                             <input
                               type="text"
-                              placeholder="Nilai Data (Value)"
+                              placeholder={dI18n.fieldColValPlaceholder}
                               value={f.value}
                               onChange={(e) => {
                                 const fields = [...activeEditingComp.fields]
@@ -2117,7 +2186,7 @@ export const DashboardPage: React.FC = () => {
                         className="w-full py-2 rounded-xl border border-dashed border-slate-200 hover:border-blue-400 hover:bg-blue-50/50 text-xs font-bold text-slate-500 hover:text-blue-600 flex items-center justify-center gap-1 transition-all cursor-pointer mt-2"
                       >
                         <Plus className="w-3.5 h-3.5" />
-                        <span>Tambah Kolom Baru</span>
+                        <span>{dI18n.btnAddColNew}</span>
                       </button>
                     </div>
                   </div>
@@ -2132,14 +2201,14 @@ export const DashboardPage: React.FC = () => {
                       size="sm"
                       className="text-xs font-bold"
                     >
-                      Batal
+                      {dI18n.btnCancel}
                     </Button>
                     <Button
                       onClick={handleSaveCompartmentModal}
                       size="sm"
                       className="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-5 h-9 rounded-xl shadow-xs"
                     >
-                      Simpan Koper Data (AES-256)
+                      {dI18n.btnSaveVault}
                     </Button>
                   </div>
                 </div>
@@ -2153,7 +2222,7 @@ export const DashboardPage: React.FC = () => {
                   <div className="flex items-center justify-between border-b pb-3">
                     <div className="flex items-center gap-2">
                       <span className="text-lg">📄</span>
-                      <strong className="text-sm font-bold text-slate-900">Upload Dokumen Identitas</strong>
+                      <strong className="text-sm font-bold text-slate-900">{dI18n.ingestModalTitle}</strong>
                     </div>
                     <button
                       onClick={() => setIsIngestModalOpen(false)}
@@ -2164,11 +2233,11 @@ export const DashboardPage: React.FC = () => {
                   </div>
 
                   <p className="text-xs text-slate-600 leading-relaxed">
-                    Upload foto/file KTP, Paspor, atau Ijazah (PDF, PNG, JPG). AI Multimodal akan mengekstrak nama, NIK, tanggal lahir, dan entitas resmi otomatis ke dalam koper baru.
+                    {dI18n.ingestModalDesc}
                   </p>
 
                   <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200/60 text-[11px] text-emerald-800">
-                    🔒 <strong>Zero-Retention Policy</strong>: File dokumen asli tidak pernah disimpan di server kami dan langsung dihapus dari memori setelah entitas diekstrak.
+                    🔒 <strong>{dI18n.ingestPolicyPrefix}</strong>: {dI18n.ingestPolicyText}
                   </div>
 
                   {ingestError && (
@@ -2182,10 +2251,10 @@ export const DashboardPage: React.FC = () => {
                       <div className="border-2 border-dashed border-slate-300 hover:border-emerald-500 hover:bg-emerald-50/40 rounded-2xl p-6 text-center transition-all">
                         <Upload className="w-8 h-8 text-slate-400 mx-auto mb-2" />
                         <span className="text-xs font-bold text-slate-700 block">
-                          {ingestLoading ? 'Memproses Ekstraksi AI...' : 'Klik untuk Pilih Dokumen / Seret File'}
+                          {ingestLoading ? dI18n.ingestDropzoneLoading : dI18n.ingestDropzoneTitle}
                         </span>
                         <span className="text-[10px] text-slate-400 mt-1 block">
-                          PDF, PNG, JPG hingga 10MB
+                          {dI18n.ingestDropzoneSub}
                         </span>
                       </div>
                       <input
@@ -2206,7 +2275,7 @@ export const DashboardPage: React.FC = () => {
                       size="sm"
                       className="text-xs font-bold"
                     >
-                      Tutup
+                      {dI18n.btnClose}
                     </Button>
                   </div>
                 </div>

@@ -481,7 +481,7 @@ export const CoreCards: React.FC<CoreCardsProps> = ({ t }) => {
           onClick={() => setActiveModal(null)}
         >
           <div
-            className="relative w-full max-w-5xl max-h-[92vh] overflow-y-auto bg-white rounded-3xl shadow-2xl border border-slate-200/90 text-slate-900 p-6 sm:p-8 flex flex-col gap-6"
+            className="relative w-full max-w-6xl max-h-[92vh] overflow-y-auto bg-white rounded-3xl shadow-2xl border border-slate-200/90 text-slate-900 p-6 sm:p-8 flex flex-col gap-6"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
@@ -511,37 +511,37 @@ export const CoreCards: React.FC<CoreCardsProps> = ({ t }) => {
               </button>
             </div>
 
-            {/* Modal Body: Left Big GIF + Right Step Details */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-              {/* Big High-Res GIF Display */}
-              <div className="lg:col-span-7 bg-slate-950 rounded-2xl overflow-hidden border border-slate-300 shadow-xl p-1">
+            {/* Modal Body: Full Width GIF on top + Steps & Details Below */}
+            <div className="flex flex-col gap-8">
+              {/* Big High-Res GIF Display (Full Width) */}
+              <div className="w-full bg-slate-950 rounded-2xl overflow-hidden border border-slate-300 shadow-xl p-1">
                 <img
                   src={modalData.gifSrc}
                   alt={modalData.title}
                   className="w-full h-auto rounded-xl object-contain"
                 />
-                <div className="p-3 text-center bg-slate-900 text-slate-300 text-xs flex items-center justify-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <div className="p-3 text-center bg-slate-900 text-slate-300 text-xs sm:text-sm flex items-center justify-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
                   <span>{cur.modalRecording}</span>
                 </div>
               </div>
 
-              {/* Right Steps Breakdown */}
-              <div className="lg:col-span-5 flex flex-col justify-between space-y-6">
+              {/* Bottom Steps Breakdown (How it works in your browser) */}
+              <div className="flex flex-col gap-6">
                 <div>
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">
+                  <h4 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-500 mb-4">
                     {cur.modalHowTitle}
                   </h4>
-                  <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     {modalData.steps.map((st, i) => (
                       <div
                         key={i}
-                        className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 hover:bg-blue-50/40 transition-colors"
+                        className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 hover:bg-blue-50/40 hover:border-blue-200 transition-colors flex flex-col justify-start"
                       >
-                        <h5 className="font-bold text-slate-900 text-sm">
+                        <h5 className="font-bold text-slate-900 text-sm mb-1.5">
                           {st.title}
                         </h5>
-                        <p className="mt-1 text-xs text-slate-600 leading-relaxed">
+                        <p className="text-xs text-slate-600 leading-relaxed">
                           {st.desc}
                         </p>
                       </div>
@@ -549,22 +549,24 @@ export const CoreCards: React.FC<CoreCardsProps> = ({ t }) => {
                   </div>
                 </div>
 
-                {/* Privacy Guarantee Note */}
-                <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200/80 text-xs text-emerald-900 flex items-start gap-3">
-                  <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-                  <div>
-                    <span className="font-bold block mb-0.5">{cur.modalPrivTitle}</span>
-                    <span className="text-emerald-800 leading-relaxed">{modalData.securityNote}</span>
+                {/* Bottom Row: Privacy Guarantee Note + CTA Button */}
+                <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 pt-2 border-t border-slate-100">
+                  <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200/80 text-xs text-emerald-900 flex items-start gap-3 flex-1">
+                    <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                    <div>
+                      <span className="font-bold block mb-0.5">{cur.modalPrivTitle}</span>
+                      <span className="text-emerald-800 leading-relaxed">{modalData.securityNote}</span>
+                    </div>
                   </div>
-                </div>
 
-                <div className="pt-2 flex items-center gap-3">
-                  <a href="/download" className="w-full">
-                    <button className="w-full py-3 px-5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm shadow-md shadow-blue-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer">
-                      <span>{cur.modalCta}</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </button>
-                  </a>
+                  <div className="shrink-0 w-full md:w-auto">
+                    <a href="/download" className="block w-full">
+                      <button className="w-full md:w-auto py-3.5 px-6 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm shadow-md shadow-blue-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer">
+                        <span>{cur.modalCta}</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </button>
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
