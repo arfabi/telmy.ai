@@ -55,6 +55,7 @@ The JSON MUST follow this exact schema:
           "example": "A realistic, properly formatted dummy example",
           "pitfall": "Most common mistake that leads to rejection",
           "pageNumber": 1,
+          "box_2d": [ymin, xmin, ymax, xmax],
           "targetKeywords": "Exact 2-5 words printed on the form near this field to locate it on the page",
           "foreignerNote": "Special instruction if applicant is a foreign citizen or non-resident (or null)",
           "uncertaintyNotice": "Specific note if handwriting, scan skew, or stamp is ambiguous (or null)"

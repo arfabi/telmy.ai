@@ -7994,6 +7994,112 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
+  // Priority 7.5: 1-Click Native Viewer Ingestion (Direct Backend URL Download & Gemini Multimodal Pipeline)
+  async function triggerTabPdfIngestion() {
+    console.log('[Telmy] 🚀 Starting triggerTabPdfIngestion...');
+    openPdfMode(false);
+    switchSourceMode('pdf');
+
+    if (spPdfDropContent) spPdfDropContent.style.display = 'none';
+    if (spPdfAnalyzing) spPdfAnalyzing.style.display = 'flex';
+    if (telmyAvatar) telmyAvatar.setState('THINKING');
+
+    const tab = await getActiveWebTab();
+    const tabUrl = (tab && tab.url) ? tab.url : '';
+    console.log('[Telmy] Tab URL for PDF Ingestion:', tabUrl);
+
+    // If active tab is a local file (file:///), prompt user to select file
+    if (tabUrl.startsWith('file://')) {
+      if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
+      if (spPdfAnalyzing) spPdfAnalyzing.style.display = 'none';
+      if (telmyAvatar) telmyAvatar.setState('IDLE');
+      alert(t('alert_pdf_local_file_hint'));
+      if (spPdfFileInput) spPdfFileInput.click();
+      return;
+    }
+
+    // If active tab is a live Web PDF URL (e.g. https://www.mofa.go.jp/files/000472868.pdf)
+    if (tabUrl.startsWith('http://') || tabUrl.startsWith('https://')) {
+      currentPdfFileName = tabUrl.split('/').pop().split('?')[0] || 'document.pdf';
+      currentPdfMimeType = 'application/pdf';
+
+      console.log('[Telmy] 🌐 Sending live PDF URL to backend:', tabUrl);
+      chrome.runtime.sendMessage({
+        type: 'EXPLAIN_PDF',
+        payload: {
+          pdfUrl: tabUrl,
+          filename: currentPdfFileName,
+          mimeType: currentPdfMimeType,
+          language: currentLanguage
+        }
+      }, (expRes) => {
+        console.log('[Telmy] EXPLAIN_PDF backend response:', expRes);
+        if (spPdfAnalyzing) spPdfAnalyzing.style.display = 'none';
+        if (expRes && expRes.quotaExhausted) {
+          if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
+          if (telmyAvatar) telmyAvatar.setState('IDLE');
+          openPaywallModal(t('paywall_exhausted_sub'));
+          return;
+        }
+        if (expRes && expRes.quota) {
+          refreshUserQuota(expRes.quota);
+        }
+        if (chrome.runtime.lastError || !expRes || !expRes.success || !expRes.data) {
+          if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
+          if (telmyAvatar) telmyAvatar.setState('IDLE');
+          alert(t('alert_gemini_backend_fail') + (expRes?.error ? ` (${expRes.error})` : ''));
+          return;
+        }
+        handleSuccessfulDocumentAnalysis(expRes.data);
+      });
+      return;
+    }
+
+    // Fallback for internal PDF views
+    chrome.runtime.sendMessage({ type: 'FETCH_ACTIVE_TAB_DOCUMENT' }, (res) => {
+      console.log('[Telmy] FETCH_ACTIVE_TAB_DOCUMENT response:', res ? res.success : false);
+      if (chrome.runtime.lastError || !res || !res.success || !res.dataUrl) {
+        if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
+        if (spPdfAnalyzing) spPdfAnalyzing.style.display = 'none';
+        if (telmyAvatar) telmyAvatar.setState('IDLE');
+        alert(t('alert_tab_read_fail', { error: res?.error || 'Unknown error' }));
+        return;
+      }
+
+      currentPdfFileName = res.filename || 'Document.pdf';
+      currentPdfMimeType = res.mimeType || 'application/pdf';
+      currentPdfRawBytes = dataUrlToUint8Array(res.dataUrl);
+
+      chrome.runtime.sendMessage({
+        type: 'EXPLAIN_PDF',
+        payload: {
+          pdfBase64: res.dataUrl,
+          filename: currentPdfFileName,
+          mimeType: currentPdfMimeType,
+          language: currentLanguage
+        }
+      }, (expRes) => {
+        if (spPdfAnalyzing) spPdfAnalyzing.style.display = 'none';
+        if (expRes && expRes.quotaExhausted) {
+          if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
+          if (telmyAvatar) telmyAvatar.setState('IDLE');
+          openPaywallModal(t('paywall_exhausted_sub'));
+          return;
+        }
+        if (expRes && expRes.quota) {
+          refreshUserQuota(expRes.quota);
+        }
+        if (chrome.runtime.lastError || !expRes || !expRes.success || !expRes.data) {
+          if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
+          if (telmyAvatar) telmyAvatar.setState('IDLE');
+          alert(t('alert_gemini_backend_fail'));
+          return;
+        }
+        handleSuccessfulDocumentAnalysis(expRes.data);
+      });
+    });
+  }
+
   function setupPdfMode() {
     if (btnModeWeb) btnModeWeb.addEventListener('click', () => switchSourceMode('web'));
     if (btnModePdf) btnModePdf.addEventListener('click', () => switchSourceMode('pdf'));
@@ -8003,106 +8109,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       btnBackFromPdf.addEventListener('click', () => {
         const tabChat = document.getElementById('tab-btn-chat');
         if (tabChat) tabChat.click();
-      });
-    }
-
-    // Priority 7.5: 1-Click Native Viewer Ingestion (Direct Backend URL Download & Gemini Multimodal Pipeline)
-    async function triggerTabPdfIngestion() {
-      switchSourceMode('pdf');
-
-      if (spPdfDropContent) spPdfDropContent.style.display = 'none';
-      if (spPdfAnalyzing) spPdfAnalyzing.style.display = 'flex';
-      if (telmyAvatar) telmyAvatar.setState('THINKING');
-
-      const tab = await getActiveWebTab();
-      const tabUrl = (tab && tab.url) ? tab.url : '';
-
-      // If active tab is a local file (file:///), prompt user to select file
-      if (tabUrl.startsWith('file://')) {
-        if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
-        if (spPdfAnalyzing) spPdfAnalyzing.style.display = 'none';
-        if (telmyAvatar) telmyAvatar.setState('IDLE');
-        alert(t('alert_pdf_local_file_hint'));
-        if (spPdfFileInput) spPdfFileInput.click();
-        return;
-      }
-
-      // If active tab is a live Web PDF URL (e.g. https://www.mofa.go.jp/files/000472868.pdf)
-      if (tabUrl.startsWith('http://') || tabUrl.startsWith('https://')) {
-        currentPdfFileName = tabUrl.split('/').pop().split('?')[0] || 'document.pdf';
-        currentPdfMimeType = 'application/pdf';
-
-        chrome.runtime.sendMessage({
-          type: 'EXPLAIN_PDF',
-          payload: {
-            pdfUrl: tabUrl,
-            filename: currentPdfFileName,
-            mimeType: currentPdfMimeType,
-            language: currentLanguage
-          }
-        }, (expRes) => {
-          if (spPdfAnalyzing) spPdfAnalyzing.style.display = 'none';
-          if (expRes && expRes.quotaExhausted) {
-            if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
-            if (telmyAvatar) telmyAvatar.setState('IDLE');
-            openPaywallModal(t('paywall_exhausted_sub'));
-            return;
-          }
-          if (expRes && expRes.quota) {
-            refreshUserQuota(expRes.quota);
-          }
-          if (chrome.runtime.lastError || !expRes || !expRes.success || !expRes.data) {
-            if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
-            if (telmyAvatar) telmyAvatar.setState('IDLE');
-            alert(t('alert_gemini_backend_fail') + (expRes?.error ? ` (${expRes.error})` : ''));
-            return;
-          }
-          handleSuccessfulDocumentAnalysis(expRes.data);
-        });
-        return;
-      }
-
-      // Fallback for internal PDF views
-      chrome.runtime.sendMessage({ type: 'FETCH_ACTIVE_TAB_DOCUMENT' }, (res) => {
-        if (chrome.runtime.lastError || !res || !res.success || !res.dataUrl) {
-          if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
-          if (spPdfAnalyzing) spPdfAnalyzing.style.display = 'none';
-          if (telmyAvatar) telmyAvatar.setState('IDLE');
-          alert(t('alert_tab_read_fail', { error: res?.error || 'Unknown error' }));
-          return;
-        }
-
-        currentPdfFileName = res.filename || 'Document.pdf';
-        currentPdfMimeType = res.mimeType || 'application/pdf';
-        currentPdfRawBytes = dataUrlToUint8Array(res.dataUrl);
-
-        chrome.runtime.sendMessage({
-          type: 'EXPLAIN_PDF',
-          payload: {
-            pdfBase64: res.dataUrl,
-            filename: currentPdfFileName,
-            mimeType: currentPdfMimeType,
-            language: currentLanguage
-          }
-        }, (expRes) => {
-          if (spPdfAnalyzing) spPdfAnalyzing.style.display = 'none';
-          if (expRes && expRes.quotaExhausted) {
-            if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
-            if (telmyAvatar) telmyAvatar.setState('IDLE');
-            openPaywallModal(t('paywall_exhausted_sub'));
-            return;
-          }
-          if (expRes && expRes.quota) {
-            refreshUserQuota(expRes.quota);
-          }
-          if (chrome.runtime.lastError || !expRes || !expRes.success || !expRes.data) {
-            if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
-            if (telmyAvatar) telmyAvatar.setState('IDLE');
-            alert(t('alert_gemini_backend_fail'));
-            return;
-          }
-          handleSuccessfulDocumentAnalysis(expRes.data);
-        });
       });
     }
 
@@ -8588,11 +8594,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Priority 7.7: Direct Export of Filled PDF via pdf-lib (100% Client-Side with WinAnsi Sanitization)
   async function handleExportFilledPdf() {
-    if (!currentPdfRawBytes) {
-      alert(t('alert_no_original_doc'));
-      return;
-    }
-
     if (!window.PDFLib) {
       alert(t('alert_pdf_lib_loading'));
       return;
@@ -8601,8 +8602,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     const { PDFDocument, rgb, StandardFonts } = window.PDFLib;
 
     try {
+      // If original bytes are not yet cached (e.g. analyzed via live URL), try downloading them now
+      if (!currentPdfRawBytes) {
+        const tab = await getActiveWebTab();
+        const tabUrl = (tab && tab.url) ? tab.url : '';
+        if (tabUrl.startsWith('http://') || tabUrl.startsWith('https://')) {
+          try {
+            const resp = await fetch(tabUrl);
+            if (resp.ok) {
+              const buf = await resp.arrayBuffer();
+              currentPdfRawBytes = new Uint8Array(buf);
+            }
+          } catch (fetchErr) {
+            console.warn('[Telmy] Could not directly fetch original PDF for export, generating certified summary document:', fetchErr.message);
+          }
+        }
+      }
+
       let exportDoc;
-      if (currentPdfMimeType === 'application/pdf') {
+      if (currentPdfRawBytes && currentPdfMimeType === 'application/pdf') {
         exportDoc = await PDFDocument.load(currentPdfRawBytes);
         const font = await exportDoc.embedFont(StandardFonts.Helvetica);
 
@@ -8633,9 +8651,48 @@ document.addEventListener('DOMContentLoaded', async () => {
           });
         } catch (e) {}
 
+        // Direct In-Place Overlay Filling on the Original Document Pages
+        try {
+          const pages = exportDoc.getPages();
+          const allSections = currentPdfData?.sections || [];
+          allSections.forEach((sec) => {
+            const secFields = sec.fields || [];
+            secFields.forEach((f) => {
+              const fieldName = f.label || f.fieldName || f.name;
+              const val = pdfUserFormValues[fieldName];
+              if (!val) return;
+
+              const pageIdx = Math.max(0, (f.pageNumber || sec.pageNumber || 1) - 1);
+              if (pageIdx < pages.length) {
+                const targetPage = pages[pageIdx];
+                const { width: pWidth, height: pHeight } = targetPage.getSize();
+
+                // If coordinates are provided by Gemini ([ymin, xmin, ymax, xmax] normalized 0-1000)
+                if (Array.isArray(f.box_2d) && f.box_2d.length === 4) {
+                  const [ymin, xmin, ymax, xmax] = f.box_2d;
+                  // In PDF coordinates, (0,0) is bottom-left
+                  const drawX = (xmin / 1000) * pWidth + 4;
+                  const drawY = pHeight - ((ymax / 1000) * pHeight) + 4;
+
+                  const cleanText = sanitizeForPdfWinAnsi(String(val));
+                  targetPage.drawText(cleanText, {
+                    x: Math.max(10, Math.min(drawX, pWidth - 100)),
+                    y: Math.max(10, Math.min(drawY, pHeight - 20)),
+                    size: 9.5,
+                    font: font,
+                    color: rgb(0, 0.18, 0.65) // Professional official fountain-pen dark blue
+                  });
+                }
+              }
+            });
+          });
+        } catch (inPlaceErr) {
+          console.warn('[Telmy] In-place overlay filling warning:', inPlaceErr.message);
+        }
+
         // Add certified submission summary page
-        const pages = exportDoc.getPages();
-        const firstPage = pages[0];
+        const pagesAfterOverlay = exportDoc.getPages();
+        const firstPage = pagesAfterOverlay[0];
         const { width, height } = firstPage.getSize();
 
         const summaryPage = exportDoc.addPage([width, height]);
@@ -8671,7 +8728,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           currentY -= 18;
         }
 
-      } else {
+      } else if (currentPdfRawBytes && currentPdfMimeType !== 'application/pdf') {
         // Image document: Embed photo on page 1, create structured filled form page on page 2
         exportDoc = await PDFDocument.create();
         const font = await exportDoc.embedFont(StandardFonts.Helvetica);
@@ -8703,6 +8760,42 @@ document.addEventListener('DOMContentLoaded', async () => {
           formPage.drawText(`- ${cleanK}:`, { x: 45, y: curY, size: 10, font: font });
           formPage.drawText(`${cleanV}`, { x: 220, y: curY, size: 10, font: font, color: rgb(0, 0.35, 0.75) });
           curY -= 20;
+        }
+      } else {
+        // Fallback: Create brand new certified submission PDF document from input fields
+        exportDoc = await PDFDocument.create();
+        const font = await exportDoc.embedFont(StandardFonts.Helvetica);
+        const summaryPage = exportDoc.addPage([600, 800]);
+        summaryPage.drawText(sanitizeForPdfWinAnsi('TELMY.AI - OFFICIAL APPLICATION FORM SUBMISSION'), {
+          x: 40,
+          y: 750,
+          size: 13,
+          font: font,
+          color: rgb(0, 0.44, 0.89)
+        });
+        summaryPage.drawText(sanitizeForPdfWinAnsi(`Document: ${currentPdfData?.documentTitle || currentPdfFileName}`), {
+          x: 40,
+          y: 730,
+          size: 10,
+          font: font,
+          color: rgb(0.2, 0.2, 0.2)
+        });
+        summaryPage.drawText(sanitizeForPdfWinAnsi(`Exported on: ${new Date().toLocaleDateString()} | Verified by Applicant`), {
+          x: 40,
+          y: 715,
+          size: 9,
+          font: font,
+          color: rgb(0.5, 0.5, 0.5)
+        });
+
+        let currentY = 680;
+        for (const [k, v] of Object.entries(pdfUserFormValues)) {
+          if (!v || currentY < 60) continue;
+          const cleanK = sanitizeForPdfWinAnsi(k);
+          const cleanV = sanitizeForPdfWinAnsi(String(v));
+          summaryPage.drawText(`- ${cleanK}:`, { x: 45, y: currentY, size: 9.5, font: font, color: rgb(0.1, 0.1, 0.1) });
+          summaryPage.drawText(`${cleanV}`, { x: 220, y: currentY, size: 9.5, font: font, color: rgb(0, 0.35, 0.75) });
+          currentY -= 18;
         }
       }
 
