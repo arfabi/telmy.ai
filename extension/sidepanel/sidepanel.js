@@ -5249,16 +5249,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // Unified Full Form Analysis & Rescan
+  // Unified Full Form Analysis & Rescan (Supports both Web HTML forms and PDF Documents)
   async function triggerFullFormAnalysis(triggerBtn = null) {
     console.log('[Telmy] 🔍 User triggered triggerFullFormAnalysis. Button:', triggerBtn);
     if (btnRescan) {
       btnRescan.style.transform = 'rotate(180deg)';
       setTimeout(() => { if (btnRescan) btnRescan.style.transform = ''; }, 400);
     }
-
-    // Immediately show ONLY pure loading animation!
-    showFieldsState('analyzing');
 
     // Resolve active webpage tab
     const tab = await getActiveWebTab();
@@ -5271,6 +5268,23 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
     currentTabId = tabId;
+
+    // Check if the current tab is a PDF Document
+    const tabUrl = (tab && tab.url) ? tab.url.toLowerCase() : '';
+    const isPdfTab = tabUrl.endsWith('.pdf') || tabUrl.includes('.pdf?') || (tabUrl.startsWith('chrome-extension://') && tabUrl.includes('.pdf'));
+
+    if (isPdfTab) {
+      console.log('[Telmy] 📄 Tab is a PDF Document! Routing to PDF Guided Ingestion automatically...');
+      if (typeof triggerTabPdfIngestion === 'function') {
+        triggerTabPdfIngestion();
+      } else if (btnPdfBannerAction) {
+        btnPdfBannerAction.click();
+      }
+      return;
+    }
+
+    // Immediately show ONLY pure loading animation for Web HTML forms!
+    showFieldsState('analyzing');
     isCurrentPageAnalyzed = false;
 
     // Activate scanner on tab safely without unhandled runtime.lastError
@@ -7992,73 +8006,108 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     }
 
-    // Priority 7.5: 1-Click Native Viewer Ingestion (Tanpa Re-Upload)
-    if (btnPdfBannerAction) {
-      btnPdfBannerAction.addEventListener('click', () => {
-        switchSourceMode('pdf');
+    // Priority 7.5: 1-Click Native Viewer Ingestion (Direct Backend URL Download & Gemini Multimodal Pipeline)
+    async function triggerTabPdfIngestion() {
+      switchSourceMode('pdf');
 
-        if (spPdfDropContent) spPdfDropContent.style.display = 'none';
-        if (spPdfAnalyzing) spPdfAnalyzing.style.display = 'flex';
-        if (telmyAvatar) telmyAvatar.setState('THINKING');
+      if (spPdfDropContent) spPdfDropContent.style.display = 'none';
+      if (spPdfAnalyzing) spPdfAnalyzing.style.display = 'flex';
+      if (telmyAvatar) telmyAvatar.setState('THINKING');
 
-        chrome.runtime.sendMessage({ type: 'FETCH_ACTIVE_TAB_DOCUMENT' }, (res) => {
-          if (chrome.runtime.lastError || !res) {
+      const tab = await getActiveWebTab();
+      const tabUrl = (tab && tab.url) ? tab.url : '';
+
+      // If active tab is a local file (file:///), prompt user to select file
+      if (tabUrl.startsWith('file://')) {
+        if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
+        if (spPdfAnalyzing) spPdfAnalyzing.style.display = 'none';
+        if (telmyAvatar) telmyAvatar.setState('IDLE');
+        alert(t('alert_pdf_local_file_hint'));
+        if (spPdfFileInput) spPdfFileInput.click();
+        return;
+      }
+
+      // If active tab is a live Web PDF URL (e.g. https://www.mofa.go.jp/files/000472868.pdf)
+      if (tabUrl.startsWith('http://') || tabUrl.startsWith('https://')) {
+        currentPdfFileName = tabUrl.split('/').pop().split('?')[0] || 'document.pdf';
+        currentPdfMimeType = 'application/pdf';
+
+        chrome.runtime.sendMessage({
+          type: 'EXPLAIN_PDF',
+          payload: {
+            pdfUrl: tabUrl,
+            filename: currentPdfFileName,
+            mimeType: currentPdfMimeType,
+            language: currentLanguage
+          }
+        }, (expRes) => {
+          if (spPdfAnalyzing) spPdfAnalyzing.style.display = 'none';
+          if (expRes && expRes.quotaExhausted) {
             if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
-            if (spPdfAnalyzing) spPdfAnalyzing.style.display = 'none';
             if (telmyAvatar) telmyAvatar.setState('IDLE');
-            alert(t('alert_pdf_tab_download_fail'));
+            openPaywallModal(t('paywall_exhausted_sub'));
             return;
           }
-
-          if (res.isLocalFile) {
+          if (expRes && expRes.quota) {
+            refreshUserQuota(expRes.quota);
+          }
+          if (chrome.runtime.lastError || !expRes || !expRes.success || !expRes.data) {
             if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
-            if (spPdfAnalyzing) spPdfAnalyzing.style.display = 'none';
             if (telmyAvatar) telmyAvatar.setState('IDLE');
-            alert(t('alert_pdf_local_file_hint'));
+            alert(t('alert_gemini_backend_fail') + (expRes?.error ? ` (${expRes.error})` : ''));
             return;
           }
+          handleSuccessfulDocumentAnalysis(expRes.data);
+        });
+        return;
+      }
 
-          if (!res.success || !res.dataUrl) {
+      // Fallback for internal PDF views
+      chrome.runtime.sendMessage({ type: 'FETCH_ACTIVE_TAB_DOCUMENT' }, (res) => {
+        if (chrome.runtime.lastError || !res || !res.success || !res.dataUrl) {
+          if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
+          if (spPdfAnalyzing) spPdfAnalyzing.style.display = 'none';
+          if (telmyAvatar) telmyAvatar.setState('IDLE');
+          alert(t('alert_tab_read_fail', { error: res?.error || 'Unknown error' }));
+          return;
+        }
+
+        currentPdfFileName = res.filename || 'Document.pdf';
+        currentPdfMimeType = res.mimeType || 'application/pdf';
+        currentPdfRawBytes = dataUrlToUint8Array(res.dataUrl);
+
+        chrome.runtime.sendMessage({
+          type: 'EXPLAIN_PDF',
+          payload: {
+            pdfBase64: res.dataUrl,
+            filename: currentPdfFileName,
+            mimeType: currentPdfMimeType,
+            language: currentLanguage
+          }
+        }, (expRes) => {
+          if (spPdfAnalyzing) spPdfAnalyzing.style.display = 'none';
+          if (expRes && expRes.quotaExhausted) {
             if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
-            if (spPdfAnalyzing) spPdfAnalyzing.style.display = 'none';
             if (telmyAvatar) telmyAvatar.setState('IDLE');
-            alert(t('alert_tab_read_fail', { error: res?.error || 'Unknown error' }));
+            openPaywallModal(t('paywall_exhausted_sub'));
             return;
           }
-
-          currentPdfFileName = res.filename || 'Document.pdf';
-          currentPdfMimeType = res.mimeType || 'application/pdf';
-          currentPdfRawBytes = dataUrlToUint8Array(res.dataUrl);
-
-          chrome.runtime.sendMessage({
-            type: 'EXPLAIN_PDF',
-            payload: {
-              pdfBase64: res.dataUrl,
-              filename: currentPdfFileName,
-              mimeType: currentPdfMimeType,
-              language: currentLanguage
-            }
-          }, (expRes) => {
-            if (spPdfAnalyzing) spPdfAnalyzing.style.display = 'none';
-            if (expRes && expRes.quotaExhausted) {
-              if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
-              if (telmyAvatar) telmyAvatar.setState('IDLE');
-              openPaywallModal(t('paywall_exhausted_sub'));
-              return;
-            }
-            if (expRes && expRes.quota) {
-              refreshUserQuota(expRes.quota);
-            }
-            if (chrome.runtime.lastError || !expRes || !expRes.success || !expRes.data) {
-              if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
-              if (telmyAvatar) telmyAvatar.setState('IDLE');
-              alert(t('alert_gemini_backend_fail'));
-              return;
-            }
-            handleSuccessfulDocumentAnalysis(expRes.data);
-          });
+          if (expRes && expRes.quota) {
+            refreshUserQuota(expRes.quota);
+          }
+          if (chrome.runtime.lastError || !expRes || !expRes.success || !expRes.data) {
+            if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
+            if (telmyAvatar) telmyAvatar.setState('IDLE');
+            alert(t('alert_gemini_backend_fail'));
+            return;
+          }
+          handleSuccessfulDocumentAnalysis(expRes.data);
         });
       });
+    }
+
+    if (btnPdfBannerAction) {
+      btnPdfBannerAction.addEventListener('click', triggerTabPdfIngestion);
     }
 
 
@@ -8301,6 +8350,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
+  // Helper: Sanitize string to standard Latin-1 / WinAnsi compatible characters for pdf-lib StandardFonts
+  function sanitizeForPdfWinAnsi(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/[\u24B6-\u24CF]/g, (c) => `(${String.fromCharCode(c.charCodeAt(0) - 0x24B6 + 65)})`)
+      .replace(/[\u24D0-\u24E9]/g, (c) => `(${String.fromCharCode(c.charCodeAt(0) - 0x24D0 + 97)})`)
+      .replace(/[\u2460-\u2473]/g, (c) => `(${c.charCodeAt(0) - 0x2460 + 1})`)
+      .replace(/[•●▪]/g, '-')
+      .replace(/[“”]/g, '"')
+      .replace(/[‘’]/g, "'")
+      .replace(/[–—]/g, '-')
+      .replace(/[✓✔☑]/g, '[X]')
+      .replace(/[✗✘☒]/g, '[ ]')
+      .replace(/[^\x20-\xFF\n\r\t]/g, '');
+  }
+
   function renderPdfSectionFields(section) {
     if (!pdfActiveSectionFields) return;
     pdfActiveSectionFields.innerHTML = '';
@@ -8311,9 +8376,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    fields.forEach((f) => {
+    fields.forEach((f, fieldIdx) => {
       const card = document.createElement('div');
       card.className = 'pdf-field-card';
+      card.setAttribute('data-field-index', fieldIdx);
 
       const fieldName = f.label || f.fieldName || f.name || 'Field';
       const explanation = f.meaning || f.explanation || '';
@@ -8321,11 +8387,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       const pitfall = f.pitfall || f.commonPitfall || '';
       const foreignerNote = f.foreignerNote || null;
       const uncertaintyNotice = f.uncertaintyNotice || null;
+      const fieldType = (f.type || 'text').toLowerCase();
+      const options = Array.isArray(f.options) ? f.options : [];
+      const pageNum = f.pageNumber || f.page || section.pageNumber || 1;
+      const keywords = f.targetKeywords || fieldName;
 
       let inner = `
         <div class="pdf-field-top">
           <div class="pdf-field-title-group">
-            <span class="pdf-field-badge">Hal ${f.pageNumber || f.page || 1}</span>
+            <span class="pdf-field-badge interactive" title="Klik untuk fokus pada halaman ${pageNum}">Hal ${pageNum}</span>
             <strong class="pdf-field-name">${escapeHTML(fieldName)}</strong>
           </div>
           <button type="button" class="pdf-field-listen-btn" title="Dengarkan penjelasan" data-field-name="${escapeHTML(fieldName)}">🔊</button>
@@ -8365,15 +8435,56 @@ document.addEventListener('DOMContentLoaded', async () => {
         `;
       }
 
-      // Priority 7.7: Interactive Input Box
-      const curVal = pdfUserFormValues[fieldName] || '';
+      // Adaptive Input Box
+      const curVal = pdfUserFormValues[fieldName] !== undefined ? pdfUserFormValues[fieldName] : '';
 
-      inner += `
-        <div class="pdf-field-input-box">
-          <label>Your Input (for Exported Document):</label>
+      inner += `<div class="pdf-field-input-box">`;
+      inner += `<label>Your Input (for Exported Document):</label>`;
+
+      if (fieldType === 'checkbox') {
+        const isChecked = curVal === true || curVal === 'Yes' || curVal === 'true';
+        inner += `
+          <label class="pdf-field-checkbox-row">
+            <input type="checkbox" class="pdf-user-checkbox" data-field-name="${escapeHTML(fieldName)}" ${isChecked ? 'checked' : ''}>
+            <span>${example ? escapeHTML(example) : 'Centang / Checklist jika berlaku'}</span>
+          </label>
+        `;
+      } else if (fieldType === 'radio' && options.length > 0) {
+        inner += `<div class="pdf-field-options-grid">`;
+        options.forEach((opt, optIdx) => {
+          const isSelected = curVal === opt;
+          inner += `
+            <label class="pdf-field-radio-label">
+              <input type="radio" name="pdf_radio_${fieldIdx}" value="${escapeHTML(opt)}" class="pdf-user-radio" data-field-name="${escapeHTML(fieldName)}" ${isSelected ? 'checked' : ''}>
+              <span>${escapeHTML(opt)}</span>
+            </label>
+          `;
+        });
+        inner += `</div>`;
+      } else if (fieldType === 'select' && options.length > 0) {
+        inner += `
+          <div class="pdf-field-input-row">
+            <select class="pdf-field-select pdf-user-select" data-field-name="${escapeHTML(fieldName)}">
+              <option value="">-- Pilih Opsi --</option>
+              ${options.map(opt => `<option value="${escapeHTML(opt)}" ${curVal === opt ? 'selected' : ''}>${escapeHTML(opt)}</option>`).join('')}
+            </select>
+          </div>
+        `;
+      } else if (fieldType === 'date') {
+        inner += `
+          <div class="pdf-field-input-row">
+            <input type="date" class="pdf-field-date pdf-user-input" data-field-name="${escapeHTML(fieldName)}" value="${escapeHTML(curVal)}">
+          </div>
+        `;
+      } else {
+        inner += `
           <div class="pdf-field-input-row">
             <input type="text" class="pdf-user-input" data-field-name="${escapeHTML(fieldName)}" placeholder="${example ? 'e.g. ' + escapeHTML(example) : 'Type entry...'}" value="${escapeHTML(curVal)}">
           </div>
+        `;
+      }
+
+      inner += `
         </div>
         <div class="pdf-field-card-actions">
           <button type="button" class="btn-field-ask-chip" data-field="${escapeHTML(fieldName)}">💬 Ask Telmy</button>
@@ -8382,10 +8493,70 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       card.innerHTML = inner;
 
-      // Input listener
+      // Card Spotlight on Click
+      card.addEventListener('click', () => {
+        document.querySelectorAll('.pdf-field-card').forEach(c => c.classList.remove('active-spotlight'));
+        card.classList.add('active-spotlight');
+        if (currentTabId && keywords) {
+          safeSendTabMessage(currentTabId, {
+            type: 'SPOTLIGHT_TEXT_ON_PAGE',
+            keywords: keywords,
+            page: pageNum
+          });
+        }
+      });
+
+      // Page Badge Click
+      const badgeEl = card.querySelector('.pdf-field-badge');
+      if (badgeEl) {
+        badgeEl.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (currentTabId) {
+            safeSendTabMessage(currentTabId, {
+              type: 'NAVIGATE_DOCUMENT_PAGE',
+              page: pageNum,
+              keywords: keywords
+            });
+          }
+        });
+      }
+
+      // Input listeners
       const inputEl = card.querySelector('.pdf-user-input');
       if (inputEl) {
         inputEl.addEventListener('input', (e) => {
+          pdfUserFormValues[fieldName] = e.target.value;
+        });
+        inputEl.addEventListener('focus', () => {
+          document.querySelectorAll('.pdf-field-card').forEach(c => c.classList.remove('active-spotlight'));
+          card.classList.add('active-spotlight');
+          if (currentTabId && keywords) {
+            safeSendTabMessage(currentTabId, {
+              type: 'SPOTLIGHT_TEXT_ON_PAGE',
+              keywords: keywords,
+              page: pageNum
+            });
+          }
+        });
+      }
+
+      const chkEl = card.querySelector('.pdf-user-checkbox');
+      if (chkEl) {
+        chkEl.addEventListener('change', (e) => {
+          pdfUserFormValues[fieldName] = e.target.checked ? 'Yes' : 'No';
+        });
+      }
+
+      const radioEls = card.querySelectorAll('.pdf-user-radio');
+      radioEls.forEach(r => {
+        r.addEventListener('change', (e) => {
+          if (e.target.checked) pdfUserFormValues[fieldName] = e.target.value;
+        });
+      });
+
+      const selectEl = card.querySelector('.pdf-user-select');
+      if (selectEl) {
+        selectEl.addEventListener('change', (e) => {
           pdfUserFormValues[fieldName] = e.target.value;
         });
       }
@@ -8415,7 +8586,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // Priority 7.7: Direct Export of Filled PDF via pdf-lib (100% Client-Side)
+  // Priority 7.7: Direct Export of Filled PDF via pdf-lib (100% Client-Side with WinAnsi Sanitization)
   async function handleExportFilledPdf() {
     if (!currentPdfRawBytes) {
       alert(t('alert_no_original_doc'));
@@ -8444,8 +8615,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             for (const [key, val] of Object.entries(pdfUserFormValues)) {
               if (val && (fieldName.toLowerCase().includes(key.toLowerCase()) || key.toLowerCase().includes(fieldName.toLowerCase()))) {
                 try {
-                  const tf = form.getTextField(fieldName);
-                  tf.setText(val);
+                  const cleanVal = sanitizeForPdfWinAnsi(String(val));
+                  // Handle Checkbox
+                  if (field.constructor && field.constructor.name === 'PDFCheckBox') {
+                    if (val === 'Yes' || val === true || val === 'true') {
+                      field.check();
+                    } else {
+                      field.uncheck();
+                    }
+                  } else {
+                    const tf = form.getTextField(fieldName);
+                    tf.setText(cleanVal);
+                  }
                 } catch (e) {}
               }
             }
@@ -8458,21 +8639,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         const { width, height } = firstPage.getSize();
 
         const summaryPage = exportDoc.addPage([width, height]);
-        summaryPage.drawText('TELMY.AI — OFFICIAL APPLICATION FORM SUBMISSION SUMMARY', {
+        summaryPage.drawText(sanitizeForPdfWinAnsi('TELMY.AI - OFFICIAL APPLICATION FORM SUBMISSION SUMMARY'), {
           x: 40,
           y: height - 50,
           size: 13,
           font: font,
           color: rgb(0, 0.44, 0.89)
         });
-        summaryPage.drawText(`Document: ${currentPdfData?.documentTitle || currentPdfFileName}`, {
+        summaryPage.drawText(sanitizeForPdfWinAnsi(`Document: ${currentPdfData?.documentTitle || currentPdfFileName}`), {
           x: 40,
           y: height - 70,
           size: 10,
           font: font,
           color: rgb(0.2, 0.2, 0.2)
         });
-        summaryPage.drawText(`Exported on: ${new Date().toLocaleDateString()} | Verified by Applicant`, {
+        summaryPage.drawText(sanitizeForPdfWinAnsi(`Exported on: ${new Date().toLocaleDateString()} | Verified by Applicant`), {
           x: 40,
           y: height - 85,
           size: 9,
@@ -8483,8 +8664,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         let currentY = height - 115;
         for (const [k, v] of Object.entries(pdfUserFormValues)) {
           if (!v || currentY < 60) continue;
-          summaryPage.drawText(`• ${k}:`, { x: 45, y: currentY, size: 9.5, font: font, color: rgb(0.1, 0.1, 0.1) });
-          summaryPage.drawText(`${v}`, { x: 220, y: currentY, size: 9.5, font: font, color: rgb(0, 0.35, 0.75) });
+          const cleanK = sanitizeForPdfWinAnsi(k);
+          const cleanV = sanitizeForPdfWinAnsi(String(v));
+          summaryPage.drawText(`- ${cleanK}:`, { x: 45, y: currentY, size: 9.5, font: font, color: rgb(0.1, 0.1, 0.1) });
+          summaryPage.drawText(`${cleanV}`, { x: 220, y: currentY, size: 9.5, font: font, color: rgb(0, 0.35, 0.75) });
           currentY -= 18;
         }
 
@@ -8505,7 +8688,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         const formPage = exportDoc.addPage([600, 800]);
-        formPage.drawText('TELMY.AI — CERTIFIED FORM INPUT SUMMARY', {
+        formPage.drawText(sanitizeForPdfWinAnsi('TELMY.AI - CERTIFIED FORM INPUT SUMMARY'), {
           x: 40,
           y: 750,
           size: 14,
@@ -8515,8 +8698,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         let curY = 710;
         for (const [k, v] of Object.entries(pdfUserFormValues)) {
           if (!v || curY < 60) continue;
-          formPage.drawText(`• ${k}:`, { x: 45, y: curY, size: 10, font: font });
-          formPage.drawText(`${v}`, { x: 220, y: curY, size: 10, font: font, color: rgb(0, 0.35, 0.75) });
+          const cleanK = sanitizeForPdfWinAnsi(k);
+          const cleanV = sanitizeForPdfWinAnsi(String(v));
+          formPage.drawText(`- ${cleanK}:`, { x: 45, y: curY, size: 10, font: font });
+          formPage.drawText(`${cleanV}`, { x: 220, y: curY, size: 10, font: font, color: rgb(0, 0.35, 0.75) });
           curY -= 20;
         }
       }

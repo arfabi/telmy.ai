@@ -472,6 +472,62 @@
       return false;
     }
 
+    // D3. Two-Way Spotlight Document & Text Search (Priority 7 Interactive Field Sync)
+    if (message.type === 'SPOTLIGHT_TEXT_ON_PAGE') {
+      try {
+        const kw = (message.keywords || '').trim();
+        if (kw) {
+          // Use window.find if available in context
+          if (window.find) {
+            window.find(kw, false, false, true, false, true, false);
+          }
+
+          // Visual highlight box overlay on matching text nodes or elements
+          const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+          let node;
+          let matchedNode = null;
+          const kwLower = kw.toLowerCase();
+
+          while ((node = walker.nextNode())) {
+            if (node.nodeValue && node.nodeValue.toLowerCase().includes(kwLower)) {
+              matchedNode = node;
+              break;
+            }
+          }
+
+          if (matchedNode && matchedNode.parentElement) {
+            const targetEl = matchedNode.parentElement;
+            targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            if (window.TelmyA11y && typeof window.TelmyA11y.spotlightElement === 'function') {
+              window.TelmyA11y.spotlightElement(targetEl);
+            }
+          }
+        }
+        sendResponse({ success: true });
+      } catch (e) {
+        sendResponse({ success: false, error: e.message });
+      }
+      return false;
+    }
+
+    // D4. Page Navigation in Document Viewer
+    if (message.type === 'NAVIGATE_DOCUMENT_PAGE') {
+      try {
+        const page = message.page || 1;
+        // In embedded web viewers or PDF.js viewers, try finding page container or dispatching pagechange
+        const pageEl = document.querySelector(`[data-page-number="${page}"], #page_${page}, .page[data-page-number="${page}"]`);
+        if (pageEl) {
+          pageEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else if (message.keywords && window.find) {
+          window.find(message.keywords, false, false, true, false, true, false);
+        }
+        sendResponse({ success: true });
+      } catch (e) {
+        sendResponse({ success: false, error: e.message });
+      }
+      return false;
+    }
+
     // F. Highlight Field by Index
     if (message.type === 'GMT_ACTIVATE_FIELD_BY_INDEX') {
       if (window.GMTHighlighter && scannedItems[message.index]) {

@@ -681,7 +681,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       const settings = res.settings || DEFAULT_SETTINGS;
       const user = res.user || null;
       const apiUrl = getEffectiveApiUrl(settings);
-      const { pdfBase64, filename, language, mimeType = 'application/pdf' } = message.payload;
+      const { pdfUrl, pdfBase64, filename, language, mimeType = 'application/pdf' } = message.payload;
       const userId = user?.uid || 'guest_user';
 
       try {
@@ -691,7 +691,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             'Content-Type': 'application/json',
             'x-user-id': userId
           },
-          body: JSON.stringify({ pdfBase64, filename, language, mimeType, userId })
+          body: JSON.stringify({ pdfUrl, pdfBase64, filename, language, mimeType, userId })
         }, 60000);
 
         if (response.ok) {
@@ -773,7 +773,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
-  // Priority 7.5: 1-Click Native Tab Document Ingestion
+  // Priority 7.5: 1-Click Native Tab Document Ingestion (Direct Buffer & Live URL Support)
   if (message.type === 'FETCH_ACTIVE_TAB_DOCUMENT') {
     (async () => {
       try {
@@ -791,7 +791,43 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           return;
         }
 
-        // Try downloading directly via in-page execution (CORS-safe & session-safe)
+        const filename = tabUrl.split('/').pop().split('?')[0] || 'document.pdf';
+
+        // Helper: Convert Uint8Array to Base64 safely without stack overflow
+        const uint8ToBase64 = (uint8) => {
+          let binary = '';
+          const len = uint8.byteLength;
+          const chunkSize = 8192;
+          for (let i = 0; i < len; i += chunkSize) {
+            const chunk = uint8.subarray(i, Math.min(i + chunkSize, len));
+            binary += String.fromCharCode.apply(null, chunk);
+          }
+          return btoa(binary);
+        };
+
+        // Priority 1: Direct fetch from Service Worker (CORS-free via host_permissions: <all_urls>)
+        try {
+          const resp = await fetchWithTimeout(tabUrl, {}, 30000);
+          if (resp.ok) {
+            const mimeType = resp.headers.get('content-type') || 'application/pdf';
+            const arrayBuf = await resp.arrayBuffer();
+            const uint8 = new Uint8Array(arrayBuf);
+            const base64 = uint8ToBase64(uint8);
+            const dataUrl = `data:${mimeType};base64,${base64}`;
+
+            sendResponse({
+              success: true,
+              dataUrl,
+              mimeType,
+              filename
+            });
+            return;
+          }
+        } catch (fetchErr) {
+          console.warn('[Telmy SW] Direct background fetch failed, trying in-page fetch fallback:', fetchErr.message);
+        }
+
+        // Priority 2: In-page execution fallback (for intranet or session-authenticated portals)
         try {
           const results = await chrome.scripting.executeScript({
             target: { tabId: tab.id },
@@ -799,18 +835,21 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
               try {
                 const resp = await fetch(window.location.href);
                 if (!resp.ok) return { success: false, status: resp.status };
-                const blob = await resp.blob();
-                return new Promise((resolve) => {
-                  const reader = new FileReader();
-                  reader.onloadend = () => resolve({
-                    success: true,
-                    dataUrl: reader.result,
-                    mimeType: blob.type || 'application/pdf',
-                    size: blob.size
-                  });
-                  reader.onerror = () => resolve({ success: false, error: 'FileReader error' });
-                  reader.readAsDataURL(blob);
-                });
+                const arrayBuf = await resp.arrayBuffer();
+                const bytes = new Uint8Array(arrayBuf);
+                let binary = '';
+                const chunkSize = 8192;
+                for (let i = 0; i < bytes.length; i += chunkSize) {
+                  binary += String.fromCharCode.apply(null, bytes.subarray(i, Math.min(i + chunkSize, bytes.length)));
+                }
+                const b64 = btoa(binary);
+                const mime = resp.headers.get('content-type') || 'application/pdf';
+                return {
+                  success: true,
+                  dataUrl: `data:${mime};base64,${b64}`,
+                  mimeType: mime,
+                  size: arrayBuf.byteLength
+                };
               } catch (e) {
                 return { success: false, error: e.message };
               }
@@ -823,28 +862,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
               success: true,
               dataUrl: data.dataUrl,
               mimeType: data.mimeType,
-              filename: tabUrl.split('/').pop().split('?')[0] || 'document.pdf'
+              filename
             });
             return;
           }
         } catch (scriptErr) {
-          console.warn('[Telmy SW] In-page script fetch failed, attempting direct fetch:', scriptErr.message);
+          console.warn('[Telmy SW] In-page script fetch failed:', scriptErr.message);
         }
 
-        // Fallback: direct background fetch
-        const resp = await fetchWithTimeout(tabUrl, {}, 25000);
-        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-        const blob = await resp.blob();
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          sendResponse({
-            success: true,
-            dataUrl: reader.result,
-            mimeType: blob.type || 'application/pdf',
-            filename: tabUrl.split('/').pop().split('?')[0] || 'document.pdf'
-          });
-        };
-        reader.readAsDataURL(blob);
+        sendResponse({ success: false, error: 'Could not download PDF from tab' });
       } catch (err) {
         console.warn('[Telmy SW] Fetch tab document failed:', err.message);
         sendResponse({ success: false, error: err.message });

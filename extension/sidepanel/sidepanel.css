@@ -2508,6 +2508,121 @@ body {
   border-color: #0071e3;
 }
 
+.pdf-field-card.active-spotlight {
+  border-color: #0071e3 !important;
+  box-shadow: 0 0 0 2px rgba(0, 113, 227, 0.25), 0 4px 14px rgba(0, 113, 227, 0.15) !important;
+  background: #f8fbff;
+}
+
+.pdf-field-badge.interactive {
+  cursor: pointer;
+  background: #e0f2fe;
+  color: #0284c7;
+  transition: all 0.15s;
+}
+
+.pdf-field-badge.interactive:hover {
+  background: #0284c7;
+  color: white;
+}
+
+.pdf-field-input-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.pdf-field-input-box label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.pdf-field-input-row {
+  display: flex;
+  width: 100%;
+}
+
+.pdf-user-input, .pdf-field-select, .pdf-field-date {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #1e293b;
+  background: #ffffff;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.pdf-user-input:focus, .pdf-field-select:focus, .pdf-field-date:focus {
+  outline: none;
+  border-color: #0071e3;
+  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.15);
+}
+
+.pdf-field-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.pdf-field-checkbox-row:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.pdf-field-checkbox-row input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #0071e3;
+}
+
+.pdf-field-checkbox-row span {
+  font-size: 13px;
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.pdf-field-options-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pdf-field-radio-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 12.5px;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.pdf-field-radio-label:hover {
+  background: #f1f5f9;
+}
+
+.pdf-field-radio-label input[type="radio"] {
+  accent-color: #0071e3;
+  cursor: pointer;
+}
+
 /* =========================================================
    Priority 7.7: Interactive PDF Form Writer & Export Card
    ========================================================= */

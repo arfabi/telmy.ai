@@ -48,10 +48,14 @@ The JSON MUST follow this exact schema:
         {
           "name": "field_identifier",
           "label": "Field Question as printed on the PDF/Form",
+          "type": "text | checkbox | radio | select | date",
+          "options": ["Option 1", "Option 2"],
           "required": true,
           "meaning": "What this field actually asks for in plain simple terms",
           "example": "A realistic, properly formatted dummy example",
           "pitfall": "Most common mistake that leads to rejection",
+          "pageNumber": 1,
+          "targetKeywords": "Exact 2-5 words printed on the form near this field to locate it on the page",
           "foreignerNote": "Special instruction if applicant is a foreign citizen or non-resident (or null)",
           "uncertaintyNotice": "Specific note if handwriting, scan skew, or stamp is ambiguous (or null)"
         }
