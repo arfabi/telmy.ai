@@ -29,6 +29,32 @@ router.post('/forms/analyze', verifyAndDeductQuota, async (req, res) => {
       userId
     });
 
+    // Auto-record to saved_forms history in Firestore for dashboard visibility
+    try {
+      const { getFirestore } = await import('../config/firebase.js');
+      const { db, isFirebaseConnected } = getFirestore();
+      if (isFirebaseConnected && db && userId && userId !== 'guest' && userId !== 'guest_user') {
+        const formId = 'form_' + (domain || 'web').replace(/[^a-zA-Z0-9]/g, '_') + '_' + (req.userQuota?.sessionId || Date.now().toString(36));
+        const historyData = {
+          id: formId,
+          uid: userId,
+          title: title || (domain ? `Formulir ${domain}` : 'Online Web Form'),
+          authority: domain || (url ? new URL(url).hostname : 'Web Authority'),
+          type: 'online',
+          url: url || '',
+          date: new Date().toLocaleDateString('en-CA'), // YYYY-MM-DD
+          fieldCount: fields.length,
+          status: 'Active (24h)',
+          sessionId: req.userQuota?.sessionId || null,
+          updatedAt: new Date().toISOString()
+        };
+        await db.collection('saved_forms').doc(formId).set(historyData, { merge: true });
+        console.log(`[Forms Analyze Route] 📝 Form history saved for user ${userId}:`, formId);
+      }
+    } catch (histErr) {
+      console.warn('[Forms Analyze Route] Warning: could not write to saved_forms:', histErr.message);
+    }
+
     return res.json({
       success: true,
       data: result,

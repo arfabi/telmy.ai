@@ -644,15 +644,63 @@
     if (message.type === 'AUDIT_FORM_VALUES') {
       const auditPayload = scannedItems.map((item, idx) => {
         const el = item.metadata.element;
-        const val = el ? (el.value || el.innerText || '') : '';
-        const req = el ? (el.required || el.getAttribute('aria-required') === 'true' || item.dictEntry?.required) : false;
+        const type = item.metadata.type || 'text';
+        let val = '';
+
+        if (el) {
+          if (type === 'radio') {
+            // 1. Native radio group (check if any radio with same name is checked)
+            if (el.tagName === 'INPUT' && el.type === 'radio' && el.name) {
+              const checkedRadio = document.querySelector(`input[type="radio"][name="${CSS.escape(el.name)}"]:checked`);
+              val = checkedRadio ? (checkedRadio.value || 'checked') : '';
+            } else if (el.getAttribute('role') === 'radiogroup') {
+              // 2. Google Forms / ARIA radiogroup: check for [aria-checked="true"]
+              const checkedOpt = el.querySelector('[aria-checked="true"]');
+              val = checkedOpt ? (checkedOpt.getAttribute('data-value') || checkedOpt.innerText || 'checked') : '';
+            } else if (el.getAttribute('role') === 'radio') {
+              val = el.getAttribute('aria-checked') === 'true' ? 'checked' : '';
+            }
+          } else if (type === 'checkbox') {
+            // Google Forms checkbox or native checkbox
+            if (el.tagName === 'INPUT') {
+              val = el.checked ? 'checked' : '';
+            } else if (el.getAttribute('role') === 'group') {
+              const checkedBox = el.querySelector('[aria-checked="true"], input:checked');
+              val = checkedBox ? 'checked' : '';
+            } else {
+              val = (el.getAttribute('aria-checked') === 'true' || el.classList.contains('isChecked') || el.classList.contains('checked')) ? 'checked' : '';
+            }
+          } else if (el.tagName === 'SELECT') {
+            val = el.value || '';
+          } else {
+            val = el.value !== undefined ? String(el.value) : (el.innerText || '');
+          }
+        }
+
+        // Determine if required (check parent question card for asterisk * in Google Forms)
+        let isReq = Boolean(el && (el.required || el.getAttribute('aria-required') === 'true' || item.dictEntry?.required));
+        if (!isReq && el) {
+          const containerCard = el.closest('[role="listitem"], .Qr7Oae, .freebirdFormviewerViewNumberedItemContainer');
+          if (containerCard) {
+            const hasAsterisk = containerCard.querySelector('.vnumgf, [aria-label*="required"], [aria-label*="wajib"]');
+            if (hasAsterisk || containerCard.innerText.includes('*')) {
+              isReq = true;
+            }
+          }
+        }
+
+        const isReadOnly = Boolean(el && (el.readOnly || el.getAttribute('aria-readonly') === 'true' || el.hasAttribute('readonly')));
+        const isDisabled = Boolean(el && (el.disabled || el.getAttribute('aria-disabled') === 'true' || el.hasAttribute('disabled')));
+
         return {
           index: idx,
           label: item.metadata.label || `Field #${idx + 1}`,
-          type: item.metadata.type || 'text',
+          type,
           name: item.metadata.name || '',
           value: val.trim(),
-          required: Boolean(req)
+          required: isReq,
+          isReadOnly,
+          isDisabled
         };
       });
       sendResponse({ success: true, fields: auditPayload });

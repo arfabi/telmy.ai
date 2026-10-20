@@ -1888,12 +1888,21 @@ export const DashboardPage: React.FC = () => {
                               </span>
                             </td>
                             <td className="py-3.5 px-4 text-right">
-                              <button
-                                onClick={() => setEditorModalOpen(true)}
-                                className="text-xs font-bold text-blue-600 hover:text-blue-800 cursor-pointer"
-                              >
-                                {dI18n.formsOpenEditor}
-                              </button>
+                              {item.type === 'pdf' ? (
+                                <button
+                                  onClick={() => navigate(`/pdf-editor?id=${item.id}&session=${item.sessionId || ''}`)}
+                                  className="text-xs font-bold text-blue-600 hover:text-blue-800 cursor-pointer flex items-center gap-1 ml-auto"
+                                >
+                                  <span>{dI18n.formsOpenEditor}</span>
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => setEditorModalOpen(true)}
+                                  className="text-xs font-bold text-slate-600 hover:text-slate-800 cursor-pointer"
+                                >
+                                  {dI18n.formsOpenEditor}
+                                </button>
+                              )}
                             </td>
                           </tr>
                         ))

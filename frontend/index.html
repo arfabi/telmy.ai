@@ -28,6 +28,14 @@
         font-family: 'DM Mono', monospace !important;
       }
     </style>
+    <!-- PDF.js for Web Dashboard Studio -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+      if (window['pdfjs-dist/build/pdf']) {
+        window.pdfjsLib = window['pdfjs-dist/build/pdf'];
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      }
+    </script>
   </head>
   <body class="bg-slate-50 text-slate-900 antialiased selection:bg-blue-500 selection:text-white">
     <div id="root"></div>

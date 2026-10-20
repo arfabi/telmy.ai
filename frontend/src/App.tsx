@@ -8,6 +8,7 @@ import { PricingPage } from '@/pages/PricingPage'
 import { DownloadPage } from '@/pages/DownloadPage'
 import { AcademyPage } from '@/pages/AcademyPage'
 import { DashboardPage } from '@/pages/DashboardPage'
+import { PdfEditorPage } from '@/pages/PdfEditorPage'
 import { ConnectPage } from '@/pages/ConnectPage'
 import { HelpPage } from '@/pages/HelpPage'
 import { FaqPage } from '@/pages/FaqPage'
@@ -52,6 +53,7 @@ export const App: React.FC = () => {
 
           {/* Plan V5 Web Dashboard Platform */}
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/pdf-editor" element={<PdfEditorPage />} />
           <Route path="/connect" element={<ConnectPage />} />
           <Route path="/help" element={<HelpPage />} />
 

@@ -443,9 +443,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     chrome.storage.local.get(['settings', 'user']).then(async (res) => {
       const settings = res.settings || DEFAULT_SETTINGS;
       const user = res.user || null;
+      if (!user || !user.uid) {
+        sendResponse({
+          success: false,
+          authRequired: true,
+          error: 'Silakan login terlebih dahulu dengan Google untuk menganalisis formulir.'
+        });
+        return;
+      }
       const apiUrl = getEffectiveApiUrl(settings);
       const { domain, url, title, fields, instructions, language } = message.payload || {};
-      const userId = user?.uid || 'guest_user';
+      const userId = user.uid;
 
       try {
         const response = await fetchWithTimeout(`${apiUrl}/forms/analyze`, {
@@ -680,9 +688,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     chrome.storage.local.get(['settings', 'user']).then(async (res) => {
       const settings = res.settings || DEFAULT_SETTINGS;
       const user = res.user || null;
+      if (!user || !user.uid) {
+        sendResponse({
+          success: false,
+          authRequired: true,
+          error: 'Silakan login terlebih dahulu dengan Google untuk menganalisis dokumen PDF.'
+        });
+        return;
+      }
       const apiUrl = getEffectiveApiUrl(settings);
       const { pdfUrl, pdfBase64, filename, language, mimeType = 'application/pdf' } = message.payload;
-      const userId = user?.uid || 'guest_user';
+      const userId = user.uid;
 
       try {
         const response = await fetchWithTimeout(`${apiUrl}/explain-pdf`, {
@@ -720,6 +736,84 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       }
 
       sendResponse({ success: false, error: 'Failed to analyze document form' });
+    });
+    return true;
+  }
+
+  // Stage PDF / Photo Session for Dashboard Studio Hand-off
+  if (message.type === 'STAGE_PDF_SESSION') {
+    chrome.storage.local.get(['settings', 'user']).then(async (res) => {
+      const settings = res.settings || DEFAULT_SETTINGS;
+      const user = res.user || null;
+      if (!user || !user.uid) {
+        sendResponse({ success: false, authRequired: true, error: 'Silakan login terlebih dahulu dengan Google.' });
+        return;
+      }
+      const apiUrl = getEffectiveApiUrl(settings);
+      const { pdfUrl, pdfBase64, filename, mimeType = 'application/pdf' } = message.payload || {};
+      const userId = user.uid;
+
+      try {
+        const response = await fetchWithTimeout(`${apiUrl}/pdf/session`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-user-id': userId
+          },
+          body: JSON.stringify({ pdfUrl, pdfBase64, filename, mimeType, userId })
+        }, 30000);
+
+        if (response.ok) {
+          const json = await response.json();
+          if (json.success && json.sessionId) {
+            const baseUrl = apiUrl.replace(/\/api\/?$/, '');
+            sendResponse({
+              success: true,
+              sessionId: json.sessionId,
+              studioUrl: `${baseUrl}/pdf-editor?session=${json.sessionId}`
+            });
+            return;
+          }
+        }
+        const errJson = await response.json().catch(() => ({}));
+        sendResponse({ success: false, error: errJson.error || 'Failed to stage PDF session' });
+      } catch (err) {
+        sendResponse({ success: false, error: err.message });
+      }
+    });
+    return true;
+  }
+
+  // Priority 8.5: Send User Feedback / Field Correction to Backend Firestore
+  if (message.type === 'SEND_USER_FEEDBACK') {
+    chrome.storage.local.get(['settings', 'user']).then(async (res) => {
+      const settings = res.settings || DEFAULT_SETTINGS;
+      const user = res.user || null;
+      const apiUrl = getEffectiveApiUrl(settings);
+      const payload = message.payload || {};
+      const bodyData = {
+        ...payload,
+        uid: user?.uid || payload.uid || 'anonymous',
+        userEmail: user?.email || payload.userEmail || ''
+      };
+
+      try {
+        const response = await fetchWithTimeout(`${apiUrl}/user/feedback`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(bodyData)
+        }, 15000);
+
+        if (response.ok) {
+          const json = await response.json();
+          sendResponse({ success: true, ...json });
+          return;
+        }
+        const errJson = await response.json().catch(() => ({}));
+        sendResponse({ success: false, error: errJson.error || 'Server error' });
+      } catch (err) {
+        sendResponse({ success: false, error: err.message });
+      }
     });
     return true;
   }

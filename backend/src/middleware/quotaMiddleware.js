@@ -25,8 +25,12 @@ export async function verifyAndDeductQuota(req, res, next) {
       }
     }
 
-    if (!uid) {
-      uid = 'guest_user';
+    if (!uid || uid === 'guest' || uid === 'guest_user') {
+      return res.status(401).json({
+        success: false,
+        error: 'AUTH_REQUIRED',
+        message: 'Silakan login terlebih dahulu menggunakan akun Google Anda untuk menganalisis formulir.'
+      });
     }
 
     // 2. Extract Session Context (1 Form = 1 site up to 20 pages in 24h; PDF = 1 file; Vault = 0)

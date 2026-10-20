@@ -305,7 +305,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   const popoverUserEmail = document.getElementById('popover-user-email');
   const popoverAuthBadge = document.getElementById('popover-auth-badge');
   const btnPopoverAuth = document.getElementById('btn-popover-auth');
+  const btnPopoverFeedback = document.getElementById('btn-popover-feedback');
   const btnPopoverSignout = document.getElementById('btn-popover-signout');
+
+  // Feedback Modal Elements
+  const spFeedbackModal = document.getElementById('sp-feedback-modal');
+  const lblFeedbackModalTitle = document.getElementById('lbl-feedback-modal-title');
+  const btnCloseFeedbackModal = document.getElementById('btn-close-feedback-modal');
+  const inputFeedbackSubject = document.getElementById('input-feedback-subject');
+  const inputFeedbackUrl = document.getElementById('input-feedback-url');
+  const groupFeedbackFieldName = document.getElementById('group-feedback-field-name');
+  const inputFeedbackFieldName = document.getElementById('input-feedback-fieldname');
+  const inputFeedbackMessage = document.getElementById('input-feedback-message');
+  const btnSubmitFeedback = document.getElementById('btn-submit-feedback');
+  const btnCancelFeedback = document.getElementById('btn-cancel-feedback');
 
   // Onboarding Elements
   const onboardingModal = document.getElementById('sp-onboarding-modal');
@@ -2877,6 +2890,227 @@ document.addEventListener('DOMContentLoaded', async () => {
           "fil": "Protektahan ang iyong ID at autofill data gamit ang Zero-Knowledge encryption. Ikaw lang ang may hawak ng susi.",
           "ms": "Lindungi data pengenalan dan autofill anda dengan penyulitan Zero-Knowledge. Hanya anda yang memegang kuncinya."
     },
+    "btn_fill_in_dashboard": {
+          "en": "Fill this Form in Dashboard ↗",
+          "id": "Isi Form ini di Dashboard ↗",
+          "ja": "ダッシュボードでフォームを入力 ↗",
+          "ko": "대시보드에서 양식 작성하기 ↗",
+          "zh": "在控制台填写此表单 ↗",
+          "zh-TW": "在儀表板填寫此表單 ↗",
+          "vi": "Điền biểu mẫu này trên Bảng điều khiển ↗",
+          "th": "กรอกฟอร์มนี้ในแดชบอร์ด ↗",
+          "hi": "डैशबोर्ड में यह फ़ॉर्म भरें ↗",
+          "fil": "Punan ang Form na ito sa Dashboard ↗",
+          "ms": "Isi Borang ini di Papan Pemuka ↗"
+    },
+    "info_pdf_fill_notice": {
+          "en": "Filling out forms on PDF/PNG files is currently only available via the Form Editor in the Dashboard.",
+          "id": "Saat ini Pengisian Formulir pada File PDF/PNG hanya bisa dilakukan melalui Form Editor di Dashboard.",
+          "ja": "現在、PDF/PNGファイルのフォーム入力はダッシュボードのForm Editorでのみ利用可能です。",
+          "ko": "현재 PDF/PNG 파일 양식 작성은 대시보드의 Form Editor를 통해서만 가능합니다.",
+          "zh": "目前 PDF/PNG 文件表单填写仅支持在控制台的 Form Editor 中完成。",
+          "zh-TW": "目前 PDF/PNG 檔案表單填寫僅支援在儀表板的 Form Editor 中進行。",
+          "vi": "Hiện tại, việc điền biểu mẫu trên tệp PDF/PNG chỉ khả dụng qua Trình chỉnh sửa biểu mẫu trên Bảng điều khiển.",
+          "th": "ขณะนี้การกรอกแบบฟอร์มบนไฟล์ PDF/PNG สามารถทำได้ผ่าน Form Editor ในแดชบอร์ดเท่านั้น",
+          "hi": "वर्तमान में PDF/PNG फ़ाइलों पर फ़ॉर्म भरना केवल डैशबोर्ड के Form Editor के माध्यम से संभव है।",
+          "fil": "Sa kasalukuyan, ang pagpuno ng mga form sa PDF/PNG file ay magagawa lamang sa Form Editor sa Dashboard.",
+          "ms": "Pada masa ini Pengisian Borang pada Fail PDF/PNG hanya boleh dibuat melalui Editor Borang di Papan Pemuka."
+    },
+    "btn_help_us_improve": {
+          "en": "💬 Help Us Improve",
+          "id": "💬 Bantu Kami Lebih Baik",
+          "ja": "💬 改善の提案を送る",
+          "ko": "💬 의견 보내기 / 개선 제안",
+          "zh": "💬 帮助我们改进",
+          "zh-TW": "💬 協助我們改進",
+          "vi": "💬 Góp ý cải thiện",
+          "th": "💬 ช่วยเราปรับปรุง",
+          "hi": "💬 हमें बेहतर बनाने में मदद करें",
+          "fil": "💬 Tulungan Kaming Mapabuti",
+          "ms": "💬 Bantu Kami Baiki"
+    },
+    "link_suggest_field_correction": {
+          "en": "💡 Inaccurate guidance or translation? Suggest a correction",
+          "id": "💡 Terjemahan atau panduan kurang tepat? Berikan saran koreksi",
+          "ja": "💡 ガイドや翻訳に誤りがありますか？ 修正を提案する",
+          "ko": "💡 가이드나 번역이 정확하지 않나요? 수정 제안하기",
+          "zh": "💡 指引或翻译不够准确？向我们提交修正建议",
+          "zh-TW": "💡 指引或翻譯不夠準確？向我們提交修正建議",
+          "vi": "💡 Hướng dẫn hoặc bản dịch chưa chính xác? Gửi đề xuất chỉnh sửa",
+          "th": "💡 คำแนะนำหรือการแปลไม่ถูกต้อง? แนะนำการแก้ไข",
+          "hi": "💡 मार्गदर्शन या अनुवाद सटीक नहीं है? सुधार का सुझाव दें",
+          "fil": "💡 Hindi tumpak ang gabay o pagsasalin? Magmungkahi ng pagwawasto",
+          "ms": "💡 Panduan atau terjemahan tidak tepat? Cadangkan pembetulan"
+    },
+    "feedback_modal_title": {
+          "en": "💬 Share Your Feedback",
+          "id": "💬 Bantu Kami Lebih Baik",
+          "ja": "💬 フィードバックを送信",
+          "ko": "💬 의견 보내기",
+          "zh": "💬 提交您的宝贵建议",
+          "zh-TW": "💬 提交您的寶貴建議",
+          "vi": "💬 Gửi phản hồi của bạn",
+          "th": "💬 ส่งความคิดเห็นของคุณ",
+          "hi": "💬 अपनी प्रतिक्रिया साझा करें",
+          "fil": "💬 Ibahagi ang Iyong Feedback",
+          "ms": "💬 Kongsi Maklum Balas Anda"
+    },
+    "feedback_modal_correction_title": {
+          "en": "✏️ Suggest Field Correction",
+          "id": "✏️ Saran Koreksi Panduan Kolom",
+          "ja": "✏️ 項目の修正提案",
+          "ko": "✏️ 입력란 설명 수정 제안",
+          "zh": "✏️ 字段指引修正建议",
+          "zh-TW": "✏️ 欄位指引修正建議",
+          "vi": "✏️ Đề xuất sửa đổi trường này",
+          "th": "✏️ แนะนำการแก้ไขช่องนี้",
+          "hi": "✏️ फ़ील्ड सुधार का सुझाव दें",
+          "fil": "✏️ Mungkahi sa Pagwawasto ng Field",
+          "ms": "✏️ Cadangan Pembetulan Medan"
+    },
+    "feedback_lbl_subject": {
+          "en": "Subject / Topic",
+          "id": "Subjek / Masukan",
+          "ja": "件名 / トピック",
+          "ko": "제목 / 주제",
+          "zh": "主题 / 类别",
+          "zh-TW": "主題 / 類別",
+          "vi": "Chủ đề / Mục",
+          "th": "หัวข้อ / เรื่อง",
+          "hi": "विषय / टॉपिक",
+          "fil": "Paksa / Paksa",
+          "ms": "Subjek / Topik"
+    },
+    "feedback_lbl_url": {
+          "en": "Page URL",
+          "id": "Halaman yang Diakses",
+          "ja": "アクセス中のURL",
+          "ko": "현재 페이지 URL",
+          "zh": "当前访问网址",
+          "zh-TW": "目前造訪網址",
+          "vi": "URL trang hiện tại",
+          "th": "URL หน้าเว็บปัจจุบัน",
+          "hi": "पेज का URL",
+          "fil": "URL ng Pahina",
+          "ms": "URL Halaman"
+    },
+    "feedback_lbl_fieldname": {
+          "en": "Field Name",
+          "id": "Nama Kolom / Field",
+          "ja": "対象の項目名",
+          "ko": "대상 입력란 이름",
+          "zh": "对应表单项名称",
+          "zh-TW": "對應表單欄位名稱",
+          "vi": "Tên trường biểu mẫu",
+          "th": "ชื่อช่องกรอกข้อมูล",
+          "hi": "फ़ील्ड का नाम",
+          "fil": "Pangalan ng Field",
+          "ms": "Nama Medan"
+    },
+    "feedback_lbl_message": {
+          "en": "Details & Suggested Fix",
+          "id": "Detail Pesan / Saran Koreksi",
+          "ja": "詳細 / 改善・修正提案",
+          "ko": "상세 내용 및 수정 제안",
+          "zh": "详细反馈与修改建议",
+          "zh-TW": "詳細反饋與修改建議",
+          "vi": "Chi tiết & Đề xuất chỉnh sửa",
+          "th": "รายละเอียดและข้อเสนอแนะในการแก้ไข",
+          "hi": "विवरण और सुधार का सुझाव",
+          "fil": "Mga Detalye at Mungkahing Pag-aayos",
+          "ms": "Butiran & Cadangan Pembetulan"
+    },
+    "feedback_notice": {
+          "en": "Your feedback helps us make government forms crystal clear and accurate for everyone.",
+          "id": "Masukan Anda sangat berharga untuk meningkatkan akurasi penjelasan formulir bagi semua orang.",
+          "ja": "皆様からのフィードバックにより、誰にとってもわかりやすい正確なフォーム案内を実現します。",
+          "ko": "보내주신 소중한 의견은 모든 이용자를 위한 공공 양식 안내 정확도 향상에 큰 도움이 됩니다.",
+          "zh": "您的反馈能帮助我们不断修正，让官方表单指引更加清晰准确。",
+          "zh-TW": "您的寶貴反饋將協助我們持續修正，讓官方表單指引更加清晰準確。",
+          "vi": "Phản hồi của bạn giúp chúng tôi nâng cao độ chính xác khi hướng dẫn biểu mẫu cho mọi người.",
+          "th": "ข้อเสนอแนะของคุณช่วยให้เราปรับปรุงคำแนะนำแบบฟอร์มให้ถูกต้องและชัดเจนยิ่งขึ้นสำหรับทุกคน",
+          "hi": "आपकी प्रतिक्रिया से हमें सभी के लिए फ़ॉर्म मार्गदर्शन को सटीक बनाने में मदद मिलती है।",
+          "fil": "Malaking tulong ang iyong puna upang gawing mas malinaw at tumpak ang mga gabay sa form para sa lahat.",
+          "ms": "Maklum balas anda amat berharga dalam meningkatkan ketepatan panduan borang untuk semua."
+    },
+    "feedback_btn_submit": {
+          "en": "Send Feedback",
+          "id": "Kirim Masukan",
+          "ja": "送信する",
+          "ko": "보내기",
+          "zh": "发送反馈",
+          "zh-TW": "發送反饋",
+          "vi": "Gửi góp ý",
+          "th": "ส่งความคิดเห็น",
+          "hi": "प्रतिक्रिया भेजें",
+          "fil": "Ipadala ang Feedback",
+          "ms": "Hantar Maklum Balas"
+    },
+    "feedback_btn_submitting": {
+          "en": "Sending...",
+          "id": "Mengirim...",
+          "ja": "送信中...",
+          "ko": "전송 중...",
+          "zh": "发送中...",
+          "zh-TW": "發送中...",
+          "vi": "Đang gửi...",
+          "th": "กำลังส่ง...",
+          "hi": "भेज रहे हैं...",
+          "fil": "Ipinapadala...",
+          "ms": "Menghantar..."
+    },
+    "feedback_success_msg": {
+          "en": "Thank you! Your feedback has been sent successfully.",
+          "id": "Terima kasih! Masukan Anda telah berhasil dikirim.",
+          "ja": "ありがとうございます！フィードバックが正常に送信されました。",
+          "ko": "감사합니다! 소중한 의견이 성공적으로 접수되었습니다.",
+          "zh": "非常感谢！您的建议已成功送达。",
+          "zh-TW": "非常感謝！您的建議已成功送達。",
+          "vi": "Cảm ơn bạn! Góp ý của bạn đã được gửi thành công.",
+          "th": "ขอบคุณ! ข้อเสนอแนะของคุณถูกส่งเรียบร้อยแล้ว",
+          "hi": "धन्यवाद! आपकी प्रतिक्रिया सफलतापूर्वक भेज दी गई है।",
+          "fil": "Salamat! Matagumpay na naipadala ang iyong feedback.",
+          "ms": "Terima kasih! Maklum balas anda telah berjaya dihantar."
+    },
+    "feedback_cancel": {
+          "en": "Cancel",
+          "id": "Batal",
+          "ja": "キャンセル",
+          "ko": "취소",
+          "zh": "取消",
+          "zh-TW": "取消",
+          "vi": "Hủy",
+          "th": "ยกเลิก",
+          "hi": "रद्द करें",
+          "fil": "Kanselahin",
+          "ms": "Batal"
+    },
+    "feedback_ph_subject": {
+          "en": "e.g. Suggestion for form filling guidance",
+          "id": "e.g. Saran panduan pengisian formulir",
+          "ja": "例：フォーム記入ガイダンスの提案",
+          "ko": "예: 양식 작성 안내에 대한 제안",
+          "zh": "例如：表单填写指引建议",
+          "zh-TW": "例如：表單填寫指引建議",
+          "vi": "vd: Góp ý về hướng dẫn điền biểu mẫu",
+          "th": "เช่น ข้อเสนอแนะคำแนะนำการกรอกฟอร์ม",
+          "hi": "उदा. फ़ॉर्म भरने के मार्गदर्शन के लिए सुझाव",
+          "fil": "hal. Mungkahi para sa gabay sa pagpuno ng form",
+          "ms": "cth. Cadangan panduan pengisian borang"
+    },
+    "feedback_ph_message": {
+          "en": "Type your suggestions, issues, or corrections here...",
+          "id": "Ketik saran atau koreksi Anda di sini...",
+          "ja": "ご意見、問題点、または修正内容をここに入力してください...",
+          "ko": "제안, 문제점 또는 수정 사항을 여기에 입력하세요...",
+          "zh": "请在此输入您的建议、问题或修改内容...",
+          "zh-TW": "請在此輸入您的建議、問題或修改內容...",
+          "vi": "Nhập góp ý, vấn đề hoặc nội dung cần sửa tại đây...",
+          "th": "พิมพ์ข้อเสนอแนะ ปัญหา หรือการแก้ไขของคุณที่นี่...",
+          "hi": "यहाँ अपने सुझाव, समस्याएँ या सुधार लिखें...",
+          "fil": "I-type dito ang iyong mga mungkahi, isyu, o pagwawasto...",
+          "ms": "Taip cadangan, isu atau pembetulan anda di sini..."
+    },
     "vault_gate_btn_unlock": {
           "en": "Unlock Vault",
           "id": "Buka Kunci Brankas",
@@ -3631,6 +3865,19 @@ document.addEventListener('DOMContentLoaded', async () => {
           "fil": "May error sa pagproseso ng dokumento: {error}",
           "ms": "Ralat pemprosesan dokumen: {error}"
     },
+    "audit_checklist_header": {
+          "en": "📋 Field Verification Checklist",
+          "id": "📋 Checklist Verifikasi Kolom",
+          "ja": "📋 項目検証チェックリスト",
+          "ko": "📋 항목 검증 체크리스트",
+          "zh": "📋 表单字段核验清单",
+          "zh-TW": "📋 表單欄位核對清單",
+          "vi": "📋 Danh sách kiểm tra xác minh trường",
+          "th": "📋 รายการตรวจสอบการยืนยันช่องกรอก",
+          "hi": "📋 फ़ील्ड सत्यापन चेकलिस्ट",
+          "fil": "📋 Checklist sa Pag-verify ng Kolum",
+          "ms": "📋 Senarai Semak Pengesahan Ruangan"
+    },
     "audit_tag_privacy": {
           "en": "Privacy Protected",
           "id": "Privasi Terlindungi",
@@ -3669,6 +3916,19 @@ document.addEventListener('DOMContentLoaded', async () => {
           "hi": "वैकल्पिक (खाली)",
           "fil": "Opsyonal (Walang laman)",
           "ms": "Pilihan (Kosong)"
+    },
+    "audit_tag_readonly": {
+          "en": "Read-Only (Auto)",
+          "id": "Read-Only (Sistem)",
+          "ja": "読み取り専用（自動）",
+          "ko": "읽기 전용 (자동)",
+          "zh": "只读字段（系统）",
+          "zh-TW": "唯讀欄位（系統）",
+          "vi": "Chỉ đọc (Hệ thống)",
+          "th": "อ่านอย่างเดียว (ระบบ)",
+          "hi": "केवल पढ़ने योग्य (सिस्टम)",
+          "fil": "Read-Only (System)",
+          "ms": "Baca Sahaja (Sistem)"
     },
     "audit_tag_passed": {
           "en": "Passed Audit",
@@ -4738,11 +4998,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Auto-refresh session & quota when sidepanel regains window focus (e.g. returning from web login)
     window.addEventListener('focus', async () => {
       const stored = await chrome.storage.local.get(['user', 'settings']);
-      if (stored.user) {
+      if (stored.user && stored.user.uid) {
         currentUser = stored.user;
         renderUserUI();
         refreshUserQuota();
         if (onboardingModal) closeOnboardingModal();
+      } else {
+        currentUser = null;
+        renderUserUI();
       }
     });
 
@@ -4915,6 +5178,29 @@ document.addEventListener('DOMContentLoaded', async () => {
       profilePopover.style.display = 'none';
     });
 
+    if (btnPopoverFeedback) {
+      btnPopoverFeedback.addEventListener('click', () => {
+        profilePopover.style.display = 'none';
+        openFeedbackModal('general_feedback');
+      });
+    }
+
+    if (btnCloseFeedbackModal) {
+      btnCloseFeedbackModal.addEventListener('click', () => {
+        closeFeedbackModal();
+      });
+    }
+
+    if (btnCancelFeedback) {
+      btnCancelFeedback.addEventListener('click', () => {
+        closeFeedbackModal();
+      });
+    }
+
+    if (btnSubmitFeedback) {
+      btnSubmitFeedback.addEventListener('click', handleFeedbackSubmit);
+    }
+
     // Priority 9.2: Form Pre-Submission Auditor Controls
     if (btnRunFormAudit) {
       btnRunFormAudit.addEventListener('click', runPreSubmissionAudit);
@@ -4987,6 +5273,139 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function closeOnboardingModal() {
     onboardingModal.style.display = 'none';
+  }
+
+  // Feedback & Field Correction Modal Controller
+  let activeFeedbackContext = null;
+
+  async function openFeedbackModal(type = 'general_feedback', context = {}) {
+    if (!spFeedbackModal) return;
+    activeFeedbackContext = { type, ...context };
+    spFeedbackModal.setAttribute('data-type', type);
+
+    // Get current tab URL if available
+    let pageUrl = currentTabUrl || '';
+    if (!pageUrl) {
+      const activeTab = await getActiveWebTab();
+      if (activeTab && activeTab.url) pageUrl = activeTab.url;
+    }
+    if (inputFeedbackUrl) inputFeedbackUrl.value = pageUrl;
+
+    // Localize UI headers & labels
+    if (lblFeedbackModalTitle) {
+      lblFeedbackModalTitle.textContent = type === 'field_correction'
+        ? t('feedback_modal_correction_title')
+        : t('feedback_modal_title');
+    }
+    const elFbSubLbl = document.getElementById('lbl-feedback-subject');
+    if (elFbSubLbl) elFbSubLbl.textContent = t('feedback_lbl_subject');
+    const elFbUrlLbl = document.getElementById('lbl-feedback-url');
+    if (elFbUrlLbl) elFbUrlLbl.textContent = t('feedback_lbl_url');
+    const elFbFieldLbl = document.getElementById('lbl-feedback-fieldname');
+    if (elFbFieldLbl) elFbFieldLbl.textContent = t('feedback_lbl_fieldname');
+    const elFbMsgLbl = document.getElementById('lbl-feedback-message');
+    if (elFbMsgLbl) elFbMsgLbl.textContent = t('feedback_lbl_message');
+    const elFbNotice = document.getElementById('lbl-feedback-notice');
+    if (elFbNotice) elFbNotice.textContent = t('feedback_notice');
+    if (btnSubmitFeedback) {
+      btnSubmitFeedback.disabled = false;
+      btnSubmitFeedback.textContent = t('feedback_btn_submit');
+    }
+    if (btnCancelFeedback) btnCancelFeedback.textContent = t('feedback_cancel');
+
+    if (type === 'field_correction') {
+      if (groupFeedbackFieldName) groupFeedbackFieldName.style.display = 'block';
+      if (inputFeedbackFieldName) inputFeedbackFieldName.value = context.fieldName || '';
+      if (inputFeedbackSubject) {
+        inputFeedbackSubject.value = `Saran Koreksi Panduan: ${context.fieldName || 'Kolom'}`;
+      }
+
+      // Pre-format current field context template
+      const fd = context.fieldData || {};
+      const template = [
+        `[KONTEKS FIELD SAAT INI]`,
+        `- Kolom: ${fd.label || context.fieldName || '-'}`,
+        `- Meaning: ${fd.meaning || '-'}`,
+        `- How to Fill: ${fd.instructions || '-'}`,
+        `- Example: ${fd.example || '-'}`,
+        `- Common Mistakes: ${fd.mistakes || '-'}`,
+        `- Notes for Foreigners: ${fd.foreigners || '-'}`,
+        ``,
+        `-----------------------------------`,
+        `[SARAN / PERBAIKAN DARI ANDA]:`,
+        ``
+      ].join('\n');
+
+      if (inputFeedbackMessage) {
+        inputFeedbackMessage.value = template;
+        inputFeedbackMessage.placeholder = t('feedback_ph_message');
+      }
+    } else {
+      if (groupFeedbackFieldName) groupFeedbackFieldName.style.display = 'none';
+      if (inputFeedbackFieldName) inputFeedbackFieldName.value = '';
+      if (inputFeedbackSubject) {
+        inputFeedbackSubject.value = '';
+        inputFeedbackSubject.placeholder = t('feedback_ph_subject');
+      }
+      if (inputFeedbackMessage) {
+        inputFeedbackMessage.value = '';
+        inputFeedbackMessage.placeholder = t('feedback_ph_message');
+      }
+    }
+
+    spFeedbackModal.style.display = 'flex';
+  }
+
+  function closeFeedbackModal() {
+    if (spFeedbackModal) spFeedbackModal.style.display = 'none';
+    activeFeedbackContext = null;
+  }
+
+  async function handleFeedbackSubmit() {
+    const subject = inputFeedbackSubject ? inputFeedbackSubject.value.trim() : '';
+    const message = inputFeedbackMessage ? inputFeedbackMessage.value.trim() : '';
+    const pageUrl = inputFeedbackUrl ? inputFeedbackUrl.value.trim() : '';
+    const fieldName = inputFeedbackFieldName ? inputFeedbackFieldName.value.trim() : '';
+    const type = (activeFeedbackContext && activeFeedbackContext.type) || 'general_feedback';
+    const fieldData = (activeFeedbackContext && activeFeedbackContext.fieldData) || null;
+
+    if (!message) {
+      if (inputFeedbackMessage) {
+        inputFeedbackMessage.focus();
+        inputFeedbackMessage.style.borderColor = '#ef4444';
+        setTimeout(() => { inputFeedbackMessage.style.borderColor = ''; }, 2000);
+      }
+      return;
+    }
+
+    if (btnSubmitFeedback) {
+      btnSubmitFeedback.disabled = true;
+      btnSubmitFeedback.textContent = t('feedback_btn_submitting');
+    }
+
+    chrome.runtime.sendMessage({
+      type: 'SEND_USER_FEEDBACK',
+      payload: {
+        type,
+        subject: subject || (type === 'field_correction' ? `Koreksi Field: ${fieldName}` : 'Masukan Pengguna'),
+        url: pageUrl,
+        fieldName,
+        message,
+        fieldData
+      }
+    }, (res) => {
+      if (btnSubmitFeedback) {
+        btnSubmitFeedback.disabled = false;
+        btnSubmitFeedback.textContent = t('feedback_btn_submit');
+      }
+
+      if (res && res.success) {
+        alert(t('feedback_success_msg'));
+        closeFeedbackModal();
+      } else {
+        alert('Gagal mengirim masukan: ' + ((res && res.error) || 'Koneksi terputus'));
+      }
+    });
   }
 
   // Handle Firebase Google Sign-In Connect Flow
@@ -5257,6 +5676,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       setTimeout(() => { if (btnRescan) btnRescan.style.transform = ''; }, 400);
     }
 
+    // Enforce Google Login requirement (No Guest allowed)
+    if (!currentUser || !currentUser.uid) {
+      console.warn('[Telmy] ⚠️ Full form analysis blocked: Google Login required');
+      renderUserUI();
+      handleUserAuthConnect();
+      return;
+    }
+
     // Resolve active webpage tab
     const tab = await getActiveWebTab();
     const tabId = (tab && tab.id) ? tab.id : currentTabId;
@@ -5368,9 +5795,10 @@ document.addEventListener('DOMContentLoaded', async () => {
           tabUrl.startsWith('edge://') || 
           tabUrl.startsWith('about:') || 
           tabUrl.startsWith('view-source:') || 
+          tabUrl.startsWith('file://') ||
           isTelmyInternalUrl(tabUrl))
       ) {
-        console.warn('[Telmy] Skipping injection on restricted URL:', tabUrl);
+        console.log('[Telmy] Skipping injection on restricted/local URL:', tabUrl);
         return;
       }
 
@@ -5572,6 +6000,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (elAuditSub) elAuditSub.textContent = t('audit_btn_sub');
     const elAuditHeading = document.getElementById('lbl-audit-report-heading');
     if (elAuditHeading) elAuditHeading.textContent = t('audit_report_heading');
+    const elAuditChecklistHdr = document.getElementById('lbl-audit-checklist-header');
+    if (elAuditChecklistHdr) elAuditChecklistHdr.textContent = t('audit_checklist_header');
 
     // Translation Banner & Chips
     if (lblChipTranslate) lblChipTranslate.textContent = t('chip_translate');
@@ -5735,6 +6165,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (elPaywallDashInfo) elPaywallDashInfo.textContent = t('paywall_dashboard_info');
     const elPaywallBtnDash = document.getElementById('lbl-btn-upgrade-dashboard');
     if (elPaywallBtnDash) elPaywallBtnDash.textContent = t('paywall_btn_upgrade_dashboard');
+
+    // Feedback & Suggestion Controls
+    if (btnPopoverFeedback) btnPopoverFeedback.textContent = t('btn_help_us_improve');
+    const elFeedbackModalTitle = document.getElementById('lbl-feedback-modal-title');
+    if (elFeedbackModalTitle && spFeedbackModal && spFeedbackModal.getAttribute('data-type') === 'field_correction') {
+      elFeedbackModalTitle.textContent = t('feedback_modal_correction_title');
+    } else if (elFeedbackModalTitle) {
+      elFeedbackModalTitle.textContent = t('feedback_modal_title');
+    }
+    const elFbSubLbl = document.getElementById('lbl-feedback-subject');
+    if (elFbSubLbl) elFbSubLbl.textContent = t('feedback_lbl_subject');
+    const elFbUrlLbl = document.getElementById('lbl-feedback-url');
+    if (elFbUrlLbl) elFbUrlLbl.textContent = t('feedback_lbl_url');
+    const elFbFieldLbl = document.getElementById('lbl-feedback-fieldname');
+    if (elFbFieldLbl) elFbFieldLbl.textContent = t('feedback_lbl_fieldname');
+    const elFbMsgLbl = document.getElementById('lbl-feedback-message');
+    if (elFbMsgLbl) elFbMsgLbl.textContent = t('feedback_lbl_message');
+    const elFbNotice = document.getElementById('lbl-feedback-notice');
+    if (elFbNotice) elFbNotice.textContent = t('feedback_notice');
+    if (btnSubmitFeedback && !btnSubmitFeedback.disabled) {
+      btnSubmitFeedback.textContent = t('feedback_btn_submit');
+    }
+    if (btnCancelFeedback) btnCancelFeedback.textContent = t('feedback_cancel');
+    if (inputFeedbackSubject) inputFeedbackSubject.placeholder = t('feedback_ph_subject');
+    if (inputFeedbackMessage && !inputFeedbackMessage.value) {
+      inputFeedbackMessage.placeholder = t('feedback_ph_message');
+    }
 
     // If chat stream is currently showing ephemeral welcome, update its language
     if (!chatHistory || chatHistory.length === 0) {
@@ -7649,6 +8106,13 @@ document.addEventListener('DOMContentLoaded', async () => {
           </div>
         </div>
       ` : ''}
+
+      <!-- 6. USER FEEDBACK / FIELD CORRECTION LINK -->
+      <div class="feedback-link-row">
+        <a href="javascript:void(0)" id="btn-report-field-correction" class="feedback-report-link">
+          ${escapeHTML(t('link_suggest_field_correction') || '💡 Terjemahan atau panduan kurang tepat? Berikan saran koreksi')}
+        </a>
+      </div>
     `;
 
     const copyBtn = fieldDetailContent.querySelector('#btn-copy-val');
@@ -7657,6 +8121,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         navigator.clipboard.writeText(example);
         copyBtn.textContent = t('detail_copied');
         setTimeout(() => { copyBtn.textContent = t('detail_copy'); }, 1500);
+      });
+    }
+
+    const reportLink = fieldDetailContent.querySelector('#btn-report-field-correction');
+    if (reportLink) {
+      reportLink.addEventListener('click', () => {
+        openFeedbackModal('field_correction', {
+          fieldName: label,
+          fieldIndex: index,
+          fieldData: {
+            label,
+            meaning,
+            instructions,
+            example,
+            mistakes,
+            foreigners
+          }
+        });
       });
     }
   }
@@ -7741,7 +8223,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Match with live scanned value from DOM
             const domField = domFields.find(df => df.index === idx) || {};
             const val = (domField.value !== undefined ? domField.value : (meta.element ? meta.element.value : '') || '').trim();
-            const isRequired = Boolean(domField.required || meta.required || f.required || (f.dictEntry && f.dictEntry.required));
+            const isReadOnly = Boolean(domField.isReadOnly || meta.isReadOnly || (meta.element && (meta.element.readOnly || meta.element.hasAttribute('readonly'))));
+            const isDisabled = Boolean(domField.isDisabled || meta.isDisabled || (meta.element && (meta.element.disabled || meta.element.hasAttribute('disabled'))));
 
             if (isPwd) {
               return `
@@ -7751,6 +8234,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <span class="audit-field-name">${escapeHTML(label)}</span>
                   </div>
                   <span class="audit-status-tag" style="background: rgba(16, 185, 129, 0.12); color: #047857; border: 1px solid rgba(16, 185, 129, 0.28);">${escapeHTML(t('audit_tag_privacy'))}</span>
+                </div>
+              `;
+            }
+
+            // Read-Only / Disabled System Fields (Auto-filled by portal or non-editable)
+            if (isReadOnly || isDisabled) {
+              return `
+                <div class="audit-checklist-row clickable" onclick="window.selectFieldByIndex && window.selectFieldByIndex(${idx})" style="background: #f8fafc; opacity: 0.85;">
+                  <div class="audit-field-left">
+                    <span class="audit-check-icon" style="color: #64748b;">🔒</span>
+                    <span class="audit-field-name" style="color: #475569;">${escapeHTML(label)}</span>
+                  </div>
+                  <span class="audit-status-tag" style="background: #e2e8f0; color: #475569; border: 1px solid #cbd5e1;">${escapeHTML(t('audit_tag_readonly'))}</span>
                 </div>
               `;
             }
@@ -7972,6 +8468,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       const filename = url.split('/').pop().split('?')[0] || 'document.pdf';
       const elSub = document.getElementById('lbl-pdf-banner-sub');
       if (elSub) elSub.textContent = filename;
+
+      const elTitle = document.getElementById('lbl-pdf-banner-title');
+      if (elTitle) elTitle.textContent = currentLanguage === 'id' ? 'Dokumen PDF Terdeteksi' : (currentLanguage === 'ja' ? 'PDF ドキュメントを検出' : 'PDF Document Detected');
+
+      const elBtn = document.getElementById('btn-pdf-banner-action');
+      if (elBtn) elBtn.textContent = t('btn_fill_in_dashboard') || 'Isi Form ini di Dashboard ↗';
+
+      const elNotice = document.getElementById('lbl-pdf-banner-notice');
+      if (elNotice) elNotice.textContent = t('info_pdf_fill_notice') || 'Saat ini Pengisian Formulir pada File PDF/PNG hanya bisa dilakukan melalui Form Editor di Dashboard.';
     } else {
       spPdfAlertBanner.style.display = 'none';
     }
@@ -7997,6 +8502,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Priority 7.5: 1-Click Native Viewer Ingestion (Direct Backend URL Download & Gemini Multimodal Pipeline)
   async function triggerTabPdfIngestion() {
     console.log('[Telmy] 🚀 Starting triggerTabPdfIngestion...');
+
+    // Enforce Google Login requirement (No Guest allowed)
+    if (!currentUser || !currentUser.uid) {
+      console.warn('[Telmy] ⚠️ PDF ingestion blocked: Google Login required');
+      renderUserUI();
+      handleUserAuthConnect();
+      return;
+    }
+
     openPdfMode(false);
     switchSourceMode('pdf');
 
@@ -8023,34 +8537,26 @@ document.addEventListener('DOMContentLoaded', async () => {
       currentPdfFileName = tabUrl.split('/').pop().split('?')[0] || 'document.pdf';
       currentPdfMimeType = 'application/pdf';
 
-      console.log('[Telmy] 🌐 Sending live PDF URL to backend:', tabUrl);
+      console.log('[Telmy] 🌐 Staging live PDF URL for Dashboard Studio:', tabUrl);
       chrome.runtime.sendMessage({
-        type: 'EXPLAIN_PDF',
+        type: 'STAGE_PDF_SESSION',
         payload: {
           pdfUrl: tabUrl,
           filename: currentPdfFileName,
-          mimeType: currentPdfMimeType,
-          language: currentLanguage
+          mimeType: currentPdfMimeType
         }
-      }, (expRes) => {
-        console.log('[Telmy] EXPLAIN_PDF backend response:', expRes);
+      }, (stageRes) => {
         if (spPdfAnalyzing) spPdfAnalyzing.style.display = 'none';
-        if (expRes && expRes.quotaExhausted) {
-          if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
-          if (telmyAvatar) telmyAvatar.setState('IDLE');
-          openPaywallModal(t('paywall_exhausted_sub'));
+        if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
+        if (telmyAvatar) telmyAvatar.setState('IDLE');
+
+        if (chrome.runtime.lastError || !stageRes || !stageRes.success || !stageRes.studioUrl) {
+          alert('Gagal membuka Dashboard Studio: ' + (stageRes?.error || 'Koneksi terputus'));
           return;
         }
-        if (expRes && expRes.quota) {
-          refreshUserQuota(expRes.quota);
-        }
-        if (chrome.runtime.lastError || !expRes || !expRes.success || !expRes.data) {
-          if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
-          if (telmyAvatar) telmyAvatar.setState('IDLE');
-          alert(t('alert_gemini_backend_fail') + (expRes?.error ? ` (${expRes.error})` : ''));
-          return;
-        }
-        handleSuccessfulDocumentAnalysis(expRes.data);
+
+        console.log('[Telmy] 🚀 Opening Dashboard Studio tab:', stageRes.studioUrl);
+        chrome.tabs.create({ url: stageRes.studioUrl });
       });
       return;
     }
@@ -8209,32 +8715,24 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       chrome.runtime.sendMessage({
-        type: 'EXPLAIN_PDF',
+        type: 'STAGE_PDF_SESSION',
         payload: {
           pdfBase64: finalBase64,
           filename: currentPdfFileName,
-          mimeType: currentPdfMimeType,
-          language: currentLanguage
+          mimeType: currentPdfMimeType
         }
       }, (res) => {
         if (spPdfAnalyzing) spPdfAnalyzing.style.display = 'none';
-        if (res && res.quotaExhausted) {
-          if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
-          if (telmyAvatar) telmyAvatar.setState('IDLE');
-          openPaywallModal(t('paywall_exhausted_sub'));
-          return;
-        }
-        if (res && res.quota) {
-          refreshUserQuota(res.quota);
-        }
-        if (chrome.runtime.lastError || !res || !res.success || !res.data) {
-          if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
-          if (telmyAvatar) telmyAvatar.setState('IDLE');
-          alert(t('alert_gemini_backend_fail'));
+        if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
+        if (telmyAvatar) telmyAvatar.setState('IDLE');
+
+        if (chrome.runtime.lastError || !res || !res.success || !res.studioUrl) {
+          alert('Gagal membuka Dashboard Studio: ' + (res?.error || 'Koneksi terputus'));
           return;
         }
 
-        handleSuccessfulDocumentAnalysis(res.data);
+        console.log('[Telmy] 🚀 Opening Dashboard Studio tab for uploaded file:', res.studioUrl);
+        chrome.tabs.create({ url: res.studioUrl });
       });
     } catch (err) {
       if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
@@ -8667,20 +9165,31 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const targetPage = pages[pageIdx];
                 const { width: pWidth, height: pHeight } = targetPage.getSize();
 
-                // If coordinates are provided by Gemini ([ymin, xmin, ymax, xmax] normalized 0-1000)
+                let drawX, drawY;
+
+                // Priority 1: Exact coordinates from Gemini box_2d ([ymin, xmin, ymax, xmax] 0-1000)
                 if (Array.isArray(f.box_2d) && f.box_2d.length === 4) {
                   const [ymin, xmin, ymax, xmax] = f.box_2d;
-                  // In PDF coordinates, (0,0) is bottom-left
-                  const drawX = (xmin / 1000) * pWidth + 4;
-                  const drawY = pHeight - ((ymax / 1000) * pHeight) + 4;
+                  drawX = (xmin / 1000) * pWidth + 6;
+                  drawY = pHeight - ((ymax / 1000) * pHeight) + 4;
+                } else {
+                  // Priority 2: Smart form-field quadrant placement on Page 1 (for non-AcroForm official forms)
+                  // Ensures Page 1 is NEVER left empty even before Cloud Run is redeployed
+                  const fieldOrder = secFields.indexOf(f);
+                  const startY = pHeight - 165; // Below header title area
+                  const stepY = 28;
+                  drawX = 180; // Aligned neatly in the right answer column of official forms
+                  drawY = startY - (fieldOrder * stepY);
+                }
 
+                if (drawY > 50 && drawY < pHeight - 40) {
                   const cleanText = sanitizeForPdfWinAnsi(String(val));
                   targetPage.drawText(cleanText, {
-                    x: Math.max(10, Math.min(drawX, pWidth - 100)),
-                    y: Math.max(10, Math.min(drawY, pHeight - 20)),
+                    x: Math.max(20, Math.min(drawX, pWidth - 120)),
+                    y: Math.max(20, drawY),
                     size: 9.5,
                     font: font,
-                    color: rgb(0, 0.18, 0.65) // Professional official fountain-pen dark blue
+                    color: rgb(0, 0.2, 0.7) // Official dark blue ballpoint pen ink
                   });
                 }
               }
@@ -8898,6 +9407,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         const defaultFieldLbl = `${t('field_label_prefix')} #${f.index + 1}`;
         const lbl = f.label || defaultFieldLbl;
         const lowLbl = lbl.toLowerCase();
+
+        // Skip Read-Only or Disabled fields (system auto-generated / uneditable)
+        if (f.isReadOnly || f.isDisabled) {
+          return;
+        }
 
         // 1. Red Error: Required but completely empty
         if (f.required && !val) {

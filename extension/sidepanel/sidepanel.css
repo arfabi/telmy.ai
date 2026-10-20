@@ -1982,13 +1982,13 @@ body {
 /* 1. PDF Detected Top Banner */
 .sp-pdf-alert-banner {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 14px;
+  flex-direction: column;
+  padding: 10px 14px 12px;
   background: #f0f7ff;
   border-bottom: 1px solid #c7e0f9;
   animation: fadeInDown 0.25s ease;
   flex-shrink: 0;
+  gap: 8px;
 }
 
 .sp-pdf-alert-content {
@@ -1998,7 +1998,7 @@ body {
 }
 
 .sp-pdf-alert-icon {
-  font-size: 18px;
+  font-size: 20px;
 }
 
 .sp-pdf-alert-info {
@@ -2007,32 +2007,57 @@ body {
 }
 
 .sp-pdf-alert-info strong {
-  font-size: 12px;
-  font-weight: 600;
-  color: #0071e3;
+  font-size: 13px;
+  font-weight: 700;
+  color: #0369a1;
 }
 
 .sp-pdf-alert-info small {
   font-size: 11px;
   color: #64748b;
+  word-break: break-all;
+}
+
+.sp-pdf-alert-actions-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
 }
 
 .btn-pdf-banner-btn {
-  background: #0071e3;
+  background: linear-gradient(135deg, #0284c7, #2563eb);
   color: #ffffff;
   border: none;
-  border-radius: 999px;
-  padding: 4px 12px;
-  font-size: 11.5px;
-  font-weight: 600;
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 12.5px;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.15s ease;
-  box-shadow: 0 2px 6px rgba(0, 113, 227, 0.25);
+  transition: all 0.18s ease;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.28);
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
 
 .btn-pdf-banner-btn:hover {
-  background: #0077ed;
+  background: linear-gradient(135deg, #0369a1, #1d4ed8);
   transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+}
+
+.sp-pdf-banner-notice {
+  font-size: 11px;
+  line-height: 1.45;
+  color: #475569;
+  margin: 0;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(2, 132, 199, 0.15);
+  border-radius: 8px;
+  padding: 6px 10px;
 }
 
 /* 2. Apple Segmented Control: Web vs PDF */
@@ -6089,6 +6114,122 @@ body {
 .sp-modal-close:hover {
   color: #0f172a;
   background: #f1f5f9;
+}
+
+/* ==========================================================================
+   Feedback & Field Correction Styling
+   ========================================================================== */
+.btn-popover-feedback {
+  width: 100%;
+  padding: 8px 12px;
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-bottom: 6px;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.btn-popover-feedback:hover {
+  background: #dcfce7;
+  border-color: #86efac;
+  transform: translateY(-1px);
+}
+
+.feedback-link-row {
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(2, 132, 199, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.feedback-report-link {
+  font-size: 11px;
+  color: #0284c7;
+  text-decoration: none;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.feedback-report-link:hover {
+  color: #0369a1;
+  text-decoration: underline;
+}
+
+.feedback-modal-content {
+  width: 100%;
+  max-width: 380px;
+  padding: 18px;
+}
+
+.feedback-modal-body {
+  padding-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.feedback-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.feedback-field-group label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #334155;
+}
+
+.feedback-field-group .sp-input,
+.feedback-field-group .sp-textarea {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 12px;
+  color: #0f172a;
+  box-sizing: border-box;
+  font-family: inherit;
+  transition: border-color 0.15s;
+}
+
+.feedback-field-group .sp-input:focus,
+.feedback-field-group .sp-textarea:focus {
+  outline: none;
+  border-color: #0284c7;
+}
+
+.feedback-notice-text {
+  font-size: 10.5px;
+  line-height: 1.4;
+  color: #64748b;
+  margin: 2px 0 0;
+  background: #f8fafc;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid #f1f5f9;
+}
+
+.feedback-modal-footer {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #f1f5f9;
 }
 
 

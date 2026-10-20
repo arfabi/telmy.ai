@@ -227,13 +227,33 @@ window.GMTScanner = (function () {
       'data-slots',
       'x-mask',
       'mask',
-      'data-maska'
+      'data-maska',
+      'imask',
+      'data-cleave'
     ];
 
     for (const attr of maskAttributes) {
       const val = el.getAttribute(attr);
       if (val) return val.trim();
     }
+
+    // 1.5. Detect in-memory JavaScript library instances (IMask, Cleave.js, RobinHerbots Inputmask)
+    try {
+      if (el.inputmask) {
+        const im = el.inputmask;
+        const maskPattern = im.mask || im.userOptions?.mask || im.opts?.mask || im.userOptions?.alias;
+        if (maskPattern) return String(maskPattern);
+      }
+      if (el._maskRef && el._maskRef.mask) {
+        return String(el._maskRef.mask);
+      }
+      if (el.cleave && el.cleave.properties) {
+        const cl = el.cleave.properties;
+        if (cl.date) return 'DD/MM/YYYY';
+        if (cl.phone) return 'Phone Mask';
+        if (cl.numeral) return 'Numeric / Currency Mask';
+      }
+    } catch (_) {}
 
     // 2. Common class-based masks (e.g. 'mask-nik', 'date-mask', 'currency-mask')
     if (el.className && typeof el.className === 'string') {
@@ -339,6 +359,8 @@ window.GMTScanner = (function () {
       textarea,
       div[role="radiogroup"],
       div[role="group"],
+      div[role="checkbox"],
+      [role="checkbox"],
       div[role="listbox"],
       [role="combobox"],
       [role="textbox"],
@@ -416,7 +438,7 @@ window.GMTScanner = (function () {
           rawType = 'textarea';
         } else if (el.getAttribute('role') === 'radiogroup' || (el.tagName === 'INPUT' && el.type === 'radio')) {
           rawType = 'radio';
-        } else if ((el.getAttribute('role') === 'group') || (el.tagName === 'INPUT' && el.type === 'checkbox')) {
+        } else if ((el.getAttribute('role') === 'group') || (el.getAttribute('role') === 'checkbox') || (el.tagName === 'INPUT' && el.type === 'checkbox')) {
           rawType = 'checkbox';
         } else if (el.getAttribute('role') === 'listbox') {
           rawType = 'select';
@@ -454,6 +476,8 @@ window.GMTScanner = (function () {
         mask: mask,
         maxLength: el.maxLength > 0 ? el.maxLength : null,
         pattern: el.getAttribute ? (el.getAttribute('pattern') || null) : null,
+        isReadOnly: Boolean(el.readOnly || el.getAttribute('aria-readonly') === 'true' || el.hasAttribute('readonly')),
+        isDisabled: Boolean(el.disabled || el.getAttribute('aria-disabled') === 'true' || el.hasAttribute('disabled')),
         label: label,
         pageTitle: document.title || '',
         domain: window.location.hostname || ''

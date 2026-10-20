@@ -76,10 +76,26 @@ try {
     $firefoxSize = [math]::Round(((Get-Item $firefoxZip).Length / 1MB), 2)
     Write-Host "  -> Successfully generated: $firefoxZip ($firefoxSize MB)" -ForegroundColor Gray
 
+    # Synchronize to dist-extensions/telmy.zip and frontend public/dist directories
+    $aliasTelmyZip = Join-Path $distDir "telmy.zip"
+    Copy-Item -Path $chromeZip -Destination $aliasTelmyZip -Force
+
+    $frontPublic = Join-Path $projectRoot "frontend\public"
+    $frontDist   = Join-Path $projectRoot "frontend\dist"
+
+    foreach ($targetDir in @($frontPublic, $frontDist)) {
+        if (Test-Path $targetDir) {
+            Copy-Item -Path $chromeZip  -Destination (Join-Path $targetDir "telmy.zip") -Force
+            Copy-Item -Path $chromeZip  -Destination (Join-Path $targetDir "telmy-extension.zip") -Force
+            Copy-Item -Path $firefoxZip -Destination (Join-Path $targetDir "telmy-firefox.zip") -Force
+        }
+    }
+
     Write-Host "`n==========================================================" -ForegroundColor Cyan
-    Write-Host " [SUCCESS] 2 ZIP packages generated in dist-extensions/:" -ForegroundColor Green
+    Write-Host " [SUCCESS] ZIP packages generated and synchronized:" -ForegroundColor Green
     Write-Host "==========================================================" -ForegroundColor Cyan
     Write-Host "  1. Chrome / Edge / Brave: $chromeZip ($chromeSize MB)" -ForegroundColor White
+    Write-Host "     -> Alias: $aliasTelmyZip & frontend/public/telmy.zip" -ForegroundColor Gray
     Write-Host "  2. Mozilla Firefox:      $firefoxZip ($firefoxSize MB)" -ForegroundColor White
     Write-Host "`nInstallation Tips:" -ForegroundColor Yellow
     Write-Host "  - Chrome:  chrome://extensions/ -> Developer mode -> Load unpacked" -ForegroundColor Gray

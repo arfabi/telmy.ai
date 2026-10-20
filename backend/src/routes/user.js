@@ -230,6 +230,51 @@ router.post('/user/avatar', async (req, res) => {
 });
 
 /**
+ * POST /api/user/feedback
+ * Save user feedback or field correction suggestions into Firestore
+ */
+router.post('/user/feedback', async (req, res) => {
+  try {
+    const {
+      uid,
+      userEmail,
+      type = 'general_feedback', // 'general_feedback' | 'field_correction'
+      subject = '',
+      url = '',
+      fieldName = '',
+      message = '',
+      fieldData = null
+    } = req.body;
+
+    const feedbackId = 'fb_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 6);
+    const feedbackDoc = {
+      id: feedbackId,
+      uid: uid || 'anonymous',
+      userEmail: userEmail || '',
+      type,
+      subject: subject || (type === 'field_correction' ? `Koreksi Field: ${fieldName}` : 'Masukan Pengguna'),
+      url: url || '',
+      fieldName: fieldName || '',
+      message: message || '',
+      fieldData: fieldData || null,
+      status: 'unread',
+      createdAt: new Date().toISOString()
+    };
+
+    const { db, isFirebaseConnected } = getFirestore();
+    if (isFirebaseConnected && db) {
+      await db.collection('user_feedbacks').doc(feedbackId).set(feedbackDoc);
+      console.log(`[User Route] 💬 Feedback recorded: ${feedbackId} (${type})`);
+    }
+
+    return res.json({ success: true, id: feedbackId });
+  } catch (error) {
+    console.error('[User Route] Error saving feedback:', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/**
  * GET /api/user/saved-forms/:uid
  * Retrieve user's saved form drafts from Firestore
  */

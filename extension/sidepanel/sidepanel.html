@@ -67,16 +67,21 @@
       <button id="sp-btn-resume" class="btn-resume-scan">Resume ▶</button>
     </div>
 
-    <!-- PDF Form Detected Alert Banner (Priority 7.5: 1-Click Native Ingestion) -->
+    <!-- PDF / Photo Form Detected Alert Banner -->
     <div id="sp-pdf-alert-banner" class="sp-pdf-alert-banner" style="display: none;">
       <div class="sp-pdf-alert-content">
         <span class="sp-pdf-alert-icon">📄</span>
         <div class="sp-pdf-alert-info">
-          <strong id="lbl-pdf-banner-title">PDF Document Detected</strong>
-          <small id="lbl-pdf-banner-sub">1-Click Gemini multimodal extraction</small>
+          <strong id="lbl-pdf-banner-title">Dokumen PDF Terdeteksi</strong>
+          <small id="lbl-pdf-banner-sub">000472868.pdf</small>
         </div>
       </div>
-      <button id="btn-pdf-banner-action" class="btn-pdf-banner-btn">⚡ 1-Click Guide</button>
+      <div class="sp-pdf-alert-actions-box">
+        <button id="btn-pdf-banner-action" class="btn-pdf-banner-btn">Isi Form ini di Dashboard ↗</button>
+        <p id="lbl-pdf-banner-notice" class="sp-pdf-banner-notice">
+          Saat ini Pengisian Formulir pada File PDF/PNG hanya bisa dilakukan melalui Form Editor di Dashboard.
+        </p>
+      </div>
     </div>
 
     <!-- User Profile Popover Dropdown -->
@@ -94,6 +99,7 @@
       </div>
       <div class="popover-actions">
         <button id="btn-popover-auth" class="btn-popover-primary">Connect with Google</button>
+        <button id="btn-popover-feedback" class="btn-popover-feedback">💬 Bantu Kami Lebih Baik</button>
         <button id="btn-popover-signout" class="btn-popover-secondary" style="display: none;">Sign Out</button>
       </div>
     </div>
@@ -664,7 +670,7 @@
 
               <div id="box-audit-checklist-results" class="audit-checklist-container" style="display: none; margin-top: 16px;">
                 <div class="audit-checklist-header">
-                  <strong>📋 Checklist Verifikasi Kolom</strong>
+                  <strong id="lbl-audit-checklist-header">📋 Checklist Verifikasi Kolom</strong>
                 </div>
                 <div id="audit-checklist-items" class="audit-checklist-items"></div>
                 <div id="audit-passed-banner" class="audit-passed-banner">
@@ -932,6 +938,39 @@
       <div class="vault-edit-footer">
         <button type="button" id="btn-save-vault-field" class="btn-vault-pin-pri">Save & Encrypt</button>
         <button type="button" id="btn-cancel-vault-field" class="btn-vault-pin-sec">Cancel</button>
+      </div>
+    </div>
+  <!-- Feedback & Field Correction Modal -->
+  <div id="sp-feedback-modal" class="sp-modal" style="display: none;">
+    <div class="sp-modal-content feedback-modal-content">
+      <div class="sp-modal-header">
+        <h3 id="lbl-feedback-modal-title">💬 Bantu Kami Lebih Baik</h3>
+        <button type="button" id="btn-close-feedback-modal" class="sp-modal-close">&times;</button>
+      </div>
+      <div class="feedback-modal-body">
+        <div class="feedback-field-group">
+          <label id="lbl-feedback-subject">Subjek / Masukan</label>
+          <input type="text" id="input-feedback-subject" class="sp-input" placeholder="e.g. Saran panduan pengisian formulir">
+        </div>
+        <div class="feedback-field-group">
+          <label id="lbl-feedback-url">Halaman yang Diakses</label>
+          <input type="text" id="input-feedback-url" class="sp-input" readonly style="background: #f1f5f9; color: #475569; font-size: 11px;">
+        </div>
+        <div id="group-feedback-field-name" class="feedback-field-group" style="display: none;">
+          <label id="lbl-feedback-fieldname">Nama Kolom / Field</label>
+          <input type="text" id="input-feedback-fieldname" class="sp-input" readonly style="background: #f1f5f9; color: #0284c7; font-weight: 700;">
+        </div>
+        <div class="feedback-field-group">
+          <label id="lbl-feedback-message">Detail Pesan / Saran Koreksi</label>
+          <textarea id="input-feedback-message" class="sp-textarea" rows="6" placeholder="Ketik saran atau koreksi Anda di sini..."></textarea>
+        </div>
+        <p id="lbl-feedback-notice" class="feedback-notice-text">
+          Masukan Anda sangat berharga untuk meningkatkan akurasi penjelasan formulir bagi semua orang.
+        </p>
+      </div>
+      <div class="feedback-modal-footer">
+        <button type="button" id="btn-submit-feedback" class="btn-vault-pin-pri">Kirim Masukan</button>
+        <button type="button" id="btn-cancel-feedback" class="btn-vault-pin-sec">Batal</button>
       </div>
     </div>
   </div>
