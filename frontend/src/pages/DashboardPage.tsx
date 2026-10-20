@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { DASHBOARD_I18N, DashboardI18n } from '@/data/dashboardI18n'
 import { PRICING_TIERS_DATA, PricingTierItem } from '@/data/pricingData'
 import { JAPAC_LANGUAGES } from '@/data/languages'
+import { ACADEMY_ACTIVITIES } from '@/data/academyData'
 import { encryptVault, decryptVault, VaultEnvelope } from '@/lib/cryptoVault'
 import { getApiUrl } from '@/config/api'
 import { 
@@ -241,38 +242,97 @@ export const DashboardPage: React.FC = () => {
   // ==========================================
   // STATE: ACADEMY PROGRESS & REWARD
   // ==========================================
-  const academyMissions = [
+  interface AcademyMissionDetail {
+    id: string
+    title: string
+    desc: string
+    tag: string
+    gifSrc?: string
+    imageSrc?: string
+    actionPrompt?: string
+    steps: string[]
+    sandboxType: 'extension' | 'audio' | 'autofill' | 'audit' | 'accessibility'
+    practiceSnippet?: string
+    interactiveLabel: string
+  }
+
+  const langKeys = Object.keys(ACADEMY_ACTIVITIES[0].title)
+  const lk = langKeys.find(k => k.toLowerCase() === effectiveLangCode.toLowerCase()) || (effectiveLangCode === 'zh-tw' ? 'zh-TW' : (effectiveLangCode in ACADEMY_ACTIVITIES[0].title ? effectiveLangCode : 'en'))
+  const a1 = ACADEMY_ACTIVITIES.find(a => a.id === 'task-install-pin') || ACADEMY_ACTIVITIES[0]
+  const a2 = ACADEMY_ACTIVITIES.find(a => a.id === 'task-tts-audio-wand') || ACADEMY_ACTIVITIES[2]
+  const a3 = ACADEMY_ACTIVITIES.find(a => a.id === 'task-one-click-autofill') || ACADEMY_ACTIVITIES[4]
+  const a4 = ACADEMY_ACTIVITIES.find(a => a.id === 'task-pre-submission-audit') || ACADEMY_ACTIVITIES[5]
+  const a5 = ACADEMY_ACTIVITIES.find(a => a.id === 'task-smart-vault-encrypt') || ACADEMY_ACTIVITIES[3]
+
+  const academyMissions: AcademyMissionDetail[] = [
     {
       id: 'm1',
-      title: 'First Flight: Connect Chrome Extension',
-      desc: 'Pasang dan sematkan ikon Telmy di toolbar browser Chrome untuk sinkronisasi otomatis.',
-      tag: 'Setup'
+      title: a1.title[lk] || a1.title.en,
+      desc: a1.summary[lk] || a1.summary.en,
+      tag: a1.category[lk] || a1.category.en,
+      imageSrc: '/assets/screenshot-ahu-apostille.png',
+      actionPrompt: a1.summary[lk] || a1.summary.en,
+      steps: a1.instructionSteps[lk] || a1.instructionSteps.en,
+      sandboxType: 'extension',
+      practiceSnippet: a1.practiceSnippet[lk] || a1.practiceSnippet.en,
+      interactiveLabel: a1.checkButtonLabel[lk] || a1.checkButtonLabel.en
     },
     {
       id: 'm2',
-      title: 'Listen & Understand: 11 Languages Audio',
-      desc: 'Coba fitur WaveNet Text-to-Speech untuk membacakan panduan dalam bahasa pilihan Anda.',
-      tag: 'A11y Audio'
+      title: a2.title[lk] || a2.title.en,
+      desc: a2.summary[lk] || a2.summary.en,
+      tag: a2.category[lk] || a2.category.en,
+      gifSrc: '/assets/demo-understand.gif',
+      actionPrompt: a2.summary[lk] || a2.summary.en,
+      steps: a2.instructionSteps[lk] || a2.instructionSteps.en,
+      sandboxType: 'audio',
+      practiceSnippet: a2.practiceSnippet[lk] || a2.practiceSnippet.en,
+      interactiveLabel: a2.checkButtonLabel[lk] || a2.checkButtonLabel.en
     },
     {
       id: 'm3',
-      title: '1-Click AutoFill: Smart Vault Ingestion',
-      desc: 'Simpan nama resmi dan nomor paspor di brankas terenkripsi, lalu isi formulir dengan 1-klik.',
-      tag: 'Zero-Knowledge'
+      title: a3.title[lk] || a3.title.en,
+      desc: a3.summary[lk] || a3.summary.en,
+      tag: a3.category[lk] || a3.category.en,
+      gifSrc: '/assets/demo-autofill.gif',
+      actionPrompt: a3.summary[lk] || a3.summary.en,
+      steps: a3.instructionSteps[lk] || a3.instructionSteps.en,
+      sandboxType: 'autofill',
+      practiceSnippet: a3.practiceSnippet[lk] || a3.practiceSnippet.en,
+      interactiveLabel: a3.checkButtonLabel[lk] || a3.checkButtonLabel.en
     },
     {
       id: 'm4',
-      title: 'Audit Before Submit: Error Blocker',
-      desc: 'Pelajari cara Telmy mendeteksi field kosong atau format paspor invalid sebelum terkirim.',
-      tag: 'Safe Validation'
+      title: a4.title[lk] || a4.title.en,
+      desc: a4.summary[lk] || a4.summary.en,
+      tag: a4.category[lk] || a4.category.en,
+      imageSrc: '/assets/screenshot-web-form.png',
+      actionPrompt: a4.summary[lk] || a4.summary.en,
+      steps: a4.instructionSteps[lk] || a4.instructionSteps.en,
+      sandboxType: 'audit',
+      practiceSnippet: a4.practiceSnippet[lk] || a4.practiceSnippet.en,
+      interactiveLabel: a4.checkButtonLabel[lk] || a4.checkButtonLabel.en
     },
     {
       id: 'm5',
-      title: 'Focus & Comfort: Situational Presets',
-      desc: 'Aktifkan profil aksesibilitas ADHD Spotlight, Font Disleksia, atau Kontras Tinggi WCAG AAA.',
-      tag: 'Ergonomics'
+      title: a5.title[lk] || a5.title.en,
+      desc: a5.summary[lk] || a5.summary.en,
+      tag: a5.category[lk] || a5.category.en,
+      gifSrc: '/assets/demo-accessibility.gif',
+      actionPrompt: a5.summary[lk] || a5.summary.en,
+      steps: a5.instructionSteps[lk] || a5.instructionSteps.en,
+      sandboxType: 'accessibility',
+      practiceSnippet: a5.practiceSnippet[lk] || a5.practiceSnippet.en,
+      interactiveLabel: a5.checkButtonLabel[lk] || a5.checkButtonLabel.en
     }
   ]
+
+  // Interactive In-Dashboard Academy Modal State
+  const [activeAcademyMission, setActiveAcademyMission] = useState<AcademyMissionDetail | null>(null)
+  const [sandboxTtsPlaying, setSandboxTtsPlaying] = useState(false)
+  const [sandboxAutofillFilled, setSandboxAutofillFilled] = useState(false)
+  const [sandboxAuditTested, setSandboxAuditTested] = useState(false)
+  const [sandboxA11yActive, setSandboxA11yActive] = useState(false)
 
   const [completedMissions, setCompletedMissions] = useState<string[]>(() => {
     try {
@@ -451,13 +511,13 @@ export const DashboardPage: React.FC = () => {
     
     if (unlockMode === 'password') {
       if (secret.length < 6) {
-        setUnlockError('Password harus minimal 6 karakter.')
+        setUnlockError(dI18n.vaultErrorPasswordMin)
         return
       }
     } else {
       const words = secret.split(/\s+/)
       if (words.length !== 12) {
-        setUnlockError('Wajib memasukkan 12 kata rahasia yang dipisahkan spasi.')
+        setUnlockError(dI18n.vaultErrorSeed12Words)
         return
       }
     }
@@ -484,7 +544,7 @@ export const DashboardPage: React.FC = () => {
             ])
           }
         } catch (decryptErr) {
-          setUnlockError('Password atau 12 kata rahasia tidak cocok dengan brankas terenkripsi.')
+          setUnlockError(dI18n.vaultErrorMismatch)
           return
         }
       }
@@ -495,7 +555,49 @@ export const DashboardPage: React.FC = () => {
       setInputPassword('')
       setInputSeedText('')
     } catch (e: any) {
-      setUnlockError('Gagal membuka brankas: ' + e.message)
+      setUnlockError(dI18n.vaultErrorMismatch)
+    }
+  }
+
+  const [vaultResetConfirmOpen, setVaultResetConfirmOpen] = useState(false)
+  const [resetVaultLoading, setResetVaultLoading] = useState(false)
+
+  const handleResetVault = async () => {
+    setResetVaultLoading(true)
+    try {
+      // 1. Wipe encrypted envelope in Firestore backend
+      if (userProfile?.uid) {
+        await fetch(getApiUrl(`/api/user/vault/${userProfile.uid}`), {
+          method: 'DELETE'
+        }).catch(err => console.warn('Wipe backend vault err:', err))
+      }
+
+      // 2. Generate brand new 12-seed words
+      const words = []
+      for (let i = 0; i < 12; i++) {
+        words.push(BIP39_WORDS[Math.floor(Math.random() * BIP39_WORDS.length)])
+      }
+      const newSeed = words.join(' ')
+      setMasterSeedPhrase(newSeed)
+      localStorage.setItem('telmy_master_seed', newSeed)
+
+      // 3. Clear local vault state and envelope
+      setVaultEnvelope(null)
+      setVaultCompartments([])
+      setCurrentVaultSecret(newSeed)
+      setVaultUnlocked(true)
+      setUnlockModalOpen(false)
+      setVaultResetConfirmOpen(false)
+      setInputPassword('')
+      setInputSeedText('')
+      setUnlockError(null)
+
+      alert(dI18n.vaultResetSuccess)
+    } catch (err: any) {
+      console.error('Reset vault failed:', err)
+      alert('Gagal mereset brankas: ' + (err?.message || 'Unknown error'))
+    } finally {
+      setResetVaultLoading(false)
     }
   }
 
@@ -1247,19 +1349,261 @@ export const DashboardPage: React.FC = () => {
                         </p>
                       </div>
 
-                      <Link
-                        to="/academy"
-                        onClick={(e) => e.stopPropagation()}
-                        className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 self-center"
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setActiveAcademyMission(mission)
+                          setSandboxTtsPlaying(false)
+                          setSandboxAutofillFilled(false)
+                          setSandboxAuditTested(false)
+                          setSandboxA11yActive(false)
+                        }}
+                        className="text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50/80 hover:bg-blue-100/80 px-3 py-1.5 rounded-xl flex items-center gap-1.5 self-center shrink-0 transition-colors cursor-pointer"
                       >
                         <span>{dI18n.academyPracticeLink}</span>
                         <ChevronRight className="w-3.5 h-3.5" />
-                      </Link>
+                      </button>
                     </div>
                   )
                 })}
               </div>
             </Card>
+
+            {/* IN-DASHBOARD INTERACTIVE ACADEMY PRACTICE & GIF MODAL */}
+            {activeAcademyMission && (
+              <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+                <div className="bg-white rounded-3xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh] animate-in fade-in zoom-in-95 duration-150">
+                  {/* Header */}
+                  <div className="p-5 sm:p-6 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white flex items-center justify-between shrink-0">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-white/20 text-white">
+                          {activeAcademyMission.tag}
+                        </span>
+                        <span className="text-xs text-blue-200">• {dI18n.academyModalModuleLabel}</span>
+                      </div>
+                      <h3 className="text-base sm:text-lg font-black text-white">
+                        {activeAcademyMission.title}
+                      </h3>
+                    </div>
+
+                    <button
+                      onClick={() => setActiveAcademyMission(null)}
+                      className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-sm font-bold transition-colors cursor-pointer shrink-0"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  {/* Body with Visual Media (GIF) & Hands-on Sandbox */}
+                  <div className="p-5 sm:p-6 overflow-y-auto space-y-5">
+                    {/* Visual Media (GIF or High-res Screenshot) */}
+                    {(activeAcademyMission.gifSrc || activeAcademyMission.imageSrc) && (
+                      <div className="rounded-2xl overflow-hidden border border-slate-200 bg-slate-950 shadow-inner relative group">
+                        <img
+                          src={activeAcademyMission.gifSrc || activeAcademyMission.imageSrc}
+                          alt={activeAcademyMission.title}
+                          className="w-full max-h-72 object-cover object-top block"
+                        />
+                        <div className="absolute bottom-2 right-2 bg-slate-900/80 backdrop-blur-xs px-2.5 py-1 rounded-lg text-[10px] font-bold text-slate-200 flex items-center gap-1.5 border border-white/10">
+                          <Sparkles className="w-3 h-3 text-amber-400" />
+                          <span>{dI18n.academyModalLiveSim}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Action Prompt / Summary */}
+                    <div className="p-4 rounded-2xl bg-blue-50/70 border border-blue-200/60 flex items-start gap-3">
+                      <Sparkles className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+                      <p className="text-xs text-blue-950 font-medium leading-relaxed">
+                        {activeAcademyMission.actionPrompt || activeAcademyMission.desc}
+                      </p>
+                    </div>
+
+                    {/* Step-by-Step Instructions */}
+                    <div className="space-y-2">
+                      <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                        {dI18n.academyModalStepsTitle}
+                      </h4>
+                      <ol className="space-y-2">
+                        {activeAcademyMission.steps.map((step, sIdx) => (
+                          <li key={sIdx} className="flex items-start gap-2.5 text-xs text-slate-600">
+                            <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-700 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5">
+                              {sIdx + 1}
+                            </span>
+                            <span className="leading-relaxed">{step}</span>
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+
+                    {/* Interactive Sandbox Simulator Area */}
+                    <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold text-slate-700 flex items-center gap-1.5">
+                          <span>🧪</span>
+                          <span>{dI18n.academyModalSandboxTitle}</span>
+                        </span>
+                        {activeAcademyMission.practiceSnippet && (
+                          <span className="text-[10px] text-slate-400 truncate max-w-xs font-mono">
+                            {activeAcademyMission.practiceSnippet}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Sandbox Action depending on type */}
+                      {activeAcademyMission.sandboxType === 'audio' && (
+                        <div className="p-3 bg-white rounded-xl border border-slate-200 flex items-center justify-between gap-3">
+                          <div className="space-y-0.5">
+                            <span className="text-[11px] font-bold text-slate-800 block">
+                              {activeAcademyMission.title}
+                            </span>
+                            <span className="text-[10px] text-slate-500 block">
+                              {activeAcademyMission.desc}
+                            </span>
+                          </div>
+                          <Button
+                            size="sm"
+                            onClick={() => setSandboxTtsPlaying(!sandboxTtsPlaying)}
+                            className={`h-9 px-4 text-xs font-bold rounded-xl transition-all ${
+                              sandboxTtsPlaying 
+                                ? 'bg-amber-600 text-white animate-pulse' 
+                                : 'bg-blue-600 hover:bg-blue-500 text-white'
+                            }`}
+                          >
+                            <Volume2 className="w-3.5 h-3.5 mr-1.5" />
+                            <span>{sandboxTtsPlaying ? 'Playing Audio...' : activeAcademyMission.interactiveLabel}</span>
+                          </Button>
+                        </div>
+                      )}
+
+                      {activeAcademyMission.sandboxType === 'autofill' && (
+                        <div className="p-3 bg-white rounded-xl border border-slate-200 space-y-2">
+                          <div className="grid grid-cols-2 gap-2 text-[11px]">
+                            <div>
+                              <span className="text-slate-400 block text-[10px]">{dI18n.profileFullName}:</span>
+                              <div className="p-2 rounded-lg bg-slate-50 border font-semibold text-slate-800 truncate">
+                                {sandboxAutofillFilled ? (userProfile?.displayName || 'Jane Citizen') : '••••••••••••'}
+                              </div>
+                            </div>
+                            <div>
+                              <span className="text-slate-400 block text-[10px]">{dI18n.profileEmail}:</span>
+                              <div className="p-2 rounded-lg bg-slate-50 border font-semibold text-slate-800 truncate">
+                                {sandboxAutofillFilled ? (userProfile?.email || 'user@telmy.id') : '••••••••••••'}
+                              </div>
+                            </div>
+                          </div>
+                          <Button
+                            size="sm"
+                            onClick={() => setSandboxAutofillFilled(true)}
+                            className="w-full h-8 text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl"
+                          >
+                            <Zap className="w-3 h-3 mr-1.5" />
+                            <span>{sandboxAutofillFilled ? '✓ ' + dI18n.academyModalCompletedLabel : activeAcademyMission.interactiveLabel}</span>
+                          </Button>
+                        </div>
+                      )}
+
+                      {activeAcademyMission.sandboxType === 'audit' && (
+                        <div className="p-3 bg-white rounded-xl border border-slate-200 space-y-2">
+                          <div className={`p-2.5 rounded-lg text-xs font-medium border flex items-center justify-between ${
+                            sandboxAuditTested 
+                              ? 'bg-emerald-50 border-emerald-200 text-emerald-800' 
+                              : 'bg-amber-50 border-amber-200 text-amber-800'
+                          }`}>
+                            <span className="text-[11px]">
+                              {sandboxAuditTested 
+                                ? '✓ ' + activeAcademyMission.title 
+                                : activeAcademyMission.desc}
+                            </span>
+                          </div>
+                          <Button
+                            size="sm"
+                            onClick={() => setSandboxAuditTested(true)}
+                            className="w-full h-8 text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl"
+                          >
+                            <Shield className="w-3 h-3 mr-1.5" />
+                            <span>{sandboxAuditTested ? '✓ ' + dI18n.academyModalCompletedLabel : activeAcademyMission.interactiveLabel}</span>
+                          </Button>
+                        </div>
+                      )}
+
+                      {activeAcademyMission.sandboxType === 'accessibility' && (
+                        <div className={`p-3 rounded-xl border transition-all ${
+                          sandboxA11yActive 
+                            ? 'bg-slate-900 text-amber-300 border-amber-400 shadow-md font-mono' 
+                            : 'bg-white text-slate-800 border-slate-200'
+                        }`}>
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-xs font-bold">
+                              {sandboxA11yActive ? 'ADHD Spotlight / High Contrast Active' : activeAcademyMission.title}
+                            </span>
+                            <Button
+                              size="sm"
+                              onClick={() => setSandboxA11yActive(!sandboxA11yActive)}
+                              className={`h-8 text-xs font-bold rounded-xl ${
+                                sandboxA11yActive 
+                                  ? 'bg-amber-400 text-slate-900 hover:bg-amber-300' 
+                                  : 'bg-slate-800 text-white hover:bg-slate-700'
+                              }`}
+                            >
+                              <span>{sandboxA11yActive ? '✓ ' + dI18n.academyModalCompletedLabel : activeAcademyMission.interactiveLabel}</span>
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+
+                      {activeAcademyMission.sandboxType === 'extension' && (
+                        <div className="p-3 bg-white rounded-xl border border-slate-200 flex items-center justify-between gap-3">
+                          <div className="space-y-0.5">
+                            <span className="text-[11px] font-bold text-slate-800 block">
+                              {activeAcademyMission.title}
+                            </span>
+                            <span className="text-[10px] text-slate-500 block">
+                              {activeAcademyMission.desc}
+                            </span>
+                          </div>
+                          <span className="text-xs font-bold px-3 py-1.5 rounded-xl bg-emerald-100 text-emerald-700 flex items-center gap-1 shrink-0">
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            <span>{dI18n.btnSyncDone}</span>
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Footer Modal */}
+                  <div className="p-4 sm:p-5 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-3 shrink-0">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setActiveAcademyMission(null)}
+                      className="text-xs font-bold text-slate-500 hover:text-slate-800"
+                    >
+                      {dI18n.btnClose}
+                    </Button>
+
+                    <Button
+                      onClick={() => {
+                        if (!completedMissions.includes(activeAcademyMission.id)) {
+                          toggleMission(activeAcademyMission.id)
+                        }
+                        setActiveAcademyMission(null)
+                      }}
+                      className="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs h-10 px-5 rounded-xl shadow-xs flex items-center gap-2"
+                    >
+                      <Check className="w-3.5 h-3.5 stroke-[3]" />
+                      <span>
+                        {completedMissions.includes(activeAcademyMission.id)
+                          ? dI18n.academyModalCompletedLabel
+                          : dI18n.academyModalCompleteBtn}
+                      </span>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -2011,23 +2355,93 @@ export const DashboardPage: React.FC = () => {
                   )}
 
                   {unlockError && (
-                    <p className="text-xs font-bold text-red-600">{unlockError}</p>
+                    <div className="p-3 bg-red-50 border border-red-200 rounded-xl space-y-2">
+                      <p className="text-xs font-bold text-red-600">{unlockError}</p>
+                      <button
+                        type="button"
+                        onClick={() => setVaultResetConfirmOpen(true)}
+                        className="text-[11px] font-bold text-red-700 hover:text-red-900 underline flex items-center gap-1 cursor-pointer"
+                      >
+                        <RefreshCw className="w-3 h-3" />
+                        <span>{dI18n.vaultResetBtn}</span>
+                      </button>
+                    </div>
                   )}
 
-                  <div className="flex justify-end gap-2 pt-2">
+                  <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100">
+                    <button
+                      type="button"
+                      onClick={() => setVaultResetConfirmOpen(true)}
+                      className="text-[11px] font-semibold text-slate-400 hover:text-red-600 transition-colors flex items-center gap-1 cursor-pointer"
+                    >
+                      <RefreshCw className="w-3 h-3" />
+                      <span>{dI18n.vaultResetBtn}</span>
+                    </button>
+
+                    <div className="flex items-center gap-2">
+                      <Button
+                        onClick={() => setUnlockModalOpen(false)}
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs font-bold"
+                      >
+                        {dI18n.vaultUnlockBtnCancel}
+                      </Button>
+                      <Button
+                        onClick={handleUnlockVault}
+                        className="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-5 h-9"
+                      >
+                        {dI18n.vaultUnlockBtnSubmit}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* RESET VAULT CONFIRMATION MODAL WITH ZERO-KNOWLEDGE WARNING */}
+            {vaultResetConfirmOpen && (
+              <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-xs flex items-center justify-center p-4">
+                <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-red-200 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="flex items-center gap-2.5 text-red-600 font-bold text-sm">
+                    <div className="w-9 h-9 rounded-xl bg-red-100 flex items-center justify-center text-red-600 shrink-0">
+                      <AlertTriangle className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-900">{dI18n.vaultResetConfirmTitle}</h4>
+                      <span className="text-[10px] text-red-600 font-semibold uppercase tracking-wider">Zero-Knowledge Reset</span>
+                    </div>
+                  </div>
+
+                  <div className="p-3.5 rounded-2xl bg-red-50 border border-red-100 space-y-2">
+                    <p className="text-xs text-red-950 leading-relaxed font-medium">
+                      {dI18n.vaultResetConfirmDesc}
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row justify-end gap-2 pt-2">
                     <Button
-                      onClick={() => setUnlockModalOpen(false)}
+                      onClick={() => setVaultResetConfirmOpen(false)}
+                      disabled={resetVaultLoading}
                       variant="ghost"
                       size="sm"
-                      className="text-xs font-bold"
+                      className="text-xs font-bold order-2 sm:order-1"
                     >
-                      {dI18n.vaultUnlockBtnCancel}
+                      {dI18n.vaultResetConfirmCancel}
                     </Button>
                     <Button
-                      onClick={handleUnlockVault}
-                      className="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-5 h-9"
+                      onClick={handleResetVault}
+                      disabled={resetVaultLoading}
+                      className="bg-red-600 hover:bg-red-500 text-white font-bold text-xs px-4 h-9 shadow-sm order-1 sm:order-2"
                     >
-                      {dI18n.vaultUnlockBtnSubmit}
+                      {resetVaultLoading ? (
+                        <>
+                          <RefreshCw className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                          <span>Mereset...</span>
+                        </>
+                      ) : (
+                        <span>{dI18n.vaultResetConfirmSubmit}</span>
+                      )}
                     </Button>
                   </div>
                 </div>
