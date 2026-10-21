@@ -1053,20 +1053,16 @@
 
       hint.innerHTML = `<span>${textCapturing}</span>`;
 
-      // Temporarily hide backdrop during capture so the captured screen is 100% natural color (not dimmed)
-      backdrop.style.opacity = '0';
-      backdrop.style.pointerEvents = 'none';
-
-      // Request full screenshot from Service Worker
-      chrome.runtime.sendMessage({ type: 'CAPTURE_VISIBLE_TAB' }, async (response) => {
+      // Helper function to process crop and metadata
+      const processCapturedImage = async (dataUrl) => {
         cleanup();
-        if (!response || !response.success || !response.dataUrl) {
+        if (!dataUrl) {
           console.warn('[Telmy Snip] Failed to capture tab screenshot.');
           return;
         }
 
         // Crop image using offscreen canvas
-        const croppedBase64 = await cropImageDataUrl(response.dataUrl, rect);
+        const croppedBase64 = await cropImageDataUrl(dataUrl, rect);
 
         // Gather rich page metadata
         const metadata = {
@@ -1086,6 +1082,20 @@
             metadata
           }
         });
+      };
+
+      // 1. If screenshot was already pre-captured during initial user click in Side Panel (honoring activeTab)
+      if (options?.preCapturedScreenshot) {
+        await processCapturedImage(options.preCapturedScreenshot);
+        return;
+      }
+
+      // 2. Fallback: Temporarily hide backdrop during capture
+      backdrop.style.opacity = '0';
+      backdrop.style.pointerEvents = 'none';
+
+      chrome.runtime.sendMessage({ type: 'CAPTURE_VISIBLE_TAB' }, async (response) => {
+        await processCapturedImage(response?.dataUrl || null);
       });
     }
 

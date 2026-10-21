@@ -3502,8 +3502,8 @@ document.addEventListener('DOMContentLoaded', async () => {
           "ms": "📥 Muat Turun PDF Lengkap"
     },
     "alert_snip_prompt": {
-          "en": "Explain This: Please explain this part that I cropped from the page \"{title}\"{surrounding}. What does it mean and how do I fill it correctly?",
-          "id": "Jelaskan Ini: Mohon jelaskan bagian yang saya potong ini di halaman \"{title}\"{surrounding}. Apa maksudnya dan bagaimana cara mengisinya dengan benar?",
+          "en": "Explain This: Please analyze this cropped section from the page \"{title}\"{surrounding}. Identify whether this is a service category menu, an informational article/requirement, or a form field, and guide me on what it means and what action I should take next.",
+          "id": "Jelaskan Ini: Mohon analisis bagian yang saya potong dari halaman \"{title}\"{surrounding}. Identifikasi apakah ini menu kategori layanan, artikel/syarat info, atau kolom formulir, serta jelaskan maksud dan langkah apa yang harus saya lakukan selanjutnya.",
           "ja": "これについて解説: ページ「{title}」{surrounding}から切り取ったこの部分を解説してください。どういう意味で、どのように正しく記入すべきですか？",
           "ko": "이 부분 설명: \"{title}\" 페이지{surrounding}에서 캡처한 이 부분을 설명해 주세요. 어떤 의미이며 어떻게 올바르게 작성해야 하나요?",
           "zh": "解释此内容: 请为我解释从页面 \"{title}\"{surrounding} 截取的这个区域。它是什么含义以及应当如何正确填写？",
@@ -8537,26 +8537,32 @@ document.addEventListener('DOMContentLoaded', async () => {
       currentPdfFileName = tabUrl.split('/').pop().split('?')[0] || 'document.pdf';
       currentPdfMimeType = 'application/pdf';
 
-      console.log('[Telmy] 🌐 Staging live PDF URL for Dashboard Studio:', tabUrl);
-      chrome.runtime.sendMessage({
-        type: 'STAGE_PDF_SESSION',
-        payload: {
-          pdfUrl: tabUrl,
-          filename: currentPdfFileName,
-          mimeType: currentPdfMimeType
-        }
-      }, (stageRes) => {
-        if (spPdfAnalyzing) spPdfAnalyzing.style.display = 'none';
-        if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
-        if (telmyAvatar) telmyAvatar.setState('IDLE');
+      console.log('[Telmy] 🌐 Fetching live PDF document buffer directly from browser tab:', tabUrl);
+      chrome.runtime.sendMessage({ type: 'FETCH_ACTIVE_TAB_DOCUMENT' }, (fetchRes) => {
+        const resolvedBase64 = (fetchRes && fetchRes.success && fetchRes.dataUrl) ? fetchRes.dataUrl : null;
+        
+        console.log('[Telmy] 🌐 Staging PDF session with buffer for Dashboard Studio. HasBase64:', Boolean(resolvedBase64));
+        chrome.runtime.sendMessage({
+          type: 'STAGE_PDF_SESSION',
+          payload: {
+            pdfUrl: tabUrl,
+            pdfBase64: resolvedBase64,
+            filename: currentPdfFileName,
+            mimeType: currentPdfMimeType
+          }
+        }, (stageRes) => {
+          if (spPdfAnalyzing) spPdfAnalyzing.style.display = 'none';
+          if (spPdfDropContent) spPdfDropContent.style.display = 'flex';
+          if (telmyAvatar) telmyAvatar.setState('IDLE');
 
-        if (chrome.runtime.lastError || !stageRes || !stageRes.success || !stageRes.studioUrl) {
-          alert('Gagal membuka Dashboard Studio: ' + (stageRes?.error || 'Koneksi terputus'));
-          return;
-        }
+          if (chrome.runtime.lastError || !stageRes || !stageRes.success || !stageRes.studioUrl) {
+            alert('Gagal membuka Dashboard Studio: ' + (stageRes?.error || 'Koneksi terputus'));
+            return;
+          }
 
-        console.log('[Telmy] 🚀 Opening Dashboard Studio tab:', stageRes.studioUrl);
-        chrome.tabs.create({ url: stageRes.studioUrl });
+          console.log('[Telmy] 🚀 Opening Dashboard Studio tab:', stageRes.studioUrl);
+          chrome.tabs.create({ url: stageRes.studioUrl });
+        });
       });
       return;
     }
@@ -9328,28 +9334,51 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Explain This (Snip Area Mode - Lightshot Style)
   async function handleExplainThisSnipAction() {
-    if (!currentTabId) {
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      if (tab) currentTabId = tab.id;
+    let targetTab = null;
+    try {
+      const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+      targetTab = tab;
+    } catch (_) {}
+
+    if (!targetTab) {
+      try {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        targetTab = tab;
+      } catch (_) {}
     }
-    if (!currentTabId) {
+
+    const tabId = targetTab?.id || currentTabId;
+    if (!tabId) {
       alert(t('alert_no_active_tab'));
       return;
     }
+    currentTabId = tabId;
+
+    // Capture tab immediately while user gesture is active (honors activeTab permission)
+    let preCapturedScreenshot = null;
+    try {
+      preCapturedScreenshot = await new Promise((resolve) => {
+        chrome.runtime.sendMessage({ type: 'CAPTURE_VISIBLE_TAB', windowId: targetTab?.windowId || null }, (res) => {
+          if (chrome.runtime.lastError || !res || !res.dataUrl) resolve(null);
+          else resolve(res.dataUrl);
+        });
+      });
+    } catch (_) {}
 
     const snipPayload = {
       type: 'TRIGGER_SNIP_TOOL',
       hintDrag: t('snip_hint_drag'),
-      hintCapturing: t('snip_hint_capturing')
+      hintCapturing: t('snip_hint_capturing'),
+      preCapturedScreenshot: preCapturedScreenshot || null
     };
 
     // Kirim perintah ke Content Script untuk memunculkan overlay seleksi snip
-    chrome.tabs.sendMessage(currentTabId, snipPayload, (res) => {
+    chrome.tabs.sendMessage(tabId, snipPayload, (res) => {
       if (chrome.runtime.lastError || !res || !res.success) {
         // Jika content script belum terinjeksi, injeksi dan coba lagi
-        ensureContentScriptInjected(currentTabId);
+        ensureContentScriptInjected(tabId);
         setTimeout(() => {
-          chrome.tabs.sendMessage(currentTabId, snipPayload);
+          chrome.tabs.sendMessage(tabId, snipPayload);
         }, 300);
       }
     });

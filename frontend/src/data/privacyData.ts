@@ -54,9 +54,10 @@ export const PRIVACY_TRANSLATIONS: Record<string, LegalPageTranslation> = {
       {
         title: "4. Permissions Used in Browser Extensions",
         body: [
-          "Telmy requests only permissions strictly necessary to deliver its core features:",
-          "• sidePanel: To render the friendly conversational assistant beside your webpage.",
-          "• activeTab & scripting: To read form field labels on the active web page only when the user requests an explanation or audit.",
+          "Telmy requests only permissions strictly necessary to deliver its core features in compliance with Chrome Web Store policies:",
+          "• sidePanel: To render the friendly conversational assistant beside your webpage without obstructing form inputs.",
+          "• Host Permissions (<all_urls>): Strictly required so users can navigate arbitrary third-party application portals (e.g. government visa portals, university admission systems, scholarship sites) where Telmy detects form inputs, translates confusing instructions, and allows users to crop and explain ambiguous on-screen questions via the 'Explain This' visual snippet tool.",
+          "• activeTab & scripting: To highlight and explain form fields on the active webpage on demand.",
           "• storage: To save your client-side encrypted vault and accessibility profile preferences."
         ]
       },
@@ -113,9 +114,10 @@ export const PRIVACY_TRANSLATIONS: Record<string, LegalPageTranslation> = {
       {
         title: "4. Izin Ekstensi Browser yang Digunakan",
         body: [
-          "Telmy hanya meminta izin minimum yang mutlak diperlukan:",
-          "• sidePanel: Untuk menampilkan panel asisten ramah di sisi samping halaman formulir Anda.",
-          "• activeTab & scripting: Untuk membaca label kolom formulir di halaman aktif HANYA ketika Anda meminta penjelasan atau audit.",
+          "Telmy hanya meminta izin minimum yang mutlak diperlukan sesuai pedoman Google Chrome Web Store:",
+          "• sidePanel: Untuk menampilkan panel asisten ramah di sisi samping halaman formulir Anda tanpa menutupi input dokumen.",
+          "• Host Permissions (<all_urls>): Mutlak diperlukan agar pengguna dapat membuka portal formulir apa pun (seperti portal visa pemerintah, pendaftaran universitas, formulir beasiswa) di mana Telmy mendeteksi input, menerjemahkan istilah birokrasi, serta memungkinkan pemotongan dan penjelasan area visual yang ambigu melalui fitur 'Explain This'.",
+          "• activeTab & scripting: Untuk membaca dan menyorot kolom formulir di halaman aktif sesuai permintaan pengguna.",
           "• storage: Untuk menyimpan brankas terenkripsi sisi klien dan preferensi aksesibilitas Anda."
         ]
       },

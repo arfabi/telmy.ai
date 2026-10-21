@@ -228,10 +228,15 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = 30000) {
 // Message listener
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'CAPTURE_VISIBLE_TAB') {
-    const targetWinId = sender.tab?.windowId || null;
+    const targetWinId = message.windowId || sender.tab?.windowId || null;
     chrome.tabs.captureVisibleTab(targetWinId, { format: 'png' }, (dataUrl) => {
-      if (chrome.runtime.lastError || !dataUrl) {
+      const err = chrome.runtime.lastError;
+      if (err || !dataUrl) {
         chrome.tabs.captureVisibleTab(null, { format: 'png' }, (fallbackUrl) => {
+          const fallbackErr = chrome.runtime.lastError;
+          if (fallbackErr) {
+            console.warn('[Telmy SW] captureVisibleTab failed:', fallbackErr.message);
+          }
           sendResponse({ success: Boolean(fallbackUrl), dataUrl: fallbackUrl || null });
         });
       } else {

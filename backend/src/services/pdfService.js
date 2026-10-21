@@ -28,6 +28,11 @@ MULTIMODAL CAPABILITIES & GUIDELINES:
 5. If applicable, provide clear notes for foreign passport holders or non-residents.
 6. Handwriting & Scan Ambiguity: If any part of the form contains handwritten text, faint ink, or ambiguous markings, flag it in "uncertaintyNotice" so the applicant is advised to verify.
 7. Extract an exact checklist of supporting documents (e.g. photos, bank statements, apostille, transcripts) required.
+8. CRITICAL - FIELD BOUNDING BOXES ("box_2d"):
+   - For every field, "box_2d" MUST be [ymin, xmin, ymax, xmax] normalized on a 0-1000 scale.
+   - For text fields, "box_2d" MUST identify the EXACT EMPTY BLANK INPUT BOX / UNDERLINE AREA where the applicant's answer is written, NOT the printed Japanese/English question label. For example, in a two-column or bordered grid, the label is in the left cell and the blank writable area is in the right cell: capture the coordinates of the blank writable right cell!
+   - For checkboxes, "box_2d" MUST tightly surround the little square box [ ] or checkbox icon that gets marked, NOT the full paragraph of text.
+   - Do NOT place the box over document title headers, instructions, or labels.
 
 OUTPUT FORMAT:
 You MUST reply strictly with a valid JSON object (no markdown code blocks, no text before or after).
