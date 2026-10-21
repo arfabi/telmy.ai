@@ -269,6 +269,86 @@ router.post('/payment/simulate-purchase', async (req, res) => {
 });
 
 /**
+ * POST /api/payment/join-waiting-list
+ * Register user to upgrade waiting list while Mayar KYC is finalizing,
+ * and reward them with +10 bonus form credits (claimable once per user).
+ */
+router.post('/payment/join-waiting-list', async (req, res) => {
+  try {
+    const { uid = 'guest_user', email = '', name = '', planId = 'standard' } = req.body;
+
+    if (!uid || uid === 'guest_user') {
+      return res.status(401).json({
+        success: false,
+        error: 'Silakan login terlebih dahulu untuk bergabung ke daftar tunggu.'
+      });
+    }
+
+    const { db, isFirebaseConnected } = getFirestore();
+    let alreadyClaimed = false;
+
+    if (isFirebaseConnected && db) {
+      try {
+        const waitlistDoc = await db.collection('upgrade_waiting_list').doc(uid).get();
+        if (waitlistDoc.exists && waitlistDoc.data()?.bonusClaimed) {
+          alreadyClaimed = true;
+        }
+      } catch (checkErr) {
+        console.warn('[WaitingList] Check error:', checkErr.message);
+      }
+    }
+
+    if (alreadyClaimed) {
+      return res.json({
+        success: true,
+        alreadyJoined: true,
+        message: 'Kamu sudah terdaftar di daftar tunggu dan bonus 10 form sudah pernah diklaim sebelumnya.'
+      });
+    }
+
+    // Grant 10 free PAYG credits
+    const updatedUser = await addPaygCredits(uid, 10);
+
+    // Record to waiting list in Firestore
+    if (isFirebaseConnected && db) {
+      try {
+        await db.collection('upgrade_waiting_list').doc(uid).set({
+          uid,
+          email: email || '',
+          name: name || '',
+          targetPlan: planId,
+          bonusClaimed: true,
+          bonusFormsGranted: 10,
+          joinedAt: new Date().toISOString()
+        }, { merge: true });
+        console.log(`[WaitingList] 🎁 User ${uid} (${email}) joined waiting list for ${planId} with 10 bonus forms.`);
+      } catch (saveErr) {
+        console.warn('[WaitingList] Save error:', saveErr.message);
+      }
+    }
+
+    const q = updatedUser.quota;
+    const totalRemaining = (q.subscriptionQuotaRemaining || 0) + (q.purchasedCreditsRemaining || 0) + (q.freeRemaining || 0);
+
+    return res.json({
+      success: true,
+      alreadyJoined: false,
+      message: 'Berhasil bergabung ke daftar tunggu! Bonus 10 Kuota Form telah ditambahkan ke akunmu.',
+      bonusCredits: 10,
+      user: {
+        uid,
+        plan: updatedUser.plan,
+        quota: updatedUser.quota,
+        totalRemaining
+      }
+    });
+  } catch (error) {
+    console.error('[WaitingList] Error:', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/**
  * GET /api/payment/invoices/:uid
  * Retrieve all billing invoices for a user from Firestore
  */

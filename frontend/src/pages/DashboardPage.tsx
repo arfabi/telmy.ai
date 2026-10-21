@@ -187,6 +187,203 @@ const FORM_FRUSTRATION_QUOTES: Array<{ author: string; [langCode: string]: strin
   }
 ]
 
+interface WaitingListTranslation {
+  activeBadge: string
+  freeDefaultBadge: string
+  modalTag: string
+  modalTitle: string
+  modalSubtitle: string
+  bonusBadge: string
+  messageBody1: string
+  messageBody2: string
+  btnJoin: string
+  btnJoined: string
+  btnSuccessClose: string
+  successTitle: string
+  successDesc: string
+  alreadyJoinedDesc: string
+  selectedPlanLabel?: string
+}
+
+const WAITING_LIST_I18N: Record<string, WaitingListTranslation> = {
+  id: {
+    activeBadge: "Paket Sedang Aktif",
+    freeDefaultBadge: "Kuota Dasar Gratis",
+    modalTag: "Tahap Pengembangan • Early Access",
+    modalTitle: "Terima Kasih atas Minatmu Mengupgrade!",
+    modalSubtitle: "Fitur pembayaran resmi saat ini sedang dalam tahap penyelesaian akhir verifikasi gateway.",
+    bonusBadge: "Bonus +10 Form Gratis",
+    messageBody1: "Kami sangat mengapresiasi antusiasmemu! Untuk memastikan transaksi resmi 100% aman dan terverifikasi, gerbang pembayaran sedang dipersiapkan.",
+    messageBody2: "Silakan masuk ke Daftar Tunggu (Waiting List) agar kami kabari begitu pembayaran siap. Sebagai bentuk terima kasih, kamu akan langsung mendapatkan Bonus 10 Kuota Form Gratis!",
+    btnJoin: "Gabung Waiting List & Klaim 10 Form 🎁",
+    btnJoined: "Sudah Terdaftar di Waiting List ✓",
+    btnSuccessClose: "Kembali ke Dashboard",
+    successTitle: "🎉 Selamat! 10 Form Gratis Ditambahkan!",
+    successDesc: "Email kamu telah tersimpan di daftar tunggu prioritas kami. Kuota 10 form gratis telah masuk ke akunmu.",
+    alreadyJoinedDesc: "Kamu sudah terdaftar di daftar tunggu dan telah mengklaim bonus kuota sebelumnya. Kami akan segera mengabarimu!"
+  },
+  en: {
+    activeBadge: "Current Active Plan",
+    freeDefaultBadge: "Free Base Quota",
+    modalTag: "Under Active Development • Early Access",
+    modalTitle: "Thank You for Your Interest in Upgrading!",
+    modalSubtitle: "Official payment processing is currently in the final stages of gateway verification.",
+    bonusBadge: "Bonus +10 Free Form Credits",
+    messageBody1: "We truly appreciate your excitement! To ensure 100% safe and verified transactions, official payment channels are currently finalizing verification.",
+    messageBody2: "Join our priority Waiting List to be notified the moment upgrades go live. As a special thank you, you will immediately receive 10 Free Form Guidance Credits!",
+    btnJoin: "Join Waiting List & Claim 10 Free Forms 🎁",
+    btnJoined: "Already on Waiting List ✓",
+    btnSuccessClose: "Back to Dashboard",
+    successTitle: "🎉 Awesome! 10 Free Forms Added!",
+    successDesc: "Your account is on our priority list. 10 free form credits have been added to your balance.",
+    alreadyJoinedDesc: "You are already registered on our priority waiting list with your bonus claimed. We will notify you once live!"
+  },
+  ja: {
+    activeBadge: "現在適用中のプラン",
+    freeDefaultBadge: "無料基本枠",
+    modalTag: "開発中 • アーリーアクセス",
+    modalTitle: "アップグレードへのご関心ありがとうございます！",
+    modalSubtitle: "現在、決済ゲートウェイの最終審査および検証を行っております。",
+    bonusBadge: "+10件の無料フォーム特典",
+    messageBody1: "Telmyに関心をお寄せいただき心より感謝申し上げます！安全で確実なお取引を提供するため、公式決済機能を最終整備中です。",
+    messageBody2: "ウェイティングリスト（先行登録）にご参加いただくと、機能開放時にいち早くご案内いたします。感謝の印として【無料フォーム枠 10件】を今すぐプレゼントします！",
+    btnJoin: "リストに参加して10件の無料枠を獲得 🎁",
+    btnJoined: "登録完了済み ✓",
+    btnSuccessClose: "ダッシュボードに戻る",
+    successTitle: "🎉 10件の無料枠が付与されました！",
+    successDesc: "ご登録ありがとうございます。無料フォーム枠10件がアカウントに追加されました。",
+    alreadyJoinedDesc: "すでにウェイティングリストに登録済みです。機能が公開され次第メールでお知らせします！"
+  },
+  ko: {
+    activeBadge: "현재 이용 중인 플랜",
+    freeDefaultBadge: "무료 기본 혜택",
+    modalTag: "개발 진행 중 • 얼리 액세스",
+    modalTitle: "업그레이드에 관심을 가져주셔서 감사합니다!",
+    modalSubtitle: "공식 결제 시스템 연동 및 최종 심사가 진행 중입니다.",
+    bonusBadge: "+10회 무료 양식 혜택 지급",
+    messageBody1: "Telmy에 보내주신 관심에 진심으로 감사드립니다! 보다 안전하고 검증된 결제 환경을 구축하기 위해 마무리 작업을 진행 중입니다.",
+    messageBody2: "대기자 명단(Waiting List)에 등록하시면 정식 오픈 시 가장 먼저 안내해 드립니다. 감사의 의미로 [무료 양식 10회 이용권]을 즉시 지급해 드립니다!",
+    btnJoin: "대기자 명단 등록 & 10회 무료 받기 🎁",
+    btnJoined: "등록 완료됨 ✓",
+    btnSuccessClose: "대시보드로 돌아가기",
+    successTitle: "🎉 무료 양식 10회가 적립되었습니다!",
+    successDesc: "우선 대기 명단 등록이 완료되었으며, 10회의 무료 크레딧이 지급되었습니다.",
+    alreadyJoinedDesc: "이미 대기자 명단에 등록되어 보너스를 지급받으셨습니다. 오픈 즉시 알려드리겠습니다!"
+  },
+  zh: {
+    activeBadge: "当前生效套餐",
+    freeDefaultBadge: "免费基础额度",
+    modalTag: "全力开发中 • 抢先体验",
+    modalTitle: "感谢您对升级套餐的关注！",
+    modalSubtitle: "官方支付网关目前正处于最终审核与验证阶段。",
+    bonusBadge: "加赠 +10 次免费表单额度",
+    messageBody1: "非常感谢您的热情支持！为确保每一笔交易安全可靠，我们正在完善支付接入流程。",
+    messageBody2: "欢迎加入候补预约名单（Waiting List），功能上线时我们将第一时间通知您。为表达谢意，您将立即获赠 10 次免费表单辅助额度！",
+    btnJoin: "加入候补名单并领取 10 次额度 🎁",
+    btnJoined: "已在名单中 ✓",
+    btnSuccessClose: "返回控制台",
+    successTitle: "🎉 成功获赠 10 次免费额度！",
+    successDesc: "您已加入优先通知名单，10 次免费表单额度已发放至您的账户。",
+    alreadyJoinedDesc: "您已在优先名单中并已领取过奖励。上线后我们将第一时间邮件通知您！"
+  },
+  'zh-tw': {
+    activeBadge: "目前生效方案",
+    freeDefaultBadge: "免費基礎額度",
+    modalTag: "全力開發中 • 搶先體驗",
+    modalTitle: "感謝您對升級方案的關注！",
+    modalSubtitle: "官方支付閘道目前正處於最終審核與驗證階段。",
+    bonusBadge: "加贈 +10 次免費表單額度",
+    messageBody1: "非常感謝您的熱情支持！為確保每一筆交易安全可靠，我們正在完善官方支付對接流程。",
+    messageBody2: "歡迎加入候補預約名單（Waiting List），功能上線時我們將第一時間通知您。為表達謝意，您將立即獲贈 10 次免費表單輔助額度！",
+    btnJoin: "加入候補名單並領取 10 次額度 🎁",
+    btnJoined: "已在名單中 ✓",
+    btnSuccessClose: "返回控制台",
+    successTitle: "🎉 成功獲贈 10 次免費額度！",
+    successDesc: "您已加入優先通知名單，10 次免費表單額度已發放至您的帳戶。",
+    alreadyJoinedDesc: "您已在優先名單中並已領取過獎勵。上線後我們將第一時間郵件通知您！"
+  },
+  vi: {
+    activeBadge: "Gói Đang Hoạt Động",
+    freeDefaultBadge: "Hạn Mức Miễn Phí Cơ Bản",
+    modalTag: "Đang Phát Triển • Quyền Truy Cập Sớm",
+    modalTitle: "Cảm Ơn Bạn Đã Quan Tâm Nâng Cấp!",
+    modalSubtitle: "Cổng thanh toán chính thức đang trong giai đoạn hoàn tất xác minh cuối cùng.",
+    bonusBadge: "Tặng Thêm +10 Lượt Biểu Mẫu Miễn Phí",
+    messageBody1: "Chúng tôi rất trân trọng sự ủng hộ của bạn! Để đảm bảo an toàn tuyệt đối, hệ thống thanh toán đang được chuẩn bị kỹ lưỡng.",
+    messageBody2: "Hãy tham gia Danh Sách Chờ (Waiting List) để nhận thông báo ngay khi mở cổng. Để tri ân, bạn sẽ nhận ngay 10 Lượt Hỗ Trợ Biểu Mẫu Miễn Phí!",
+    btnJoin: "Tham Gia Chờ & Nhận 10 Lượt Miễn Phí 🎁",
+    btnJoined: "Đã Đăng Ký Chờ ✓",
+    btnSuccessClose: "Quay Lại Dashboard",
+    successTitle: "🎉 Chúc Mừng! Đã Nhận 10 Lượt Miễn Phí!",
+    successDesc: "Bạn đã có mặt trong danh sách ưu tiên. 10 lượt biểu mẫu đã được cộng vào tài khoản của bạn.",
+    alreadyJoinedDesc: "Bạn đã đăng ký trong danh sách chờ và đã nhận thưởng trước đó. Chúng tôi sẽ thông báo ngay khi tính năng sẵn sàng!"
+  },
+  th: {
+    activeBadge: "แพ็กเกจที่ใช้งานอยู่",
+    freeDefaultBadge: "โควตาฟรีพื้นฐาน",
+    modalTag: "อยู่ระหว่างการพัฒนา • สิทธิ์เข้าถึงก่อนใคร",
+    modalTitle: "ขอบคุณที่ให้ความสนใจอัปเกรดแพ็กเกจ!",
+    modalSubtitle: "ระบบชำระเงินทางการกำลังอยู่ในขั้นตอนการตรวจสอบและยืนยันขั้นสุดท้าย",
+    bonusBadge: "รับโบนัสฟรี +10 แบบฟอร์ม",
+    messageBody1: "เราซาบซึ้งในความสนใจของคุณอย่างยิ่ง! เพื่อความปลอดภัยสูงสุด ระบบชำระเงินกำลังเตรียมความพร้อมอย่างละเอียดรอบคอบ",
+    messageBody2: "โปรดลงชื่อเข้าสู่ รายชื่อรอคอย (Waiting List) เพื่อรับการแจ้งเตือนทันทีที่เปิดให้บริการ และรับสิทธิ์ใช้งานฟรี 10 แบบฟอร์มทันที!",
+    btnJoin: "เข้าร่วมรายชื่อรอ & รับฟรี 10 แบบฟอร์ม 🎁",
+    btnJoined: "ลงทะเบียนเรียบร้อยแล้ว ✓",
+    btnSuccessClose: "กลับสู่แดชบอร์ด",
+    successTitle: "🎉 ยินดีด้วย! คุณได้รับโควตาฟรี 10 แบบฟอร์ม",
+    successDesc: "คุณอยู่ในรายชื่อรอคอยระดับพรีเมียมแล้ว และเราได้เพิ่ม 10 แบบฟอร์มให้คุณเรียบร้อยแล้ว",
+    alreadyJoinedDesc: "คุณลงทะเบียนไว้แล้วและได้รับโบนัสเรียบร้อยแล้ว เราจะแจ้งให้ทราบทันทีที่พร้อมให้บริการ!"
+  },
+  hi: {
+    activeBadge: "सक्रिय प्लान",
+    freeDefaultBadge: "निःशुल्क बुनियादी कोटा",
+    modalTag: "विकास जारी है • अर्ली एक्सेस",
+    modalTitle: "अपग्रेड में रुचि दिखाने के लिए धन्यवाद!",
+    modalSubtitle: "आधिकारिक भुगतान गेटवे वर्तमान में सत्यापन के अंतिम चरण में है।",
+    bonusBadge: "बोनस +10 निःशुल्क फॉर्म",
+    messageBody1: "हम आपकी रुचि की सराहना करते हैं! लेनदेन को पूरी तरह सुरक्षित बनाने के लिए अंतिम तैयारियाँ चल रही हैं।",
+    messageBody2: "कृपया प्रतीक्षा सूची (Waiting List) में शामिल हों ताकि सुविधा शुरू होते ही आपको सूचना मिले। आभार के रूप में तुरंत 10 निःशुल्क फॉर्म प्राप्त करें!",
+    btnJoin: "प्रतीक्षा सूची में शामिल हों और 10 फॉर्म पाएं 🎁",
+    btnJoined: "पहले से पंजीकृत ✓",
+    btnSuccessClose: "डैशबोर्ड पर लौटें",
+    successTitle: "🎉 बधाई! 10 निःशुल्क फॉर्म जोड़ दिए गए हैं!",
+    successDesc: "आप प्राथमिकता सूची में हैं और आपके खाते में 10 फॉर्म क्रेडिट जमा कर दिए गए हैं।",
+    alreadyJoinedDesc: "आप पहले से प्रतीक्षा सूची में हैं और बोनस प्राप्त कर चुके हैं। शुरू होते ही हम आपको सूचित करेंगे!"
+  },
+  fil: {
+    activeBadge: "Kasalukuyang Aktibong Plano",
+    freeDefaultBadge: "Libreng Base Quota",
+    modalTag: "Kasalukuyang Ginagawa • Early Access",
+    modalTitle: "Salamat sa Iyong Interes na Mag-upgrade!",
+    modalSubtitle: "Ang opisyal na payment gateway ay nasa huling yugto ng beripikasyon.",
+    bonusBadge: "Bonus na +10 Libreng Form",
+    messageBody1: "Lubos naming pinapahalagahan ang iyong suporta! Upang matiyak ang 100% ligtas na pagbabayad, inihahanda pa ang opisyal na gateway.",
+    messageBody2: "Sumali sa aming Waiting List upang maabisuhan agad kapag live na ang upgrade. Bilang pasasalamat, makakatanggap ka agad ng 10 Libreng Form!",
+    btnJoin: "Sumali sa Waiting List at Kunin ang 10 Form 🎁",
+    btnJoined: "Nasa Waiting List Na ✓",
+    btnSuccessClose: "Bumalik sa Dashboard",
+    successTitle: "🎉 Matagumpay! May 10 Libreng Form Ka Na!",
+    successDesc: "Nailista na ang iyong account at naidagdag na ang 10 libreng form sa iyong balanse.",
+    alreadyJoinedDesc: "Nakarehistro ka na sa aming waiting list at nakuha mo na ang iyong bonus. Aabisuhan ka namin kapag handa na!"
+  },
+  ms: {
+    activeBadge: "Pelan Sedang Aktif",
+    freeDefaultBadge: "Kuota Asas Percuma",
+    modalTag: "Dalam Pembangunan • Akses Awal",
+    modalTitle: "Terima Kasih atas Minat Anda untuk Menaik Taraf!",
+    modalSubtitle: "Gerbang pembayaran rasmi kini sedang dalam peringkat pengesahan akhir.",
+    bonusBadge: "Bonus +10 Borang Percuma",
+    messageBody1: "Kami amat menghargai minat anda! Demi memastikan transaksi selamat dan terjamin, saluran pembayaran sedang diselaraskan.",
+    messageBody2: "Sertai Senarai Menunggu (Waiting List) kami agar kami maklumkan sebaik sahaja dibuka. Sebagai tanda penghargaan, anda akan menerima 10 Kuota Borang Percuma serta-merta!",
+    btnJoin: "Sertai Waiting List & Tuntut 10 Borang 🎁",
+    btnJoined: "Telah Didaftarkan ✓",
+    btnSuccessClose: "Kembali ke Papan Pemuka",
+    successTitle: "🎉 Tahniah! 10 Borang Percuma Ditambah!",
+    successDesc: "Akaun anda telah disimpan dalam senarai keutamaan kami dan 10 borang telah dikreditkan ke akaun anda.",
+    alreadyJoinedDesc: "Anda telah mendaftar dalam senarai menunggu dan telah menuntut bonus sebelum ini. Kami akan maklumkan kepada anda kelak!"
+  }
+}
+
 export const DashboardPage: React.FC = () => {
   const { userProfile, logout, refreshQuota, updateUserProfile } = useAuth()
   const { currentLang, setLang } = useLanguage()
@@ -837,6 +1034,13 @@ export const DashboardPage: React.FC = () => {
   const [isUpgrading, setIsUpgrading] = useState(false)
   const [invoicesList, setInvoicesList] = useState<any[]>([])
   const [invoicesLoading, setInvoicesLoading] = useState(false)
+
+  // Waiting List Modal & 10 Forms Reward State
+  const [waitlistModalOpen, setWaitlistModalOpen] = useState(false)
+  const [selectedUpgradeTier, setSelectedUpgradeTier] = useState<PricingTierItem | null>(null)
+  const [isJoiningWaitlist, setIsJoiningWaitlist] = useState(false)
+  const [waitlistRewardClaimed, setWaitlistRewardClaimed] = useState(false)
+  const [waitlistFeedbackMsg, setWaitlistFeedbackMsg] = useState('')
 
   const fetchInvoices = async () => {
     setInvoicesLoading(true)
@@ -2927,77 +3131,198 @@ export const DashboardPage: React.FC = () => {
                             size="sm"
                             className="w-full text-xs font-bold bg-slate-100 text-slate-500 border-slate-200 cursor-not-allowed"
                           >
-                            ✓ Paket Sedang Aktif
+                            ✓ {WAITING_LIST_I18N[langKey]?.activeBadge || 'Active Plan'}
                           </Button>
                         ) : tier.id === 'free' ? (
                           <Button
                             disabled
                             variant="outline"
                             size="sm"
-                            className="w-full text-xs font-bold"
+                            className="w-full text-xs font-bold bg-slate-50 text-slate-400 border-slate-200"
                           >
-                            Kuota Dasar Gratis
+                            {WAITING_LIST_I18N[langKey]?.freeDefaultBadge || 'Free Base Quota'}
                           </Button>
                         ) : (
                           <Button
-                            disabled={isUpgrading}
-                            onClick={async () => {
-                              setIsUpgrading(true)
-                              try {
-                                const uid = userProfile?.uid || 'guest_user'
-                                // 1. First attempt direct Mayar Checkout
-                                const checkoutRes = await fetch(getApiUrl('/api/payment/checkout'), {
-                                  method: 'POST',
-                                  headers: { 'Content-Type': 'application/json' },
-                                  body: JSON.stringify({
-                                    uid,
-                                    planId: tier.id,
-                                    email: userProfile?.email || '',
-                                    name: userProfile?.displayName || 'Telmy User',
-                                    redirectUrl: window.location.href
-                                  })
-                                })
-                                const checkoutData = await checkoutRes.json()
-
-                                if (checkoutData.success && checkoutData.checkoutUrl) {
-                                  window.open(checkoutData.checkoutUrl, '_blank')
-                                }
-
-                                // 2. Also run instant fulfillment simulation to guarantee immediate credit addition
-                                const simRes = await fetch(getApiUrl('/api/payment/simulate-purchase'), {
-                                  method: 'POST',
-                                  headers: { 'Content-Type': 'application/json' },
-                                  body: JSON.stringify({ uid, planId: tier.id })
-                                })
-                                const simData = await simRes.json()
-
-                                if (simData.success) {
-                                  if (refreshQuota) refreshQuota()
-                                  fetchInvoices()
-                                  setPricingModalOpen(false)
-                                  alert(`🎉 Selamat! Pembayaran ${tier.name.id || tier.name.en} berhasil. Kuota form Anda kini bertambah!`)
-                                } else {
-                                  alert(simData.error || 'Gagal memproses aktivasi paket.')
-                                }
-                              } catch (err: any) {
-                                alert('Gagal menghubungi gateway pembayaran: ' + err.message)
-                              } finally {
-                                setIsUpgrading(false)
-                              }
+                            onClick={() => {
+                              setSelectedUpgradeTier(tier)
+                              setWaitlistModalOpen(true)
                             }}
-                            className={`w-full text-xs font-bold ${
+                            className={`w-full text-xs font-bold cursor-pointer ${
                               tier.isPopular
                                 ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-xs'
                                 : 'bg-slate-900 hover:bg-slate-800 text-white'
                             }`}
                           >
-                            {isUpgrading ? 'Memproses...' : `Pilih ${tier.name.id || tier.name.en}`}
+                            {tier.ctaBtn[langKey] || tier.ctaBtn.en || `Choose ${name}`}
                           </Button>
                         )}
                       </div>
                     </div>
                   )
                 })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* WAITING LIST & 10 FREE FORMS REWARD MODAL */}
+        {waitlistModalOpen && (
+          <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-200 relative overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+              {/* Background gradient decoration */}
+              <div className="absolute top-0 right-0 -mr-16 -mt-16 w-44 h-44 rounded-full bg-blue-100/60 blur-2xl pointer-events-none" />
+              <div className="absolute bottom-0 left-0 -ml-16 -mb-16 w-44 h-44 rounded-full bg-emerald-100/60 blur-2xl pointer-events-none" />
+
+              <div className="relative space-y-5">
+                {/* Header Tag */}
+                <div className="flex items-center justify-between">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/60 text-blue-700 text-[11px] font-bold uppercase tracking-wider">
+                    <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+                    <span>
+                      {WAITING_LIST_I18N[effectiveLangCode]?.modalTag || WAITING_LIST_I18N.en.modalTag}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setWaitlistModalOpen(false)
+                      setWaitlistRewardClaimed(false)
+                      setWaitlistFeedbackMsg('')
+                    }}
+                    className="text-slate-400 hover:text-slate-600 text-lg font-bold p-1 cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {!waitlistRewardClaimed ? (
+                  <>
+                    <div className="space-y-2">
+                      <h3 className="text-xl font-black text-slate-900 leading-tight">
+                        {WAITING_LIST_I18N[effectiveLangCode]?.modalTitle || WAITING_LIST_I18N.en.modalTitle}
+                      </h3>
+                      <p className="text-xs font-semibold text-blue-600">
+                        {selectedUpgradeTier
+                          ? `${WAITING_LIST_I18N[effectiveLangCode]?.selectedPlanLabel || 'Plan'}: ${selectedUpgradeTier.name[effectiveLangCode] || selectedUpgradeTier.name.en}`
+                          : ''}
+                      </p>
+                      <p className="text-xs text-slate-500 leading-relaxed">
+                        {WAITING_LIST_I18N[effectiveLangCode]?.modalSubtitle || WAITING_LIST_I18N.en.modalSubtitle}
+                      </p>
+                    </div>
+
+                    {/* Bonus Callout Card */}
+                    <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50/50 border border-blue-200/60 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">🎁</span>
+                        <span className="text-xs font-black text-blue-900 uppercase tracking-wide">
+                          {WAITING_LIST_I18N[effectiveLangCode]?.bonusBadge || WAITING_LIST_I18N.en.bonusBadge}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-700 leading-relaxed">
+                        {WAITING_LIST_I18N[effectiveLangCode]?.messageBody2 || WAITING_LIST_I18N.en.messageBody2}
+                      </p>
+                    </div>
+
+                    <p className="text-[11px] text-slate-400 leading-snug">
+                      {WAITING_LIST_I18N[effectiveLangCode]?.messageBody1 || WAITING_LIST_I18N.en.messageBody1}
+                    </p>
+
+                    {waitlistFeedbackMsg && (
+                      <p className="text-xs font-medium text-amber-600 bg-amber-50 p-2.5 rounded-xl border border-amber-200">
+                        {waitlistFeedbackMsg}
+                      </p>
+                    )}
+
+                    <div className="pt-2 flex flex-col sm:flex-row gap-2.5">
+                      <Button
+                        disabled={isJoiningWaitlist}
+                        onClick={async () => {
+                          setIsJoiningWaitlist(true)
+                          setWaitlistFeedbackMsg('')
+                          try {
+                            const uid = userProfile?.uid || 'guest_user'
+                            const email = userProfile?.email || ''
+                            const name = userProfile?.displayName || 'Telmy User'
+                            const planId = selectedUpgradeTier?.id || 'standard'
+
+                            const res = await fetch(getApiUrl('/api/payment/join-waiting-list'), {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ uid, email, name, planId })
+                            })
+                            const data = await res.json()
+
+                            if (data.success) {
+                              setWaitlistRewardClaimed(true)
+                              if (refreshQuota) refreshQuota()
+                              if (data.alreadyJoined) {
+                                setWaitlistFeedbackMsg(WAITING_LIST_I18N[effectiveLangCode]?.alreadyJoinedDesc || WAITING_LIST_I18N.en.alreadyJoinedDesc)
+                              } else {
+                                setWaitlistFeedbackMsg(WAITING_LIST_I18N[effectiveLangCode]?.successDesc || WAITING_LIST_I18N.en.successDesc)
+                              }
+                            } else {
+                              setWaitlistFeedbackMsg(data.error || 'Gagal mendaftar ke daftar tunggu.')
+                            }
+                          } catch (err: any) {
+                            setWaitlistFeedbackMsg('Gagal menghubungi server: ' + err.message)
+                          } finally {
+                            setIsJoiningWaitlist(false)
+                          }
+                        }}
+                        className="w-full font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs py-2.5 shadow-md shadow-blue-500/20 cursor-pointer"
+                      >
+                        {isJoiningWaitlist ? (
+                          <div className="flex items-center justify-center gap-2">
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                            <span>Mendaftarkan...</span>
+                          </div>
+                        ) : (
+                          WAITING_LIST_I18N[effectiveLangCode]?.btnJoin || WAITING_LIST_I18N.en.btnJoin
+                        )}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setWaitlistModalOpen(false)
+                          setWaitlistFeedbackMsg('')
+                        }}
+                        className="w-full sm:w-auto text-xs font-semibold rounded-xl"
+                      >
+                        {dI18n.btnCancel || 'Cancel'}
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  /* Success State View */
+                  <div className="text-center py-4 space-y-4">
+                    <div className="w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-600 mx-auto flex items-center justify-center text-3xl shadow-inner">
+                      ✓
+                    </div>
+                    <div className="space-y-1.5">
+                      <h3 className="text-lg font-black text-slate-900">
+                        {WAITING_LIST_I18N[effectiveLangCode]?.successTitle || WAITING_LIST_I18N.en.successTitle}
+                      </h3>
+                      <p className="text-xs text-slate-600 leading-relaxed max-w-sm mx-auto">
+                        {waitlistFeedbackMsg || (WAITING_LIST_I18N[effectiveLangCode]?.successDesc || WAITING_LIST_I18N.en.successDesc)}
+                      </p>
+                    </div>
+
+                    <div className="pt-3">
+                      <Button
+                        onClick={() => {
+                          setWaitlistModalOpen(false)
+                          setPricingModalOpen(false)
+                          setWaitlistRewardClaimed(false)
+                          setWaitlistFeedbackMsg('')
+                        }}
+                        className="w-full font-bold bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs py-2.5"
+                      >
+                        {WAITING_LIST_I18N[effectiveLangCode]?.btnSuccessClose || WAITING_LIST_I18N.en.btnSuccessClose}
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
