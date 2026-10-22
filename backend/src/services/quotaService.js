@@ -378,16 +378,20 @@ export async function addPaygCredits(uid = 'guest_user', credits = 10) {
   }
 
   const { db, isFirebaseConnected } = getFirestore();
+  const totalCredits = (current.quota.subscriptionQuotaRemaining || 0) + (current.quota.purchasedCreditsRemaining || 0) + (current.quota.freeRemaining || 0);
+
   if (isFirebaseConnected && db) {
     try {
       await db.collection('users').doc(uid).set({
         plan: current.plan,
-        quota: current.quota
+        quota: current.quota,
+        credits: totalCredits
       }, { merge: true });
     } catch (e) {
       console.warn('[QuotaService] Error saving PAYG credits to Firestore:', e.message);
     }
   } else {
+    current.credits = totalCredits;
     inMemoryQuotaMap.set(uid, current);
   }
 
@@ -414,16 +418,20 @@ export async function activatePlanSubscription(uid = 'guest_user', planId = 'pro
   current.quota.subscriptionExpiresAt = expiry.toISOString();
 
   const { db, isFirebaseConnected } = getFirestore();
+  const totalCredits = (current.quota.subscriptionQuotaRemaining || 0) + (current.quota.purchasedCreditsRemaining || 0) + (current.quota.freeRemaining || 0);
+
   if (isFirebaseConnected && db) {
     try {
       await db.collection('users').doc(uid).set({
         plan: current.plan,
-        quota: current.quota
+        quota: current.quota,
+        credits: totalCredits
       }, { merge: true });
     } catch (e) {
       console.warn(`[QuotaService] Error activating ${planId} subscription in Firestore:`, e.message);
     }
   } else {
+    current.credits = totalCredits;
     inMemoryQuotaMap.set(uid, current);
   }
 

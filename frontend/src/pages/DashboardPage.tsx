@@ -203,6 +203,7 @@ interface WaitingListTranslation {
   successDesc: string
   alreadyJoinedDesc: string
   selectedPlanLabel?: string
+  gatewayFooterNote?: string
 }
 
 const WAITING_LIST_I18N: Record<string, WaitingListTranslation> = {
@@ -220,7 +221,8 @@ const WAITING_LIST_I18N: Record<string, WaitingListTranslation> = {
     btnSuccessClose: "Kembali ke Dashboard",
     successTitle: "🎉 Selamat! 10 Form Gratis Ditambahkan!",
     successDesc: "Email kamu telah tersimpan di daftar tunggu prioritas kami. Kuota 10 form gratis telah masuk ke akunmu.",
-    alreadyJoinedDesc: "Kamu sudah terdaftar di daftar tunggu dan telah mengklaim bonus kuota sebelumnya. Kami akan segera mengabarimu!"
+    alreadyJoinedDesc: "Kamu sudah terdaftar di daftar tunggu dan telah mengklaim bonus kuota sebelumnya. Kami akan segera mengabarimu!",
+    gatewayFooterNote: "Semua pembayaran diproses melalui payment gateway Mayar.id"
   },
   en: {
     activeBadge: "Current Active Plan",
@@ -236,7 +238,8 @@ const WAITING_LIST_I18N: Record<string, WaitingListTranslation> = {
     btnSuccessClose: "Back to Dashboard",
     successTitle: "🎉 Awesome! 10 Free Forms Added!",
     successDesc: "Your account is on our priority list. 10 free form credits have been added to your balance.",
-    alreadyJoinedDesc: "You are already registered on our priority waiting list with your bonus claimed. We will notify you once live!"
+    alreadyJoinedDesc: "You are already registered on our priority waiting list with your bonus claimed. We will notify you once live!",
+    gatewayFooterNote: "All payments are processed securely through Mayar.id payment gateway"
   },
   ja: {
     activeBadge: "現在適用中のプラン",
@@ -252,7 +255,8 @@ const WAITING_LIST_I18N: Record<string, WaitingListTranslation> = {
     btnSuccessClose: "ダッシュボードに戻る",
     successTitle: "🎉 10件の無料枠が付与されました！",
     successDesc: "ご登録ありがとうございます。無料フォーム枠10件がアカウントに追加されました。",
-    alreadyJoinedDesc: "すでにウェイティングリストに登録済みです。機能が公開され次第メールでお知らせします！"
+    alreadyJoinedDesc: "すでにウェイティングリストに登録済みです。機能が公開され次第メールでお知らせします！",
+    gatewayFooterNote: "すべてのお支払いは Mayar.id 決済ゲートウェイを通じて安全に処理されます"
   },
   ko: {
     activeBadge: "현재 이용 중인 플랜",
@@ -268,7 +272,8 @@ const WAITING_LIST_I18N: Record<string, WaitingListTranslation> = {
     btnSuccessClose: "대시보드로 돌아가기",
     successTitle: "🎉 무료 양식 10회가 적립되었습니다!",
     successDesc: "우선 대기 명단 등록이 완료되었으며, 10회의 무료 크레딧이 지급되었습니다.",
-    alreadyJoinedDesc: "이미 대기자 명단에 등록되어 보너스를 지급받으셨습니다. 오픈 즉시 알려드리겠습니다!"
+    alreadyJoinedDesc: "이미 대기자 명단에 등록되어 보너스를 지급받으셨습니다. 오픈 즉시 알려드리겠습니다!",
+    gatewayFooterNote: "모든 결제는 Mayar.id 결제 게이트웨이를 통해 안전하게 처리됩니다"
   },
   zh: {
     activeBadge: "当前生效套餐",
@@ -284,7 +289,8 @@ const WAITING_LIST_I18N: Record<string, WaitingListTranslation> = {
     btnSuccessClose: "返回控制台",
     successTitle: "🎉 成功获赠 10 次免费额度！",
     successDesc: "您已加入优先通知名单，10 次免费表单额度已发放至您的账户。",
-    alreadyJoinedDesc: "您已在优先名单中并已领取过奖励。上线后我们将第一时间邮件通知您！"
+    alreadyJoinedDesc: "您已在优先名单中并已领取过奖励。上线后我们将第一时间邮件通知您！",
+    gatewayFooterNote: "所有付款均通过 Mayar.id 安全支付网关处理"
   },
   'zh-tw': {
     activeBadge: "目前生效方案",
@@ -300,7 +306,8 @@ const WAITING_LIST_I18N: Record<string, WaitingListTranslation> = {
     btnSuccessClose: "返回控制台",
     successTitle: "🎉 成功獲贈 10 次免費額度！",
     successDesc: "您已加入優先通知名單，10 次免費表單額度已發放至您的帳戶。",
-    alreadyJoinedDesc: "您已在優先名單中並已領取過獎勵。上線後我們將第一時間郵件通知您！"
+    alreadyJoinedDesc: "您已在優先名單中並已領取過獎勵。上線後我們將第一時間郵件通知您！",
+    gatewayFooterNote: "所有付款均透過 Mayar.id 安全支付閘道處理"
   },
   vi: {
     activeBadge: "Gói Đang Hoạt Động",
@@ -316,7 +323,8 @@ const WAITING_LIST_I18N: Record<string, WaitingListTranslation> = {
     btnSuccessClose: "Quay Lại Dashboard",
     successTitle: "🎉 Chúc Mừng! Đã Nhận 10 Lượt Miễn Phí!",
     successDesc: "Bạn đã có mặt trong danh sách ưu tiên. 10 lượt biểu mẫu đã được cộng vào tài khoản của bạn.",
-    alreadyJoinedDesc: "Bạn đã đăng ký trong danh sách chờ và đã nhận thưởng trước đó. Chúng tôi sẽ thông báo ngay khi tính năng sẵn sàng!"
+    alreadyJoinedDesc: "Bạn đã đăng ký trong danh sách chờ và đã nhận thưởng trước đó. Chúng tôi sẽ thông báo ngay khi tính năng sẵn sàng!",
+    gatewayFooterNote: "Tất cả thanh toán được xử lý an toàn qua cổng thanh toán Mayar.id"
   },
   th: {
     activeBadge: "แพ็กเกจที่ใช้งานอยู่",
@@ -332,7 +340,8 @@ const WAITING_LIST_I18N: Record<string, WaitingListTranslation> = {
     btnSuccessClose: "กลับสู่แดชบอร์ด",
     successTitle: "🎉 ยินดีด้วย! คุณได้รับโควตาฟรี 10 แบบฟอร์ม",
     successDesc: "คุณอยู่ในรายชื่อรอคอยระดับพรีเมียมแล้ว และเราได้เพิ่ม 10 แบบฟอร์มให้คุณเรียบร้อยแล้ว",
-    alreadyJoinedDesc: "คุณลงทะเบียนไว้แล้วและได้รับโบนัสเรียบร้อยแล้ว เราจะแจ้งให้ทราบทันทีที่พร้อมให้บริการ!"
+    alreadyJoinedDesc: "คุณลงทะเบียนไว้แล้วและได้รับโบนัสเรียบร้อยแล้ว เราจะแจ้งให้ทราบทันทีที่พร้อมให้บริการ!",
+    gatewayFooterNote: "การชำระเงินทั้งหมดดำเนินการอย่างปลอดภัยผ่านเกตเวย์ Mayar.id"
   },
   hi: {
     activeBadge: "सक्रिय प्लान",
@@ -348,7 +357,8 @@ const WAITING_LIST_I18N: Record<string, WaitingListTranslation> = {
     btnSuccessClose: "डैशबोर्ड पर लौटें",
     successTitle: "🎉 बधाई! 10 निःशुल्क फॉर्म जोड़ दिए गए हैं!",
     successDesc: "आप प्राथमिकता सूची में हैं और आपके खाते में 10 फॉर्म क्रेडिट जमा कर दिए गए हैं।",
-    alreadyJoinedDesc: "आप पहले से प्रतीक्षा सूची में हैं और बोनस प्राप्त कर चुके हैं। शुरू होते ही हम आपको सूचित करेंगे!"
+    alreadyJoinedDesc: "आप पहले से प्रतीक्षा सूची में हैं और बोनस प्राप्त कर चुके हैं। शुरू होते ही हम आपको सूचित करेंगे!",
+    gatewayFooterNote: "सभी भुगतान Mayar.id भुगतान गेटवे के माध्यम से सुरक्षित रूप से संसाधित किए जाते हैं"
   },
   fil: {
     activeBadge: "Kasalukuyang Aktibong Plano",
@@ -364,7 +374,8 @@ const WAITING_LIST_I18N: Record<string, WaitingListTranslation> = {
     btnSuccessClose: "Bumalik sa Dashboard",
     successTitle: "🎉 Matagumpay! May 10 Libreng Form Ka Na!",
     successDesc: "Nailista na ang iyong account at naidagdag na ang 10 libreng form sa iyong balanse.",
-    alreadyJoinedDesc: "Nakarehistro ka na sa aming waiting list at nakuha mo na ang iyong bonus. Aabisuhan ka namin kapag handa na!"
+    alreadyJoinedDesc: "Nakarehistro ka na sa aming waiting list at nakuha mo na ang iyong bonus. Aabisuhan ka namin kapag handa na!",
+    gatewayFooterNote: "Lahat ng pagbabayad ay ligtas na pinoproseso sa pamamagitan ng Mayar.id payment gateway"
   },
   ms: {
     activeBadge: "Pelan Sedang Aktif",
@@ -380,7 +391,8 @@ const WAITING_LIST_I18N: Record<string, WaitingListTranslation> = {
     btnSuccessClose: "Kembali ke Papan Pemuka",
     successTitle: "🎉 Tahniah! 10 Borang Percuma Ditambah!",
     successDesc: "Akaun anda telah disimpan dalam senarai keutamaan kami dan 10 borang telah dikreditkan ke akaun anda.",
-    alreadyJoinedDesc: "Anda telah mendaftar dalam senarai menunggu dan telah menuntut bonus sebelum ini. Kami akan maklumkan kepada anda kelak!"
+    alreadyJoinedDesc: "Anda telah mendaftar dalam senarai menunggu dan telah menuntut bonus sebelum ini. Kami akan maklumkan kepada anda kelak!",
+    gatewayFooterNote: "Semua pembayaran diproses melalui payment gateway Mayar.id"
   }
 }
 
@@ -1040,6 +1052,7 @@ export const DashboardPage: React.FC = () => {
   const [selectedUpgradeTier, setSelectedUpgradeTier] = useState<PricingTierItem | null>(null)
   const [isJoiningWaitlist, setIsJoiningWaitlist] = useState(false)
   const [waitlistRewardClaimed, setWaitlistRewardClaimed] = useState(false)
+  const [isAlreadyJoined, setIsAlreadyJoined] = useState(false)
   const [waitlistFeedbackMsg, setWaitlistFeedbackMsg] = useState('')
 
   const fetchInvoices = async () => {
@@ -3010,14 +3023,10 @@ export const DashboardPage: React.FC = () => {
             <div className="bg-white rounded-3xl max-w-5xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-6 max-h-[90vh] overflow-y-auto">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
                 <div>
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/60 text-blue-700 text-[11px] font-bold uppercase tracking-wider mb-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-                    <span>Mayar Gateway & Cloud Quota Integration</span>
-                  </div>
                   <h3 className="text-xl font-black text-slate-900">
                     {dI18n.quotaModalTitle}
                   </h3>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-slate-500 mt-1">
                     {dI18n.quotaModalSubtitle}
                   </p>
                 </div>
@@ -3162,6 +3171,16 @@ export const DashboardPage: React.FC = () => {
                   )
                 })}
               </div>
+
+              {/* Gateway Notice Below 3 Cards */}
+              <div className="pt-2 text-center border-t border-slate-100">
+                <p className="text-xs text-slate-500 font-medium flex items-center justify-center gap-1.5">
+                  <Shield className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                  <span>
+                    {WAITING_LIST_I18N[effectiveLangCode]?.gatewayFooterNote || WAITING_LIST_I18N.en.gatewayFooterNote}
+                  </span>
+                </p>
+              </div>
             </div>
           </div>
         )}
@@ -3255,10 +3274,18 @@ export const DashboardPage: React.FC = () => {
 
                             if (data.success) {
                               setWaitlistRewardClaimed(true)
+                              if (data.user?.totalRemaining !== undefined && updateUserProfile) {
+                                updateUserProfile({
+                                  credits: data.user.totalRemaining,
+                                  plan: data.user.plan || userProfile?.plan || 'payg'
+                                })
+                              }
                               if (refreshQuota) refreshQuota()
                               if (data.alreadyJoined) {
+                                setIsAlreadyJoined(true)
                                 setWaitlistFeedbackMsg(WAITING_LIST_I18N[effectiveLangCode]?.alreadyJoinedDesc || WAITING_LIST_I18N.en.alreadyJoinedDesc)
                               } else {
+                                setIsAlreadyJoined(false)
                                 setWaitlistFeedbackMsg(WAITING_LIST_I18N[effectiveLangCode]?.successDesc || WAITING_LIST_I18N.en.successDesc)
                               }
                             } else {
@@ -3286,6 +3313,7 @@ export const DashboardPage: React.FC = () => {
                         onClick={() => {
                           setWaitlistModalOpen(false)
                           setWaitlistFeedbackMsg('')
+                          setIsAlreadyJoined(false)
                         }}
                         className="w-full sm:w-auto text-xs font-semibold rounded-xl"
                       >
@@ -3294,17 +3322,25 @@ export const DashboardPage: React.FC = () => {
                     </div>
                   </>
                 ) : (
-                  /* Success State View */
+                  /* Result / Notice State View */
                   <div className="text-center py-4 space-y-4">
-                    <div className="w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-600 mx-auto flex items-center justify-center text-3xl shadow-inner">
-                      ✓
+                    <div className={`w-16 h-16 rounded-2xl mx-auto flex items-center justify-center text-3xl shadow-inner ${
+                      isAlreadyJoined 
+                        ? 'bg-amber-100 text-amber-600 border border-amber-200' 
+                        : 'bg-emerald-100 text-emerald-600'
+                    }`}>
+                      {isAlreadyJoined ? 'ℹ️' : '✓'}
                     </div>
                     <div className="space-y-1.5">
                       <h3 className="text-lg font-black text-slate-900">
-                        {WAITING_LIST_I18N[effectiveLangCode]?.successTitle || WAITING_LIST_I18N.en.successTitle}
+                        {isAlreadyJoined 
+                          ? (effectiveLangCode === 'id' ? 'Anda Sudah Terdaftar di Waiting List' : 'You are Already on the Waiting List')
+                          : (WAITING_LIST_I18N[effectiveLangCode]?.successTitle || WAITING_LIST_I18N.en.successTitle)}
                       </h3>
                       <p className="text-xs text-slate-600 leading-relaxed max-w-sm mx-auto">
-                        {waitlistFeedbackMsg || (WAITING_LIST_I18N[effectiveLangCode]?.successDesc || WAITING_LIST_I18N.en.successDesc)}
+                        {waitlistFeedbackMsg || (isAlreadyJoined 
+                          ? (WAITING_LIST_I18N[effectiveLangCode]?.alreadyJoinedDesc || WAITING_LIST_I18N.en.alreadyJoinedDesc)
+                          : (WAITING_LIST_I18N[effectiveLangCode]?.successDesc || WAITING_LIST_I18N.en.successDesc))}
                       </p>
                     </div>
 
@@ -3314,6 +3350,7 @@ export const DashboardPage: React.FC = () => {
                           setWaitlistModalOpen(false)
                           setPricingModalOpen(false)
                           setWaitlistRewardClaimed(false)
+                          setIsAlreadyJoined(false)
                           setWaitlistFeedbackMsg('')
                         }}
                         className="w-full font-bold bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs py-2.5"

@@ -56,14 +56,28 @@ router.get('/user/quota/:uid', async (req, res) => {
     const { db, isFirebaseConnected } = getFirestore();
     let credits = 5;
     let plan = 'free';
+    let quota = null;
 
     if (isFirebaseConnected && db) {
       const doc = await db.collection('users').doc(uid).get();
       if (doc.exists) {
         const d = doc.data();
-        if (d.credits !== undefined) credits = Number(d.credits);
         if (d.plan) plan = d.plan;
+        if (d.quota) {
+          quota = d.quota;
+          credits = (quota.subscriptionQuotaRemaining || 0) + (quota.purchasedCreditsRemaining || 0) + (quota.freeRemaining || 0);
+        } else if (d.credits !== undefined) {
+          credits = Number(d.credits);
+        }
       }
+    }
+
+    if (!quota) {
+      quota = {
+        freeRemaining: plan === 'free' ? credits : 0,
+        purchasedCreditsRemaining: plan !== 'free' ? credits : 0,
+        subscriptionQuotaRemaining: 0
+      };
     }
 
     return res.json({
@@ -71,16 +85,13 @@ router.get('/user/quota/:uid', async (req, res) => {
       data: {
         plan,
         totalRemaining: credits,
-        quota: {
-          freeRemaining: plan === 'free' ? credits : 0,
-          purchasedCreditsRemaining: plan !== 'free' ? credits : 0
-        }
+        quota
       }
     });
   } catch (err) {
     return res.json({
       success: true,
-      data: { plan: 'free', totalRemaining: 5, quota: { freeRemaining: 5 } }
+      data: { plan: 'free', totalRemaining: 5, quota: { freeRemaining: 5, purchasedCreditsRemaining: 0, subscriptionQuotaRemaining: 0 } }
     });
   }
 });
