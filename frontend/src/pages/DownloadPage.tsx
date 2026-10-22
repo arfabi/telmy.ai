@@ -54,7 +54,6 @@ export const DownloadPage: React.FC = () => {
       'zh-TW': "完全免費支援 Chrome、Edge、Firefox 及 Opera。支援直接下載 ZIP 壓縮包或開發者模式載入。",
       vi: "Miễn phí cho Chrome, Edge, Firefox và Opera. Tải gói ZIP trực tiếp hoặc cài qua chế độ nhà phát triển.",
       th: "ฟรีสำหรับ Chrome, Edge, Firefox และ Opera ดาวน์โหลดไฟล์ ZIP ได้ทันทีหรือโหลดผ่านโหมดนักพัฒนา",
-      hi: "Chrome, Edge, Firefox और Opera के लिए निःशुल्क। सीधे ZIP डाउनलोड करें या डेवलपर मोड में लोड करें।",
       fil: "Libre para sa Chrome, Edge, Firefox, at Opera. I-download ang ZIP package o i-load sa developer mode.",
       ms: "Percuma untuk Chrome, Edge, Firefox, dan Opera. Muat turun pakej ZIP terus atau mod pembangun.",
     },
@@ -72,43 +71,43 @@ export const DownloadPage: React.FC = () => {
       ms: "Pakej ZIP & Unpacked Sedia Digunakan",
     },
     officialStoreBadge: {
-      en: "Hackathon Evaluation & Direct Package · Manifest V3 Certified",
-      id: "Evaluasi Hackathon & Paket Langsung · Bersertifikat Manifest V3",
-      ja: "審査用ダイレクトパッケージ · Manifest V3 認定",
-      ko: "심사용 다이렉트 패키지 · Manifest V3 인증",
-      zh: "评审官方直装包 · 符合 Manifest V3 安全标准",
-      'zh-TW': "評審官方直裝包 · 符合 Manifest V3 安全標準",
-      vi: "Gói tải trực tiếp cho giám khảo · Chứng nhận Manifest V3",
-      th: "แพ็กเกจตรงสำหรับการประเมิน · รับรอง Manifest V3",
-      hi: "प्रत्यक्ष मूल्यांकन पैकेज · Manifest V3 प्रमाणित",
-      fil: "Direktang ZIP Package · Manifest V3 Certified",
-      ms: "Pakej Terus Penilaian · Disahkan Manifest V3",
+      en: "Direct Package · Manifest V3 Certified",
+      id: "Paket Langsung · Bersertifikat Manifest V3",
+      ja: "ダイレクトパッケージ · Manifest V3 認定",
+      ko: "다이렉트 패키지 · Manifest V3 인증",
+      zh: "官方直装包 · 符合 Manifest V3 安全标准",
+      'zh-TW': "官方直裝包 · 符合 Manifest V3 安全標準",
+      vi: "Gói tải trực tiếp · Chứng nhận Manifest V3",
+      th: "แพ็กเกจตรง · รับรอง Manifest V3",
+      hi: "प्रत्यक्ष पैकेज · Manifest V3 प्रमाणित",
+      fil: "Direktang Package · Manifest V3 Certified",
+      ms: "Pakej Terus · Disahkan Manifest V3",
     },
     downloadZipBtn: {
-      en: "Download Telmy (.ZIP Package)",
-      id: "Unduh Telmy (.ZIP Paket Ekstensi)",
-      ja: "Telmy をダウンロード (.ZIP)",
-      ko: "Telmy 다운로드 (.ZIP)",
-      zh: "下载 Telmy 扩展包 (.ZIP)",
-      'zh-TW': "下載 Telmy 擴充包 (.ZIP)",
-      vi: "Tải xuống Telmy (.ZIP)",
-      th: "ดาวน์โหลด Telmy (.ZIP)",
-      hi: "Telmy डाउनलोड करें (.ZIP)",
-      fil: "I-download ang Telmy (.ZIP)",
-      ms: "Muat Turun Telmy (.ZIP)",
+      en: "Download Telmy",
+      id: "Unduh Telmy",
+      ja: "Telmy をダウンロード",
+      ko: "Telmy 다운로드",
+      zh: "下载 Telmy",
+      'zh-TW': "下載 Telmy",
+      vi: "Tải xuống Telmy",
+      th: "ดาวน์โหลด Telmy",
+      hi: "Telmy डाउनलोड करें",
+      fil: "I-download ang Telmy",
+      ms: "Muat Turun Telmy",
     },
-    webStoreBtn: {
-      en: "Chrome Web Store (V2 Roadmap)",
-      id: "Chrome Web Store (Roadmap V2)",
-      ja: "Chrome ウェブストア（V2ロードマップ）",
-      ko: "Chrome 웹 스토어 (V2 로드맵)",
-      zh: "Chrome 应用商店（V2 规划）",
-      'zh-TW': "Chrome 線上應用程式商店（V2 規劃）",
-      vi: "Chrome Web Store (Kế hoạch V2)",
-      th: "Chrome Web Store (แผนงาน V2)",
-      hi: "Chrome वेब स्टोर (V2 योजना)",
-      fil: "Chrome Web Store (V2 Roadmap)",
-      ms: "Chrome Web Store (Pelan Tindakan V2)",
+    downloadZipSub: {
+      en: "(ZIP Package)",
+      id: "(ZIP Package)",
+      ja: "(ZIP パッケージ)",
+      ko: "(ZIP 패키지)",
+      zh: "(ZIP 压缩包)",
+      'zh-TW': "(ZIP 壓縮包)",
+      vi: "(Gói ZIP)",
+      th: "(แพ็กเกจ ZIP)",
+      hi: "(ZIP पैकेज)",
+      fil: "(ZIP Package)",
+      ms: "(Pakej ZIP)",
     },
     warningBadge: {
       en: "Notice",
@@ -227,6 +226,45 @@ export const DownloadPage: React.FC = () => {
       fil: "I-pin ang Telmy.ai sa toolbar at buksan ang anumang web form upang subukan ang AI.",
       ms: "Sematkan Telmy.ai dan buka mana-mana borang web atau simulator untuk mencuba AI.",
     },
+    videoGuideTitle: {
+      en: "Video Installation Guide",
+      id: "Video Panduan Instalasi",
+      ja: "インストール動画ガイド",
+      ko: "설치 가이드 영상",
+      zh: "安装视频教程",
+      'zh-TW': "安裝影片教學",
+      vi: "Video Hướng Dẫn Cài Đặt",
+      th: "วิดีโอแนะนำการติดตั้ง",
+      hi: "इंस्टॉलेशन वीडियो गाइड",
+      fil: "Video Gabay sa Pag-install",
+      ms: "Video Panduan Pemasangan",
+    },
+    guideSectionTitle: {
+      en: "3-Step Installation Guide (Unpacked Method)",
+      id: "Panduan Instalasi 3-Langkah (Metode Unpacked)",
+      ja: "3ステップ簡単インストール（Unpacked 方式）",
+      ko: "3단계 설치 가이드 (Unpacked 방식)",
+      zh: "3步快速安装指南（解压载入方式）",
+      'zh-TW': "3步快速安裝指南（解壓載入方式）",
+      vi: "Hướng dẫn cài đặt 3 bước (Phương pháp Unpacked)",
+      th: "คู่มือการติดตั้ง 3 ขั้นตอน (วิธี Unpacked)",
+      hi: "3-चरण इंस्टॉलेशन गाइड (अनपैक विधि)",
+      fil: "3-Hakbang na Gabay sa Pag-install (Unpacked Paraan)",
+      ms: "Panduan Pemasangan 3-Langkah (Kaedah Unpacked)",
+    },
+    guideSectionDesc: {
+      en: "Follow these quick steps to load Telmy directly into any Chromium or Firefox browser.",
+      id: "Ikuti langkah mudah ini untuk memasang Telmy langsung di browser Chromium atau Firefox.",
+      ja: "以下の手順に従って、Chromium または Firefox に Telmy を直接読み込みます。",
+      ko: "다음 단계에 따라 Chromium 또는 Firefox 브라우저에 Telmy를 즉시 로드하세요.",
+      zh: "按照以下简短步骤将 Telmy 直接加载到任意 Chromium 或 Firefox 浏览器中。",
+      'zh-TW': "按照以下簡短步驟將 Telmy 直接載入到任何 Chromium 或 Firefox 瀏覽器中。",
+      vi: "Làm theo các bước đơn giản này để cài Telmy trực tiếp vào trình duyệt Chromium hoặc Firefox.",
+      th: "ทำตามขั้นตอนง่ายๆ เหล่านี้เพื่อโหลด Telmy ลงในเบราว์เซอร์ Chromium หรือ Firefox",
+      hi: "Telmy को किसी भी Chromium या Firefox ब्राउज़र में लोड करने के लिए इन चरणों का पालन करें।",
+      fil: "Sundin ang mga simpleng hakbang na ito para i-load ang Telmy sa Chromium o Firefox browser.",
+      ms: "Ikuti langkah mudah ini untuk memuatkan Telmy terus ke dalam penyemak imbas Chromium atau Firefox.",
+    },
   }
 
   const getStr = (key: string) => {
@@ -243,6 +281,19 @@ export const DownloadPage: React.FC = () => {
         return 'opera://extensions'
       default:
         return 'chrome://extensions'
+    }
+  }
+
+  const getMarketplaceName = () => {
+    switch (activeTab) {
+      case 'edge':
+        return 'Edge Add-ons'
+      case 'firefox':
+        return 'Firefox Add-ons'
+      case 'opera':
+        return 'Opera Addons'
+      default:
+        return 'Chromewebstore'
     }
   }
 
@@ -340,37 +391,75 @@ export const DownloadPage: React.FC = () => {
               <a
                 href={activeTab === 'firefox' ? "/telmy-firefox.zip" : "/telmy-extension.zip"}
                 download={activeTab === 'firefox' ? "telmy-firefox.zip" : "telmy-chrome-edge.zip"}
-                className="w-full sm:w-auto"
+                className="w-full sm:w-auto inline-block"
               >
-                <Button size="lg" className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2">
-                  <DownloadCloud className="w-5 h-5" />
-                  <span>{getStr('downloadZipBtn')} ({activeTab === 'firefox' ? 'Firefox' : 'Chromium/Chrome/Edge'})</span>
-                </Button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const link = document.createElement('a')
+                    link.href = activeTab === 'firefox' ? "/telmy-firefox.zip" : "/telmy-extension.zip"
+                    link.download = activeTab === 'firefox' ? "telmy-firefox.zip" : "telmy-chrome-edge.zip"
+                    document.body.appendChild(link)
+                    link.click()
+                    document.body.removeChild(link)
+                  }}
+                  className="w-full sm:w-auto min-w-[200px] h-[54px] bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold px-5 rounded-2xl shadow-lg shadow-blue-500/25 flex items-center justify-center gap-3 cursor-pointer transition-all duration-200 active:scale-[0.98]"
+                >
+                  <DownloadCloud className="w-5 h-5 shrink-0" />
+                  <div className="flex flex-col items-start leading-tight">
+                    <span className="text-sm font-black tracking-tight">{getStr('downloadZipBtn')}</span>
+                    <span className="text-[11px] font-normal text-blue-100 opacity-90">{getStr('downloadZipSub')}</span>
+                  </div>
+                </button>
               </a>
 
-              <a
-                href={activeTab === 'firefox' ? "https://addons.mozilla.org" : "https://chromewebstore.google.com"}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full sm:w-auto"
-              >
-                <Button variant="outline" size="lg" className="w-full sm:w-auto font-semibold border-slate-300 hover:bg-slate-100 text-slate-700 text-xs py-3">
-                  <span>{activeTab === 'firefox' ? 'Firefox Add-ons (Roadmap V2)' : getStr('webStoreBtn')}</span>
-                  <ExternalLink className="w-3.5 h-3.5 ml-1.5 opacity-60" />
+              {/* Disabled Official Marketplace Button with Soon Badge */}
+              <div className="relative w-full sm:w-auto group">
+                <span className="absolute -top-2.5 -right-2.5 z-10 px-2 py-0.5 rounded-full bg-linear-to-r from-amber-500 to-orange-500 text-white text-[10px] font-black uppercase tracking-wider shadow-sm ring-2 ring-white animate-pulse">
+                  Soon
+                </span>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  disabled
+                  className="w-full sm:w-auto min-w-[170px] h-[54px] font-bold border-slate-200 bg-slate-100/90 text-slate-400 cursor-not-allowed text-xs px-5 rounded-2xl opacity-80"
+                >
+                  <span>{getMarketplaceName()}</span>
+                  <ExternalLink className="w-3.5 h-3.5 ml-1.5 opacity-40" />
                 </Button>
-              </a>
+              </div>
             </div>
           </div>
         </Card>
+
+        {/* Video Tutorial Card (Chromium-based browsers) */}
+        {activeTab !== 'firefox' && (
+          <Card className="p-6 sm:p-8 bg-white border border-slate-200 rounded-3xl shadow-xs space-y-4">
+            <h3 className="text-lg font-bold text-slate-900">
+              {getStr('videoGuideTitle')}
+            </h3>
+            <div className="relative w-full rounded-2xl overflow-hidden bg-slate-950 aspect-video border border-slate-800 shadow-md">
+              <video
+                src="/telmy-install-chromium-based.mp4"
+                controls
+                playsInline
+                preload="metadata"
+                className="w-full h-full object-contain"
+              >
+                Browser does not support the video tag.
+              </video>
+            </div>
+          </Card>
+        )}
 
         {/* 3 Step Visual Installation Walkthrough */}
         <Card className="p-6 sm:p-8 bg-white border border-slate-200 rounded-3xl shadow-xs space-y-8">
           <div className="border-b border-slate-100 pb-4">
             <h3 className="text-lg font-bold text-slate-900">
-              3-Step Installation Guide (Unpacked Method)
+              {getStr('guideSectionTitle')}
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">
-              Follow these quick steps to load Telmy directly into any Chromium or Firefox browser.
+              {getStr('guideSectionDesc')}
             </p>
           </div>
 
