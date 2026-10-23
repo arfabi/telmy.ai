@@ -168,6 +168,67 @@ export interface TranslationData {
   langModalSubtitle: string
   langModalFooterBadge: string
   langModalClose: string
+
+  // Storytelling Brief (New Fields)
+  problemTitle?: string
+  problemSubtitle?: string
+  problemCard1Title?: string
+  problemCard1Desc?: string
+  problemCard2Title?: string
+  problemCard2Desc?: string
+  problemCard3Title?: string
+  problemCard3Desc?: string
+  problemStatBridge?: string
+
+  jobsTitle?: string
+  jobsSubtitle?: string
+  job1Title?: string
+  job1Desc?: string
+  job1Link?: string
+  job2Title?: string
+  job2Desc?: string
+  job2Link?: string
+  job3Title?: string
+  job3Desc?: string
+  job3Link?: string
+  jobsExtraNote?: string
+
+  simHeading?: string
+  simSubheading?: string
+  simGuidedStep1?: string
+  simGuidedStep2?: string
+  simGuidedStep3?: string
+  simReplay?: string
+  simTryMyself?: string
+  simAutoTour?: string
+
+  stepsSubtitle?: string
+  stepsMobileNote?: string
+  stepsCopyLink?: string
+  stepsLinkCopied?: string
+
+  safetyTitle?: string
+  safetySubtitle?: string
+  safetyP1Title?: string
+  safetyP1Desc?: string
+  safetyP2Title?: string
+  safetyP2Desc?: string
+  safetyP3Title?: string
+  safetyP3Desc?: string
+  safetyTechAccordionTitle?: string
+  safetyTechDetails?: string
+
+  boundaryHelpsTitle?: string
+  boundaryReplacesTitle?: string
+
+  langSectionTitle?: string
+  langSectionSubtitle?: string
+  langComingSoon?: string
+  langRequest?: string
+
+  priceTeaserTitle?: string
+  priceTeaserSub?: string
+  priceTeaserBtn?: string
 }
 
 // 1. English
@@ -183,23 +244,48 @@ export const transEN: TranslationData = {
   navCta: "Get Telmy.ai (Free)",
 
   heroKicker: "Any form. Any language. No worries.",
-  heroTitle: "Confused by a form? Telmy makes it easier.",
-  heroSubtitle: "Telmy.ai explains confusing form questions in your language, guides you through each field, and helps you check your answers before you submit.",
-  heroCta: "Try Telmy for Free",
+  heroTitle: "Understand any official form, in your own language.",
+  heroSubtitle: "Telmy opens beside the form you're filling in, explains each question in simple words, and checks your answers before you submit.",
+  heroCta: "Add to Chrome, it's free",
   heroDemo: "Watch How It Works",
   heroSupportText: "Understand the questions. Fill in your answers. Submit with more confidence.",
-  heroTrustline: "Free tier · Client-Side Encrypted Vault · Zero-Retention OCR",
-  heroWorksOn: "Works on",
+  heroTrustline: "Free for 5 forms a month · Your documents stay on your device · Not a government website",
+  heroWorksOn: "Works on Chrome, Edge, Firefox, Opera",
 
-  cardATitle: "Understand Every Field",
-  cardADesc: "Not sure what a question means? Telmy explains confusing form fields in simple language so you know what's requested.",
-  cardALink: "Learn more",
-  cardBTitle: "Forms in Your Language",
-  cardBDesc: "Get explanations in a language you're comfortable with, so language barriers never hold you back.",
-  cardBLink: "Explore 11 languages",
-  cardCTitle: "Guidance When Forms Get Complicated",
-  cardCDesc: "Get step-by-step guidance when a form feels confusing, moving forward with clarity.",
-  cardCLink: "Explore guidance features",
+  // Problem Section
+  problemTitle: "One wrong answer can mean a rejected application.",
+  problemSubtitle: "Filling out official paperwork shouldn't feel like a high-stakes guessing game.",
+  problemCard1Title: "The question makes no sense",
+  problemCard1Desc: "'Place of issuance'? 'Apostille'? You're not sure what they actually want.",
+  problemCard2Title: "It isn't in your language",
+  problemCard2Desc: "You copy it into a translator, and the translation still doesn't make sense.",
+  problemCard3Title: "No one to ask, and the deadline is tomorrow",
+  problemCard3Desc: "You're stuck late at night, terrified of a rejection or a missed deadline.",
+  problemStatBridge: "Most government portals aren't built for this: in the UN's 2024 survey, 57% offered only one language.",
+
+  // Jobs Section (Meet Telmy)
+  jobsTitle: "Meet Telmy, your guide through the form.",
+  jobsSubtitle: "Three simple jobs to get you through any paperwork with clarity and peace of mind.",
+  job1Title: "Explain",
+  job1Desc: "Tap any question. Get a simple answer with an example, in your language. Telmy can also read it aloud.",
+  job1Link: "See it in action ↓",
+  job2Title: "Fill in",
+  job2Desc: "Upload your ID or passport once. Telmy fills the matching fields for you. You review every answer.",
+  job2Link: "See it in action ↓",
+  job3Title: "Double-check",
+  job3Desc: "Before you submit, Telmy flags missing fields, mismatched dates, and likely mistakes.",
+  job3Link: "See it in action ↓",
+  jobsExtraNote: "Also includes 14 Tools for Accessibility that make navigating digital services comfortable and stress-free.",
+
+  cardATitle: "Explain",
+  cardADesc: "Tap any question. Get a simple answer with an example, in your language. Telmy can also read it aloud.",
+  cardALink: "See it in action ↓",
+  cardBTitle: "Fill in",
+  cardBDesc: "Upload your ID or passport once. Telmy fills the matching fields for you. You review every answer.",
+  cardBLink: "See it in action ↓",
+  cardCTitle: "Double-check",
+  cardCDesc: "Before you submit, Telmy flags missing fields, mismatched dates, and likely mistakes.",
+  cardCLink: "See it in action ↓",
 
   whoForTitle: "Built for People Who Need Help Understanding Forms",
   whoForSubtitle: "Whether you're applying for an opportunity, completing official paperwork, or dealing with an unfamiliar form, Telmy makes questions easier to understand.",
@@ -257,7 +343,15 @@ export const transEN: TranslationData = {
   simSidepanelTitle: "Telmy AI Copilot",
   simSidepanelStatus: "● Active beside this form",
   simQuickActions: "1-Click Quick Actions:",
-  simVaultTip: "💡 Tip: Profile data is encrypted in your local browser and never stored on any server.",
+  simVaultTip: "💡 Tip: Profile data is saved only on your device, locked, and never stored on any server.",
+  simHeading: "See it in action.",
+  simSubheading: "Watch how Telmy assists form filling, explains questions, and catches mistakes before you hit submit.",
+  simGuidedStep1: "1. Tap any question to get plain-language explanation",
+  simGuidedStep2: "2. Auto-fill from your local vault with 1 click",
+  simGuidedStep3: "3. Run pre-check to catch missing or invalid data",
+  simReplay: "Replay Demo",
+  simTryMyself: "Try It Yourself",
+  simAutoTour: "Guided Demo Tour",
 
   compTitle: "Filling Out a Form Shouldn't Feel Like Guesswork",
   compSubtitle: "When instructions are unclear, it's easy to get stuck. Telmy helps you understand before you answer.",
@@ -270,49 +364,69 @@ export const transEN: TranslationData = {
   compWith2: "Get reliable guidance in a supported language you understand.",
   compWith3: "Move through the form with confidence and review your answers before submitting.",
 
-  stepsTitle: "Three Simple Steps. Less Form Stress.",
-  step1Title: "Open Your Form",
-  step1Desc: "Open a supported form in your browser and launch Telmy when you need assistance.",
-  step2Title: "Understand Each Question",
-  step2Desc: "Select a confusing field and get a clear explanation in a language you understand.",
-  step3Title: "Fill In and Review",
-  step3Desc: "Use guidance to complete your answers, then review your information before submitting.",
+  stepsTitle: "Start in about a minute.",
+  stepsSubtitle: "No complex setup. Three simple steps to submit with confidence.",
+  step1Title: "Add Telmy to your browser",
+  step1Desc: "One click from the Chrome or browser store.",
+  step2Title: "Open your form as usual",
+  step2Desc: "Telmy opens beside it as an instant side guide.",
+  step3Title: "Tap any question",
+  step3Desc: "Telmy explains, fills, and checks. You review and submit.",
+  stepsMobileNote: "Telmy is currently available for Desktop Browsers. Mobile browser support is coming soon!",
+  stepsCopyLink: "Copy link",
+  stepsLinkCopied: "Link copied to clipboard!",
 
-  privacyTitle: "Your information stays yours",
-  privacySubtitle: "Forms hold your most personal details. Telmy.ai is engineered to mathematically protect them.",
-  priv1Title: "AES-256 Encryption",
-  priv1Desc: "Your saved profiles are encrypted locally on your own machine.",
-  priv2Title: "Zero-Knowledge",
-  priv2Desc: "Telmy staff and developers cannot peek at your private data.",
-  priv3Title: "No Document Storage",
-  priv3Desc: "Uploaded files and forms you open are shredded after analysis.",
-  priv4Title: "Passwords Stay Private",
-  priv4Desc: "Passwords, credit cards, and CVV codes are strictly skipped.",
+  safetyTitle: "Your documents stay yours.",
+  safetySubtitle: "We believe private documents must stay private. Here are our three clear promises:",
+  safetyP1Title: "Your passport and ID stay on your device",
+  safetyP1Desc: "Saved only on your device, locked. Never uploaded to remote company servers.",
+  safetyP2Title: "We can't see your documents",
+  safetyP2Desc: "Telmy staff and developers have zero access to your files, forms, or answers.",
+  safetyP3Title: "We never touch your passwords or card numbers",
+  safetyP3Desc: "Financial details and password fields are strictly skipped by design.",
+  safetyTechAccordionTitle: "For the technically curious (AES-256 & Privacy Architecture)",
+  safetyTechDetails: "Your local vault uses client-side AES-256-GCM encryption with keys derived on your machine. OCR document parsing happens in-memory with zero retention. Questions sent for AI assistance strip all personally identifiable markers.",
 
-  pricingTeaserTitle: "Start free. Upgrade when you need more.",
-  pricingTeaserDesc: "5 forms every month at no cost, with all 14 accessibility tools included.",
+  privacyTitle: "Your documents stay yours.",
+  privacySubtitle: "We believe private documents must stay private. Here are our three clear promises:",
+  priv1Title: "Saved only on your device, locked",
+  priv1Desc: "Your passport and ID stay on your device with local AES-256 encryption.",
+  priv2Title: "We can't see your documents",
+  priv2Desc: "Telmy staff and developers have zero access to your files, forms, or answers.",
+  priv3Title: "Your scans are deleted after reading",
+  priv3Desc: "Uploaded files and forms you open are discarded immediately after in-memory parsing.",
+  priv4Title: "Passwords and card numbers are never touched",
+  priv4Desc: "Password, credit card, and CVV fields are strictly skipped by design.",
+
+  langSectionTitle: "In your language.",
+  langSectionSubtitle: "Understand every question in the language you think and speak in.",
+  langComingSoon: "Coming soon: Spanish, French, German, Arabic, Portuguese, and more.",
+  langRequest: "Request a language →",
+
+  pricingTeaserTitle: "Simple, honest pricing. Free to start.",
+  pricingTeaserDesc: "5 forms every month at no cost, with all core features included. No credit card required.",
   pricingTeaserBtn: "See plans and prices →",
 
   faqTitle: "Questions, answered",
   faqSubtitle: "Honest, transparent answers so you can submit official paperwork with peace of mind.",
-  faq1Q: "What is Telmy.ai?",
-  faq1A: "Telmy.ai is a browser companion extension that explains complex form questions in plain language, in your native tongue, and audits your answers before you submit.",
-  faq2Q: "Which browsers does it work on?",
-  faq2A: "Chrome, Edge, Firefox, and Opera on desktop computers. Mobile browser support is planned for future releases.",
-  faq3Q: "Does it work on PDF forms?",
-  faq3A: "Yes. Open any visa or government PDF form in Chrome, and Telmy detects fields, answers questions, and helps export a print-ready document.",
-  faq4Q: "Is it a government website?",
-  faq4A: "No. Telmy.ai is an independent AI accessibility assistant and is not affiliated with any government portal. No assistant can guarantee official approval.",
-  faq5Q: "Can Telmy team or database administrators view my KTP or Passport?",
-  faq5A: "No. Thanks to Zero-Knowledge Client-Side Encryption (CSE), data is encrypted in your browser before leaving your machine. We cannot read your credentials.",
+  faq1Q: "Is Telmy a government website?",
+  faq1A: "No. Telmy.ai is an independent AI assistant and is not affiliated with any government agency or embassy. Telmy explains and guides; you verify, decide, and submit.",
+  faq2Q: "Can Telmy see my passport or ID?",
+  faq2A: "No. Your passport, ID, and form responses stay on your local device. We do not store your documents on our servers.",
+  faq3Q: "Which browsers and forms does it work on?",
+  faq3A: "Telmy works on Chrome, Edge, Firefox, and Opera on desktop computers. It supports online forms across scholarships, visas, civil registration, and public service portals.",
+  faq4Q: "Does it work on PDF forms?",
+  faq4A: "Yes. Open any visa or official PDF form in Chrome, and Telmy detects fields, answers questions, and helps you prepare your answers.",
+  faq5Q: "How much does it cost?",
+  faq5A: "Telmy is free for up to 5 forms every month, including all core features. If you need more forms, upgraded plans will be available.",
 
-  finalCtaTitle: "Your next form can be easier",
-  finalCtaDesc: "Add Telmy.ai in about a minute. It's free to start with 5 forms every month.",
-  finalCtaBtn: "Get Telmy.ai (Free)",
-  finalDemoBtn: "Try the demo",
+  finalCtaTitle: "Your next form can be easier.",
+  finalCtaDesc: "Add Telmy in about a minute. Free for 5 forms every month.",
+  finalCtaBtn: "Add to Chrome, it's free",
+  finalDemoBtn: "Watch How It Works",
 
-  footerTagline: "Official AI Copilot & Accessibility Assistant to navigate e-government, visa, scholarship, and public services without anxiety.",
-  footerSecurityBadge: "AES-256 Zero-Knowledge",
+  footerTagline: "Telmy is AI Copilot & Accessibility Assistant to navigate e-government, visa, scholarship, and public services without anxiety.",
+  footerSecurityBadge: "AES-256 Local Encryption",
   footerA11yBadge: "W3C WCAG 2.2 AA",
   footerNavTitle: "Navigation",
   footerLegalTitle: "Legal & Privacy",
@@ -321,7 +435,7 @@ export const transEN: TranslationData = {
   footerSecurity: "Security Architecture",
   footerDashboard: "User Dashboard",
   footerCopyright: "© 2026 Telmy.ai. All rights reserved.",
-  footerMission: "Built with inclusion and empathy for global citizens worldwide.",
+  footerMission: "Telmy explains and guides. You verify, decide, and submit. Telmy is not a government agency.",
 
   langModalTitle: "Choose Your Language & Region",
   langModalSubtitle: "Select from our 11 supported Asia-Pacific languages. All guides, explanations, and accessibility tools will adapt automatically.",
@@ -342,111 +456,144 @@ export const transID: TranslationData = {
   navSignIn: "Masuk",
   navCta: "Dapatkan Telmy.ai (Gratis)",
 
-  heroTitle: "Formulir apa pun. Bahasa apa pun. Tanpa ragu.",
-  heroSubtitle: "Telmy.ai mendampingi Anda melewati formulir rumit. Menjelaskan setiap kolom dengan bahasa sederhana yang Anda mengerti, dan memeriksa jawaban sebelum dikirim.",
-  heroCta: "Dapatkan Telmy.ai (Gratis)",
-  heroDemo: "Coba demonya",
-  heroTrustline: "Paket gratis selamanya · Brankas Terenkripsi di Klien · Zero-Retention OCR",
-  heroWorksOn: "Dapat digunakan di",
+  heroKicker: "Formulir apa pun. Bahasa apa pun. Tanpa ragu.",
+  heroTitle: "Pahami formulir resmi apa pun, dalam bahasamu sendiri.",
+  heroSubtitle: "Telmy hadir di samping formulir yang sedang kamu isi, menjelaskan setiap pertanyaan dengan kata sederhana, dan memeriksa jawabanmu sebelum dikirim.",
+  heroCta: "Pasang di Chrome, gratis",
+  heroDemo: "Lihat Cara Kerjanya",
+  heroSupportText: "Pahami pertanyaan. Isi jawabanmu. Kirim dengan lebih percaya diri.",
+  heroTrustline: "Gratis 5 formulir sebulan · Dokumenmu tetap di perangkatmu · Bukan situs pemerintah",
+  heroWorksOn: "Bekerja di Chrome, Edge, Firefox, Opera",
 
-  cardATitle: "Pandu setiap kolom",
-  cardADesc: "Tanyakan apa saja dan dapatkan penjelasan gamblang beserta contoh nyata.",
-  cardALink: "Pelajari lebih lanjut",
-  cardBTitle: "11 bahasa",
-  cardBDesc: "Baca dan isi formulir resmi dalam bahasa ibu yang paling membuat Anda tenang.",
-  cardBLink: "Lihat 11 bahasa Asia-Pasifik",
-  cardCTitle: "Aksesibilitas bawaan",
-  cardCDesc: "14 alat bantu untuk lansia, pembaca disleksia, dan gangguan penglihatan.",
-  cardCLink: "Lihat 14 alat aksesibilitas",
+  // Problem Section (ID)
+  problemTitle: "Satu jawaban yang salah bisa membuat pengajuanmu ditolak.",
+  problemSubtitle: "Mengisi berkas resmi seharusnya tidak terasa seperti menebak-nebak dengan taruhan besar.",
+  problemCard1Title: "Pertanyaannya membingungkan",
+  problemCard1Desc: "'Place of issuance'? 'Apostille'? Kamu ragu apa maksud sebenarnya.",
+  problemCard2Title: "Bukan dalam bahasamu",
+  problemCard2Desc: "Kamu salin ke penerjemah, dan hasilnya tetap sulit dipahami.",
+  problemCard3Title: "Tak ada yang bisa ditanya, batas waktu besok",
+  problemCard3Desc: "Kamu mengerjakannya sendirian larut malam, takut ditolak atau tertunda.",
+  problemStatBridge: "Sebagian besar portal resmi tidak dirancang untuk ini: dalam survei PBB 2024, 57% hanya menyediakan satu bahasa.",
 
-  unStatTitle: "Fakta Kesenjangan Layanan Publik Digital (UN E-Gov Survey 2024)",
-  unStatSub: "Pemerintah telah memindahkan layanan ke online, tetapi ketersediaan tidak sama dengan kemudahan pakai.",
-  unStat1Num: "99.5%",
-  unStat1Label: "Portal Nasional Online",
-  unStat1Desc: "192 dari 193 negara anggota PBB telah memiliki portal nasional.",
-  unStat2Num: "52%",
-  unStat2Label: "Tanpa Bantuan Langsung",
-  unStat2Desc: "Hanya 48% portal yang menyediakan help desk untuk pemohon.",
-  unStat3Num: "57%",
-  unStat3Label: "Monolingual / 1 Bahasa",
-  unStat3Desc: "Hanya 43% yang menyediakan dukungan multibahasa asing.",
-  unStat4Num: "95%",
-  unStat4Label: "Gagal Aksesibilitas",
-  unStat4Desc: "Hanya 5% yang selaras dengan standar aksesibilitas W3C WCAG.",
+  // Jobs Section (ID)
+  jobsTitle: "Kenalan dengan Telmy, pemandu di sampingmu saat mengisi formulir.",
+  jobsSubtitle: "Tiga cara sederhana Telmy membantumu menyelesaikan berkas dengan tenang dan percaya diri.",
+  job1Title: "Jelaskan",
+  job1Desc: "Klik pertanyaan apa pun. Dapatkan penjelasan sederhana dengan contoh nyata, dalam bahasamu. Telmy juga bisa membacakannya.",
+  job1Link: "Lihat aksinya ↓",
+  job2Title: "Isi otomatis",
+  job2Desc: "Unggah KTP atau paspor sekali. Telmy mengisi kolom yang cocok untukmu. Kamu tetap memeriksa setiap jawaban.",
+  job2Link: "Lihat aksinya ↓",
+  job3Title: "Periksa ulang",
+  job3Desc: "Sebelum dikirim, Telmy menandai kolom kosong, tanggal yang tidak cocok, dan potensi kekeliruan.",
+  job3Link: "Lihat aksinya ↓",
+  jobsExtraNote: "Juga dilengkapi 14 Fitur Aksesibilitas yang membuat Anda nyaman dan percaya diri menggunakan layanan digital.",
 
-  simBadge: "Portal Pemerintahan",
-  simTitle: "Formulir Permohonan Visa & Dokumen Resmi",
-  simSubtitle: "Uji coba simulasi interaktif: lihat bagaimana Telmy mengisi form, membacakan instruksi dengan suara, dan mencegah kesalahan sebelum dikirim.",
-  simField1Label: "1. Nama Lengkap (Sesuai Paspor / KTP)",
-  simField1Desc: "Tuliskan nama lengkap tanpa gelar akademis (misal S.T, S.Kom, Drs, Ir).",
-  simField2Label: "2. Nomor Induk Kependudukan (NIK / KTP)",
-  simField2Desc: "Kode 16 angka resmi identitas nasional. Jangan gunakan spasi atau tanda hubung.",
-  simField3Label: "3. Nomor Paspor Internasional",
-  simField3Desc: "Kode paspor alfanumerik yang masih berlaku minimal 6 bulan ke depan.",
-  simBtnAutofill: "⚡ 1-Klik Isi Otomatis",
-  simBtnAudit: "🚦 Periksa Sebelum Kirim (Auditor)",
-  simBtnListen: "🔊 Dengarkan Panduan Suara",
-  simSpeaking: "Membacakan Panduan Audio...",
-  simAuditGood: "🟢 Ketiga kolom terisi valid dan siap dikirim tanpa risiko ditolak.",
-  simSidepanelTitle: "Asisten AI Telmy",
-  simSidepanelStatus: "● Aktif mendampingi formulir",
-  simQuickActions: "Aksi Cepat 1-Klik:",
-  simVaultTip: "💡 Tips: Data profil dienkripsi di browser lokal Anda tanpa disimpan di server manapun.",
+  cardATitle: "Jelaskan",
+  cardADesc: "Klik pertanyaan apa pun. Dapatkan penjelasan sederhana dengan contoh nyata, dalam bahasamu. Telmy juga bisa membacakannya.",
+  cardALink: "Lihat aksinya ↓",
+  cardBTitle: "Isi otomatis",
+  cardBDesc: "Unggah KTP atau paspor sekali. Telmy mengisi kolom yang cocok untukmu. Kamu tetap memeriksa setiap jawaban.",
+  cardBLink: "Lihat aksinya ↓",
+  cardCTitle: "Periksa ulang",
+  cardCDesc: "Sebelum dikirim, Telmy menandai kolom kosong, tanggal yang tidak cocok, dan potensi kekeliruan.",
+  cardCLink: "Lihat aksinya ↓",
 
-  compTitle: "Mengapa Cara Lama Mengisi Formulir Bikin Frustrasi?",
-  compSubtitle: "Perbandingan cara konvensional yang melelahkan vs. kemudahan bersama Telmy.ai.",
-  compWithoutTitle: "❌ Tanpa Telmy",
-  compWithout1: "Habiskan 45+ menit panik memikirkan maksud istilah hukum birokrasi.",
-  compWithout2: "Risiko visa ditolak atau beasiswa gugur karena salah tulis tanggal atau nama.",
-  compWithout3: "Google Translate biasa merusak tombol web dan salah menerjemahkan istilah hukum.",
-  compWithTitle: "✅ Bersama Telmy.ai",
-  compWith1: "Penjelasan ramah dan menenangkan serasa didampingi teman ahli tepat di samping Anda.",
-  compWith2: "Auditor Lampu Lalu Lintas otomatis mendeteksi kesalahan paspor dan format sebelum Anda kirim.",
-  compWith3: "1-Click AutoFill mengisi puluhan kolom dalam 1 detik langsung dari brankas terenkripsi Anda.",
+  whoForTitle: "Dibuat untuk formulir yang paling membuatmu cemas.",
+  whoForSubtitle: "Mulai dari beasiswa luar negeri hingga visa dan izin resmi.",
+  whoForCard1Title: "Aplikasi Beasiswa",
+  whoForCard1Desc: "Pahami pertanyaan esai, syarat berkas, dan instruksi beasiswa tanpa salah tafsir.",
+  whoForCard2Title: "Formulir Visa & Imigrasi",
+  whoForCard2Desc: "Bantuan memahami istilah hukum asing dan panduan resmi dokumen perjalanan.",
+  whoForCard3Title: "Formulir Online Sehari-hari",
+  whoForCard3Desc: "Panduan untuk formulir kependudukan, izin kerja, atau perbankan.",
+  whoForClosing: "Bekerja di formulir seperti LPDP, Chevening, DAAD, Visa Schengen, ESTA, dan portal layanan publik.",
 
-  stepsTitle: "Tiga langkah mudah. Tanpa rasa cemas.",
-  step1Title: "Pasang Telmy.ai di browser Anda",
-  step1Desc: "Gratis untuk Chrome, Edge, Firefox, dan Opera dalam waktu kurang dari satu menit.",
-  step2Title: "Buka formulir Anda",
-  step2Desc: "Telmy.ai membuka panel pendamping ramah tepat di samping formulir web atau PDF apa pun.",
-  step3Title: "Ikuti panduannya",
-  step3Desc: "Dapatkan penjelasan tiap kolom, isi otomatis dengan data terenkripsi, dan audit kesalahan sebelum kirim.",
+  scopeTitle: "Dibuat untuk formulir yang paling membuatmu cemas.",
+  scopeSubtitle: "Telmy membantumu memahami formulir. Kamu yang memegang kendali keputusan.",
+  scopeDoesTitle: "Telmy membantu dalam:",
+  scopeDoes1: "Menjelaskan pertanyaan rumit dengan kata sederhana.",
+  scopeDoes2: "Menyederhanakan instruksi dan syarat berkas yang berbelit.",
+  scopeDoes3: "Membimbing langkah demi langkah melewati formulir panjang.",
+  scopeDoes4: "Memeriksa kelengkapan jawaban dan potensi salah isi sebelum dikirim.",
+  scopeDoesNotTitle: "Telmy tidak menggantikan:",
+  scopeDoesNot1: "Instruksi dan aturan resmi dari pihak penyelenggara.",
+  scopeDoesNot2: "Tanggung jawabmu untuk menjawab secara jujur dan akurat.",
+  scopeDoesNot3: "Nasihat hukum, finansial, atau imigrasi profesional.",
+  scopeDoesNot4: "Keputusan akhirmu untuk memeriksa dan mengirimkan formulir.",
+  scopeDisclaimer: "Kamu yang memutuskan dan mengirimkan. Telmy bukan instansi pemerintah.",
 
-  privacyTitle: "Data pribadi Anda, 100% milik Anda seutuhnya",
-  privacySubtitle: "Formulir memuat informasi paling berharga Anda. Telmy.ai dirancang melindunginya secara matematis.",
-  priv1Title: "Enkripsi AES-256",
-  priv1Desc: "Profil Anda dienkripsi secara lokal di perangkat Anda sendiri.",
-  priv2Title: "Zero-Knowledge",
-  priv2Desc: "Tim dan developer Telmy tidak memiliki kemampuan membaca data Anda.",
-  priv3Title: "Tanpa Penyimpanan Dokumen",
-  priv3Desc: "Formulir dan berkas yang Anda buka segera dihancurkan setelah selesai.",
-  priv4Title: "Kata Sandi Tetap Privat",
-  priv4Desc: "Password, nomor kartu kredit, dan CVV otomatis diabaikan.",
+  simHeading: "Lihat cara kerjanya.",
+  simSubheading: "Lihat bagaimana Telmy mendampingi pengisian form, menjelaskan pertanyaan, dan memeriksa eror sebelum dikirim.",
+  simGuidedStep1: "1. Klik pertanyaan untuk penjelasan bahasa sederhana",
+  simGuidedStep2: "2. Isi otomatis dari brankas lokal dalam 1 klik",
+  simGuidedStep3: "3. Periksa eror dan kolom kosong sebelum dikirim",
+  simReplay: "Putar Ulang Demo",
+  simTryMyself: "Coba Sendiri",
+  simAutoTour: "Tur Otomatis",
 
-  pricingTeaserTitle: "Mulai gratis. Upgrade saat butuh lebih banyak.",
-  pricingTeaserDesc: "5 formulir setiap bulan tanpa biaya, lengkap dengan 14 alat aksesibilitas.",
+  stepsTitle: "Mulai dalam sekitar satu menit.",
+  stepsSubtitle: "Tanpa persiapan rumit. Tiga langkah mudah menuju pengiriman formulir bebas cemas.",
+  step1Title: "Pasang Telmy di browsermu",
+  step1Desc: "Satu klik langsung dari toko browser Chrome.",
+  step2Title: "Buka formulirmu seperti biasa",
+  step2Desc: "Telmy otomatis hadir di sampingnya sebagai panel pendamping.",
+  step3Title: "Klik pertanyaan apa pun",
+  step3Desc: "Telmy menjelaskan, mengisi, dan memeriksa. Kamu yang meninjau dan mengirim.",
+  stepsMobileNote: "Saat ini Telmy hanya dapat dipasang di Browser Desktop. Dukungan peramban HP akan segera hadir!",
+  stepsCopyLink: "Salin tautan",
+  stepsLinkCopied: "Tautan tersalin ke clipboard!",
+
+  safetyTitle: "Dokumenmu tetap milikmu.",
+  safetySubtitle: "Kami percaya berkas pribadimu harus tetap sepenuhnya milikmu. Tiga janji nyata kami:",
+  safetyP1Title: "Paspor dan KTP-mu tetap di perangkatmu",
+  safetyP1Desc: "Tersimpan hanya di perangkatmu, terkunci aman. Tidak pernah diunggah ke server kami.",
+  safetyP2Title: "Kami tidak bisa melihat dokumenmu",
+  safetyP2Desc: "Staf dan pengembang Telmy sama sekali tidak memiliki akses ke berkas atau jawabanmu.",
+  safetyP3Title: "Kami tidak pernah menyentuh sandi atau kartu bank",
+  safetyP3Desc: "Kolom finansial dan kata sandi otomatis dilewati demi keamanan.",
+  safetyTechAccordionTitle: "Untuk yang ingin tahu detail teknis (AES-256 & Arsitektur Privasi)",
+  safetyTechDetails: "Brankas lokalmu menggunakan enkripsi client-side AES-256-GCM dengan kunci yang dibuat di perangkatmu. Pembacaan OCR dokumen diproses di memori sementara tanpa retensi. Pertanyaan yang dikirim untuk panduan AI dibersihkan dari identitas pribadi.",
+
+  priv1Title: "Tersimpan hanya di perangkatmu, terkunci",
+  priv1Desc: "Paspor dan KTP tetap di browsermu dengan enkripsi lokal AES-256.",
+  priv2Title: "Kami tidak bisa melihat dokumenmu",
+  priv2Desc: "Staf dan developer Telmy tidak bisa mengintip dokumen pribadimu.",
+  priv3Title: "Hasil pindai dihapus setelah dibaca",
+  priv3Desc: "Berkas dan pindaian langsung dimusnahkan seketika setelah selesai dianalisis.",
+  priv4Title: "Kata Sandi & Kartu Tidak Pernah Disentuh",
+  priv4Desc: "Kolom password, kartu kredit, dan CVV otomatis diabaikan.",
+
+  langSectionTitle: "Dalam bahasamu.",
+  langSectionSubtitle: "Pahami setiap pertanyaan formulir dalam bahasa yang paling kamu kuasai.",
+  langComingSoon: "Segera hadir: Spanyol, Prancis, Jerman, Arab, Portugis, dan lainnya.",
+  langRequest: "Ajukan bahasa baru →",
+
+  pricingTeaserTitle: "Harga transparan & ramah. Mulai gratis.",
+  pricingTeaserDesc: "5 formulir setiap bulan tanpa biaya, lengkap dengan seluruh fitur utama. Tanpa kartu kredit.",
   pricingTeaserBtn: "Lihat paket dan harga →",
 
   faqTitle: "Pertanyaan yang Sering Diajukan",
   faqSubtitle: "Jawaban transparan untuk ketenangan hati Anda saat mengurus dokumen resmi.",
-  faq1Q: "Apa itu Telmy.ai?",
-  faq1A: "Telmy.ai adalah ekstensi pendamping browser yang menjelaskan kolom formulir dengan bahasa sederhana, dalam bahasa ibu Anda, dan mengaudit isian sebelum dikirim.",
-  faq2Q: "Bisa digunakan di browser apa saja?",
-  faq2A: "Chrome, Edge, Firefox, dan Opera di komputer/laptop. Dukungan peramban mobile sedang kami siapkan.",
-  faq3Q: "Apakah bisa untuk formulir PDF?",
-  faq3A: "Bisa. Buka file PDF di Chrome, Telmy akan mendeteksi kolomnya, menjawab pertanyaan Anda, dan membantu mengekspor PDF siap cetak.",
-  faq4Q: "Apakah Telmy.ai website pemerintah?",
-  faq4A: "Bukan. Telmy.ai adalah asisten AI independen dan tidak terafiliasi dengan lembaga pemerintah manapun.",
-  faq5Q: "Apakah tim Telmy bisa melihat KTP atau paspor saya?",
-  faq5A: "Tidak bisa. Berkat arsitektur Zero-Knowledge Client-Side Encryption, data dienkripsi di browser sebelum terkirim ke jaringan.",
+  faq1Q: "Apakah Telmy situs web pemerintah?",
+  faq1A: "Bukan. Telmy.ai adalah asisten AI independen dan tidak terafiliasi dengan lembaga pemerintah atau kedutaan manapun. Telmy menjelaskan dan mendampingi; Anda yang memverifikasi, memutuskan, dan mengirimkan.",
+  faq2Q: "Bisakah Telmy melihat paspor atau KTP saya?",
+  faq2A: "Tidak bisa. Paspor, KTP, dan jawaban formulir Anda tersimpan di perangkat lokal Anda sendiri. Kami tidak menyimpan dokumen Anda di server kami.",
+  faq3Q: "Bisa digunakan di browser dan formulir apa saja?",
+  faq3A: "Telmy bekerja di Chrome, Edge, Firefox, dan Opera di komputer/laptop. Mendukung formulir beasiswa, visa, kependudukan, dan layanan publik online.",
+  faq4Q: "Apakah bisa untuk formulir PDF?",
+  faq4A: "Bisa. Buka file PDF di Chrome, Telmy akan mendeteksi kolomnya, menjawab pertanyaan, dan membantu menyiapkan isiannya.",
+  faq5Q: "Berapa biayanya?",
+  faq5A: "Telmy gratis untuk hingga 5 formulir setiap bulan dengan seluruh fitur utama. Paket lanjutan akan tersedia jika Anda butuh lebih banyak.",
 
-  finalCtaTitle: "Pengisian formulir berikutnya bisa jauh lebih mudah",
-  finalCtaDesc: "Pasang Telmy.ai dalam satu menit. Gratis untuk memulai dengan 5 formulir setiap bulan.",
-  finalCtaBtn: "Dapatkan Telmy.ai (Gratis)",
-  finalDemoBtn: "Coba demonya",
+  finalCtaTitle: "Formulir berikutnya bisa jadi lebih mudah.",
+  finalCtaDesc: "Pasang Telmy dalam sekitar satu menit. Gratis 5 formulir setiap bulan.",
+  finalCtaBtn: "Pasang di Chrome, gratis",
+  finalDemoBtn: "Lihat Cara Kerjanya",
 
-  footerTagline: "Asisten AI & Aksesibilitas Resmi untuk mengisi formulir e-government, visa, beasiswa, dan layanan publik tanpa rasa cemas.",
-  footerSecurityBadge: "AES-256 Zero-Knowledge",
+  footerTagline: "Telmy is AI Copilot & Accessibility Assistant to navigate e-government, visa, scholarship, and public services without anxiety.",
+  footerSecurityBadge: "Enkripsi Lokal AES-256",
   footerA11yBadge: "W3C WCAG 2.2 AA",
   footerNavTitle: "Navigasi",
   footerLegalTitle: "Kebijakan & Privasi",
@@ -455,36 +602,7 @@ export const transID: TranslationData = {
   footerSecurity: "Arsitektur Keamanan",
   footerDashboard: "Dashboard Pengguna",
   footerCopyright: "© 2026 Telmy.ai. Hak Cipta Dilindungi.",
-  footerMission: "Dibuat dengan dedikasi inklusi untuk seluruh warga global.",
-
-  langModalTitle: "Pilih Bahasa & Wilayah Anda",
-  langModalSubtitle: "Tersedia 11 bahasa Asia Pasifik. Seluruh panduan, penjelasan formulir, dan alat bantu aksesibilitas akan otomatis menyesuaikan.",
-  langModalFooterBadge: "🌏 11 Bahasa Resmi Asia-Pasifik (JAPAC)",
-    // V19 Additions (ID)
-  heroKicker: "Formulir apa pun. Bahasa apa pun. Tanpa ragu.",
-  heroSupportText: "Pahami setiap pertanyaan. Isi jawaban Anda. Kirimkan dengan lebih percaya diri.",
-  whoForTitle: "Diciptakan untuk Siapa Saja yang Butuh Bantuan Memahami Formulir",
-  whoForSubtitle: "Baik saat mendaftar beasiswa, mengurus dokumen resmi, maupun mengisi formulir yang asing, Telmy mempermudah pemahaman pertanyaan.",
-  whoForCard1Title: "Aplikasi Beasiswa",
-  whoForCard1Desc: "Pahami pertanyaan seleksi, berkas persyaratan, dan instruksi dengan gamblang saat melengkapi pendaftaran beasiswa impian.",
-  whoForCard2Title: "Formulir Visa & Perjalanan",
-  whoForCard2Desc: "Dapatkan bantuan memahami pertanyaan rumit dan petunjuk resmi saat mengisi dokumen visa atau izin perjalanan.",
-  whoForCard3Title: "Formulir Online Sehari-hari",
-  whoForCard3Desc: "Dapatkan panduan ketika formulir registrasi atau pendaftaran online lainnya membuat Anda bingung harus mengisi apa.",
-  whoForClosing: "Jika sebuah formulir membuat Anda ragu akan maknanya, Telmy selalu siap mendampingi.",
-  scopeTitle: "Panduan Nyata, Bukan Tebak-tebakan. Kendali Tetap di Tangan Anda.",
-  scopeSubtitle: "Telmy membantu Anda memahami formulir. Anda yang memegang kendali keputusan.",
-  scopeDoesTitle: "Hal yang dibantu oleh Telmy",
-  scopeDoes1: "Menjelaskan pertanyaan yang membingungkan dengan bahasa sehari-hari yang mudah.",
-  scopeDoes2: "Menyederhanakan instruksi dan syarat administrasi yang rumit.",
-  scopeDoes3: "Membimbing pengisian formulir online yang didukung langkah demi langkah.",
-  scopeDoes4: "Membantu meninjau jawaban Anda sebelum dikirim secara final.",
-  scopeDoesNotTitle: "Hal yang tidak digantikan oleh Telmy",
-  scopeDoesNot1: "Petunjuk resmi langsung dari instansi atau penyelenggara penerima formulir.",
-  scopeDoesNot2: "Tanggung jawab pribadi Anda untuk memberikan data yang jujur dan akurat.",
-  scopeDoesNot3: "Nasihat hukum, keimigrasian, atau keuangan resmi dari profesional berlisensi.",
-  scopeDoesNot4: "Pemeriksaan akhir pribadi dan keputusan mutlak Anda untuk menekan tombol kirim.",
-  scopeDisclaimer: "Telmy menguraikan dan membimbing. Anda memeriksa, memutuskan, dan mengirim. Telmy bukan instansi pemerintah.",
+  footerMission: "Telmy menjelaskan dan mendampingi. Anda memverifikasi, memutuskan, dan mengirimkan. Telmy bukan instansi pemerintah.",
   langModalClose: "Tutup"
 };
 

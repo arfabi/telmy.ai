@@ -33,6 +33,19 @@ export const Navbar: React.FC = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-7 text-sm font-medium text-slate-600">
+            <a
+              href="/#simulator"
+              onClick={(e) => {
+                const el = document.getElementById('simulator')
+                if (el) {
+                  e.preventDefault()
+                  el.scrollIntoView({ behavior: 'smooth' })
+                }
+              }}
+              className="hover:text-blue-600 transition-colors cursor-pointer"
+            >
+              {lang === 'id' ? 'Cara Kerja' : 'How It Works'}
+            </a>
             <Link to="/features" className="hover:text-blue-600 transition-colors">{t.navFeatures}</Link>
             <Link to="/download" className="hover:text-blue-600 transition-colors">{t.navDownload}</Link>
             <Link to="/academy" className="hover:text-blue-600 transition-colors">{t.navAcademy}</Link>
@@ -105,6 +118,20 @@ export const Navbar: React.FC = () => {
         {mobileMenuOpen && (
           <div className="lg:hidden border-b border-slate-200 bg-white/95 backdrop-blur-xl px-4 pt-3 pb-6 space-y-4">
             <nav className="flex flex-col gap-3 text-sm font-medium text-slate-700">
+              <a
+                href="/#simulator"
+                onClick={(e) => {
+                  setMobileMenuOpen(false)
+                  const el = document.getElementById('simulator')
+                  if (el) {
+                    e.preventDefault()
+                    el.scrollIntoView({ behavior: 'smooth' })
+                  }
+                }}
+                className="py-1 hover:text-blue-600 font-semibold text-blue-600 cursor-pointer"
+              >
+                {lang === 'id' ? 'Cara Kerja' : 'How It Works'}
+              </a>
               <Link
                 to="/features"
                 onClick={() => setMobileMenuOpen(false)}

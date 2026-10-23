@@ -13,6 +13,23 @@ export const Hero: React.FC<HeroProps> = ({ t }) => {
   const [isPlaying, setIsPlaying] = useState(true)
   const [isMuted, setIsMuted] = useState(true)
 
+  // Detect visitor browser for tailored CTA text
+  const getBrowserName = () => {
+    if (typeof navigator === 'undefined') return 'Chrome'
+    const userAgent = navigator.userAgent
+    if (userAgent.includes('Edg/')) return 'Edge'
+    if (userAgent.includes('Firefox/')) return 'Firefox'
+    if (userAgent.includes('OPR/') || userAgent.includes('Opera/')) return 'Opera'
+    return 'Chrome'
+  }
+
+  const browserName = getBrowserName()
+
+  // Format CTA text with detected browser if default pattern
+  const ctaText = t.heroCta.includes('Chrome')
+    ? t.heroCta.replace('Chrome', browserName)
+    : t.heroCta
+
   const togglePlay = () => {
     if (!videoRef.current) return
     if (isPlaying) {
@@ -69,15 +86,23 @@ export const Hero: React.FC<HeroProps> = ({ t }) => {
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
               <Link to="/download" className="w-full sm:w-auto">
                 <Button size="lg" className="w-full sm:w-auto font-bold shadow-lg shadow-blue-500/25 px-7 py-3 text-base group">
-                  <span>{t.heroCta}</span>
+                  <span>{ctaText}</span>
                   <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
-              <a href="#simulator" className="w-full sm:w-auto">
-                <Button variant="outline" size="lg" className="w-full sm:w-auto font-semibold px-6 py-3 text-base border-slate-300 hover:bg-slate-50">
-                  <Play className="w-4 h-4 text-blue-600 fill-blue-600 mr-2" />
-                  <span>{t.heroDemo}</span>
-                </Button>
+              <a
+                href="#simulator"
+                onClick={(e) => {
+                  e.preventDefault()
+                  const target = document.getElementById('simulator')
+                  if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' })
+                  }
+                }}
+                className="w-full sm:w-auto inline-flex items-center justify-center font-semibold px-6 py-3.5 text-base rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-800 transition-all cursor-pointer shadow-xs active:scale-[0.98]"
+              >
+                <Play className="w-4 h-4 text-blue-600 fill-blue-600 mr-2" />
+                <span>{t.heroDemo}</span>
               </a>
             </div>
 

@@ -1,16 +1,13 @@
 import React from 'react'
 import { Navbar } from '@/components/landing/Navbar'
 import { Hero } from '@/components/landing/Hero'
+import { ProblemSection } from '@/components/landing/ProblemSection'
 import { CoreCards } from '@/components/landing/CoreCards'
-import { LanguageMarquee } from '@/components/landing/LanguageMarquee'
-import { WhoFor } from '@/components/landing/WhoFor'
-import { RealityCheck } from '@/components/landing/RealityCheck'
 import { Simulator } from '@/components/landing/Simulator'
-import { RealActionShowcase } from '@/components/landing/RealActionShowcase'
-import { Comparison } from '@/components/landing/Comparison'
 import { ThreeSteps } from '@/components/landing/ThreeSteps'
-import { ScopeBoundary } from '@/components/landing/ScopeBoundary'
 import { PrivacySummary } from '@/components/landing/PrivacySummary'
+import { AudienceScope } from '@/components/landing/AudienceScope'
+import { LanguagesSection } from '@/components/landing/LanguagesSection'
 import { PricingTeaser } from '@/components/landing/PricingTeaser'
 import { FAQ } from '@/components/landing/FAQ'
 import { FinalCta } from '@/components/landing/FinalCta'
@@ -26,52 +23,41 @@ export const LandingPage: React.FC = () => {
       {/* Dynamic Multilingual SEO & OpenGraph */}
       <SEO />
 
-      {/* 1. Navbar */}
+      {/* Navigation */}
       <Navbar />
 
-      {/* 2. Hero: Headline + Subheadline + Dual CTA + Interactive Product Demo Preview */}
+      {/* Section 1: Hero (Visitor question: What is this, and is it for me?) */}
       <Hero t={t} />
 
-      {/* 3. Core Cards: Understand Every Field, Forms in Your Language, Guidance When Forms Get Complicated */}
+      {/* Section 2: The Problem (Visitor question: Why would I need it?) */}
+      <ProblemSection t={t} />
+
+      {/* Section 3: Meet Telmy - The Three Jobs (Visitor question: What does it actually do?) */}
       <CoreCards t={t} />
 
-      {/* 4. Global Language Marquee Ticker: 11 Active + European/Middle East SOON */}
-      <LanguageMarquee />
-
-      {/* 5. Who Is Telmy For: Scholarship, Visa/Travel, Everyday Forms (New v19) */}
-      <WhoFor t={t} />
-
-      {/* 6. Reality Check: UN E-Gov Survey */}
-      <RealityCheck t={t} />
-
-      {/* 7. Interactive Simulator Sandbox (Visa Application Sandbox) */}
+      {/* Section 4: See it in action - Demo & Native Simulator (Visitor question: Show me.) */}
       <Simulator t={t} />
 
-      {/* 8. Real Browser Action Showcase: Official Government Portals & Web Forms */}
-      <RealActionShowcase />
-
-      {/* 9. Comparison: Without Telmy vs With Telmy */}
-      <Comparison t={t} />
-
-      {/* 8. Three Steps: Open Form -> Understand -> Fill & Review */}
+      {/* Section 5: Three Simple Steps (Visitor question: Is it hard to start?) */}
       <ThreeSteps t={t} />
 
-      {/* 9. Scope & Boundaries: What Telmy Helps With vs What It Doesn't Replace (New v19) */}
-      <ScopeBoundary t={t} />
-
-      {/* 10. Privacy Summary: AES-256, Zero-Knowledge, No doc storage */}
+      {/* Section 6: Safety - Your documents stay yours (Visitor question: Is my data safe?) */}
       <PrivacySummary t={t} />
 
-      {/* 11. Pricing Teaser: Free 5 forms monthly */}
-      <PricingTeaser t={t} />
+      {/* Section 7: Who it's for & Boundaries (Visitor question: Does it fit my situation?) */}
+      <AudienceScope t={t} />
 
-      {/* 12. Top FAQ Accordion */}
+      {/* Section 8: In your language - Static Language Grid (Visitor question: Is my language supported?) */}
+      <LanguagesSection t={t} />
+
+      {/* Section 9: Pricing Teaser & Reordered FAQ (Visitor question: What does it cost? & What if I have doubts?) */}
+      <PricingTeaser t={t} />
       <FAQ t={t} />
 
-      {/* 13. Final CTA: Your next form can be easier */}
+      {/* Section 10: Final CTA (Visitor question: OK, how do I start?) */}
       <FinalCta t={t} />
 
-      {/* 14. Dynamic Localized Footer */}
+      {/* Footer & Non-Government Disclaimer */}
       <Footer t={t} />
     </div>
   )

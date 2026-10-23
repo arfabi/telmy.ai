@@ -43,7 +43,21 @@ export const Footer: React.FC<FooterProps> = ({ t }) => {
               <li><Link to="/features" className="hover:text-blue-600 transition-colors">{t.navFeatures}</Link></li>
               <li><Link to="/download" className="hover:text-blue-600 transition-colors">{t.navDownload}</Link></li>
               <li><Link to="/pricing" className="hover:text-blue-600 transition-colors">{t.navPricing}</Link></li>
-              <li><a href="/#simulator" className="hover:text-blue-600 transition-colors">{t.heroDemo}</a></li>
+              <li>
+                <a
+                  href="/#simulator"
+                  onClick={(e) => {
+                    const el = document.getElementById('simulator')
+                    if (el) {
+                      e.preventDefault()
+                      el.scrollIntoView({ behavior: 'smooth' })
+                    }
+                  }}
+                  className="hover:text-blue-600 transition-colors cursor-pointer"
+                >
+                  {t.heroDemo}
+                </a>
+              </li>
               <li><Link to="/academy" className="hover:text-blue-600 transition-colors">{t.navAcademy}</Link></li>
             </ul>
           </div>
