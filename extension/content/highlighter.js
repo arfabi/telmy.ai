@@ -3,12 +3,21 @@ window.GMTHighlighter = (function () {
   const HIGHLIGHT_CLASS = 'gmt-highlighted-field';
   const BADGE_CLASS = 'gmt-field-badge';
 
+  let lastActiveIndex = -1;
+  let lastActiveTimestamp = 0;
+  let badgeAbortController = null;
+
   function attachBadges(scannedFields, onFieldSelect) {
-    // Clear any previous badges
-    clearBadges();
+    // Clear any previous badges and unmount old event listeners
+    clearBadges(true);
+
+    // Create fresh AbortController for this badge lifecycle
+    badgeAbortController = new AbortController();
+    const { signal } = badgeAbortController;
 
     scannedFields.forEach((item, index) => {
       const el = item.metadata.element;
+      if (!el || !el.isConnected) return;
 
       const badge = document.createElement('span');
       badge.className = BADGE_CLASS;
@@ -29,11 +38,13 @@ window.GMTHighlighter = (function () {
 
       // 2. Standard label[for="id"]
       if (!placed && el.id) {
-        const label = document.querySelector(`label[for="${CSS.escape(el.id)}"]`);
-        if (label && !label.querySelector(`.${BADGE_CLASS}`)) {
-          label.appendChild(badge);
-          placed = true;
-        }
+        try {
+          const label = document.querySelector(`label[for="${CSS.escape(el.id)}"]`);
+          if (label && !label.querySelector(`.${BADGE_CLASS}`)) {
+            label.appendChild(badge);
+            placed = true;
+          }
+        } catch (_) {}
       }
 
       // 3. Fallback: parent or adjacent to el
@@ -55,38 +66,59 @@ window.GMTHighlighter = (function () {
       badge.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
-        setActiveField(index, scannedFields, onFieldSelect);
-      });
+        setActiveField(index, scannedFields, onFieldSelect, true);
+      }, { signal });
 
-      // Event listener on element focus and click
+      // Event listener on element focus and click (bound with signal for 100% clean teardown)
       el.addEventListener('focus', () => {
         setActiveField(index, scannedFields, onFieldSelect, false);
-      });
-      el.addEventListener('click', () => {
+      }, { signal });
+
+      el.addEventListener('click', (e) => {
+        // Prevent click bubbling from triggering parent container listeners
+        e.stopPropagation();
         setActiveField(index, scannedFields, onFieldSelect, false);
-      });
+      }, { signal });
 
-      // Event listener on card click (e.g. clicking anywhere in question card or radio group in Google Forms)
-      if (card) {
-        card.addEventListener('click', () => {
+      // Only attach card click listener for dedicated question cards (e.g. Google Forms question containers)
+      // Strictly avoid generic containers (.form-group, .form-row, fieldset) that house multiple form fields
+      const isDedicatedQuestionCard = el.closest ? el.closest('[role="listitem"], .Qr7Oae, .geS5n, .m7zDu, .o3Dpx') : null;
+      if (isDedicatedQuestionCard) {
+        isDedicatedQuestionCard.addEventListener('click', (e) => {
+          // If the user clicked another interactive input inside the container, don't hijack it
+          const interactiveTarget = e.target.closest('input, select, textarea, [role="textbox"], [role="radiogroup"], [role="checkbox"], [role="combobox"], button, a');
+          if (interactiveTarget && interactiveTarget !== el && !el.contains(interactiveTarget)) {
+            return;
+          }
+          if (e.target.closest(`.${BADGE_CLASS}`)) {
+            return;
+          }
           setActiveField(index, scannedFields, onFieldSelect, false);
-        });
+        }, { signal });
       }
-
-      // Listen to input changes
-      el.addEventListener('input', () => {});
-      el.addEventListener('change', () => {});
     });
-  }
 
-  let lastActiveIndex = -1;
-  let lastActiveTimestamp = 0;
+    // Seamlessly preserve the active badge if user is already focused or had an active selection
+    let targetActiveIdx = -1;
+    if (document.activeElement) {
+      const focusedIdx = scannedFields.findIndex(item => item.metadata.element === document.activeElement || (item.metadata.element && item.metadata.element.contains(document.activeElement)));
+      if (focusedIdx >= 0) targetActiveIdx = focusedIdx;
+    }
+    if (targetActiveIdx < 0 && lastActiveIndex >= 0 && lastActiveIndex < scannedFields.length) {
+      targetActiveIdx = lastActiveIndex;
+    }
+
+    if (targetActiveIdx >= 0) {
+      setActiveField(targetActiveIdx, scannedFields, null, false);
+    }
+  }
 
   function setActiveField(index, scannedFields, callback, shouldFocusInput = true) {
     const targetItem = scannedFields[index];
     if (!targetItem) return;
 
     const el = targetItem.metadata.element;
+    if (!el || !el.isConnected) return;
 
     // Remove previous active classes
     document.querySelectorAll(`.${HIGHLIGHT_CLASS}`).forEach(e => {
@@ -107,16 +139,16 @@ window.GMTHighlighter = (function () {
     }
 
     if (shouldFocusInput && document.activeElement !== el) {
-      el.focus();
+      try { el.focus(); } catch (_) {}
     }
 
     // Deduplicate rapid focus/click events within 350ms for the same field
     const now = Date.now();
+    lastActiveIndex = index;
     if (callback) {
       if (index === lastActiveIndex && (now - lastActiveTimestamp < 350)) {
         return; // Skip duplicate trigger
       }
-      lastActiveIndex = index;
       lastActiveTimestamp = now;
       callback(targetItem, index);
     }
@@ -307,8 +339,16 @@ window.GMTHighlighter = (function () {
     return false;
   }
 
-  function clearBadges() {
-    lastActiveIndex = -1;
+  function clearBadges(preserveActiveIndex = false) {
+    if (badgeAbortController) {
+      try {
+        badgeAbortController.abort();
+      } catch (_) {}
+      badgeAbortController = null;
+    }
+    if (!preserveActiveIndex) {
+      lastActiveIndex = -1;
+    }
     document.querySelectorAll(`.${BADGE_CLASS}`).forEach(b => b.remove());
     document.querySelectorAll(`.${HIGHLIGHT_CLASS}`).forEach(el => el.classList.remove(HIGHLIGHT_CLASS));
     clearActionButtonHighlight();
@@ -320,6 +360,7 @@ window.GMTHighlighter = (function () {
     clearBadges,
     highlightActionButton,
     clearActionButtonHighlight,
-    clickHighlightedActionButton
+    clickHighlightedActionButton,
+    getActiveIndex: () => lastActiveIndex
   };
 })();

@@ -47,6 +47,7 @@
   let isScanning = false;
   let cachedPageSummary = null;
   let domObserver = null;
+  let debounceTimer = null;
   // Helper to reliably set input values on modern JS frameworks (React, Angular, Vue) & Google Forms / ARIA widgets
   function setDomInputValue(el, value) {
     if (!el) return false;
@@ -606,7 +607,9 @@
     // F. Highlight Field by Index
     if (message.type === 'GMT_ACTIVATE_FIELD_BY_INDEX') {
       if (window.GMTHighlighter && scannedItems[message.index]) {
-        window.GMTHighlighter.setActiveField(message.index, scannedItems);
+        const targetEl = scannedItems[message.index].metadata?.element;
+        const alreadyFocused = targetEl && (document.activeElement === targetEl || targetEl.contains(document.activeElement));
+        window.GMTHighlighter.setActiveField(message.index, scannedItems, null, !alreadyFocused);
       }
       sendResponse({ success: true });
       return false;
@@ -972,10 +975,16 @@
               continue;
             }
           }
-          // Detect visibility change on step wizards, modals, tabs
+          // Ignore normal typing/focus class & style changes on already-scanned inputs
           if (m.target && m.target.nodeType === 1) {
             const el = m.target;
-            if (el.matches && el.matches('input, select, textarea, form, [role="tabpanel"], .tab-pane, .fade, [class*="step"], [class*="modal"], [class*="wizard"], [class*="tab"]')) {
+            if (el.matches && el.matches('input, select, textarea')) {
+              if (m.attributeName === 'class' || m.attributeName === 'style') {
+                continue; // Do not rescan merely because user focused or typed in an input
+              }
+            }
+            // Detect visibility change on step wizards, modals, tabs
+            if (el.matches && el.matches('[role="tabpanel"], .tab-pane, .fade, [class*="step"], [class*="modal"], [class*="wizard"], [class*="tab"], form')) {
               shouldRescan = true;
             }
           }
@@ -984,7 +993,10 @@
       }
 
       if (shouldRescan) {
-        clearTimeout(debounceTimer);
+        if (debounceTimer) {
+          clearTimeout(debounceTimer);
+          debounceTimer = null;
+        }
         debounceTimer = setTimeout(() => {
           if (isScannerActivated && gmtSettings.isActive !== false) {
             runScanAndHighlight(cachedPageSummary, true);
@@ -1010,20 +1022,29 @@
     try {
       cleanupFloatingDOM();
 
-      const prevCount = scannedItems ? scannedItems.length : 0;
+      const prevItems = scannedItems || [];
+      const prevCount = prevItems.length;
       // Scan page
-      scannedItems = window.GMTScanner.scanForms(dictionaryData);
+      const newItems = window.GMTScanner.scanForms(dictionaryData);
 
-      if (scannedItems.length > 0 && window.GMTHighlighter) {
-        // Attach numbered badges on form inputs
-        window.GMTHighlighter.attachBadges(scannedItems, (item, index) => {
-          safeSendMessage({
-            type: 'GMT_FIELD_FOCUSED',
-            index: index
+      // Check if scanned elements list is structurally identical to prevent unnecessary badge rebuilds & jumpiness
+      const isIdentical = prevItems.length === newItems.length &&
+        prevItems.every((prev, i) => prev && prev.metadata && newItems[i] && prev.metadata.element === newItems[i].metadata.element);
+
+      scannedItems = newItems;
+
+      if (!isIdentical) {
+        if (scannedItems.length > 0 && window.GMTHighlighter) {
+          // Attach numbered badges on form inputs
+          window.GMTHighlighter.attachBadges(scannedItems, (item, index) => {
+            safeSendMessage({
+              type: 'GMT_FIELD_FOCUSED',
+              index: index
+            });
           });
-        });
-      } else if (window.GMTHighlighter && prevCount > 0) {
-        window.GMTHighlighter.clearBadges();
+        } else if (window.GMTHighlighter && prevCount > 0) {
+          window.GMTHighlighter.clearBadges();
+        }
       }
 
       // Broadcast serializable fields to Chrome Native Side Panel

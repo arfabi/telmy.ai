@@ -103,13 +103,6 @@ window.GMTPanel = (function () {
     return; // Native chrome.sidePanel is now active; suppress in-page floating panel
   }
 
-    // Load persisted chat history
-    loadChatHistory();
-
-    // Initial render
-    renderShell();
-  }
-
   function setupVoiceSubscriptions() {
     if (isVoiceSubscribed || !window.TelmyVoice) return;
     isVoiceSubscribed = true;
