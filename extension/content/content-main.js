@@ -47,7 +47,82 @@
   let isScanning = false;
   let cachedPageSummary = null;
   let domObserver = null;
-  let debounceTimer = null;
+  // Helper to reliably set input values on modern JS frameworks (React, Angular, Vue) & Google Forms / ARIA widgets
+  function setDomInputValue(el, value) {
+    if (!el) return false;
+    try {
+      el.focus();
+
+      // 1. If element is a container holding an input/textarea (common in Google Forms or Material UI)
+      let targetInput = el;
+      if (el.tagName !== 'INPUT' && el.tagName !== 'TEXTAREA' && !el.isContentEditable && el.getAttribute('contenteditable') !== 'true') {
+        const nested = el.querySelector('input:not([type="hidden"]), textarea, [contenteditable="true"]');
+        if (nested) {
+          targetInput = nested;
+          targetInput.focus();
+        }
+      }
+
+      // 2. Handle contenteditable or custom rich textboxes (e.g. Google Docs/Forms div[role="textbox"])
+      if (targetInput.isContentEditable || targetInput.getAttribute('contenteditable') === 'true') {
+        targetInput.innerText = value;
+        targetInput.dispatchEvent(new Event('input', { bubbles: true }));
+        targetInput.dispatchEvent(new Event('change', { bubbles: true }));
+        targetInput.dispatchEvent(new Event('blur', { bubbles: true }));
+        targetInput.classList.add('gmt-field-smart-filled');
+        setTimeout(() => targetInput.classList.remove('gmt-field-smart-filled'), 1500);
+        return true;
+      }
+
+      // 3. For standard INPUT or TEXTAREA (including React 16+ controlled inputs & Google Forms)
+      if (targetInput.tagName === 'INPUT' || targetInput.tagName === 'TEXTAREA') {
+        // Try calling the native setter to bypass React/Vue prototype override
+        const prototype = targetInput.tagName === 'INPUT' ? window.HTMLInputElement.prototype : window.HTMLTextAreaElement.prototype;
+        const nativeSetter = Object.getOwnPropertyDescriptor(prototype, 'value')?.set;
+        if (nativeSetter) {
+          nativeSetter.call(targetInput, value);
+        } else {
+          targetInput.value = value;
+        }
+
+        // Google Forms / Material / Framework events
+        targetInput.dispatchEvent(new Event('input', { bubbles: true }));
+        targetInput.dispatchEvent(new Event('change', { bubbles: true }));
+        targetInput.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText', data: String(value) }));
+        targetInput.dispatchEvent(new Event('blur', { bubbles: true }));
+
+        // Also trigger keyup / keydown for field float labels in Material / Google Forms
+        targetInput.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Enter' }));
+        targetInput.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, key: 'Enter' }));
+
+        targetInput.classList.add('gmt-field-smart-filled');
+        setTimeout(() => targetInput.classList.remove('gmt-field-smart-filled'), 1500);
+        return true;
+      }
+
+      // 4. Fallback for custom div/span
+      targetInput.setAttribute('data-value', value);
+      targetInput.innerText = value;
+      targetInput.dispatchEvent(new Event('input', { bubbles: true }));
+      targetInput.dispatchEvent(new Event('change', { bubbles: true }));
+      return true;
+    } catch (e) {
+      console.warn('[Telmy] Failed to set field value:', e);
+      return false;
+    }
+  }
+
+  function getDomInputValue(el) {
+    if (!el) return '';
+    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') return (el.value || '').trim();
+    if (el.isContentEditable || el.getAttribute('contenteditable') === 'true') return (el.innerText || el.textContent || '').trim();
+    const nested = el.querySelector('input:not([type="hidden"]), textarea, [contenteditable="true"]');
+    if (nested) {
+      if (nested.tagName === 'INPUT' || nested.tagName === 'TEXTAREA') return (nested.value || '').trim();
+      return (nested.innerText || nested.textContent || '').trim();
+    }
+    return (el.value || el.innerText || el.textContent || '').trim();
+  }
 
   function safeSendMessage(msg, callback = null) {
     try {
@@ -548,14 +623,8 @@
                        !(el.id && /card|cvv|cvc|otp|pin|token/i.test(el.id));
         if (isSafe) {
           try {
-            el.focus();
-            el.value = message.value || '';
-            el.dispatchEvent(new Event('input', { bubbles: true }));
-            el.dispatchEvent(new Event('change', { bubbles: true }));
-            // Add a brief subtle pulse outline to confirm fill
-            el.classList.add('gmt-field-smart-filled');
-            setTimeout(() => el.classList.remove('gmt-field-smart-filled'), 1500);
-            sendResponse({ success: true, filled: true });
+            const success = setDomInputValue(el, message.value || '');
+            sendResponse({ success, filled: success });
             return false;
           } catch (e) {
             sendResponse({ success: false, error: e.message });
@@ -602,7 +671,7 @@
 
         // 2. Legacy Key-Value Matching Fallback
         if (!valToFill) {
-          if (/(full.*name|applicant.*name|nama.*lengkap|your.*name|nama pemohon)/i.test(label) && (data.full_name || data.name)) {
+          if (/(full.*name|applicant.*name|nama.*lengkap|your.*name|nama pemohon|nama)/i.test(label) && (data.full_name || data.name)) {
             valToFill = data.full_name || data.name;
           } else if (/(passport|no.*paspor|nomor.*paspor)/i.test(label) && (data.passport_number || data.passport)) {
             valToFill = data.passport_number || data.passport;
@@ -612,8 +681,10 @@
             valToFill = data.birth_date || data.dob;
           } else if (/(nationality|kewarganegaraan|citizenship)/i.test(label) && data.nationality) {
             valToFill = data.nationality;
-          } else if (/(phone|telp|nomor.*hp|mobile|telephone|whatsapp)/i.test(label) && data.phone) {
+          } else if (/(phone|telp|nomor.*hp|mobile|telephone|whatsapp|no.*wa|handphone)/i.test(label) && data.phone) {
             valToFill = data.phone;
+          } else if (/(email|e-mail|surel)/i.test(label) && (data.email || data.user_email)) {
+            valToFill = data.email || data.user_email;
           } else if (/(address|alamat|domisili|residence)/i.test(label) && data.address) {
             valToFill = data.address;
           } else if (/(gpa|ipk|grade point)/i.test(label) && data.gpa) {
@@ -623,16 +694,10 @@
           }
         }
 
-        if (valToFill && !el.value) {
-          try {
-            el.focus();
-            el.value = valToFill;
-            el.dispatchEvent(new Event('input', { bubbles: true }));
-            el.dispatchEvent(new Event('change', { bubbles: true }));
-            el.classList.add('gmt-field-smart-filled');
-            setTimeout(() => el.classList.remove('gmt-field-smart-filled'), 1500);
-            filledCount++;
-          } catch (e) {}
+        const currentVal = getDomInputValue(el);
+        if (valToFill && !currentVal) {
+          const success = setDomInputValue(el, valToFill);
+          if (success) filledCount++;
         }
       });
 
@@ -673,18 +738,23 @@
           } else if (el.tagName === 'SELECT') {
             val = el.value || '';
           } else {
-            val = el.value !== undefined ? String(el.value) : (el.innerText || '');
+            val = getDomInputValue(el);
           }
         }
 
-        // Determine if required (check parent question card for asterisk * in Google Forms)
-        let isReq = Boolean(el && (el.required || el.getAttribute('aria-required') === 'true' || item.dictEntry?.required));
+        // Determine if required (supports Google Forms, Jotform, Typeform, Material-UI, asterisk * labels)
+        let isReq = Boolean(item.metadata.required || (el && (el.required || el.hasAttribute('required') || el.getAttribute('aria-required') === 'true')) || item.dictEntry?.required);
         if (!isReq && el) {
-          const containerCard = el.closest('[role="listitem"], .Qr7Oae, .freebirdFormviewerViewNumberedItemContainer');
+          const containerCard = el.closest ? el.closest('[role="listitem"], .Qr7Oae, .geS5n, .m7zDu, .freebirdFormviewerViewNumberedItemContainer, .form-line, .form-group, .form-item, fieldset') : null;
           if (containerCard) {
-            const hasAsterisk = containerCard.querySelector('.vnumgf, [aria-label*="required"], [aria-label*="wajib"]');
-            if (hasAsterisk || containerCard.innerText.includes('*')) {
+            const hasAsterisk = containerCard.querySelector('.vnumgf, .form-required, .required, .is-required, .text-danger, .asterisk, [aria-label*="required" i], [aria-label*="wajib" i], [aria-label*="diisi" i]');
+            if (hasAsterisk) {
               isReq = true;
+            } else {
+              const heading = containerCard.querySelector('[role="heading"], .M7eMe, .c2nTpf, label, legend, .form-label');
+              if (heading && (heading.textContent || '').includes('*')) {
+                isReq = true;
+              }
             }
           }
         }

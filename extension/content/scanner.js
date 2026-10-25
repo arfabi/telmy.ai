@@ -352,6 +352,97 @@ window.GMTScanner = (function () {
     return captchaPattern.test(haystack);
   }
 
+  // Detect if an input field is required, handling modern web forms (Google Forms, Jotform, Typeform, Material-UI, Tailwind, Bootstrap)
+  // where the input itself lacks HTML5 `required`, but contains an asterisk '*' badge or aria-required in the question card/label
+  function isRequiredField(el) {
+    if (!el) return false;
+
+    // 1. Direct standard HTML5 & ARIA attributes on the input element
+    if (el.required || el.hasAttribute('required')) return true;
+    if (el.getAttribute('aria-required') === 'true') return true;
+
+    // 2. Direct parent or label element check
+    const directLabel = el.labels && el.labels[0] ? el.labels[0] : (el.closest ? el.closest('label') : null);
+    if (directLabel) {
+      if (directLabel.querySelector('.required, .is-required, .text-danger, .form-required, [aria-hidden="true"]')) {
+        const reqEl = directLabel.querySelector('.required, .is-required, .text-danger, .form-required');
+        if (reqEl && reqEl.textContent.includes('*')) return true;
+      }
+      if (directLabel.getAttribute('aria-required') === 'true' || directLabel.classList.contains('required')) {
+        return true;
+      }
+    }
+
+    // 3. Question container card / wrapper detection (Google Forms, Jotform, Typeform, Formik, AntD)
+    if (el.closest) {
+      const containerCard = el.closest(`
+        [role="listitem"],
+        .Qr7Oae,
+        .geS5n,
+        .m7zDu,
+        .o3Dpx,
+        .freebirdFormviewerViewNumberedItemContainer,
+        .form-line,
+        .form-line-error,
+        .jotform-form,
+        .form-group,
+        .form-item,
+        .ant-form-item,
+        .ant-form-item-required,
+        [class*="form-group"],
+        [class*="form-item"],
+        [class*="field-wrapper"],
+        fieldset
+      `);
+
+      if (containerCard) {
+        // A. Google Forms asterisk markers: .vnumgf, .M7eMe * span, or [aria-label*="required"] / [aria-label*="wajib"]
+        const googleAsterisk = containerCard.querySelector('.vnumgf, [aria-label*="required" i], [aria-label*="wajib" i], [aria-label*="diisi" i]');
+        if (googleAsterisk) return true;
+
+        // B. Jotform required indicator: .form-required, span.form-required
+        const jotformRequired = containerCard.querySelector('.form-required, span.form-required, .form-input-wide .form-required');
+        if (jotformRequired) return true;
+
+        // C. General CSS classes indicating requirement
+        const classRequired = containerCard.querySelector('.required, .is-required, .text-danger, .asterisk, .mandatory, [data-required="true"]');
+        if (classRequired && (classRequired.textContent.includes('*') || classRequired.getAttribute('data-required') === 'true')) {
+          return true;
+        }
+
+        // D. Ant Design or other frameworks applying class on container
+        if (containerCard.classList.contains('ant-form-item-required') || containerCard.classList.contains('is-required') || containerCard.classList.contains('form-line-error')) {
+          return true;
+        }
+
+        // E. Look for an asterisk in label or heading text inside the container card
+        const cardHeading = containerCard.querySelector('[role="heading"], .M7eMe, .c2nTpf, label, legend, .form-label, dt, th, h1, h2, h3, h4');
+        if (cardHeading) {
+          const headingText = cardHeading.textContent || '';
+          if (headingText.includes('*')) {
+            return true;
+          }
+        }
+      }
+    }
+
+    // 4. Preceding sibling label or wrapper check
+    let prev = el.previousElementSibling;
+    let depth = 0;
+    while (prev && depth < 3) {
+      if (prev.querySelector && prev.querySelector('.required, .form-required, .text-danger, .asterisk')) {
+        return true;
+      }
+      if (prev.textContent && prev.textContent.trim().endsWith('*')) {
+        return true;
+      }
+      prev = prev.previousElementSibling;
+      depth++;
+    }
+
+    return false;
+  }
+
   function scanForms(dictionaryFields) {
     const candidateSelector = `
       input:not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"]),
@@ -461,6 +552,7 @@ window.GMTScanner = (function () {
       const placeholder = el.getAttribute ? (el.getAttribute('placeholder') || '') : '';
       const mask = detectInputMask(el);
       const isNumeric = isPwd ? false : detectNumericNature(el, mask);
+      const isReq = isRequiredField(el);
 
       const metadata = {
         scanIndex: counter++,
@@ -470,6 +562,7 @@ window.GMTScanner = (function () {
         type: rawType,
         isPassword: isPwd,
         isSensitiveField: isPwd,
+        required: isReq,
         options: options.length > 0 ? options : null,
         isNumeric: isNumeric,
         placeholder: placeholder,
@@ -484,6 +577,11 @@ window.GMTScanner = (function () {
       };
 
       const matchedDict = matchFieldToDictionary(metadata, dictionaryFields);
+
+      // If dictionary specifies required, inherit it
+      if (matchedDict && matchedDict.required) {
+        metadata.required = true;
+      }
 
       matchedList.push({
         metadata,

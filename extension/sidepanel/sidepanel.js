@@ -3891,6 +3891,19 @@ document.addEventListener('DOMContentLoaded', async () => {
           "fil": "Protektado ang Privacy",
           "ms": "Privasi Terpelihara"
     },
+    "badge_required": {
+          "en": "Required",
+          "id": "Wajib",
+          "ja": "必須",
+          "ko": "필수",
+          "zh": "必填",
+          "zh-TW": "必填",
+          "vi": "Bắt buộc",
+          "th": "จำเป็น",
+          "hi": "अनिवार्य",
+          "fil": "Kailangan",
+          "ms": "Wajib"
+    },
     "audit_tag_empty_required": {
           "en": "Missing (Required)",
           "id": "Belum Diisi (Wajib)",
@@ -8022,14 +8035,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     const sourceBadge = isPassword ? '🛡️ Zero-Knowledge' : (data.source === 'verified' ? '✓ Verified' : (t('ai_draft_badge') || '✨ Gemini AI'));
     const badgeClass = isPassword ? 'verified' : (data.source === 'verified' ? 'verified' : 'draft');
 
+    const isFieldRequired = Boolean(meta.required || field.dictEntry?.required);
     const showSubtitle = origLabel && (origLabel.toLowerCase() !== translatedLabel.toLowerCase());
 
     fieldDetailContent.innerHTML = `
       <div class="field-detail-header">
         <div class="field-title-group">
-          <div class="field-title-row">
+          <div class="field-title-row" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
             <span class="field-badge-num">#${activeFieldIndex + 1}</span>
-            <h3 class="field-detail-title">${escapeHTML(translatedLabel)}</h3>
+            <h3 class="field-detail-title" style="margin: 0;">${escapeHTML(translatedLabel)}</h3>
+            ${isFieldRequired ? `<span class="field-required-pill" style="display: inline-flex; align-items: center; padding: 2px 7px; font-size: 10.5px; font-weight: 700; border-radius: 9999px; background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5;">* ${escapeHTML(t('badge_required') || 'Wajib')}</span>` : ''}
           </div>
           ${showSubtitle ? `<div class="field-original-subtitle">${escapeHTML(origLabel)}</div>` : ''}
         </div>
@@ -8225,6 +8240,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const val = (domField.value !== undefined ? domField.value : (meta.element ? meta.element.value : '') || '').trim();
             const isReadOnly = Boolean(domField.isReadOnly || meta.isReadOnly || (meta.element && (meta.element.readOnly || meta.element.hasAttribute('readonly'))));
             const isDisabled = Boolean(domField.isDisabled || meta.isDisabled || (meta.element && (meta.element.disabled || meta.element.hasAttribute('disabled'))));
+            const isRequired = Boolean(domField.required || meta.required || f.dictEntry?.required);
 
             if (isPwd) {
               return `
